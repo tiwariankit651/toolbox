@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Text to PDF Online Free — Free Online | ToolBox</title>
+  <meta name="description" content="Add text to PDF files online for free. Write on any PDF document directly in your browser.">
+  <meta name="keywords" content="add text to pdf, write on pdf online, edit pdf text free">
+  <meta property="og:title" content="Add Text to PDF Online Free — ToolBox">
+  <meta property="og:description" content="Add text to PDF files online for free. Write on any PDF document directly in your browser.">
+  <link rel="canonical" href="https://yourdomain.com/tools/pdf-add-text.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav>
+    <a href="../" class="logo">🧰 ToolBox</a>
+    <div class="tagline">Free tools. No signup. No uploads.</div>
+    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+  </nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✏️ Add Text to PDF</div>
+    <div class="ad-slot"><span>Ad Space — Top Banner</span></div>
+    <div class="tool-section">
+      <h1>✏️ Add Text to PDF</h1>
+      <p class="info">Upload a PDF and add text to the first page.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
+      <div class="row"><input type="text" id="pdfText" placeholder="Text to add..."><input type="number" id="fontSize" value="16" min="8" max="72" style="max-width:100px" placeholder="Size"></div>
+      <div class="row"><label>Position X:</label><input type="number" id="posX" value="50"><label>Y from top:</label><input type="number" id="posY" value="50"></div>
+      <button class="btn" onclick="addText()" id="addBtn" disabled>Add Text & Download</button>
+      <div id="result"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <p>🧰 ToolBox — Free Online Tools</p>
+    <p><a href="../">Home</a> | <a href="../about.html">About</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p>
+    <p style="margin-top:.5rem">© 2026 ToolBox. All processing happens in your browser.</p>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>let file;
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("addBtn").disabled=false});
+async function addText(){const t=document.getElementById("pdfText").value;if(!t||!file)return alert("Add PDF and text");const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer());const page=doc.getPages()[0];const sz=+document.getElementById("fontSize").value;page.drawText(t,{x:+document.getElementById("posX").value,y:page.getHeight()-+document.getElementById("posY").value,size:sz});download(new Blob([await doc.save()],{type:"application/pdf"}),"edited.pdf");document.getElementById("result").innerHTML="<p class=\"info\">✅ Text added!</p>"}</script>
+</body>
+</html>

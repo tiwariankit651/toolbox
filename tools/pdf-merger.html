@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Merger - Merge PDF Files Online Free — Free Online | ToolBox</title>
+  <meta name="description" content="Merge multiple PDF files into one online for free. No upload to server, 100% browser-based. Fast and secure PDF combiner.">
+  <meta name="keywords" content="merge pdf, combine pdf, pdf merger online free, join pdf files">
+  <meta property="og:title" content="PDF Merger - Merge PDF Files Online Free — ToolBox">
+  <meta property="og:description" content="Merge multiple PDF files into one online for free. No upload to server, 100% browser-based. Fast and secure PDF combiner.">
+  <link rel="canonical" href="https://yourdomain.com/tools/pdf-merger.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav>
+    <a href="../" class="logo">🧰 ToolBox</a>
+    <div class="tagline">Free tools. No signup. No uploads.</div>
+    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+  </nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📄 Merge PDF Files Online</div>
+    <div class="ad-slot"><span>Ad Space — Top Banner</span></div>
+    <div class="tool-section">
+      <h1>📄 Merge PDF Files Online</h1>
+      <p class="info">Combine multiple PDF files into one. Drag and drop or click to add files.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF files here or click to browse<input type="file" id="inp" accept=".pdf" multiple></div>
+      <ul id="pdfList"></ul>
+      <button class="btn" onclick="merge()" id="mergeBtn" disabled>Merge All PDFs</button>
+      <div id="result"></div>
+      <div class="faq"><h2>FAQ</h2>
+        <details><summary>How to merge PDF files?</summary><p>Click the upload area, select multiple PDF files, then click Merge. Your combined PDF will download automatically.</p></details>
+        <details><summary>Is it safe?</summary><p>Yes. Files are processed entirely in your browser and never uploaded to any server.</p></details>
+        <details><summary>Is there a limit?</summary><p>No limit on number of files. Works best with files under 100MB total.</p></details>
+      </div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <p>🧰 ToolBox — Free Online Tools</p>
+    <p><a href="../">Home</a> | <a href="../about.html">About</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p>
+    <p style="margin-top:.5rem">© 2026 ToolBox. All processing happens in your browser.</p>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>let files=[];
+setupDrop("drop","inp",f=>{for(const x of f)files.push(x);render()});
+function render(){document.getElementById("pdfList").innerHTML=files.map((f,i)=>"<li>"+f.name+" ("+formatSize(f.size)+") <button onclick=\"files.splice("+i+",1);render()\">✕</button></li>").join("");document.getElementById("mergeBtn").disabled=files.length<2}
+async function merge(){const m=await PDFLib.PDFDocument.create();for(const f of files){const d=await PDFLib.PDFDocument.load(await f.arrayBuffer());(await m.copyPages(d,d.getPageIndices())).forEach(p=>m.addPage(p))}download(new Blob([await m.save()],{type:"application/pdf"}),"merged.pdf");document.getElementById("result").innerHTML="<p class=\"info\">✅ Merged PDF downloaded!</p>"}</script>
+</body>
+</html>

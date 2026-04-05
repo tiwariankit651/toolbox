@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Remover - Remove Image Background Online Free — Free Online | ToolBox</title>
+  <meta name="description" content="Remove background from images online for free. No upload needed, works in your browser. Get transparent PNG instantly.">
+  <meta name="keywords" content="remove background, background remover online free, transparent background, remove bg">
+  <link rel="canonical" href="https://yourdomain.com/tools/background-remover.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✂️ Remove Image Background</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section"><h1>✂️ Remove Image Background</h1><p class="info">Remove background from images. Works best with solid/simple backgrounds.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div class="row"><label>Threshold: <strong id="tv">30</strong></label><input type="range" id="thresh" min="5" max="100" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3"></div>
+      <p class="info">Higher threshold = more background removed. Adjust if result is not perfect.</p>
+      <button class="btn" onclick="go()" id="goBtn" disabled>Remove Background</button>
+      <div id="result" class="preview-area"></div></div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer><p>🧰 ToolBox — Free Online Tools</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 ToolBox</p></footer>
+  <script src="../js/common.js"></script>
+  <script>let file;
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
+async function go(){if(!file)return;const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const bg=[d[0],d[1],d[2]];for(let i=0;i<d.length;i+=4){if(Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2])<t*3)d[i+3]=0}ctx.putImageData(data,0,0);c.toBlob(b=>{document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">Download PNG</button>";window._b=b},"image/png")}</script>
+</body></html>
