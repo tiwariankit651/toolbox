@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Calculator - Exact Age in Years, Months, Days | ToolBox</title>
+  <meta name="description" content="Calculate your exact age in years, months, days, hours. Find days until next birthday.">
+  <link rel="canonical" href="https://yourdomain.com/tools/age-calculator.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎂 Age Calculator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🎂 Age Calculator</h1>
+      <p class="info">Enter your date of birth to calculate exact age.</p>
+      <div class="row">
+        <label>Date of Birth:</label>
+        <input type="date" id="dob" style="flex:2">
+        <button class="btn" onclick="calc()">Calculate</button>
+      </div>
+      <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function calc(){
+  const dob=new Date(document.getElementById("dob").value);
+  if(isNaN(dob))return alert("Select a valid date");
+  const now=new Date();
+  let y=now.getFullYear()-dob.getFullYear(),m=now.getMonth()-dob.getMonth(),d=now.getDate()-dob.getDate();
+  if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}
+  if(m<0){y--;m+=12}
+  const totalDays=Math.floor((now-dob)/864e5);
+  const totalMonths=y*12+m;
+  const hours=totalDays*24;
+  const nextBday=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
+  if(nextBday<=now)nextBday.setFullYear(nextBday.getFullYear()+1);
+  const daysToB=Math.ceil((nextBday-now)/864e5);
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  document.getElementById("result").innerHTML=card("Years",y)+card("Months",m)+card("Days",d)+card("Total Days",totalDays.toLocaleString())+card("Total Months",totalMonths)+card("Total Hours",hours.toLocaleString())+card("Next Birthday",daysToB+" days");
+}
+  </script>
+</body>
+</html>

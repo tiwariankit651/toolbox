@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMI Calculator - Loan EMI & Interest Calculator | ToolBox</title>
+  <meta name="description" content="Calculate monthly EMI for home loan, car loan, personal loan. See total interest and payment breakdown.">
+  <link rel="canonical" href="https://yourdomain.com/tools/emi-calculator.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 💰 EMI Calculator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>💰 EMI Calculator</h1>
+      <p class="info">Calculate monthly EMI for any loan — home, car, personal, education.</p>
+      <div class="row"><label>Loan Amount (₹):</label><input type="number" id="amt" value="500000" min="1000"></div>
+      <div class="row"><label>Interest Rate (% per year):</label><input type="number" id="rate" value="8.5" min="0.1" step="0.1"></div>
+      <div class="row"><label>Loan Tenure (months):</label><input type="number" id="tenure" value="36" min="1"></div>
+      <button class="btn" onclick="calc()">Calculate EMI</button>
+      <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem;margin:1rem 0"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function calc(){
+  const p=+document.getElementById("amt").value;
+  const r=+document.getElementById("rate").value/12/100;
+  const n=+document.getElementById("tenure").value;
+  const emi=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  const total=emi*n;
+  const interest=total-p;
+  const fmt=v=>"₹"+Math.round(v).toLocaleString("en-IN");
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  document.getElementById("result").innerHTML=card("Monthly EMI",fmt(emi))+card("Total Interest",fmt(interest))+card("Total Payment",fmt(total))+card("Principal",fmt(p));
+}
+  </script>
+</body>
+</html>
