@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citation Generator - APA, MLA, Chicago | ToolBox</title>
+  <meta name="description" content="Generate citations in APA, MLA, Chicago formats. Perfect for students writing assignments, research papers and thesis.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📚 Citation Generator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>📚 Citation Generator</h1>
+      <p class="info">Generate properly formatted citations for your assignments and research papers.</p>
+      <div class="row"><label>Source Type:</label>
+        <select id="srcType"><option value="book">Book</option><option value="website">Website</option><option value="journal">Journal Article</option></select>
+      </div>
+      <div class="row"><label>Format:</label>
+        <select id="fmt"><option value="apa">APA 7th</option><option value="mla">MLA 9th</option><option value="chicago">Chicago</option></select>
+      </div>
+      <input type="text" id="author" placeholder="Author(s) — e.g. Sharma, R. K.">
+      <input type="text" id="title" placeholder="Title of work">
+      <input type="number" id="year" placeholder="Year (e.g. 2024)">
+      <input type="text" id="publisher" placeholder="Publisher / Website name">
+      <input type="url" id="url" placeholder="URL (for websites)">
+      <input type="text" id="journal" placeholder="Journal name (for articles)">
+      <div class="row"><input type="text" id="vol" placeholder="Volume"><input type="text" id="pages" placeholder="Pages (e.g. 12-25)"></div>
+      <button class="btn" onclick="generate()" style="margin-top:.5rem">Generate Citation</button>
+      <div id="result" style="margin:1rem 0"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function g(id){return document.getElementById(id).value.trim()}
+function generate(){
+  const a=g('author'),t=g('title'),y=g('year'),p=g('publisher'),u=g('url'),j=g('journal'),v=g('vol'),pg=g('pages');
+  const fmt=g('fmt'),src=g('srcType');
+  if(!a||!t)return alert('Enter at least author and title');
+  let cite='';
+  if(fmt==='apa'){
+    if(src==='book')cite=a+' ('+y+'). <em>'+t+'</em>. '+p+'.';
+    else if(src==='website')cite=a+' ('+y+'). '+t+'. '+p+'. '+(u?u:'');
+    else cite=a+' ('+y+'). '+t+'. <em>'+j+'</em>'+(v?', '+v:'')+''+(pg?', '+pg:'')+'.';
+  }else if(fmt==='mla'){
+    if(src==='book')cite=a+'. <em>'+t+'</em>. '+p+', '+y+'.';
+    else if(src==='website')cite=a+'. "'+t+'." <em>'+p+'</em>, '+y+(u?', '+u:'')+'.';
+    else cite=a+'. "'+t+'." <em>'+j+'</em>, vol. '+v+', '+y+', pp. '+pg+'.';
+  }else{
+    if(src==='book')cite=a+'. <em>'+t+'</em>. '+p+', '+y+'.';
+    else if(src==='website')cite=a+'. "'+t+'." '+p+'. '+(u?'Accessed '+y+'. '+u:'');
+    else cite=a+'. "'+t+'." <em>'+j+'</em> '+v+' ('+y+'): '+pg+'.';
+  }
+  document.getElementById('result').innerHTML='<div class="result-box" style="line-height:1.8;font-family:serif;font-size:1rem">'+cite+'<button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.innerText)">Copy</button></div>';
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Builder - Create PDF Resume Free | ToolBox</title>
+  <meta name="description" content="Build a professional resume in minutes. Fill a simple form and download as clean PDF. Free for students and job seekers.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📄 Resume Builder</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>📄 Resume Builder</h1>
+      <p class="info">Fill the form below and download a clean, professional PDF resume.</p>
+      <h2>Personal Info</h2>
+      <div class="row"><input type="text" id="name" placeholder="Full Name"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)"></div>
+      <div class="row"><input type="email" id="email" placeholder="Email"><input type="text" id="phone" placeholder="Phone"></div>
+      <input type="text" id="location" placeholder="City, Country">
+      <h2 style="margin-top:1rem">Summary</h2>
+      <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px"></textarea>
+      <h2 style="margin-top:1rem">Skills (comma separated)</h2>
+      <input type="text" id="skills" placeholder="e.g. JavaScript, Python, React, Communication">
+      <h2 style="margin-top:1rem">Experience</h2>
+      <div id="exp"></div>
+      <button class="btn btn-outline" onclick="addExp()">+ Add Experience</button>
+      <h2 style="margin-top:1rem">Education</h2>
+      <div id="edu"></div>
+      <button class="btn btn-outline" onclick="addEdu()">+ Add Education</button>
+      <button class="btn" onclick="genResume()" style="margin-top:1.5rem">📄 Generate & Download PDF</button>
+      <div id="result"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+function addExp(){
+  const d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';
+  d.innerHTML='<div class="row"><input type="text" placeholder="Company"><input type="text" placeholder="Role"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)"></div><textarea placeholder="Key responsibilities..." style="min-height:60px"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove()" style="margin-top:.3rem">✕ Remove</button>';
+  document.getElementById('exp').appendChild(d);
+}
+function addEdu(){
+  const d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';
+  d.innerHTML='<div class="row"><input type="text" placeholder="Institution"><input type="text" placeholder="Degree"></div><div class="row"><input type="text" placeholder="Year (e.g. 2020-2024)"><input type="text" placeholder="Score/CGPA"></div><button class="btn btn-outline" onclick="this.parentElement.remove()" style="margin-top:.3rem">✕ Remove</button>';
+  document.getElementById('edu').appendChild(d);
+}
+addExp();addEdu();
+
+async function genResume(){
+  const v=id=>document.getElementById(id).value.trim();
+  const doc=await PDFLib.PDFDocument.create();
+  const pg=doc.addPage([595,842]);
+  const f=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  const b=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  const blue=PDFLib.rgb(0.31,0.55,1);const dark=PDFLib.rgb(0.1,0.1,0.15);const gray=PDFLib.rgb(0.4,0.4,0.45);
+  let y=790;
+  const t=(s,x,yy,font,sz,col)=>{pg.drawText(s,{x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy};
+  const line=yy=>{pg.drawLine({start:{x:50,y:yy},end:{x:545,y:yy},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-15};
+  const section=(title,yy)=>{yy-=10;t(title,50,yy,b,13,blue);return line(yy-5)};
+
+  // Header
+  t(v('name')||'Your Name',50,y,b,22,blue);y-=20;
+  t(v('title')||'',50,y,f,12,gray);y-=18;
+  const contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
+  t(contact,50,y,f,9,gray);y-=10;y=line(y);
+
+  // Summary
+  if(v('summary')){y=section('SUMMARY',y);const words=v('summary').split(' ');let ln='';
+    words.forEach(w=>{if(f.widthOfTextAtSize(ln+' '+w,10)>490){t(ln,50,y,f,10);y-=14;ln=w}else ln+=(ln?' ':'')+w});
+    if(ln){t(ln,50,y,f,10);y-=14}}
+
+  // Skills
+  if(v('skills')){y=section('SKILLS',y);t(v('skills'),50,y,f,10);y-=14}
+
+  // Experience
+  const exps=document.querySelectorAll('#exp > div');
+  if(exps.length){y=section('EXPERIENCE',y);
+    exps.forEach(e=>{const inp=e.querySelectorAll('input');const ta=e.querySelector('textarea');
+      t(inp[1]?.value||'Role',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
+      t(inp[0]?.value||'Company',50,y,f,10,gray);y-=14;
+      if(ta?.value){const words=ta.value.split(' ');let ln='• ';
+        words.forEach(w=>{if(f.widthOfTextAtSize(ln+' '+w,9)>480){t(ln,55,y,f,9);y-=12;ln=w}else ln+=(ln==='• '?'':' ')+w});
+        if(ln){t(ln,55,y,f,9);y-=12}}y-=8})}
+
+  // Education
+  const edus=document.querySelectorAll('#edu > div');
+  if(edus.length){y=section('EDUCATION',y);
+    edus.forEach(e=>{const inp=e.querySelectorAll('input');
+      t(inp[1]?.value||'Degree',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
+      t((inp[0]?.value||'')+(inp[3]?.value?' — '+inp[3].value:''),50,y,f,10,gray);y-=20})}
+
+  const blob=new Blob([await doc.save()],{type:'application/pdf'});
+  download(blob,'resume.pdf');
+  document.getElementById('result').innerHTML="<p class='info'>✅ Resume downloaded!</p>";
+}
+  </script>
+</body>
+</html>

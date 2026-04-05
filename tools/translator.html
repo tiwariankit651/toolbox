@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Translator - Translate Text Online | ToolBox</title>
+  <meta name="description" content="Translate text between multiple languages for free. Uses browser-based translation. No signup needed.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🌐 Translator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🌐 Text Translator</h1>
+      <p class="info">Translate text between languages using free translation API.</p>
+      <div class="row">
+        <select id="from"><option value="auto">Auto Detect</option><option value="en">English</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="ar">Arabic</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="it">Italian</option><option value="bn">Bengali</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="gu">Gujarati</option><option value="ur">Urdu</option></select>
+        <button class="btn btn-outline" onclick="const f=document.getElementById('from'),t=document.getElementById('to');const v=f.value;f.value=t.value;t.value=v" style="flex:0;padding:.5rem">⇄</button>
+        <select id="to"><option value="en">English</option><option value="hi" selected>Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="ar">Arabic</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="it">Italian</option><option value="bn">Bengali</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="gu">Gujarati</option><option value="ur">Urdu</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <textarea id="src" placeholder="Enter text to translate..." style="min-height:200px" oninput="clearTimeout(window._dt);window._dt=setTimeout(translate,800)"></textarea>
+        <textarea id="out" placeholder="Translation will appear here..." style="min-height:200px" readonly></textarea>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn" onclick="translate()">Translate</button>
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('out').value)">📋 Copy</button>
+      </div>
+      <p class="info" id="status"></p>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+async function translate(){
+  const text=document.getElementById('src').value.trim();
+  if(!text)return;
+  const from=document.getElementById('from').value;
+  const to=document.getElementById('to').value;
+  document.getElementById('status').textContent='⏳ Translating...';
+  try{
+    const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.responseData){
+      document.getElementById('out').value=data.responseData.translatedText;
+      document.getElementById('status').textContent='✅ Translated';
+    }else{
+      document.getElementById('status').textContent='❌ Translation failed. Try shorter text.';
+    }
+  }catch(e){document.getElementById('status').textContent='❌ Error: '+e.message}
+}
+  </script>
+</body>
+</html>

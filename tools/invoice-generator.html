@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Generator - Create PDF Invoices Free | ToolBox</title>
+  <meta name="description" content="Create professional PDF invoices for free. Perfect for freelancers and small businesses. No signup needed.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🧾 Invoice Generator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🧾 Invoice Generator</h1>
+      <p class="info">Create professional invoices. Fill the form and download as PDF.</p>
+      <div class="row"><input type="text" id="bName" placeholder="Your Business Name"><input type="text" id="invNo" placeholder="Invoice # (e.g. INV-001)"></div>
+      <div class="row"><input type="date" id="invDate"><input type="text" id="currency" value="₹" placeholder="Currency" style="max-width:60px"></div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
+      <h2>Bill To:</h2>
+      <div class="row"><input type="text" id="cName" placeholder="Client Name"><input type="text" id="cEmail" placeholder="Client Email"></div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
+      <h2>Items:</h2>
+      <div id="items"></div>
+      <button class="btn btn-outline" onclick="addItem()">+ Add Item</button>
+      <div class="row" style="margin-top:1rem"><label>Tax %:</label><input type="number" id="tax" value="18" min="0" max="100" style="max-width:80px"></div>
+      <button class="btn" onclick="genInvoice()" style="margin-top:1rem">📄 Generate & Download PDF</button>
+      <div id="result"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+let itemCount=0;
+function addItem(){
+  itemCount++;
+  const d=document.createElement('div');d.className='row';d.id='item'+itemCount;
+  d.innerHTML='<input type="text" placeholder="Description" style="flex:3"><input type="number" placeholder="Qty" value="1" min="1" style="max-width:70px"><input type="number" placeholder="Price" min="0" style="max-width:100px"><button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.4rem .7rem">✕</button>';
+  document.getElementById('items').appendChild(d);
+}
+addItem();addItem();
+
+async function genInvoice(){
+  const cur=document.getElementById('currency').value||'₹';
+  const items=[];let subtotal=0;
+  document.querySelectorAll('#items .row').forEach(r=>{
+    const inp=r.querySelectorAll('input');
+    const desc=inp[0].value||'Item',qty=+inp[1].value||1,price=+inp[2].value||0;
+    items.push({desc,qty,price});subtotal+=qty*price;
+  });
+  const taxPct=+document.getElementById('tax').value;
+  const tax=subtotal*taxPct/100;
+  const total=subtotal+tax;
+
+  const doc=await PDFLib.PDFDocument.create();
+  const page=doc.addPage([595,842]);
+  const font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  const bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  let y=790;
+  const txt=(t,x,yy,f,s)=>page.drawText(t,{x,y:yy,font:f||font,size:s||11,color:PDFLib.rgb(0.1,0.1,0.15)});
+
+  txt(document.getElementById('bName').value||'Your Business',50,y,bold,20);
+  txt('INVOICE',430,y,bold,20);y-=30;
+  txt('Invoice #: '+(document.getElementById('invNo').value||'INV-001'),430,y);y-=15;
+  txt('Date: '+(document.getElementById('invDate').value||new Date().toLocaleDateString()),430,y);y-=40;
+  txt('Bill To:',50,y,bold,13);y-=18;
+  txt(document.getElementById('cName').value||'Client Name',50,y);y-=15;
+  txt(document.getElementById('cEmail').value||'',50,y);y-=35;
+
+  // Table header
+  page.drawRectangle({x:45,y:y-5,width:505,height:22,color:PDFLib.rgb(0.31,0.55,1)});
+  txt('Description',55,y,bold,10);txt('Qty',350,y,bold,10);txt('Price',410,y,bold,10);txt('Total',480,y,bold,10);
+  const white={color:PDFLib.rgb(1,1,1)};
+  page.drawText('Description',{x:55,y,font:bold,size:10,...white});
+  page.drawText('Qty',{x:350,y,font:bold,size:10,...white});
+  page.drawText('Price',{x:410,y,font:bold,size:10,...white});
+  page.drawText('Total',{x:480,y,font:bold,size:10,...white});
+  y-=25;
+
+  items.forEach(it=>{
+    txt(it.desc,55,y);txt(''+it.qty,355,y);txt(cur+it.price,410,y);txt(cur+(it.qty*it.price),480,y);
+    y-=20;
+  });
+  y-=10;
+  page.drawLine({start:{x:350,y:y+5},end:{x:550,y:y+5},thickness:1,color:PDFLib.rgb(.8,.8,.8)});
+  y-=15;txt('Subtotal:',400,y);txt(cur+subtotal,480,y,bold);y-=18;
+  txt('Tax ('+taxPct+'%):',400,y);txt(cur+tax.toFixed(2),480,y);y-=18;
+  page.drawLine({start:{x:350,y:y+5},end:{x:550,y:y+5},thickness:1,color:PDFLib.rgb(.8,.8,.8)});y-=15;
+  txt('TOTAL:',400,y,bold,13);page.drawText(cur+total.toFixed(2),{x:480,y,font:bold,size:13,color:PDFLib.rgb(0.31,0.55,1)});
+
+  txt('Generated by ToolBox — toolbox.netlify.app',180,40,font,8);
+
+  const blob=new Blob([await doc.save()],{type:'application/pdf'});
+  download(blob,'invoice.pdf');
+  document.getElementById('result').innerHTML="<p class='info'>✅ Invoice downloaded!</p>";
+}
+  </script>
+</body>
+</html>

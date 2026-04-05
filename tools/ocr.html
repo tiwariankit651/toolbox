@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to Text (OCR) - Extract Text from Images | ToolBox</title>
+  <meta name="description" content="Extract text from images using OCR. Convert handwritten notes, screenshots, documents to editable text. Free, browser-based.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📷 Image to Text (OCR)</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>📷 Image to Text (OCR)</h1>
+      <p class="info">Upload an image with text — handwritten notes, screenshots, documents — and extract editable text.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here or click to browse<input type="file" id="inp" accept="image/*"></div>
+      <div class="row">
+        <label>Language:</label>
+        <select id="lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="spa">Spanish</option><option value="fra">French</option><option value="deu">German</option></select>
+      </div>
+      <button class="btn" onclick="doOCR()" id="goBtn" disabled>Extract Text</button>
+      <div id="preview" class="preview-area"></div>
+      <div id="result"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+let file;
+setupDrop("drop","inp",f=>{
+  file=f[0];document.getElementById("goBtn").disabled=false;
+  document.getElementById("preview").innerHTML="<img src='"+URL.createObjectURL(file)+"'>";
+});
+async function doOCR(){
+  if(!file)return;
+  document.getElementById("goBtn").disabled=true;
+  document.getElementById("result").innerHTML="<p class='info'>⏳ Extracting text... This may take 10-30 seconds.</p>";
+  const lang=document.getElementById("lang").value;
+  const worker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text')document.getElementById("result").innerHTML="<p class='info'>⏳ "+Math.round(m.progress*100)+"% done...</p>"}});
+  const{data}=await worker.recognize(file);
+  await worker.terminate();
+  document.getElementById("result").innerHTML="<p class='info'>✅ Text extracted ("+data.text.split(/\s+/).length+" words)</p><textarea style='min-height:250px'>"+data.text+"</textarea><div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.querySelector(\"#result textarea\").value)'>📋 Copy</button><button class='btn' onclick='download(new Blob([document.querySelector(\"#result textarea\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
+  document.getElementById("goBtn").disabled=false;
+}
+  </script>
+</body>
+</html>

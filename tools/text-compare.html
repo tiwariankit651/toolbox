@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Compare / Plagiarism Checker | ToolBox</title>
+  <meta name="description" content="Compare two texts side by side. Check similarity percentage. Free plagiarism detection for students.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>.diff-match{background:rgba(79,255,79,.15);padding:0 2px;border-radius:3px}.diff-miss{background:rgba(255,79,79,.15);padding:0 2px;border-radius:3px}</style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔍 Text Compare</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🔍 Text Compare & Similarity Checker</h1>
+      <p class="info">Paste two texts to compare. Shows similarity percentage and highlights matching sentences.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div><label><strong>Text 1 (Original)</strong></label><textarea id="t1" placeholder="Paste original text..." style="min-height:200px"></textarea></div>
+        <div><label><strong>Text 2 (To Check)</strong></label><textarea id="t2" placeholder="Paste text to compare..." style="min-height:200px"></textarea></div>
+      </div>
+      <button class="btn" onclick="compare()" style="margin-top:1rem">Compare & Check Similarity</button>
+      <div id="result" style="margin:1rem 0"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function compare(){
+  const t1=document.getElementById('t1').value.trim(),t2=document.getElementById('t2').value.trim();
+  if(!t1||!t2)return alert('Paste both texts');
+  const s1=t1.split(/[.!?\n]+/).map(s=>s.trim().toLowerCase()).filter(Boolean);
+  const s2=t2.split(/[.!?\n]+/).map(s=>s.trim().toLowerCase()).filter(Boolean);
+  let matched=0,html2='';
+  const s2raw=t2.split(/(?<=[.!?\n])\s*/);
+  s2raw.forEach(sent=>{
+    const clean=sent.trim().toLowerCase().replace(/[^a-z0-9\s]/g,'');
+    const words2=clean.split(/\s+/);
+    let isMatch=false;
+    for(const s of s1){
+      const words1=s.replace(/[^a-z0-9\s]/g,'').split(/\s+/);
+      let common=0;
+      words2.forEach(w=>{if(words1.includes(w))common++});
+      if(words2.length>2&&common/words2.length>0.6){isMatch=true;break}
+    }
+    if(isMatch){matched++;html2+='<span class="diff-match">'+sent+'</span> '}
+    else html2+='<span class="diff-miss">'+sent+'</span> ';
+  });
+  const pct=s2raw.length?(matched/s2raw.length*100).toFixed(1):0;
+  const level=pct>60?'🔴 High Similarity':pct>30?'🟡 Moderate':'🟢 Low Similarity';
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center;display:inline-block;min-width:140px;margin:.3rem'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  document.getElementById('result').innerHTML=card('Similarity',pct+'%')+card('Status',level)+card('Matched',matched+'/'+s2raw.length+' sentences')+'<div class="result-box" style="margin-top:1rem;white-space:pre-wrap;line-height:1.8"><strong>Highlighted Result:</strong><br><br>'+html2+'</div><p class="info"><span class="diff-match">Green = matching</span> &nbsp; <span class="diff-miss">Red = unique</span></p>';
+}
+  </script>
+</body>
+</html>

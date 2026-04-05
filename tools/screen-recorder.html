@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screen Recorder - Record Screen Online Free | ToolBox</title>
+  <meta name="description" content="Record your screen directly from the browser. No software to install. Download as WebM video. Free screen recorder.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎥 Screen Recorder</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section" style="text-align:center">
+      <h1>🎥 Screen Recorder</h1>
+      <p class="info">Record your screen, tab, or window directly from the browser. No software needed.</p>
+      <div class="row" style="justify-content:center">
+        <label><input type="checkbox" id="audio"> Include Audio</label>
+      </div>
+      <div style="margin:1.5rem 0">
+        <button class="btn" onclick="startRec()" id="startBtn">🔴 Start Recording</button>
+        <button class="btn btn-outline" onclick="stopRec()" id="stopBtn" disabled>⏹ Stop</button>
+      </div>
+      <p class="info" id="status"></p>
+      <video id="preview" style="max-width:100%;border-radius:12px;margin:1rem 0;display:none" controls></video>
+      <div id="result"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+let recorder,chunks=[],timer,secs=0;
+async function startRec(){
+  try{
+    const audio=document.getElementById('audio').checked;
+    const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio});
+    recorder=new MediaRecorder(stream,{mimeType:'video/webm'});
+    chunks=[];secs=0;
+    recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+    recorder.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      clearInterval(timer);
+      const blob=new Blob(chunks,{type:'video/webm'});
+      const url=URL.createObjectURL(blob);
+      const vid=document.getElementById('preview');
+      vid.src=url;vid.style.display='block';
+      document.getElementById('result').innerHTML="<p class='info'>✅ Recording saved ("+formatSize(blob.size)+")</p><a class='btn' href='"+url+"' download='recording.webm'>💾 Download Video</a>";
+      document.getElementById('status').textContent='';
+      document.getElementById('startBtn').disabled=false;
+      document.getElementById('stopBtn').disabled=true;
+    };
+    recorder.start();
+    document.getElementById('startBtn').disabled=true;
+    document.getElementById('stopBtn').disabled=false;
+    document.getElementById('preview').style.display='none';
+    document.getElementById('result').innerHTML='';
+    timer=setInterval(()=>{secs++;const m=Math.floor(secs/60),s=secs%60;document.getElementById('status').textContent='🔴 Recording... '+m+':'+(s<10?'0':'')+s},1000);
+    document.getElementById('status').textContent='🔴 Recording... 0:00';
+  }catch(e){alert('Screen sharing was cancelled or not supported.')}
+}
+function stopRec(){if(recorder&&recorder.state!=='inactive')recorder.stop()}
+  </script>
+</body>
+</html>

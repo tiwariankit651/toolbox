@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGPA/SGPA Calculator | ToolBox</title>
+  <meta name="description" content="Calculate CGPA and SGPA from your marks and credits. Supports 10-point and 4-point grading systems.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎓 CGPA Calculator</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🎓 CGPA / SGPA Calculator</h1>
+      <p class="info">Add your subjects with grade points and credits to calculate SGPA/CGPA.</p>
+      <div class="row">
+        <label>Grading Scale:</label>
+        <select id="scale"><option value="10">10-Point</option><option value="4">4-Point (US)</option></select>
+      </div>
+      <div id="subjects"></div>
+      <div class="row" style="margin-top:1rem">
+        <button class="btn btn-outline" onclick="addRow()">+ Add Subject</button>
+        <button class="btn" onclick="calc()">Calculate CGPA</button>
+      </div>
+      <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+let count=0;
+function addRow(){
+  count++;
+  const d=document.createElement('div');
+  d.className='row';d.id='sub'+count;
+  d.innerHTML='<input type="text" placeholder="Subject '+count+'" style="flex:2"><input type="number" placeholder="Grade Point" min="0" max="10" step="0.1"><input type="number" placeholder="Credits" min="1" max="10" value="3"><button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.5rem .8rem">✕</button>';
+  document.getElementById('subjects').appendChild(d);
+}
+for(let i=0;i<5;i++)addRow();
+
+function calc(){
+  const rows=document.querySelectorAll('#subjects .row');
+  let totalCredits=0,totalPoints=0,subjects=0;
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input[type=number]');
+    const gp=parseFloat(inputs[0].value),cr=parseFloat(inputs[1].value);
+    if(!isNaN(gp)&&!isNaN(cr)){totalPoints+=gp*cr;totalCredits+=cr;subjects++}
+  });
+  if(!subjects)return alert('Enter at least one subject');
+  const cgpa=(totalPoints/totalCredits).toFixed(2);
+  const scale=+document.getElementById('scale').value;
+  const pct=scale===10?(cgpa*9.5).toFixed(1):(cgpa/4*100).toFixed(1);
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  document.getElementById('result').innerHTML=card('CGPA',cgpa+'/'+scale)+card('Percentage',pct+'%')+card('Subjects',subjects)+card('Total Credits',totalCredits);
+}
+  </script>
+</body>
+</html>

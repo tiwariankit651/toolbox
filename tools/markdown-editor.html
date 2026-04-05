@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Editor - Live Preview | ToolBox</title>
+  <meta name="description" content="Write Markdown with live preview. Export to HTML. Perfect for bloggers, developers and writers.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>#preview-area{background:var(--card);border-radius:12px;padding:1.5rem;min-height:300px;overflow:auto;line-height:1.8}
+  #preview-area h1,#preview-area h2,#preview-area h3{margin:1rem 0 .5rem}
+  #preview-area code{background:rgba(79,140,255,.1);padding:2px 6px;border-radius:4px;font-size:.9em}
+  #preview-area pre{background:var(--bg);padding:1rem;border-radius:8px;overflow-x:auto}
+  #preview-area blockquote{border-left:3px solid var(--accent);padding-left:1rem;color:var(--text2)}
+  #preview-area table{border-collapse:collapse;width:100%}#preview-area td,#preview-area th{border:1px solid var(--text2);padding:.5rem}
+  .editor-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:700px){.editor-wrap{grid-template-columns:1fr}}</style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✍️ Markdown Editor</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>✍️ Markdown Editor</h1>
+      <p class="info">Write Markdown on the left, see live preview on the right.</p>
+      <div class="editor-wrap">
+        <div><label><strong>Markdown</strong></label><textarea id="md" oninput="render()" style="min-height:400px;font-family:monospace"># Hello World
+
+This is **bold** and *italic* text.
+
+## Features
+- Live preview
+- Export to HTML
+- Auto-saved
+
+> This is a blockquote
+
+`inline code` and:
+
+```
+code block
+```
+
+| Name | Score |
+|------|-------|
+| Ankit | 95 |
+| Rahul | 88 |</textarea></div>
+        <div><label><strong>Preview</strong></label><div id="preview-area"></div></div>
+      </div>
+      <div class="row" style="margin-top:1rem">
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('md').value)">📋 Copy MD</button>
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('preview-area').innerHTML)">📋 Copy HTML</button>
+        <button class="btn" onclick="download(new Blob([document.getElementById('md').value]),'document.md')">💾 Download .md</button>
+      </div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function render(){
+  let md=document.getElementById('md').value;
+  // Simple markdown parser
+  let html=md
+    .replace(/^### (.*$)/gm,'<h3>$1</h3>')
+    .replace(/^## (.*$)/gm,'<h2>$1</h2>')
+    .replace(/^# (.*$)/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^> (.*$)/gm,'<blockquote>$1</blockquote>')
+    .replace(/^- (.*$)/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s,m=>'<ul>'+m+'</ul>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+  // Tables
+  html=html.replace(/\|(.+)\|\s*<br>\|[-| ]+\|\s*<br>([\s\S]*?)(?=<br><br>|$)/g,(m,header,body)=>{
+    const th=header.split('|').map(c=>'<th>'+c.trim()+'</th>').join('');
+    const rows=body.split('<br>').filter(r=>r.includes('|')).map(r=>'<tr>'+r.split('|').map(c=>'<td>'+c.trim()+'</td>').join('')+'</tr>').join('');
+    return '<table><thead><tr>'+th+'</tr></thead><tbody>'+rows+'</tbody></table>';
+  });
+  document.getElementById('preview-area').innerHTML=html;
+  localStorage.setItem('toolbox-md',md);
+}
+const saved=localStorage.getItem('toolbox-md');
+if(saved)document.getElementById('md').value=saved;
+render();
+  </script>
+</body>
+</html>

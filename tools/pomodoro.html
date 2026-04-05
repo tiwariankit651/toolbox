@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer - Focus & Study Timer | ToolBox</title>
+  <meta name="description" content="Pomodoro study timer. 25 min focus + 5 min break. Boost productivity with proven technique.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .timer-display{font-size:5rem;font-weight:800;text-align:center;margin:2rem 0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
+    .timer-controls{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .mode-btns{display:flex;gap:.5rem;justify-content:center;margin:1rem 0}
+    .mode-btns button{padding:.5rem 1.2rem;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:.9rem}
+    .mode-btns button.active{background:var(--gradient);color:#fff;border-color:transparent}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ⏱️ Pomodoro Timer</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section" style="text-align:center">
+      <h1>⏱️ Pomodoro Timer</h1>
+      <p class="info">Focus for 25 minutes, then take a 5-minute break. Repeat!</p>
+      <div class="mode-btns">
+        <button class="active" onclick="setMode(25,'Focus',this)">🎯 Focus (25m)</button>
+        <button onclick="setMode(5,'Short Break',this)">☕ Short Break (5m)</button>
+        <button onclick="setMode(15,'Long Break',this)">🌴 Long Break (15m)</button>
+        <button onclick="setMode(null,'Custom',this)">⚙️ Custom</button>
+      </div>
+      <div id="customRow" style="display:none;margin:1rem auto;max-width:200px">
+        <input type="number" id="customMin" value="25" min="1" max="120" placeholder="Minutes">
+      </div>
+      <div class="timer-display" id="display">25:00</div>
+      <p class="info" id="label">🎯 Focus Time</p>
+      <div class="timer-controls">
+        <button class="btn" onclick="startTimer()" id="startBtn">▶ Start</button>
+        <button class="btn btn-outline" onclick="pauseTimer()">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:2rem 0;max-width:400px;margin-left:auto;margin-right:auto" id="stats">
+        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="sessions">0</div><div class="info">Sessions</div></div>
+        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="totalMin">0</div><div class="info">Minutes</div></div>
+        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="streak">0</div><div class="info">Today's Streak</div></div>
+      </div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+let mins=25,secs=0,interval=null,mode='Focus',sessions=0,totalMin=0;
+function pad(n){return n<10?'0'+n:n}
+function render(){document.getElementById('display').textContent=pad(mins)+':'+pad(secs)}
+function setMode(m,label,btn){
+  clearInterval(interval);interval=null;
+  document.querySelectorAll('.mode-btns button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('customRow').style.display=m===null?'block':'none';
+  mode=label;mins=m||(+document.getElementById('customMin').value)||25;secs=0;
+  document.getElementById('label').textContent=(label==='Focus'?'🎯':label==='Short Break'?'☕':label==='Long Break'?'🌴':'⚙️')+' '+label;
+  render();
+}
+function startTimer(){
+  if(interval)return;
+  if(document.getElementById('customRow').style.display!=='none')mins=+document.getElementById('customMin').value||25;
+  interval=setInterval(()=>{
+    if(secs===0){if(mins===0){clearInterval(interval);interval=null;sessions++;totalMin+=mode==='Focus'?25:5;
+      document.getElementById('sessions').textContent=sessions;document.getElementById('totalMin').textContent=totalMin;document.getElementById('streak').textContent=sessions;
+      try{new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Mj4yGe3J3gIeLjIqFfXZ1fIKIi4uIhH15eX6Dh4qKiIV/e3l8gYaJioiGgn56eX2BhYiJiIaCf3t5fIGFiImIhoJ+e3l8gYWIiYiGgn57eXyBhYiJiIaCfnt5fIGFiImIhoJ+e3l8gYWIiYiGgn57eQ==').play()}catch(e){}
+      alert((mode==='Focus'?'🎯 Focus session complete! Take a break.':'☕ Break over! Time to focus.'));return}mins--;secs=59}
+    else secs--;render()
+  },1000);
+}
+function pauseTimer(){clearInterval(interval);interval=null}
+function resetTimer(){clearInterval(interval);interval=null;mins=25;secs=0;render()}
+render();
+  </script>
+</body>
+</html>
