@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF to Image Converter - Custom Dimensions | ToolBox</title>
+  <meta name="description" content="Convert PDF pages to images (JPG/PNG) with custom dimensions. Perfect for government submissions requiring specific image sizes.">
+  <meta name="keywords" content="pdf to image, pdf to jpg, pdf to png, convert pdf to image">
+  <link rel="canonical" href="https://yourdomain.com/tools/pdf-to-image.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📄➜🖼️ PDF to Image</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>📄➜🖼️ PDF to Image Converter</h1>
+      <p class="info">Convert PDF pages to JPG/PNG images with custom output dimensions. Ideal for government & organization requirements.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
+      <div class="row">
+        <label>Format:</label>
+        <select id="fmt"><option value="jpeg">JPG</option><option value="png">PNG</option></select>
+      </div>
+      <div class="row">
+        <label>Scale:</label>
+        <select id="scale"><option value="1">1x (72 DPI)</option><option value="2" selected>2x (144 DPI)</option><option value="3">3x (216 DPI)</option></select>
+      </div>
+      <div class="row">
+        <label>Output Width (px, 0=auto):</label><input type="number" id="ow" value="0" min="0" max="5000">
+        <label>Height (px, 0=auto):</label><input type="number" id="oh" value="0" min="0" max="5000">
+      </div>
+      <button class="btn" onclick="convertPDF()" id="goBtn" disabled>Convert to Images</button>
+      <div id="result" class="preview-area"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer><p>🧰 ToolBox — Free Online Tools</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 ToolBox</p></footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+let file;
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>Loaded: "+file.name+"</p>"});
+
+async function convertPDF(){
+  if(!file)return;
+  document.getElementById("goBtn").disabled=true;
+  const res=document.getElementById("result");
+  res.innerHTML="<p class='info'>⏳ Converting...</p>";
+  const pdf=await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+  const fmt=document.getElementById("fmt").value;
+  const scale=+document.getElementById("scale").value;
+  const ow=+document.getElementById("ow").value,oh=+document.getElementById("oh").value;
+  let html="";
+
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const vp=page.getViewport({scale});
+    const c=document.createElement("canvas");
+    c.width=vp.width;c.height=vp.height;
+    await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+
+    // Resize if custom dimensions specified
+    let out=c;
+    if(ow>0||oh>0){
+      const rc=document.createElement("canvas");
+      rc.width=ow||Math.round(c.width*(oh/c.height));
+      rc.height=oh||Math.round(c.height*(ow/c.width));
+      rc.getContext("2d").drawImage(c,0,0,rc.width,rc.height);
+      out=rc;
+    }
+    const blob=await new Promise(r=>out.toBlob(r,"image/"+fmt,0.92));
+    const url=URL.createObjectURL(blob);
+    html+="<div style='margin:1rem 0'><p class='info'>Page "+i+" ("+out.width+"×"+out.height+"px, "+formatSize(blob.size)+")</p><img src='"+url+"' style='max-width:100%;border-radius:10px'><br><a class='btn' href='"+url+"' download='page-"+i+"."+( fmt==="jpeg"?"jpg":"png")+"'>Download Page "+i+"</a></div>";
+  }
+  res.innerHTML="<p class='info'>✅ "+pdf.numPages+" page(s) converted</p>"+html;
+  document.getElementById("goBtn").disabled=false;
+}
+  </script>
+</body>
+</html>

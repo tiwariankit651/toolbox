@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Background Changer - Add White or Custom Color Background | ToolBox</title>
+  <meta name="description" content="Change image background to white, blue, red or any custom color. Perfect for passport photos, ID cards, documents.">
+  <meta name="keywords" content="change background color, white background, passport photo background, image background changer">
+  <link rel="canonical" href="https://yourdomain.com/tools/background-changer.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .color-presets{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+    .color-presets button{width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .2s}
+    .color-presets button:hover,.color-presets button.active{border-color:var(--accent);transform:scale(1.15)}
+    .compare{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+    .compare>div{text-align:center}
+    .compare img{max-width:300px;max-height:300px;border-radius:10px}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎨 Background Changer</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🎨 Image Background Changer</h1>
+      <p class="info">Remove background and replace with white, blue, red or any custom color. Great for passport photos, ID cards & documents.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div class="row">
+        <label>Detection Threshold: <strong id="tv">30</strong></label>
+        <input type="range" id="thresh" min="5" max="120" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3">
+      </div>
+      <p class="info">Adjust threshold if background isn't fully detected. Higher = more aggressive removal.</p>
+      <label><strong>Choose Background Color:</strong></label>
+      <div class="color-presets">
+        <button style="background:#ffffff" onclick="pickColor('#ffffff',this)" title="White"></button>
+        <button style="background:#0066cc" onclick="pickColor('#0066cc',this)" title="Blue"></button>
+        <button style="background:#cc0000" onclick="pickColor('#cc0000',this)" title="Red"></button>
+        <button style="background:#f0f0f0" onclick="pickColor('#f0f0f0',this)" title="Light Gray"></button>
+        <button style="background:#003366" onclick="pickColor('#003366',this)" title="Dark Blue"></button>
+        <button style="background:#006600" onclick="pickColor('#006600',this)" title="Green"></button>
+        <button style="background:#000000" onclick="pickColor('#000000',this)" title="Black"></button>
+        <input type="color" id="customColor" value="#ffffff" onchange="pickColor(this.value,null)" title="Custom color" style="width:40px;height:40px;border-radius:50%;padding:0;border:3px solid var(--text2);cursor:pointer">
+      </div>
+      <button class="btn" onclick="process()" id="goBtn" disabled>Change Background</button>
+      <div id="result" class="preview-area"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer><p>🧰 ToolBox — Free Online Tools</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 ToolBox</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+let file,bgColor="#ffffff";
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
+
+function pickColor(c,btn){
+  bgColor=c;
+  document.querySelectorAll(".color-presets button").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  document.getElementById("customColor").value=c;
+}
+
+function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b]}
+
+async function process(){
+  if(!file)return;
+  document.getElementById("goBtn").disabled=true;
+  document.getElementById("result").innerHTML="<p class='info'>⏳ Processing...</p>";
+  const img=await loadImage(file);
+  const c=document.createElement("canvas");
+  c.width=img.width;c.height=img.height;
+  const ctx=c.getContext("2d");
+  ctx.drawImage(img,0,0);
+  const data=ctx.getImageData(0,0,c.width,c.height);
+  const d=data.data;
+  const t=+document.getElementById("thresh").value;
+  // Sample background from corners
+  const samples=[[0,0],[c.width-1,0],[0,c.height-1],[c.width-1,c.height-1]];
+  let br=0,bg2=0,bb=0;
+  for(const[sx,sy]of samples){const i=(sy*c.width+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
+  br/=4;bg2/=4;bb/=4;
+  const [nr,ng,nb]=hexToRgb(bgColor);
+  for(let i=0;i<d.length;i+=4){
+    const diff=Math.abs(d[i]-br)+Math.abs(d[i+1]-bg2)+Math.abs(d[i+2]-bb);
+    if(diff<t*3){d[i]=nr;d[i+1]=ng;d[i+2]=nb;d[i+3]=255}
+  }
+  ctx.putImageData(data,0,0);
+  c.toBlob(b=>{
+    const origUrl=URL.createObjectURL(file);
+    const newUrl=URL.createObjectURL(b);
+    document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><img src='"+newUrl+"'></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>Download</button>";
+    window._b=b;
+    document.getElementById("goBtn").disabled=false;
+  },"image/png");
+}
+  </script>
+</body>
+</html>

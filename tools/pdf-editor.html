@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Editor - Edit PDF Content, Text & Graphs Online Free | ToolBox</title>
+  <meta name="description" content="Edit PDF content online for free. Add text, draw, annotate, edit sections, highlight content and graphs in any PDF document.">
+  <meta name="keywords" content="edit pdf online, pdf editor free, annotate pdf, edit pdf text, edit pdf graph">
+  <link rel="canonical" href="https://yourdomain.com/tools/pdf-editor.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .toolbar{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0;align-items:center}
+    .toolbar button,.toolbar select,.toolbar input{padding:.4rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:var(--card);color:var(--text);cursor:pointer;font-size:.85rem}
+    .toolbar button.active{background:var(--accent);color:#fff}
+    #viewer{position:relative;margin:1rem 0;overflow:auto;max-height:80vh}
+    #viewer canvas{display:block;margin:0 auto 1rem;box-shadow:var(--shadow);border-radius:4px}
+    .overlay-canvas{position:absolute;top:0;left:0;cursor:crosshair}
+    .page-wrap{position:relative;display:inline-block;margin-bottom:1rem;width:100%}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✏️ PDF Editor</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>✏️ Full PDF Editor</h1>
+      <p class="info">Edit any PDF — add text, draw, highlight, white-out sections, annotate graphs & charts. All in your browser.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
+      <div class="toolbar" id="toolbar" style="display:none">
+        <button onclick="setTool('text')" id="btn-text">✏️ Text</button>
+        <button onclick="setTool('draw')" id="btn-draw">🖊️ Draw</button>
+        <button onclick="setTool('highlight')" id="btn-highlight">🟡 Highlight</button>
+        <button onclick="setTool('whiteout')" id="btn-whiteout">⬜ White-out</button>
+        <button onclick="setTool('rect')" id="btn-rect">▭ Rectangle</button>
+        <button onclick="setTool('arrow')" id="btn-arrow">➡️ Arrow</button>
+        <input type="color" id="color" value="#ff0000" title="Color">
+        <select id="brushSize"><option value="2">Thin</option><option value="4" selected>Medium</option><option value="8">Thick</option></select>
+        <input type="number" id="textSize" value="16" min="8" max="72" style="width:60px" title="Text size">
+        <button onclick="undoLast()">↩️ Undo</button>
+        <button class="btn" onclick="savePDF()">💾 Save PDF</button>
+      </div>
+      <div id="viewer"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer><p>🧰 ToolBox — Free Online Tools</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 ToolBox</p></footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+let file,pdfDoc,tool="text",pages=[],overlays=[];
+const SCALE=2;
+
+setupDrop("drop","inp",f=>{file=f[0];loadPDF()});
+
+async function loadPDF(){
+  const data=await file.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data}).promise;
+  document.getElementById("toolbar").style.display="flex";
+  const viewer=document.getElementById("viewer");
+  viewer.innerHTML="";pages=[];overlays=[];
+
+  for(let i=1;i<=pdfDoc.numPages;i++){
+    const page=await pdfDoc.getPage(i);
+    const vp=page.getViewport({scale:SCALE});
+    const wrap=document.createElement("div");
+    wrap.className="page-wrap";wrap.style.width=vp.width+"px";
+
+    const c=document.createElement("canvas");
+    c.width=vp.width;c.height=vp.height;
+    await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+
+    const oc=document.createElement("canvas");
+    oc.width=vp.width;oc.height=vp.height;
+    oc.className="overlay-canvas";
+    oc.style.width=vp.width+"px";oc.style.height=vp.height+"px";
+
+    wrap.appendChild(c);wrap.appendChild(oc);viewer.appendChild(wrap);
+    pages.push({canvas:c,vp});
+    const hist=[];overlays.push({canvas:oc,ctx:oc.getContext("2d"),history:hist});
+    setupOverlay(oc,overlays[overlays.length-1]);
+  }
+}
+
+function setTool(t){
+  tool=t;
+  document.querySelectorAll(".toolbar button").forEach(b=>b.classList.remove("active"));
+  const btn=document.getElementById("btn-"+t);
+  if(btn)btn.classList.add("active");
+}
+
+function setupOverlay(canvas,ov){
+  let drawing=false,sx,sy;
+  canvas.addEventListener("mousedown",e=>{
+    const r=canvas.getBoundingClientRect();
+    sx=e.clientX-r.left;sy=e.clientY-r.top;
+    if(tool==="text"){
+      const txt=prompt("Enter text:");
+      if(txt){
+        const sz=+document.getElementById("textSize").value;
+        ov.ctx.font=sz+"px sans-serif";
+        ov.ctx.fillStyle=document.getElementById("color").value;
+        ov.ctx.fillText(txt,sx,sy);
+        ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+      }
+      return;
+    }
+    drawing=true;
+    if(tool==="draw"||tool==="highlight"){
+      ov.ctx.beginPath();ov.ctx.moveTo(sx,sy);
+    }
+    ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+  });
+  canvas.addEventListener("mousemove",e=>{
+    if(!drawing)return;
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    const col=document.getElementById("color").value;
+    const bs=+document.getElementById("brushSize").value;
+    if(tool==="draw"){
+      ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;ov.ctx.lineCap="round";
+      ov.ctx.lineTo(x,y);ov.ctx.stroke();
+    }else if(tool==="highlight"){
+      ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs*4;ov.ctx.globalAlpha=0.3;ov.ctx.lineCap="round";
+      ov.ctx.lineTo(x,y);ov.ctx.stroke();ov.ctx.globalAlpha=1;
+    }
+  });
+  canvas.addEventListener("mouseup",e=>{
+    if(!drawing)return;drawing=false;
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    const col=document.getElementById("color").value;
+    const bs=+document.getElementById("brushSize").value;
+    if(tool==="whiteout"){
+      ov.ctx.fillStyle="#ffffff";
+      ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
+    }else if(tool==="rect"){
+      ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;
+      ov.ctx.strokeRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
+    }else if(tool==="arrow"){
+      ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;ov.ctx.beginPath();
+      ov.ctx.moveTo(sx,sy);ov.ctx.lineTo(x,y);ov.ctx.stroke();
+      const a=Math.atan2(y-sy,x-sx);const hl=15;
+      ov.ctx.beginPath();ov.ctx.moveTo(x,y);
+      ov.ctx.lineTo(x-hl*Math.cos(a-0.4),y-hl*Math.sin(a-0.4));
+      ov.ctx.moveTo(x,y);
+      ov.ctx.lineTo(x-hl*Math.cos(a+0.4),y-hl*Math.sin(a+0.4));
+      ov.ctx.stroke();
+    }
+    ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+  });
+}
+
+function undoLast(){
+  for(const ov of overlays){
+    if(ov.history.length>1){ov.history.pop();ov.ctx.putImageData(ov.history[ov.history.length-1],0,0)}
+    else if(ov.history.length===1){ov.history.pop();ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height)}
+  }
+}
+
+async function savePDF(){
+  const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
+  const pgs=doc.getPages();
+  for(let i=0;i<pgs.length;i++){
+    // Merge overlay onto page
+    const merged=document.createElement("canvas");
+    merged.width=pages[i].canvas.width;merged.height=pages[i].canvas.height;
+    const mctx=merged.getContext("2d");
+    mctx.drawImage(pages[i].canvas,0,0);
+    mctx.drawImage(overlays[i].canvas,0,0);
+    const blob=await new Promise(r=>merged.toBlob(r,"image/jpeg",0.92));
+    const img=await doc.embedJpg(await blob.arrayBuffer());
+    const pg=pgs[i];
+    const{width,height}=pg.getSize();
+    // Draw image over entire page
+    pg.drawImage(img,{x:0,y:0,width,height});
+  }
+  const out=await doc.save();
+  download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
+}
+  </script>
+</body>
+</html>

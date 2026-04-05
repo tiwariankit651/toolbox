@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to PDF Converter - Custom Dimensions | ToolBox</title>
+  <meta name="description" content="Convert images to PDF with custom page dimensions. Set A4, Letter, Legal or custom sizes for government & organization submissions.">
+  <meta name="keywords" content="image to pdf, convert image to pdf, jpg to pdf, custom size pdf">
+  <link rel="canonical" href="https://yourdomain.com/tools/image-to-pdf.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🖼️➜📄 Image to PDF</div>
+    <div class="ad-slot"><span>Ad Space — Top</span></div>
+    <div class="tool-section">
+      <h1>🖼️➜📄 Image to PDF Converter</h1>
+      <p class="info">Convert images to PDF with specific page dimensions. Perfect for government forms, organization submissions & printing.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop images here (multiple allowed)<input type="file" id="inp" accept="image/*" multiple></div>
+      <div id="fileList"></div>
+      <div class="row">
+        <label>Page Size:</label>
+        <select id="pageSize" onchange="toggleCustom()">
+          <option value="a4">A4 (210×297 mm)</option>
+          <option value="letter">US Letter (216×279 mm)</option>
+          <option value="legal">US Legal (216×356 mm)</option>
+          <option value="a3">A3 (297×420 mm)</option>
+          <option value="a5">A5 (148×210 mm)</option>
+          <option value="custom">Custom Dimensions</option>
+        </select>
+      </div>
+      <div class="row" id="customRow" style="display:none">
+        <label>Width (mm):</label><input type="number" id="cw" value="210" min="10" max="1000">
+        <label>Height (mm):</label><input type="number" id="ch" value="297" min="10" max="1000">
+      </div>
+      <div class="row">
+        <label>Image Fit:</label>
+        <select id="fitMode">
+          <option value="fit">Fit within page (maintain ratio)</option>
+          <option value="fill">Fill entire page (may crop)</option>
+          <option value="stretch">Stretch to page size</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Margin (mm):</label><input type="number" id="margin" value="10" min="0" max="50">
+      </div>
+      <button class="btn" onclick="convert()" id="goBtn" disabled>Convert to PDF</button>
+      <div id="result" class="preview-area"></div>
+    </div>
+    <div class="ad-slot"><span>Ad Space — Bottom</span></div>
+  </div>
+  <footer><p>🧰 ToolBox — Free Online Tools</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 ToolBox</p></footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+let files=[];
+const sizes={a4:[595.28,841.89],letter:[612,792],legal:[612,1008],a3:[841.89,1190.55],a5:[419.53,595.28]};
+function mm2pt(mm){return mm*2.8346}
+function toggleCustom(){document.getElementById("customRow").style.display=document.getElementById("pageSize").value==="custom"?"flex":"none"}
+
+setupDrop("drop","inp",f=>{
+  files=[...f];
+  document.getElementById("goBtn").disabled=false;
+  document.getElementById("fileList").innerHTML=files.map((f,i)=>"<p class='info'>"+(i+1)+". "+f.name+" ("+formatSize(f.size)+")</p>").join("");
+});
+
+async function convert(){
+  if(!files.length)return;
+  document.getElementById("goBtn").disabled=true;
+  document.getElementById("result").innerHTML="<p class='info'>⏳ Converting...</p>";
+  const doc=await PDFLib.PDFDocument.create();
+  const ps=document.getElementById("pageSize").value;
+  const dim=ps==="custom"?[mm2pt(+document.getElementById("cw").value),mm2pt(+document.getElementById("ch").value)]:sizes[ps];
+  const margin=mm2pt(+document.getElementById("margin").value);
+  const fit=document.getElementById("fitMode").value;
+
+  for(const f of files){
+    const bytes=await f.arrayBuffer();
+    let img;
+    if(f.type==="image/png")img=await doc.embedPng(bytes);
+    else{
+      const c=document.createElement("canvas");const bmp=await createImageBitmap(new Blob([bytes]));
+      c.width=bmp.width;c.height=bmp.height;c.getContext("2d").drawImage(bmp,0,0);
+      const jpgBlob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.92));
+      img=await doc.embedJpg(await jpgBlob.arrayBuffer());
+    }
+    const page=doc.addPage(dim);
+    const pw=dim[0]-margin*2,ph=dim[1]-margin*2;
+    let w,h,x,y;
+    if(fit==="stretch"){w=pw;h=ph}
+    else if(fit==="fill"){const s=Math.max(pw/img.width,ph/img.height);w=img.width*s;h=img.height*s}
+    else{const s=Math.min(pw/img.width,ph/img.height);w=img.width*s;h=img.height*s}
+    x=margin+(pw-w)/2;y=margin+(ph-h)/2;
+    page.drawImage(img,{x,y,width:w,height:h});
+  }
+  const blob=new Blob([await doc.save()],{type:"application/pdf"});
+  document.getElementById("result").innerHTML="<p class='info'>✅ "+files.length+" image(s) converted to PDF ("+formatSize(blob.size)+")</p><button class='btn' onclick='download(window._b,\"images.pdf\")'>Download PDF</button>";
+  window._b=blob;
+  document.getElementById("goBtn").disabled=false;
+}
+  </script>
+</body>
+</html>
