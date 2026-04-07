@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI Calculator - Check Body Mass Index Free | FreeToolHubs</title>
+  <meta name="description" content="Calculate your Body Mass Index (BMI) online for free. Enter height and weight to check if you are underweight, normal, overweight or obese. Supports kg/cm and lbs/inches.">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/bmi-calculator.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ⚖️ BMI Calculator</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>⚖️ BMI Calculator</h1>
+      <p class="info">Enter your height and weight to calculate Body Mass Index.</p>
+      <div class="row" style="margin-bottom:.5rem">
+        <label>Unit:</label>
+        <select id="unit" onchange="toggleUnit()"><option value="metric">Metric (kg/cm)</option><option value="imperial">Imperial (lbs/in)</option></select>
+      </div>
+      <div class="row">
+        <label id="hLabel">Height (cm):</label>
+        <input type="number" id="height" placeholder="170" style="flex:2">
+      </div>
+      <div class="row">
+        <label id="wLabel">Weight (kg):</label>
+        <input type="number" id="weight" placeholder="70" style="flex:2">
+      </div>
+      <div class="row"><button class="btn" onclick="calc()" style="flex:1">Calculate BMI</button></div>
+      <div id="result" style="display:none;margin-top:1rem">
+        <div style="text-align:center;padding:1.5rem;background:var(--card);border-radius:12px">
+          <div id="bmiVal" style="font-size:2.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+          <div id="bmiCat" style="font-size:1.2rem;margin:.5rem 0"></div>
+          <div id="bmiBar" style="height:12px;border-radius:6px;background:linear-gradient(to right,#2196f3,#4caf50,#ff9800,#f44336);margin:1rem 0;position:relative"><div id="bmiPointer" style="width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #333;position:absolute;top:-1px;transform:translateX(-50%)"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>
+        </div>
+        <div id="info" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem;margin-top:1rem"></div>
+      </div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>About This Tool</h2>
+      <p>Calculate your Body Mass Index (BMI) to check if your weight is healthy for your height. BMI is widely used by doctors and health professionals as a quick screening tool. Supports both metric (kg/cm) and imperial (lbs/inches) units. Get instant results with category classification and healthy weight range.</p>
+      <h2 style="margin-top:1rem">BMI Categories</h2>
+      <ul style="margin-left:1.5rem;line-height:2">
+        <li><strong>Below 18.5</strong> — Underweight</li>
+        <li><strong>18.5 – 24.9</strong> — Normal weight</li>
+        <li><strong>25.0 – 29.9</strong> — Overweight</li>
+        <li><strong>30.0 and above</strong> — Obese</li>
+      </ul>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+function toggleUnit(){
+  const m=document.getElementById("unit").value==="metric";
+  document.getElementById("hLabel").textContent=m?"Height (cm):":"Height (inches):";
+  document.getElementById("wLabel").textContent=m?"Weight (kg):":"Weight (lbs):";
+  document.getElementById("height").placeholder=m?"170":"67";
+  document.getElementById("weight").placeholder=m?"70":"154";
+}
+function calc(){
+  let h=+document.getElementById("height").value,w=+document.getElementById("weight").value;
+  if(!h||!w)return alert("Enter both height and weight");
+  if(document.getElementById("unit").value==="imperial"){h=h*2.54;w=w*0.453592}
+  const bmi=w/((h/100)**2);
+  let cat,color;
+  if(bmi<18.5){cat="Underweight";color="#2196f3"}
+  else if(bmi<25){cat="Normal weight";color="#4caf50"}
+  else if(bmi<30){cat="Overweight";color="#ff9800"}
+  else{cat="Obese";color="#f44336"}
+  document.getElementById("bmiVal").textContent=bmi.toFixed(1);
+  document.getElementById("bmiCat").innerHTML="<span style='color:"+color+";font-weight:600'>"+cat+"</span>";
+  const pct=Math.min(Math.max((bmi-15)/25*100,0),100);
+  document.getElementById("bmiPointer").style.left=pct+"%";
+  const hm=h/100;
+  const normalLow=(18.5*hm*hm).toFixed(1);
+  const normalHigh=(24.9*hm*hm).toFixed(1);
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.3rem;font-weight:700;color:var(--accent)'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  document.getElementById("info").innerHTML=card("Your BMI",bmi.toFixed(1))+card("Category",cat)+card("Healthy Weight",normalLow+" - "+normalHigh+" kg");
+  document.getElementById("result").style.display="block";
+}
+  </script>
+</body>
+</html>

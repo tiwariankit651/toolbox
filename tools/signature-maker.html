@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Signature Maker - Draw & Download Signature Free | FreeToolHubs</title>
+  <meta name="description" content="Create digital signatures online for free. Draw your signature, customize color and thickness, download as transparent PNG. Perfect for documents and forms.">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/signature-maker.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✍️ Signature Maker</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>✍️ Digital Signature Maker</h1>
+      <p class="info">Draw your signature below. Download as transparent PNG.</p>
+      <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap">
+        <label>Color:</label>
+        <input type="color" id="penColor" value="#000000" style="width:40px;height:35px;border:none;cursor:pointer">
+        <label>Thickness:</label>
+        <input type="range" id="penSize" min="1" max="8" value="3" style="flex:1;max-width:150px">
+        <label>Background:</label>
+        <select id="bgType"><option value="transparent">Transparent</option><option value="white">White</option></select>
+      </div>
+      <canvas id="canvas" width="700" height="250" style="width:100%;background:#fff;border-radius:12px;cursor:crosshair;touch-action:none;border:2px dashed var(--border)"></canvas>
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="clearCanvas()">Clear</button>
+        <button class="btn" onclick="undo()">Undo</button>
+        <button class="btn" onclick="downloadSig()">Download PNG</button>
+      </div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Create professional digital signatures online for free. Draw your signature using mouse or touchscreen, customize pen color and thickness, and download as transparent PNG. Perfect for signing PDF documents, government forms, job applications, and official paperwork without printing.</p></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+let drawing=false,strokes=[],current=[];
+function getPos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}}
+function startDraw(e){e.preventDefault();drawing=true;current=[{...getPos(e),color:document.getElementById("penColor").value,size:+document.getElementById("penSize").value}]}
+function draw(e){if(!drawing)return;e.preventDefault();const p={...getPos(e),color:current[0].color,size:current[0].size};current.push(p);redraw()}
+function stopDraw(){if(!drawing)return;drawing=false;if(current.length>0)strokes.push([...current]);current=[]}
+function redraw(){ctx.clearRect(0,0,canvas.width,canvas.height);[...strokes,[...current]].forEach(s=>{if(s.length<2)return;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()})}
+function clearCanvas(){strokes=[];current=[];ctx.clearRect(0,0,canvas.width,canvas.height)}
+function undo(){strokes.pop();redraw()}
+function downloadSig(){
+  const tmp=document.createElement("canvas");tmp.width=canvas.width;tmp.height=canvas.height;const tc=tmp.getContext("2d");
+  if(document.getElementById("bgType").value==="white"){tc.fillStyle="#fff";tc.fillRect(0,0,tmp.width,tmp.height)}
+  tc.drawImage(canvas,0,0);
+  tmp.toBlob(b=>download(b,"signature.png"));
+}
+canvas.addEventListener("mousedown",startDraw);canvas.addEventListener("mousemove",draw);canvas.addEventListener("mouseup",stopDraw);canvas.addEventListener("mouseleave",stopDraw);
+canvas.addEventListener("touchstart",startDraw);canvas.addEventListener("touchmove",draw);canvas.addEventListener("touchend",stopDraw);
+  </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Test - Check WPM Online Free | FreeToolHubs</title>
+  <meta name="description" content="Test your typing speed and accuracy online for free. Get WPM, accuracy percentage, and detailed results. Practice typing and improve your speed.">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/typing-test.html">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ⌨️ Typing Speed Test</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>⌨️ Typing Speed Test</h1>
+      <p class="info">Start typing the text below. Timer starts automatically.</p>
+      <div class="row" style="margin-bottom:1rem">
+        <label>Duration:</label>
+        <select id="duration" onchange="reset()"><option value="30">30 sec</option><option value="60" selected>60 sec</option><option value="120">2 min</option></select>
+        <button class="btn" onclick="reset()">New Test</button>
+      </div>
+      <div id="textDisplay" style="background:var(--card);padding:1.2rem;border-radius:12px;font-size:1.1rem;line-height:1.8;letter-spacing:.5px;margin-bottom:1rem;min-height:100px"></div>
+      <textarea id="typingInput" rows="4" placeholder="Start typing here..." style="width:100%;font-size:1rem;padding:.8rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:none" disabled></textarea>
+      <div id="timer" style="text-align:center;font-size:1.5rem;font-weight:700;margin:.8rem 0;color:var(--accent)"></div>
+      <div id="result" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Test your typing speed and accuracy online for free. Measure your words per minute (WPM), characters per minute, and accuracy percentage. Practice regularly to improve your typing speed for competitive exams, data entry jobs, and daily productivity.</p></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+const sentences=["The quick brown fox jumps over the lazy dog near the riverbank while the sun sets behind the mountains creating a beautiful golden horizon","Technology has transformed the way we communicate learn and work making it possible to connect with people across the globe in seconds","Education is the most powerful weapon which you can use to change the world and create opportunities for future generations","Programming requires patience creativity and logical thinking to solve complex problems and build applications that help millions of people","The internet has revolutionized access to information allowing students and professionals to learn new skills from anywhere at any time","Good communication skills are essential for success in both personal and professional life helping you express ideas clearly and effectively","Climate change is one of the biggest challenges facing humanity today requiring collective action from governments businesses and individuals","Reading books regularly improves vocabulary enhances critical thinking and provides knowledge that can be applied in everyday situations","Time management is a crucial skill that helps students balance their studies extracurricular activities and personal life effectively","Artificial intelligence and machine learning are reshaping industries from healthcare to finance creating new opportunities and challenges"];
+let text,start,timer,dur,ended;
+function reset(){
+  ended=false;dur=+document.getElementById("duration").value;
+  text=sentences[Math.floor(Math.random()*sentences.length)];
+  const d=document.getElementById("textDisplay");
+  d.innerHTML=text.split("").map(c=>"<span>"+c+"</span>").join("");
+  document.getElementById("typingInput").value="";
+  document.getElementById("typingInput").disabled=false;
+  document.getElementById("result").style.display="none";
+  document.getElementById("timer").textContent=dur+"s";
+  start=null;clearInterval(timer);
+}
+document.getElementById("typingInput").addEventListener("input",function(){
+  if(ended)return;
+  if(!start){start=Date.now();timer=setInterval(tick,200)}
+  const spans=document.getElementById("textDisplay").querySelectorAll("span");
+  const val=this.value;
+  let correct=0;
+  spans.forEach((s,i)=>{
+    if(i<val.length){s.style.color=val[i]===text[i]?(correct++,"#4caf50"):"#f44336";s.style.textDecoration=val[i]===text[i]?"none":"underline"}
+    else{s.style.color="";s.style.textDecoration=""}
+  });
+  if(val.length>=text.length)finish();
+});
+function tick(){
+  const elapsed=Math.floor((Date.now()-start)/1000);
+  const left=dur-elapsed;
+  document.getElementById("timer").textContent=Math.max(0,left)+"s";
+  if(left<=0)finish();
+}
+function finish(){
+  ended=true;clearInterval(timer);
+  document.getElementById("typingInput").disabled=true;
+  const elapsed=Math.min((Date.now()-start)/1000,dur);
+  const typed=document.getElementById("typingInput").value;
+  let correct=0;for(let i=0;i<typed.length&&i<text.length;i++)if(typed[i]===text[i])correct++;
+  const words=typed.trim().split(/\s+/).length;
+  const wpm=Math.round(words/(elapsed/60));
+  const cpm=Math.round(typed.length/(elapsed/60));
+  const acc=typed.length?Math.round(correct/typed.length*100):0;
+  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+  const r=document.getElementById("result");
+  r.style.display="grid";
+  r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Characters",typed.length)+card("Correct",correct)+card("Time",Math.round(elapsed)+"s");
+}
+reset();
+  </script>
+</body>
+</html>
