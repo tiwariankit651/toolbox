@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech - Read Text Aloud Free Online | FreeToolHubs</title>
+  <meta name="description" content="Convert text to speech online for free. Listen to any text in multiple languages and voices. Adjust speed and pitch. No signup needed.">
+  <meta property="og:title" content="Text to Speech — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Convert text to speech online for free in multiple languages">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/text-to-speech">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Text to Speech — FreeToolHubs">
+  <meta name="twitter:description" content="Convert text to speech online for free">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Text to Speech","url":"https://freetoolhubs.com/tools/text-to-speech","description":"Convert text to speech online for free in multiple languages","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/text-to-speech">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🗣️ Text to Speech</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>🗣️ Text to Speech</h1>
+      <p class="info">Enter text below and click Speak. Uses your browser's built-in speech engine.</p>
+      <textarea id="text" rows="6" placeholder="Type or paste text here..."></textarea>
+      <div class="row" style="flex-wrap:wrap">
+        <div style="flex:2;min-width:200px"><label>Voice:</label><select id="voice" style="width:100%"></select></div>
+        <div style="flex:1;min-width:120px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=this.value"></div>
+        <div style="flex:1;min-width:120px"><label>Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=this.value"></div>
+      </div>
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="speak()" id="speakBtn" style="flex:1">🔊 Speak</button>
+        <button class="btn btn-outline" onclick="pauseResume()" id="pauseBtn" style="flex:1">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="stopSpeak()" style="flex:1">⏹ Stop</button>
+      </div>
+      <div id="status" class="info" style="margin-top:.5rem"></div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert any text to speech using your browser's built-in speech synthesis. Supports multiple languages and voices. Adjust speaking speed and pitch. Perfect for proofreading, language learning, accessibility, and listening to articles. No external API — works offline too.</p></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+const synth=window.speechSynthesis;
+let voices=[];
+function loadVoices(){voices=synth.getVoices();const sel=document.getElementById('voice');sel.innerHTML='';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)})}
+loadVoices();
+synth.onvoiceschanged=loadVoices;
+function speak(){
+  const text=document.getElementById('text').value.trim();
+  if(!text)return alert('Enter some text first');
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  const vi=document.getElementById('voice').value;
+  if(voices[vi])u.voice=voices[vi];
+  u.rate=+document.getElementById('speed').value;
+  u.pitch=+document.getElementById('pitch').value;
+  u.onstart=()=>document.getElementById('status').textContent='🔊 Speaking...';
+  u.onend=()=>document.getElementById('status').textContent='✅ Done';
+  u.onerror=()=>document.getElementById('status').textContent='❌ Error occurred';
+  synth.speak(u);
+}
+function pauseResume(){
+  if(synth.paused){synth.resume();document.getElementById('pauseBtn').textContent='⏸ Pause'}
+  else if(synth.speaking){synth.pause();document.getElementById('pauseBtn').textContent='▶ Resume'}
+}
+function stopSpeak(){synth.cancel();document.getElementById('status').textContent='⏹ Stopped'}
+  </script>
+</body>
+</html>

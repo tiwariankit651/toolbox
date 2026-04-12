@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scientific Calculator - Free Online Calculator | FreeToolHubs</title>
+  <meta name="description" content="Free online scientific calculator. Supports trigonometry, logarithms, powers, roots, factorial, and more. Works on any device.">
+  <meta property="og:title" content="Scientific Calculator — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Free online scientific calculator with trig, log, powers and more">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/calculator">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Scientific Calculator — FreeToolHubs">
+  <meta name="twitter:description" content="Free online scientific calculator">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Scientific Calculator","url":"https://freetoolhubs.com/tools/calculator","description":"Free online scientific calculator with trig, log, powers and more","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/calculator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔢 Scientific Calculator</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>🔢 Scientific Calculator</h1>
+      <p class="info">Type expressions or use buttons. Supports sin, cos, tan, log, ln, √, π, e, powers and factorial.</p>
+      <input type="text" id="expr" placeholder="e.g. sin(45) + sqrt(16)" style="font-size:1.3rem;text-align:right;font-family:monospace" readonly>
+      <div id="result" style="text-align:right;font-size:1.8rem;font-weight:700;padding:.5rem;min-height:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:.8rem" id="keys"></div>
+      <div id="history" style="margin-top:1rem"></div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A full-featured scientific calculator that works in your browser. Perform basic arithmetic, trigonometric functions (sin, cos, tan), logarithms (log, ln), square roots, powers, factorials, and more. Supports keyboard input. Perfect for students, engineers, and daily calculations.</p></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+const keys=[
+  ['sin(','cos(','tan(','log(','ln('],
+  ['π','e','(',')','^'],
+  ['√(','!','%','⌫','C'],
+  ['7','8','9','÷','×'],
+  ['4','5','6','-','+'],
+  ['1','2','3','.','=']
+];
+const el=document.getElementById('keys');
+keys.forEach(row=>row.forEach(k=>{const b=document.createElement('button');b.textContent=k;b.style.cssText='padding:.8rem;font-size:1.1rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text)';b.onclick=()=>press(k);el.appendChild(b)}));
+// Add 0 button spanning
+const zeroRow=document.createElement('div');zeroRow.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-top:6px';
+['0','Ans','±','='].forEach(k=>{const b=document.createElement('button');b.textContent=k;b.style.cssText='padding:.8rem;font-size:1.1rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text)';b.onclick=()=>press(k);zeroRow.appendChild(b)});
+el.parentNode.insertBefore(zeroRow,el.nextSibling);
+
+let expr='',lastAns=0,hist=[];
+function press(k){
+  const d=document.getElementById('expr');
+  if(k==='C'){expr='';d.value='';document.getElementById('result').textContent='';return}
+  if(k==='⌫'){expr=expr.slice(0,-1);d.value=expr;return}
+  if(k==='±'){if(expr.startsWith('-'))expr=expr.slice(1);else expr='-'+expr;d.value=expr;return}
+  if(k==='Ans'){expr+=lastAns;d.value=expr;return}
+  if(k==='='){calc();return}
+  if(k==='π'){expr+='Math.PI';d.value+='π';return}
+  if(k==='e'){expr+='Math.E';d.value+='e';return}
+  if(k==='√('){expr+='Math.sqrt(';d.value+='√(';return}
+  if(k==='sin('){expr+='Math.sin(Math.PI/180*';d.value+='sin(';return}
+  if(k==='cos('){expr+='Math.cos(Math.PI/180*';d.value+='cos(';return}
+  if(k==='tan('){expr+='Math.tan(Math.PI/180*';d.value+='tan(';return}
+  if(k==='log('){expr+='Math.log10(';d.value+='log(';return}
+  if(k==='ln('){expr+='Math.log(';d.value+='ln(';return}
+  if(k==='^'){expr+='**';d.value+='^';return}
+  if(k==='×'){expr+='*';d.value+='×';return}
+  if(k==='÷'){expr+='/';d.value+='÷';return}
+  if(k==='!'){expr='fact('+expr+')';d.value+='!';return}
+  expr+=k;d.value+=k;
+}
+function fact(n){n=Math.round(n);if(n<0)return NaN;if(n<=1)return 1;let r=1;for(let i=2;i<=n;i++)r*=i;return r}
+function calc(){
+  try{
+    const r=eval(expr);
+    if(isNaN(r)||!isFinite(r)){document.getElementById('result').textContent='Error';return}
+    lastAns=r;
+    const display=document.getElementById('expr').value;
+    hist.unshift(display+' = '+r);
+    document.getElementById('result').textContent='= '+r;
+    document.getElementById('history').innerHTML=hist.slice(0,5).map(h=>'<div style="padding:.3rem .5rem;color:var(--muted);font-size:.85rem">'+h+'</div>').join('');
+    expr=String(r);
+  }catch(e){document.getElementById('result').textContent='Error'}
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter')calc();
+  else if(e.key==='Escape')press('C');
+  else if(e.key==='Backspace')press('⌫');
+  else if('0123456789.+-*/()'.includes(e.key)){expr+=e.key;document.getElementById('expr').value+=e.key}
+});
+  </script>
+</body>
+</html>
