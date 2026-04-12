@@ -69,14 +69,21 @@ async function translate(){
   const to=document.getElementById('to').value;
   document.getElementById('status').textContent='⏳ Translating...';
   try{
-    const url='https://translate.googleapis.com/translate_a/single?client=gtx&sl='+from+'&tl='+to+'&dt=t&q='+encodeURIComponent(text);
+    // Try MyMemory API (reliable, CORS-friendly, 5000 chars/day free)
+    const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text.substring(0,500))+'&langpair='+(from==='auto'?'':from)+'|'+to;
     const res=await fetch(url);
     const data=await res.json();
-    if(data&&data[0]){
-      document.getElementById('out').value=data[0].map(s=>s[0]).join('');
+    if(data.responseStatus===200&&data.responseData&&data.responseData.translatedText){
+      let result=data.responseData.translatedText;
+      // MyMemory sometimes returns uppercase warning, check matches too
+      if(data.matches&&data.matches.length>0){
+        const best=data.matches.sort((a,b)=>b.quality-a.quality)[0];
+        if(best&&best.translation)result=best.translation;
+      }
+      document.getElementById('out').value=result;
       document.getElementById('status').textContent='✅ Translated';
     }else{
-      document.getElementById('status').textContent='❌ Translation failed. Try again.';
+      document.getElementById('status').textContent='❌ Translation failed. Try shorter text or different language.';
     }
   }catch(e){document.getElementById('status').textContent='❌ Error: '+e.message}
 }
