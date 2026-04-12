@@ -54,6 +54,7 @@
     <p><a href="../">Home</a> | <a href="../about.html">About</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p>
     <p style="margin-top:.5rem">© 2026 Ankit Tiwari. All rights reserved.</p>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>function gen(){const t=document.getElementById("qrText").value.trim();if(!t)return;const s=+document.getElementById("qrSize").value||300;const c=document.getElementById("qrColor").value.replace("#","");const u="https://api.qrserver.com/v1/create-qr-code/?size="+s+"x"+s+"&data="+encodeURIComponent(t)+"&color="+c;document.getElementById("result").innerHTML="<img src=\""+u+"\" alt=\"QR Code\" style=\"margin:1rem 0\"><br><a href=\""+u+"\" download=\"qrcode.png\" class=\"btn\">Download QR Code</a>"}</script>
+  <script>function gen(){const t=document.getElementById("qrText").value.trim();if(!t)return;const s=+document.getElementById("qrSize").value||300;const c=document.getElementById("qrColor").value;const qr=qrcode(0,'M');qr.addData(t);qr.make();const count=qr.getModuleCount();const cv=document.createElement('canvas');cv.width=s;cv.height=s;const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,s,s);const px=s/count;ctx.fillStyle=c;for(let r=0;r<count;r++)for(let col=0;col<count;col++)if(qr.isDark(r,col))ctx.fillRect(col*px,r*px,px+1,px+1);const img=cv.toDataURL('image/png');document.getElementById("result").innerHTML="<img src=\""+img+"\" alt=\"QR Code\" style=\"margin:1rem 0\"><br><button class=\"btn\" onclick=\"const a=document.createElement('a');a.href='"+img+"';a.download='qrcode.png';a.click()\">Download QR Code</button>"}</script>
 </body></html>
