@@ -62,11 +62,10 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const texts={
+var texts={
   beginner:{
     en:["the cat sat on the mat and looked at the bird in the sky","i like to read books and play games with my friends every day","the sun is bright and the sky is blue on a warm summer day","she went to the shop to buy some milk bread and eggs for breakfast","we had a great time at the park playing with the dog and eating ice cream"],
     hi:["भारत एक महान देश है जहाँ अनेक भाषाएँ बोली जाती हैं","मुझे किताबें पढ़ना और संगीत सुनना बहुत पसंद है","आज मौसम बहुत अच्छा है बाहर धूप खिली हुई है","हमारे विद्यालय में हर साल वार्षिक उत्सव मनाया जाता है","प्रतिदिन व्यायाम करने से शरीर स्वस्थ और मन प्रसन्न रहता है"],
-    mix:["the order number is 4523 and it was placed on 12 march 2026","please call me at 98765 or send an email to the office by 5 pm","the room has 3 windows 2 doors and costs about 1500 per month","we need 10 chairs 5 tables and 2 projectors for the meeting room","the train departs at 6:30 am from platform 4 and arrives by 10:15 am"],
     bn:["বাংলাদেশ এবং ভারতের পশ্চিমবঙ্গে বাংলা ভাষা বলা হয়","আমি প্রতিদিন সকালে বই পড়তে ভালোবাসি","আজ আবহাওয়া খুব সুন্দর বাইরে রোদ উঠেছে"],
     ta:["தமிழ் உலகின் மிகப் பழமையான மொழிகளில் ஒன்றாகும்","நான் தினமும் புத்தகங்கள் படிக்க விரும்புகிறேன்","இன்று வானிலை மிகவும் அழகாக இருக்கிறது"],
     te:["తెలుగు భారతదేశంలో అత్యధికంగా మాట్లాడే భాషలలో ఒకటి","నాకు పుస్తకాలు చదవడం మరియు సంగీతం వినడం చాలా ఇష్టం","ఈ రోజు వాతావరణం చాలా బాగుంది బయట ఎండ కాస్తోంది"],
@@ -74,69 +73,76 @@ const texts={
     gu:["ગુજરાતી ભારતની એક પ્રમુખ ભાષા છે જે ગુજરાતમાં બોલાય છે","મને પુસ્તકો વાંચવા અને સંગીત સાંભળવું ખૂબ ગમે છે","આજે હવામાન ખૂબ સારું છે બહાર તડકો છે"],
     kn:["ಕನ್ನಡ ಕರ್ನಾಟಕ ರಾಜ್ಯದ ಅಧಿಕೃತ ಭಾಷೆಯಾಗಿದೆ","ನನಗೆ ಪುಸ್ತಕಗಳನ್ನು ಓದುವುದು ಮತ್ತು ಸಂಗೀತ ಕೇಳುವುದು ತುಂಬಾ ಇಷ್ಟ","ಇಂದು ಹವಾಮಾನ ತುಂಬಾ ಚೆನ್ನಾಗಿದೆ ಹೊರಗೆ ಬಿಸಿಲು ಇದೆ"],
     pa:["ਪੰਜਾਬੀ ਭਾਰਤ ਅਤੇ ਪਾਕਿਸਤਾਨ ਵਿੱਚ ਬੋਲੀ ਜਾਣ ਵਾਲੀ ਭਾਸ਼ਾ ਹੈ","ਮੈਨੂੰ ਕਿਤਾਬਾਂ ਪੜ੍ਹਨਾ ਅਤੇ ਸੰਗੀਤ ਸੁਣਨਾ ਬਹੁਤ ਪਸੰਦ ਹੈ","ਅੱਜ ਮੌਸਮ ਬਹੁਤ ਵਧੀਆ ਹੈ ਬਾਹਰ ਧੁੱਪ ਨਿਕਲੀ ਹੋਈ ਹੈ"],
-    ml:["മലയാളം കേരളത്തിന്റെ ഔദ്യോഗിക ഭാഷയാണ്","എനിക്ക് പുസ്തകങ്ങള്‍ വായിക്കാനും സംഗീതം കേള്‍ക്കാനും വളരെ ഇഷ്ടമാണ്","ഇന്ന് കാലാവസ്ഥ വളരെ നല്ലതാണ് പുറത്ത് വെയില്‍ ഉണ്ട്"]
+    ml:["മലയാളം കേരളത്തിന്റെ ഔദ്യോഗിക ഭാഷയാണ്","എനിക്ക് പുസ്തകങ്ങള്‍ വായിക്കാനും സംഗീതം കേള്‍ക്കാനും വളരെ ഇഷ്ടമാണ്","ഇന്ന് കാലാവസ്ഥ വളരെ നല്ലതാണ് പുറത്ത് വെയില്‍ ഉണ്ട്"],
+    mix:["the order number is 4523 and it was placed on 12 march 2026","please call me at 98765 or send an email to the office by 5 pm","the room has 3 windows 2 doors and costs about 1500 per month"]
   },
   moderate:{
-    en:["The quick brown fox jumps over the lazy dog, creating a scene that has been used in typing tests for decades. This sentence contains every letter of the alphabet.","Technology has transformed the way we communicate, learn, and work; making it possible to connect with people across the globe in seconds. The internet is truly remarkable.","Education is the most powerful weapon which you can use to change the world. It opens doors, creates opportunities, and builds a foundation for future generations to thrive.","Good communication skills are essential for success in both personal and professional life. They help you express ideas clearly, resolve conflicts, and build strong relationships.","Time management is a crucial skill that helps students balance their studies, extracurricular activities, and personal life effectively. Planning ahead saves hours of stress."],
-    hi:["भारत की राजधानी नई दिल्ली है, जो देश का राजनीतिक केंद्र है। यहाँ संसद भवन, राष्ट्रपति भवन और अनेक महत्वपूर्ण सरकारी कार्यालय स्थित हैं।","कंप्यूटर ने हमारे जीवन को पूरी तरह बदल दिया है। आज हम घर बैठे खरीदारी, पढ़ाई और काम कर सकते हैं। इंटरनेट ने दुनिया को एक गाँव बना दिया है।","स्वस्थ जीवन जीने के लिए संतुलित आहार, नियमित व्यायाम और पर्याप्त नींद आवश्यक है। तनाव से बचने के लिए योग और ध्यान का अभ्यास करना चाहिए।","पर्यावरण प्रदूषण आज की सबसे बड़ी समस्या है। वायु, जल और भूमि प्रदूषण से मानव स्वास्थ्य पर गंभीर प्रभाव पड़ रहा है। हमें पेड़ लगाने चाहिए।","शिक्षा का महत्व हर युग में रहा है। एक शिक्षित व्यक्ति समाज में सम्मान पाता है और देश के विकास में योगदान देता है। शिक्षा सबका अधिकार है।"],
-    mix:["The meeting is scheduled for March 15, 2026 at 10:30 AM in Conference Room #3. Please bring your laptop, ID card, and the Q4 report (pages 12-45).","Dear Sir/Madam, I am writing to confirm my order #78432. The total amount is Rs. 2,499.00 and the delivery address is: 42/B, Sector-15, Noida (201301).","According to the 2026 census, India's population is approximately 1.45 billion. The GDP growth rate was 7.2% in Q3, with exports reaching $38.5 billion.","The password must contain: at least 8 characters, 1 uppercase (A-Z), 1 lowercase (a-z), 1 number (0-9), and 1 special character (!@#$%^&*).","Flight AI-302 departs from Delhi (DEL) at 14:25 and arrives in Mumbai (BOM) at 16:50. Gate: B-12. Boarding starts at 13:45. Seat: 24A (Window)."]
+    en:["The quick brown fox jumps over the lazy dog, creating a scene that has been used in typing tests for decades.","Technology has transformed the way we communicate, learn, and work; making it possible to connect with people across the globe.","Education is the most powerful weapon which you can use to change the world. It opens doors and creates opportunities.","Good communication skills are essential for success in both personal and professional life.","Time management is a crucial skill that helps students balance their studies, activities, and personal life effectively."],
+    hi:["भारत की राजधानी नई दिल्ली है, जो देश का राजनीतिक केंद्र है। यहाँ संसद भवन और अनेक महत्वपूर्ण सरकारी कार्यालय स्थित हैं।","कंप्यूटर ने हमारे जीवन को पूरी तरह बदल दिया है। आज हम घर बैठे खरीदारी, पढ़ाई और काम कर सकते हैं।","स्वस्थ जीवन जीने के लिए संतुलित आहार, नियमित व्यायाम और पर्याप्त नींद आवश्यक है।","पर्यावरण प्रदूषण आज की सबसे बड़ी समस्या है। वायु, जल और भूमि प्रदूषण से मानव स्वास्थ्य पर गंभीर प्रभाव पड़ रहा है।","शिक्षा का महत्व हर युग में रहा है। एक शिक्षित व्यक्ति समाज में सम्मान पाता है और देश के विकास में योगदान देता है।"],
+    mix:["The meeting is scheduled for March 15, 2026 at 10:30 AM in Room 3. Please bring your laptop and ID card.","Dear Sir, I am writing to confirm my order 78432. The total amount is Rs. 2,499 and the delivery address is: 42/B, Sector-15, Noida.","Flight AI-302 departs from Delhi at 14:25 and arrives in Mumbai at 16:50. Gate: B-12. Boarding starts at 13:45."]
   },
   expert:{
-    en:["The juxtaposition of quantum mechanics and general relativity remains one of the greatest unsolved puzzles in physics; reconciling these frameworks could revolutionize our understanding of spacetime, black holes, and the fundamental architecture of the universe.","Notwithstanding the unprecedented challenges posed by climate change — rising sea levels, extreme weather events, and biodiversity loss — international cooperation through frameworks like the Paris Agreement (2015) offers a pathway toward sustainable development.","The efficacy of machine learning algorithms depends critically on hyperparameter optimization, feature engineering, and cross-validation techniques; without rigorous methodology, models risk overfitting to training data while performing poorly on unseen examples.","In constitutional democracies, the separation of powers — legislative, executive, and judicial — serves as a safeguard against authoritarianism. Checks and balances ensure that no single branch accumulates disproportionate influence over governance.","Cryptocurrency markets exhibit extreme volatility: Bitcoin fluctuated between $16,500 and $73,000 in 2023-2024. Regulatory frameworks (SEC, RBI) continue evolving to address concerns about fraud, money laundering, and investor protection."],
-    hi:["भारतीय संविधान विश्व का सबसे लंबा लिखित संविधान है, जिसमें 448 अनुच्छेद, 12 अनुसूचियाँ और 105 संशोधन हैं। डॉ. भीमराव अम्बेडकर को संविधान का प्रमुख शिल्पकार माना जाता है। इसे 26 जनवरी, 1950 को लागू किया गया था।","कृत्रिम बुद्धिमत्ता (AI) और मशीन लर्निंग ने चिकित्सा, शिक्षा, वित्त और परिवहन जैसे क्षेत्रों में क्रांतिकारी परिवर्तन लाए हैं। हालाँकि, इसके नैतिक पहलुओं — जैसे गोपनीयता, रोज़गार और पूर्वाग्रह — पर गंभीर चर्चा आवश्यक है।","भारत की अर्थव्यवस्था विश्व की पाँचवीं सबसे बड़ी अर्थव्यवस्था है। सकल घरेलू उत्पाद (GDP) में सेवा क्षेत्र का योगदान लगभग 54% है, जबकि कृषि क्षेत्र 17% और उद्योग क्षेत्र 29% का योगदान देता है।"],
-    mix:["URGENT: Server #DB-042 experienced a critical failure at 03:47:22 UTC on 2026-04-13. Error code: 0xE0000235. CPU usage spiked to 99.8%, RAM: 31.2/32 GB. Affected services: API gateway (port 8443), Redis cache (port 6379), and PostgreSQL (port 5432). ETA for recovery: ~2-3 hours. Contact: ops@company.com or call +91-11-2345-6789 (ext. 442).","Invoice #INV-2026-04-0847 | Date: 13/04/2026 | Client: M/s. Sharma & Associates (GSTIN: 07AABCS1234F1Z5) | Items: (1) Web Development — Rs. 45,000.00, (2) SEO Optimization — Rs. 15,000.00, (3) Hosting (12 months @ Rs. 499/mo) — Rs. 5,988.00 | Subtotal: Rs. 65,988.00 | GST @18%: Rs. 11,877.84 | Total: Rs. 77,865.84","The chemical formula for glucose is C6H12O6 (molecular weight: 180.16 g/mol). In cellular respiration: C6H12O6 + 6O2 → 6CO2 + 6H2O + energy (ATP). The process occurs in three stages: glycolysis (cytoplasm), Krebs cycle (mitochondrial matrix), and electron transport chain (inner mitochondrial membrane). Net yield: ~36-38 ATP molecules per glucose molecule."]
+    en:["The juxtaposition of quantum mechanics and general relativity remains one of the greatest unsolved puzzles in physics; reconciling these frameworks could revolutionize our understanding of spacetime and black holes.","Notwithstanding the unprecedented challenges posed by climate change, rising sea levels, extreme weather events, and biodiversity loss, international cooperation through the Paris Agreement (2015) offers a pathway toward sustainable development.","The efficacy of machine learning algorithms depends critically on hyperparameter optimization, feature engineering, and cross-validation techniques; without rigorous methodology, models risk overfitting to training data.","In constitutional democracies, the separation of powers serves as a safeguard against authoritarianism. Checks and balances ensure that no single branch accumulates disproportionate influence over governance."],
+    hi:["भारतीय संविधान विश्व का सबसे लंबा लिखित संविधान है, जिसमें 448 अनुच्छेद, 12 अनुसूचियाँ और 105 संशोधन हैं। इसे 26 जनवरी, 1950 को लागू किया गया था।","कृत्रिम बुद्धिमत्ता और मशीन लर्निंग ने चिकित्सा, शिक्षा, वित्त और परिवहन जैसे क्षेत्रों में क्रांतिकारी परिवर्तन लाए हैं।","भारत की अर्थव्यवस्था विश्व की पाँचवीं सबसे बड़ी अर्थव्यवस्था है। सकल घरेलू उत्पाद में सेवा क्षेत्र का योगदान लगभग 54 प्रतिशत है।"],
+    mix:["Server DB-042 experienced a critical failure at 03:47 UTC on 2026-04-13. Error code: 0xE0000235. CPU usage spiked to 99.8 percent, RAM: 31.2/32 GB. Contact: ops at company dot com or call 011-2345-6789.","Invoice INV-2026-04-0847, Date: 13/04/2026, Client: Sharma and Associates, Items: Web Development Rs. 45,000, SEO Rs. 15,000, Hosting 12 months at Rs. 499 per month Rs. 5,988, Subtotal: Rs. 65,988, GST 18 percent: Rs. 11,878, Total: Rs. 77,866."]
   }
 };
-let text,start,timer,dur,ended;
+var text,start,timer,dur,ended;
 function reset(){
-  ended=false;dur=+document.getElementById("duration").value;
-  const diff=document.getElementById("difficulty").value;
-  const lang=document.getElementById("lang").value;
-  const pool=texts[diff][lang]||texts[diff].en;
+  ended=false;
+  dur=+document.getElementById("duration").value;
+  var diff=document.getElementById("difficulty").value;
+  var lang=document.getElementById("lang").value;
+  var pool=(texts[diff]&&texts[diff][lang])?texts[diff][lang]:texts[diff].en;
   text=pool[Math.floor(Math.random()*pool.length)];
-  const d=document.getElementById("textDisplay");
-  d.innerHTML=text.split("").map(c=>"<span>"+c+"</span>").join("");
+  document.getElementById("textDisplay").innerHTML=text.split("").map(function(c){return "<span>"+c+"</span>"}).join("");
   document.getElementById("typingInput").value="";
   document.getElementById("typingInput").disabled=false;
+  document.getElementById("typingInput").focus();
   document.getElementById("result").style.display="none";
   document.getElementById("timer").textContent=dur+"s";
-  start=null;clearInterval(timer);
+  start=null;
+  clearInterval(timer);
 }
 document.getElementById("typingInput").addEventListener("input",function(){
   if(ended)return;
-  if(!start){start=Date.now();timer=setInterval(tick,200)}
-  const spans=document.getElementById("textDisplay").querySelectorAll("span");
-  const val=this.value;
-  let correct=0;
-  spans.forEach((s,i)=>{
-    if(i<val.length){s.style.color=val[i]===text[i]?(correct++,"#4caf50"):"#f44336";s.style.textDecoration=val[i]===text[i]?"none":"underline"}
-    else{s.style.color="";s.style.textDecoration=""}
-  });
+  if(!start){start=Date.now();timer=setInterval(tick,200);}
+  var spans=document.getElementById("textDisplay").querySelectorAll("span");
+  var val=this.value;
+  var correct=0;
+  for(var i=0;i<spans.length;i++){
+    if(i<val.length){
+      if(val[i]===text[i]){correct++;spans[i].style.color="#4caf50";spans[i].style.textDecoration="none";}
+      else{spans[i].style.color="#f44336";spans[i].style.textDecoration="underline";}
+    }else{spans[i].style.color="";spans[i].style.textDecoration="";}
+  }
   if(val.length>=text.length)finish();
 });
 function tick(){
-  const elapsed=Math.floor((Date.now()-start)/1000);
-  const left=dur-elapsed;
+  var elapsed=Math.floor((Date.now()-start)/1000);
+  var left=dur-elapsed;
   document.getElementById("timer").textContent=Math.max(0,left)+"s";
   if(left<=0)finish();
 }
 function finish(){
   ended=true;clearInterval(timer);
   document.getElementById("typingInput").disabled=true;
-  const elapsed=Math.min((Date.now()-start)/1000,dur);
-  const typed=document.getElementById("typingInput").value;
-  let correct=0;for(let i=0;i<typed.length&&i<text.length;i++)if(typed[i]===text[i])correct++;
-  const words=typed.trim().split(/\s+/).length;
-  const wpm=Math.round(words/(elapsed/60));
-  const cpm=Math.round(typed.length/(elapsed/60));
-  const acc=typed.length?Math.round(correct/typed.length*100):0;
-  let grade="";if(wpm>=80)grade="🏆 Excellent!";else if(wpm>=60)grade="🥇 Great!";else if(wpm>=40)grade="🥈 Good";else if(wpm>=25)grade="🥉 Average";else grade="📝 Keep Practicing!";
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  const r=document.getElementById("result");
+  var elapsed=Math.min((Date.now()-start)/1000,dur);
+  var typed=document.getElementById("typingInput").value;
+  var correct=0;
+  for(var i=0;i<typed.length&&i<text.length;i++){if(typed[i]===text[i])correct++;}
+  var words=typed.trim().split(/\s+/).length;
+  var wpm=Math.round(words/(elapsed/60));
+  var cpm=Math.round(typed.length/(elapsed/60));
+  var acc=typed.length?Math.round(correct/typed.length*100):0;
+  var grade="";
+  if(wpm>=80)grade="Excellent!";else if(wpm>=60)grade="Great!";else if(wpm>=40)grade="Good";else if(wpm>=25)grade="Average";else grade="Keep Practicing!";
+  var card=function(l,v){return '<div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+v+'</div><div class="info">'+l+'</div></div>';};
+  var r=document.getElementById("result");
   r.style.display="grid";
   r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
 }
 reset();
-  </script>
+</script>
 </body>
 </html>
