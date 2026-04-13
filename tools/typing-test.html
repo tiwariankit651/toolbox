@@ -37,9 +37,15 @@
     <div class="tool-section">
       <h1>⌨️ Typing Speed Test</h1>
       <p class="info">Start typing the text below. Timer starts automatically.</p>
-      <div class="row" style="margin-bottom:1rem">
+      <div class="row" style="margin-bottom:.5rem">
         <label>Duration:</label>
-        <select id="duration" onchange="reset()"><option value="30">30 sec</option><option value="60" selected>60 sec</option><option value="120">2 min</option></select>
+        <select id="duration" onchange="reset()"><option value="30">30 sec</option><option value="60" selected>60 sec</option><option value="120">2 min</option><option value="300">5 min</option></select>
+        <label>Difficulty:</label>
+        <select id="difficulty" onchange="reset()"><option value="beginner">Beginner</option><option value="moderate" selected>Moderate</option><option value="expert">Expert</option></select>
+      </div>
+      <div class="row" style="margin-bottom:1rem">
+        <label>Language:</label>
+        <select id="lang" onchange="reset()"><option value="en" selected>English</option><option value="hi">Hindi</option><option value="mix">English + Numbers</option></select>
         <button class="btn" onclick="reset()">New Test</button>
       </div>
       <div id="textDisplay" style="background:var(--card);padding:1.2rem;border-radius:12px;font-size:1.1rem;line-height:1.8;letter-spacing:.5px;margin-bottom:1rem;min-height:100px"></div>
@@ -56,11 +62,31 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const sentences=["The quick brown fox jumps over the lazy dog near the riverbank while the sun sets behind the mountains creating a beautiful golden horizon","Technology has transformed the way we communicate learn and work making it possible to connect with people across the globe in seconds","Education is the most powerful weapon which you can use to change the world and create opportunities for future generations","Programming requires patience creativity and logical thinking to solve complex problems and build applications that help millions of people","The internet has revolutionized access to information allowing students and professionals to learn new skills from anywhere at any time","Good communication skills are essential for success in both personal and professional life helping you express ideas clearly and effectively","Climate change is one of the biggest challenges facing humanity today requiring collective action from governments businesses and individuals","Reading books regularly improves vocabulary enhances critical thinking and provides knowledge that can be applied in everyday situations","Time management is a crucial skill that helps students balance their studies extracurricular activities and personal life effectively","Artificial intelligence and machine learning are reshaping industries from healthcare to finance creating new opportunities and challenges"];
+  <script>
+const texts={
+  beginner:{
+    en:["the cat sat on the mat and looked at the bird in the sky","i like to read books and play games with my friends every day","the sun is bright and the sky is blue on a warm summer day","she went to the shop to buy some milk bread and eggs for breakfast","we had a great time at the park playing with the dog and eating ice cream"],
+    hi:["भारत एक महान देश है जहाँ अनेक भाषाएँ बोली जाती हैं","मुझे किताबें पढ़ना और संगीत सुनना बहुत पसंद है","आज मौसम बहुत अच्छा है बाहर धूप खिली हुई है","हमारे विद्यालय में हर साल वार्षिक उत्सव मनाया जाता है","प्रतिदिन व्यायाम करने से शरीर स्वस्थ और मन प्रसन्न रहता है"],
+    mix:["the order number is 4523 and it was placed on 12 march 2026","please call me at 98765 or send an email to the office by 5 pm","the room has 3 windows 2 doors and costs about 1500 per month","we need 10 chairs 5 tables and 2 projectors for the meeting room","the train departs at 6:30 am from platform 4 and arrives by 10:15 am"]
+  },
+  moderate:{
+    en:["The quick brown fox jumps over the lazy dog, creating a scene that has been used in typing tests for decades. This sentence contains every letter of the alphabet.","Technology has transformed the way we communicate, learn, and work; making it possible to connect with people across the globe in seconds. The internet is truly remarkable.","Education is the most powerful weapon which you can use to change the world. It opens doors, creates opportunities, and builds a foundation for future generations to thrive.","Good communication skills are essential for success in both personal and professional life. They help you express ideas clearly, resolve conflicts, and build strong relationships.","Time management is a crucial skill that helps students balance their studies, extracurricular activities, and personal life effectively. Planning ahead saves hours of stress."],
+    hi:["भारत की राजधानी नई दिल्ली है, जो देश का राजनीतिक केंद्र है। यहाँ संसद भवन, राष्ट्रपति भवन और अनेक महत्वपूर्ण सरकारी कार्यालय स्थित हैं।","कंप्यूटर ने हमारे जीवन को पूरी तरह बदल दिया है। आज हम घर बैठे खरीदारी, पढ़ाई और काम कर सकते हैं। इंटरनेट ने दुनिया को एक गाँव बना दिया है।","स्वस्थ जीवन जीने के लिए संतुलित आहार, नियमित व्यायाम और पर्याप्त नींद आवश्यक है। तनाव से बचने के लिए योग और ध्यान का अभ्यास करना चाहिए।","पर्यावरण प्रदूषण आज की सबसे बड़ी समस्या है। वायु, जल और भूमि प्रदूषण से मानव स्वास्थ्य पर गंभीर प्रभाव पड़ रहा है। हमें पेड़ लगाने चाहिए।","शिक्षा का महत्व हर युग में रहा है। एक शिक्षित व्यक्ति समाज में सम्मान पाता है और देश के विकास में योगदान देता है। शिक्षा सबका अधिकार है।"],
+    mix:["The meeting is scheduled for March 15, 2026 at 10:30 AM in Conference Room #3. Please bring your laptop, ID card, and the Q4 report (pages 12-45).","Dear Sir/Madam, I am writing to confirm my order #78432. The total amount is Rs. 2,499.00 and the delivery address is: 42/B, Sector-15, Noida (201301).","According to the 2026 census, India's population is approximately 1.45 billion. The GDP growth rate was 7.2% in Q3, with exports reaching $38.5 billion.","The password must contain: at least 8 characters, 1 uppercase (A-Z), 1 lowercase (a-z), 1 number (0-9), and 1 special character (!@#$%^&*).","Flight AI-302 departs from Delhi (DEL) at 14:25 and arrives in Mumbai (BOM) at 16:50. Gate: B-12. Boarding starts at 13:45. Seat: 24A (Window)."]
+  },
+  expert:{
+    en:["The juxtaposition of quantum mechanics and general relativity remains one of physics' greatest unsolved puzzles; reconciling these frameworks could revolutionize our understanding of spacetime, black holes, and the universe's fundamental architecture.","Notwithstanding the unprecedented challenges posed by climate change — rising sea levels, extreme weather events, and biodiversity loss — international cooperation through frameworks like the Paris Agreement (2015) offers a pathway toward sustainable development.","The efficacy of machine learning algorithms depends critically on hyperparameter optimization, feature engineering, and cross-validation techniques; without rigorous methodology, models risk overfitting to training data while performing poorly on unseen examples.","In constitutional democracies, the separation of powers — legislative, executive, and judicial — serves as a safeguard against authoritarianism. Checks and balances ensure that no single branch accumulates disproportionate influence over governance.","Cryptocurrency markets exhibit extreme volatility: Bitcoin's price fluctuated between $16,500 and $73,000 in 2023-2024. Regulatory frameworks (SEC, RBI) continue evolving to address concerns about fraud, money laundering, and investor protection."],
+    hi:["भारतीय संविधान विश्व का सबसे लंबा लिखित संविधान है, जिसमें 448 अनुच्छेद, 12 अनुसूचियाँ और 105 संशोधन हैं। डॉ. भीमराव अम्बेडकर को संविधान का प्रमुख शिल्पकार माना जाता है। इसे 26 जनवरी, 1950 को लागू किया गया था।","कृत्रिम बुद्धिमत्ता (AI) और मशीन लर्निंग ने चिकित्सा, शिक्षा, वित्त और परिवहन जैसे क्षेत्रों में क्रांतिकारी परिवर्तन लाए हैं। हालाँकि, इसके नैतिक पहलुओं — जैसे गोपनीयता, रोज़गार और पूर्वाग्रह — पर गंभीर चर्चा आवश्यक है।","भारत की अर्थव्यवस्था विश्व की पाँचवीं सबसे बड़ी अर्थव्यवस्था है। सकल घरेलू उत्पाद (GDP) में सेवा क्षेत्र का योगदान लगभग 54% है, जबकि कृषि क्षेत्र 17% और उद्योग क्षेत्र 29% का योगदान देता है।"],
+    mix:["URGENT: Server #DB-042 experienced a critical failure at 03:47:22 UTC on 2026-04-13. Error code: 0xE0000235. CPU usage spiked to 99.8%, RAM: 31.2/32 GB. Affected services: API gateway (port 8443), Redis cache (port 6379), and PostgreSQL (port 5432). ETA for recovery: ~2-3 hours. Contact: ops@company.com or call +91-11-2345-6789 (ext. 442).","Invoice #INV-2026-04-0847 | Date: 13/04/2026 | Client: M/s. Sharma & Associates (GSTIN: 07AABCS1234F1Z5) | Items: (1) Web Development — Rs. 45,000.00, (2) SEO Optimization — Rs. 15,000.00, (3) Hosting (12 months @ Rs. 499/mo) — Rs. 5,988.00 | Subtotal: Rs. 65,988.00 | GST @18%: Rs. 11,877.84 | Total: Rs. 77,865.84","The chemical formula for glucose is C6H12O6 (molecular weight: 180.16 g/mol). In cellular respiration: C6H12O6 + 6O2 → 6CO2 + 6H2O + energy (ATP). The process occurs in three stages: glycolysis (cytoplasm), Krebs cycle (mitochondrial matrix), and electron transport chain (inner mitochondrial membrane). Net yield: ~36-38 ATP molecules per glucose molecule."]
+  }
+};
 let text,start,timer,dur,ended;
 function reset(){
   ended=false;dur=+document.getElementById("duration").value;
-  text=sentences[Math.floor(Math.random()*sentences.length)];
+  const diff=document.getElementById("difficulty").value;
+  const lang=document.getElementById("lang").value;
+  const pool=texts[diff][lang]||texts[diff].en;
+  text=pool[Math.floor(Math.random()*pool.length)];
   const d=document.getElementById("textDisplay");
   d.innerHTML=text.split("").map(c=>"<span>"+c+"</span>").join("");
   document.getElementById("typingInput").value="";
@@ -97,10 +123,11 @@ function finish(){
   const wpm=Math.round(words/(elapsed/60));
   const cpm=Math.round(typed.length/(elapsed/60));
   const acc=typed.length?Math.round(correct/typed.length*100):0;
+  let grade="";if(wpm>=80)grade="🏆 Excellent!";else if(wpm>=60)grade="🥇 Great!";else if(wpm>=40)grade="🥈 Good";else if(wpm>=25)grade="🥉 Average";else grade="📝 Keep Practicing!";
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
   const r=document.getElementById("result");
   r.style.display="grid";
-  r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Characters",typed.length)+card("Correct",correct)+card("Time",Math.round(elapsed)+"s");
+  r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
 }
 reset();
   </script>
