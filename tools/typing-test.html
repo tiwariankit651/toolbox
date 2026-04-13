@@ -137,7 +137,7 @@ function finish(){
   var acc=typed.length?Math.round(correct/typed.length*100):0;
   var grade="";
   if(wpm>=80)grade="Excellent!";else if(wpm>=60)grade="Great!";else if(wpm>=40)grade="Good";else if(wpm>=25)grade="Average";else grade="Keep Practicing!";
-  var card=function(l,v){return '<div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+v+'</div><div class="info">'+l+'</div></div>';};
+  var card=function(l,v){var d=document.createElement("div");d.style.cssText="background:var(--card);padding:1rem;border-radius:12px;text-align:center";d.innerHTML="<div style='font-size:1.5rem;font-weight:700;color:var(--accent)'>"+v+"</div><div class='info'>"+l+"</div>";return d.outerHTML;};
   var r=document.getElementById("result");
   r.style.display="grid";
   r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
