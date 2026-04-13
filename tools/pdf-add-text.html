@@ -63,6 +63,19 @@
           <button class="btn btn-outline" onclick="toggleItalic()" id="italicBtn" style="font-style:italic;padding:.3rem .6rem">I</button>
         </div>
         <div class="row" style="margin-bottom:.5rem">
+          <label>Tool:</label>
+          <select id="toolMode">
+            <option value="text">✏️ Add Text</option>
+            <option value="whiteout">⬜ Whiteout (Erase)</option>
+            <option value="highlight">🟡 Highlight</option>
+          </select>
+          <label id="hlColorLabel">Highlight:</label>
+          <select id="hlColor">
+            <option value="rgba(255,255,0,0.4)">🟡 Yellow</option>
+            <option value="rgba(0,255,0,0.3)">🟢 Green</option>
+            <option value="rgba(0,150,255,0.3)">🔵 Blue</option>
+            <option value="rgba(255,100,100,0.3)">🔴 Red</option>
+          </select>
           <button class="btn btn-outline" onclick="prevPage()">◀ Prev</button>
           <span id="pageInfo" style="padding:0 .5rem;font-weight:600">1/1</span>
           <button class="btn btn-outline" onclick="nextPage()">Next ▶</button>
@@ -95,7 +108,7 @@
   <script src="../js/common.js"></script>
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[],isBold=false,isItalic=false;
+var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[],isBold=false,isItalic=false,rects=[],drawing=false,drawStart=null;
 function toggleBold(){isBold=!isBold;document.getElementById("boldBtn").style.background=isBold?"var(--accent)":""}
 function toggleItalic(){isItalic=!isItalic;document.getElementById("italicBtn").style.background=isItalic?"var(--accent)":""}
 setupDrop("drop","inp",function(f){pdfFile=f[0];loadPdf()});
@@ -120,6 +133,12 @@ async function renderPage(){
 function renderTexts(){
   var layer=document.getElementById("textLayer");
   layer.innerHTML="";
+  rects.forEach(function(r){
+    if(r.page!==currentPage)return;
+    var div=document.createElement("div");
+    div.style.cssText="position:absolute;left:"+r.x+"px;top:"+r.y+"px;width:"+r.w+"px;height:"+r.h+"px;background:"+r.color+";pointer-events:none;";
+    layer.appendChild(div);
+  });
   textItems.forEach(function(item,idx){
     if(item.page!==currentPage)return;
     var div=document.createElement("div");
@@ -129,20 +148,57 @@ function renderTexts(){
     layer.appendChild(div);
   });
 }
-document.getElementById("textLayer").addEventListener("click",function(e){
+document.getElementById("textLayer").addEventListener("mousedown",function(e){
   if(e.target!==this)return;
   var rect=this.getBoundingClientRect();
   var x=e.clientX-rect.left;
   var y=e.clientY-rect.top;
-  var input=document.createElement("input");
-  input.type="text";input.placeholder="Type here...";
-  input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";font-family:"+document.getElementById("fontFamily").value+";font-weight:"+(isBold?"700":"400")+";font-style:"+(isItalic?"italic":"normal")+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
-  this.appendChild(input);
-  input.focus();
-  var curFont=document.getElementById("fontFamily").value;var curBold=isBold;var curItalic=isItalic;
-  function done(){
-    if(input.value.trim()){
-      textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value,font:curFont,bold:curBold,italic:curItalic});
+  var mode=document.getElementById("toolMode").value;
+  if(mode==="text"){
+    var input=document.createElement("input");
+    input.type="text";input.placeholder="Type here...";
+    input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";font-family:"+document.getElementById("fontFamily").value+";font-weight:"+(isBold?"700":"400")+";font-style:"+(isItalic?"italic":"normal")+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
+    this.appendChild(input);
+    input.focus();
+    var curFont=document.getElementById("fontFamily").value;var curBold=isBold;var curItalic=isItalic;
+    function done(){
+      if(input.value.trim()){
+        textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value,font:curFont,bold:curBold,italic:curItalic});
+      }
+      if(input.parentNode)input.remove();
+      renderTexts();
+    }
+    input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
+    input.addEventListener("blur",done);
+  } else {
+    drawing=true;drawStart={x:x,y:y};
+  }
+});
+document.getElementById("textLayer").addEventListener("mousemove",function(e){
+  if(!drawing||!drawStart)return;
+  var rect=this.getBoundingClientRect();
+  var x=e.clientX-rect.left;var y=e.clientY-rect.top;
+  var preview=document.getElementById("drawPreview");
+  if(!preview){preview=document.createElement("div");preview.id="drawPreview";preview.style.cssText="position:absolute;border:1px dashed #999;pointer-events:none;z-index:5;";this.appendChild(preview)}
+  preview.style.left=Math.min(drawStart.x,x)+"px";preview.style.top=Math.min(drawStart.y,y)+"px";
+  preview.style.width=Math.abs(x-drawStart.x)+"px";preview.style.height=Math.abs(y-drawStart.y)+"px";
+});
+document.getElementById("textLayer").addEventListener("mouseup",function(e){
+  if(!drawing||!drawStart)return;
+  drawing=false;
+  var rect=this.getBoundingClientRect();
+  var x=e.clientX-rect.left;var y=e.clientY-rect.top;
+  var rx=Math.min(drawStart.x,x),ry=Math.min(drawStart.y,y);
+  var rw=Math.abs(x-drawStart.x),rh=Math.abs(y-drawStart.y);
+  if(rw>5&&rh>5){
+    var mode=document.getElementById("toolMode").value;
+    var color=mode==="whiteout"?"#ffffff":document.getElementById("hlColor").value;
+    rects.push({page:currentPage,x:rx,y:ry,w:rw,h:rh,color:color,type:mode});
+  }
+  drawStart=null;
+  var preview=document.getElementById("drawPreview");if(preview)preview.remove();
+  renderTexts();
+});
     }
     if(input.parentNode)input.remove();
     renderTexts();
@@ -166,13 +222,23 @@ function editText(idx){
   input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
   input.addEventListener("blur",done);
 }
-function undoLast(){if(textItems.length){textItems.pop();renderTexts()}}
-function clearAll(){textItems=[];renderTexts()}
+function undoLast(){if(rects.length&&(!textItems.length||rects[rects.length-1])){rects.pop()}else if(textItems.length){textItems.pop()}renderTexts()}
+function clearAll(){textItems=[];rects=[];renderTexts()}
 function prevPage(){if(currentPage>1){currentPage--;renderPage()}}
 function nextPage(){if(currentPage<totalPages){currentPage++;renderPage()}}
 async function savePdf(){
   var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
   var pages=doc.getPages();
+  rects.forEach(function(item){
+    var pg=pages[item.page-1];if(!pg)return;
+    var h=pg.getHeight();
+    if(item.type==="whiteout"){
+      pg.drawRectangle({x:item.x/scale,y:h-item.y/scale-item.h/scale,width:item.w/scale,height:item.h/scale,color:PDFLib.rgb(1,1,1)});
+    } else {
+      var m=item.color.match(/[\d.]+/g);
+      pg.drawRectangle({x:item.x/scale,y:h-item.y/scale-item.h/scale,width:item.w/scale,height:item.h/scale,color:PDFLib.rgb(m[0]/255,m[1]/255,m[2]/255),opacity:parseFloat(m[3])||0.4});
+    }
+  });
   textItems.forEach(function(item){
     var pg=pages[item.page-1];
     if(!pg)return;
