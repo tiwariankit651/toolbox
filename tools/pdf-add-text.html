@@ -48,8 +48,21 @@
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
       <div id="editor" style="display:none">
         <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
-          <label>Font size:</label><input type="number" id="fontSize" value="14" min="6" max="72" style="width:60px">
-          <label>Color:</label><input type="color" id="fontColor" value="#000000" style="width:40px;height:35px;border:none">
+          <label>Font:</label>
+          <select id="fontFamily" style="max-width:150px">
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Calibri">Calibri</option>
+          </select>
+          <label>Size:</label><input type="number" id="fontSize" value="14" min="6" max="72" style="width:55px">
+          <label>Color:</label><input type="color" id="fontColor" value="#000000" style="width:35px;height:32px;border:none">
+          <button class="btn btn-outline" onclick="toggleBold()" id="boldBtn" style="font-weight:700;padding:.3rem .6rem">B</button>
+          <button class="btn btn-outline" onclick="toggleItalic()" id="italicBtn" style="font-style:italic;padding:.3rem .6rem">I</button>
+        </div>
+        <div class="row" style="margin-bottom:.5rem">
           <button class="btn btn-outline" onclick="prevPage()">◀ Prev</button>
           <span id="pageInfo" style="padding:0 .5rem;font-weight:600">1/1</span>
           <button class="btn btn-outline" onclick="nextPage()">Next ▶</button>
@@ -82,7 +95,9 @@
   <script src="../js/common.js"></script>
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[];
+var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[],isBold=false,isItalic=false;
+function toggleBold(){isBold=!isBold;document.getElementById("boldBtn").style.background=isBold?"var(--accent)":""}
+function toggleItalic(){isItalic=!isItalic;document.getElementById("italicBtn").style.background=isItalic?"var(--accent)":""}
 setupDrop("drop","inp",function(f){pdfFile=f[0];loadPdf()});
 async function loadPdf(){
   var data=await pdfFile.arrayBuffer();
@@ -109,7 +124,7 @@ function renderTexts(){
     if(item.page!==currentPage)return;
     var div=document.createElement("div");
     div.textContent=item.text;
-    div.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";cursor:move;padding:2px;min-width:20px;white-space:nowrap;";
+    div.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";font-family:"+item.font+";font-weight:"+(item.bold?"700":"400")+";font-style:"+(item.italic?"italic":"normal")+";cursor:move;padding:2px;min-width:20px;white-space:nowrap;";
     div.ondblclick=function(){editText(idx)};
     layer.appendChild(div);
   });
@@ -121,12 +136,13 @@ document.getElementById("textLayer").addEventListener("click",function(e){
   var y=e.clientY-rect.top;
   var input=document.createElement("input");
   input.type="text";input.placeholder="Type here...";
-  input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
+  input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";font-family:"+document.getElementById("fontFamily").value+";font-weight:"+(isBold?"700":"400")+";font-style:"+(isItalic?"italic":"normal")+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
   this.appendChild(input);
   input.focus();
+  var curFont=document.getElementById("fontFamily").value;var curBold=isBold;var curItalic=isItalic;
   function done(){
     if(input.value.trim()){
-      textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value});
+      textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value,font:curFont,bold:curBold,italic:curItalic});
     }
     if(input.parentNode)input.remove();
     renderTexts();
