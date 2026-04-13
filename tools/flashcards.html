@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard Study Tool - Learn & Revise Free Online | FreeToolHubs</title>
+  <meta name="description" content="Free flashcard study tool. Create your own flashcards or use ready-made sets for GK, Science, English Vocabulary, Math, and more. Perfect for exam preparation.">
+  <meta property="og:title" content="Flashcard Study Tool — Free Online | FreeToolHubs">
+  <meta property="og:description" content="Create flashcards and study with active recall. Ready-made sets for GK, Science, English.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/flashcards">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Flashcard Study Tool — FreeToolHubs">
+  <meta name="twitter:description" content="Free flashcard maker for exam prep and learning">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Flashcard Study Tool","url":"https://freetoolhubs.com/tools/flashcards","description":"Free flashcard study tool for exam preparation and learning","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/flashcards">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .card{width:100%;max-width:500px;height:280px;margin:1.5rem auto;perspective:1000px;cursor:pointer}
+    .card-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+    .card.flipped .card-inner{transform:rotateY(180deg)}
+    .card-front,.card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;font-size:1.3rem;line-height:1.6}
+    .card-front{background:linear-gradient(135deg,#4f8cff,#a855f7);color:#fff;font-weight:600}
+    .card-back{background:var(--card);border:2px solid var(--accent);transform:rotateY(180deg);color:var(--text)}
+    .score-bar{display:flex;gap:.5rem;justify-content:center;margin:1rem 0}
+    .score-bar button{padding:.6rem 1.5rem;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600}
+    .btn-know{background:#4caf50;color:#fff}
+    .btn-dont{background:#f44336;color:#fff}
+    .tab-btns{display:flex;gap:6px;margin-bottom:1rem}
+    .tab-btns button{flex:1;padding:.6rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text);font-weight:600}
+    .tab-btns button.active{background:var(--accent);color:#fff}
+    .set-card{background:var(--card);padding:1rem;border-radius:12px;cursor:pointer;margin-bottom:.5rem;transition:background .2s}
+    .set-card:hover{background:var(--accent);color:#fff}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📚 Flashcard Study Tool</div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section">
+      <h1>📚 Flashcard Study Tool</h1>
+      <p class="info">Click the card to flip. Mark if you knew the answer or not. Create your own cards or use ready-made sets.</p>
+      <div class="tab-btns">
+        <button class="active" onclick="showTab('study')">📖 Study</button>
+        <button onclick="showTab('sets')">📂 Ready Sets</button>
+        <button onclick="showTab('create')">✏️ Create</button>
+      </div>
+      <div id="study">
+        <div id="deckInfo" style="text-align:center;margin-bottom:.5rem" class="info"></div>
+        <div class="card" id="flashcard" onclick="flipCard()">
+          <div class="card-inner">
+            <div class="card-front" id="cardFront">Click "Ready Sets" to start or create your own cards</div>
+            <div class="card-back" id="cardBack">Answer will appear here</div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:.9rem;margin-bottom:.5rem" class="info">Card <span id="cardNum">0</span> / <span id="cardTotal">0</span></div>
+        <div class="score-bar">
+          <button class="btn-dont" onclick="markCard(false)">❌ Don't Know</button>
+          <button class="btn-know" onclick="markCard(true)">✅ Know It</button>
+        </div>
+        <div class="row" style="justify-content:center;margin-top:.5rem">
+          <button class="btn btn-outline" onclick="prevCard()">◀ Prev</button>
+          <button class="btn btn-outline" onclick="shuffleDeck()">🔀 Shuffle</button>
+          <button class="btn btn-outline" onclick="nextCard()">Next ▶</button>
+        </div>
+        <div id="scoreDisplay" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem"></div>
+      </div>
+      <div id="sets" style="display:none">
+        <h2>📂 Ready-Made Flashcard Sets</h2>
+        <div id="setList"></div>
+      </div>
+      <div id="create" style="display:none">
+        <h2>✏️ Create Your Own Flashcards</h2>
+        <div class="row"><input type="text" id="newFront" placeholder="Question / Front side"><input type="text" id="newBack" placeholder="Answer / Back side"></div>
+        <button class="btn" onclick="addCustomCard()" style="margin:.5rem 0">+ Add Card</button>
+        <div id="customList"></div>
+        <div class="row" style="margin-top:.5rem">
+          <button class="btn" onclick="studyCustom()">📖 Study My Cards</button>
+          <button class="btn btn-outline" onclick="exportCards()">📤 Export</button>
+          <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Import</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCards(event)">
+        </div>
+      </div>
+    </div>
+    <!-- ad unit placeholder -->
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Study smarter with flashcards using active recall — the most effective learning technique. Create your own flashcard sets or use ready-made sets for Indian GK, Science, English Vocabulary, Mathematics, Computer Science, and more. Track your score, shuffle cards, and export sets to share with friends. Perfect for UPSC, SSC, NEET, JEE, board exams, and interview preparation. All data stays in your browser.</p></div>
+  </div>
+  <footer>
+    <div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div>
+    <p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+var readySets={
+"Indian GK":[["Capital of India?","New Delhi"],["National animal of India?","Bengal Tiger"],["National bird of India?","Peacock"],["National flower of India?","Lotus"],["National game of India?","Hockey"],["Who wrote the Indian National Anthem?","Rabindranath Tagore"],["First President of India?","Dr. Rajendra Prasad"],["First Prime Minister of India?","Jawaharlal Nehru"],["Longest river in India?","Ganga (2,525 km)"],["Highest peak in India?","Kangchenjunga (8,586 m)"],["How many states in India?","28 States and 8 Union Territories"],["Indian Independence Day?","15 August 1947"],["Republic Day of India?","26 January 1950"],["Father of the Indian Constitution?","Dr. B.R. Ambedkar"],["Currency of India?","Indian Rupee (INR)"],["National anthem of India?","Jana Gana Mana"],["Largest state by area?","Rajasthan"],["Smallest state by area?","Goa"],["Most populated state?","Uttar Pradesh"],["Who is known as Father of the Nation?","Mahatma Gandhi"]],
+"English Vocabulary":[["Ubiquitous","Present, appearing, or found everywhere"],["Ephemeral","Lasting for a very short time"],["Pragmatic","Dealing with things sensibly and realistically"],["Eloquent","Fluent or persuasive in speaking or writing"],["Resilient","Able to recover quickly from difficulties"],["Ambiguous","Open to more than one interpretation"],["Benevolent","Well-meaning and kindly"],["Diligent","Having or showing care in work or duties"],["Empathy","The ability to understand feelings of another"],["Inevitable","Certain to happen; unavoidable"],["Meticulous","Showing great attention to detail"],["Profound","Very great or intense; deep"],["Skeptical","Not easily convinced; having doubts"],["Tenacious","Holding firmly to something; persistent"],["Versatile","Able to adapt to many different functions"]],
+"Science Facts":[["Speed of light?","299,792 km per second"],["Chemical formula of water?","H2O"],["Largest organ in human body?","Skin"],["How many bones in adult human body?","206"],["What gas do plants absorb?","Carbon Dioxide (CO2)"],["What gas do plants release?","Oxygen (O2)"],["Boiling point of water?","100 degrees Celsius"],["Freezing point of water?","0 degrees Celsius"],["What is the powerhouse of the cell?","Mitochondria"],["Largest planet in solar system?","Jupiter"],["Closest star to Earth?","Sun"],["What causes tides?","Gravitational pull of Moon"],["Unit of electric current?","Ampere"],["Unit of force?","Newton"],["What is the pH of pure water?","7 (neutral)"]],
+"Computer Science":[["What does CPU stand for?","Central Processing Unit"],["What does RAM stand for?","Random Access Memory"],["What does HTML stand for?","HyperText Markup Language"],["What does CSS stand for?","Cascading Style Sheets"],["What does URL stand for?","Uniform Resource Locator"],["What is an algorithm?","A step-by-step procedure to solve a problem"],["What does HTTP stand for?","HyperText Transfer Protocol"],["What is a variable in programming?","A named storage location for data"],["What does SQL stand for?","Structured Query Language"],["What is an IP address?","A unique numerical label for each device on a network"],["What does API stand for?","Application Programming Interface"],["What is a loop in programming?","Code that repeats until a condition is met"],["What does OS stand for?","Operating System"],["What is binary code?","A system using only 0 and 1"],["What does GPU stand for?","Graphics Processing Unit"]],
+"Mathematics":[["Value of Pi (3 decimals)?","3.14159"],["Square root of 144?","12"],["What is 15% of 200?","30"],["Area of a circle formula?","A = Pi x r squared"],["Pythagorean theorem?","a squared + b squared = c squared"],["What is the LCM of 12 and 18?","36"],["What is the HCF of 24 and 36?","12"],["Sum of angles in a triangle?","180 degrees"],["What is 2 to the power of 10?","1024"],["Derivative of x squared?","2x"],["What is factorial of 5 (5!)?","120"],["Value of log10(1000)?","3"],["What is the slope formula?","(y2-y1) / (x2-x1)"],["Circumference of circle formula?","C = 2 x Pi x r"],["What is 0.1 + 0.2 in computing?","0.30000000000000004 (floating point)"]]
+};
+var deck=[],idx=0,score={know:0,dont:0},customCards=[];
+function showTab(t){
+  document.getElementById("study").style.display=t==="study"?"":"none";
+  document.getElementById("sets").style.display=t==="sets"?"":"none";
+  document.getElementById("create").style.display=t==="create"?"":"none";
+  var btns=document.querySelectorAll(".tab-btns button");
+  btns.forEach(function(b,i){b.className=["study","sets","create"][i]===t?"active":""});
+  if(t==="sets")renderSets();
+  if(t==="create")renderCustomList();
+}
+function renderSets(){
+  var html="";
+  for(var name in readySets){
+    html+='<div class="set-card" onclick="loadSet(\''+name+'\')"><strong>'+name+'</strong> <span style="float:right;opacity:.6">'+readySets[name].length+' cards</span></div>';
+  }
+  document.getElementById("setList").innerHTML=html;
+}
+function loadSet(name){
+  deck=readySets[name].map(function(c){return{front:c[0],back:c[1]}});
+  idx=0;score={know:0,dont:0};
+  document.getElementById("deckInfo").textContent="Studying: "+name;
+  showTab("study");showCard();
+}
+function showCard(){
+  if(!deck.length)return;
+  document.getElementById("flashcard").classList.remove("flipped");
+  document.getElementById("cardFront").textContent=deck[idx].front;
+  document.getElementById("cardBack").textContent=deck[idx].back;
+  document.getElementById("cardNum").textContent=idx+1;
+  document.getElementById("cardTotal").textContent=deck.length;
+  updateScore();
+}
+function flipCard(){document.getElementById("flashcard").classList.toggle("flipped")}
+function markCard(knew){
+  if(!deck.length)return;
+  if(knew)score.know++;else score.dont++;
+  updateScore();nextCard();
+}
+function nextCard(){if(!deck.length)return;idx=(idx+1)%deck.length;showCard()}
+function prevCard(){if(!deck.length)return;idx=(idx-1+deck.length)%deck.length;showCard()}
+function shuffleDeck(){
+  for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=deck[i];deck[i]=deck[j];deck[j]=t;}
+  idx=0;showCard();
+}
+function updateScore(){
+  var total=score.know+score.dont;
+  var pct=total?Math.round(score.know/total*100):0;
+  document.getElementById("scoreDisplay").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+score.know+'</div><div class="info">Correct</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#f44336">'+score.dont+'</div><div class="info">Wrong</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent)">'+pct+'%</div><div class="info">Score</div></div>';
+}
+function addCustomCard(){
+  var f=document.getElementById("newFront").value.trim();
+  var b=document.getElementById("newBack").value.trim();
+  if(!f||!b)return alert("Fill both sides");
+  customCards.push({front:f,back:b});
+  document.getElementById("newFront").value="";document.getElementById("newBack").value="";
+  localStorage.setItem("fcCustom",JSON.stringify(customCards));
+  renderCustomList();
+}
+function renderCustomList(){
+  var saved=localStorage.getItem("fcCustom");
+  if(saved&&!customCards.length)customCards=JSON.parse(saved);
+  document.getElementById("customList").innerHTML=customCards.map(function(c,i){
+    return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center"><span><strong>'+c.front+'</strong> → '+c.back+'</span><button onclick="customCards.splice('+i+',1);localStorage.setItem(\'fcCustom\',JSON.stringify(customCards));renderCustomList()" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">×</button></div>';
+  }).join("")||'<p class="info">No cards yet. Add some above!</p>';
+}
+function studyCustom(){
+  if(!customCards.length)return alert("Add some cards first");
+  deck=customCards.slice();idx=0;score={know:0,dont:0};
+  document.getElementById("deckInfo").textContent="Studying: My Cards ("+deck.length+" cards)";
+  showTab("study");showCard();
+}
+function exportCards(){
+  if(!customCards.length)return alert("No cards to export");
+  download(new Blob([JSON.stringify(customCards)],{type:"application/json"}),"flashcards.json");
+}
+function importCards(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var data=JSON.parse(reader.result);
+      if(Array.isArray(data)){customCards=customCards.concat(data);localStorage.setItem("fcCustom",JSON.stringify(customCards));renderCustomList();alert("Imported "+data.length+" cards!");}
+    }catch(err){alert("Invalid file")}
+  };
+  reader.readAsText(file);
+}
+var saved=localStorage.getItem("fcCustom");if(saved)customCards=JSON.parse(saved);
+updateScore();
+  </script>
+</body>
+</html>
