@@ -44,11 +44,27 @@
     <!-- ad unit placeholder -->
     <div class="tool-section">
       <h1>✏️ Add Text to PDF</h1>
-      <p class="info">Upload a PDF and add text to the first page.</p>
+      <p class="info">Upload a PDF, click anywhere on the page to add text. Navigate pages, change font size and color.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
-      <div class="row"><input type="text" id="pdfText" placeholder="Text to add..."><input type="number" id="fontSize" value="16" min="8" max="72" style="max-width:100px" placeholder="Size"></div>
-      <div class="row"><label>Position X:</label><input type="number" id="posX" value="50"><label>Y from top:</label><input type="number" id="posY" value="50"></div>
-      <button class="btn" onclick="addText()" id="addBtn" disabled>Add Text & Download</button>
+      <div id="editor" style="display:none">
+        <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
+          <label>Font size:</label><input type="number" id="fontSize" value="14" min="6" max="72" style="width:60px">
+          <label>Color:</label><input type="color" id="fontColor" value="#000000" style="width:40px;height:35px;border:none">
+          <button class="btn btn-outline" onclick="prevPage()">◀ Prev</button>
+          <span id="pageInfo" style="padding:0 .5rem;font-weight:600">1/1</span>
+          <button class="btn btn-outline" onclick="nextPage()">Next ▶</button>
+          <button class="btn btn-outline" onclick="undoLast()">↩ Undo</button>
+        </div>
+        <p class="info">👆 Click on the PDF below where you want to add text. Type and press Enter or click elsewhere.</p>
+        <div id="pdfContainer" style="position:relative;display:inline-block;border:2px solid var(--border);border-radius:8px;overflow:hidden;cursor:crosshair">
+          <canvas id="pdfCanvas"></canvas>
+          <div id="textLayer" style="position:absolute;top:0;left:0;width:100%;height:100%"></div>
+        </div>
+        <div class="row" style="margin-top:1rem">
+          <button class="btn" onclick="savePdf()">💾 Download Edited PDF</button>
+          <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All Text</button>
+        </div>
+      </div>
       <div id="result"></div>
     </div>
     <!-- ad unit placeholder -->
@@ -61,10 +77,96 @@
     <p><a href="../">Home</a> | <a href="../about.html">About</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p>
     <p style="margin-top:.5rem">© 2026 Ankit Tiwari. All rights reserved.</p>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>let file;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("addBtn").disabled=false});
-async function addText(){const t=document.getElementById("pdfText").value;if(!t||!file)return alert("Add PDF and text");const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer());const page=doc.getPages()[0];const sz=+document.getElementById("fontSize").value;page.drawText(t,{x:+document.getElementById("posX").value,y:page.getHeight()-+document.getElementById("posY").value,size:sz});download(new Blob([await doc.save()],{type:"application/pdf"}),"edited.pdf");document.getElementById("result").innerHTML="<p class=\"info\">✅ Text added!</p>"}</script>
+  <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[];
+setupDrop("drop","inp",function(f){pdfFile=f[0];loadPdf()});
+async function loadPdf(){
+  var data=await pdfFile.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data:data}).promise;
+  totalPages=pdfDoc.numPages;currentPage=1;
+  document.getElementById("editor").style.display="block";
+  renderPage();
+}
+async function renderPage(){
+  var page=await pdfDoc.getPage(currentPage);
+  var vp=page.getViewport({scale:scale});
+  var canvas=document.getElementById("pdfCanvas");
+  canvas.width=vp.width;canvas.height=vp.height;
+  await page.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise;
+  document.getElementById("pageInfo").textContent=currentPage+"/"+totalPages;
+  document.getElementById("textLayer").style.width=vp.width+"px";
+  document.getElementById("textLayer").style.height=vp.height+"px";
+  renderTexts();
+}
+function renderTexts(){
+  var layer=document.getElementById("textLayer");
+  layer.innerHTML="";
+  textItems.forEach(function(item,idx){
+    if(item.page!==currentPage)return;
+    var div=document.createElement("div");
+    div.textContent=item.text;
+    div.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";cursor:move;padding:2px;min-width:20px;white-space:nowrap;";
+    div.ondblclick=function(){editText(idx)};
+    layer.appendChild(div);
+  });
+}
+document.getElementById("textLayer").addEventListener("click",function(e){
+  if(e.target!==this)return;
+  var rect=this.getBoundingClientRect();
+  var x=e.clientX-rect.left;
+  var y=e.clientY-rect.top;
+  var input=document.createElement("input");
+  input.type="text";input.placeholder="Type here...";
+  input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
+  this.appendChild(input);
+  input.focus();
+  function done(){
+    if(input.value.trim()){
+      textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value});
+    }
+    if(input.parentNode)input.remove();
+    renderTexts();
+  }
+  input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
+  input.addEventListener("blur",done);
+});
+function editText(idx){
+  var item=textItems[idx];
+  var layer=document.getElementById("textLayer");
+  var input=document.createElement("input");
+  input.type="text";input.value=item.text;
+  input.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
+  layer.appendChild(input);input.focus();input.select();
+  function done(){
+    if(input.value.trim())item.text=input.value;
+    else textItems.splice(idx,1);
+    if(input.parentNode)input.remove();
+    renderTexts();
+  }
+  input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
+  input.addEventListener("blur",done);
+}
+function undoLast(){if(textItems.length){textItems.pop();renderTexts()}}
+function clearAll(){textItems=[];renderTexts()}
+function prevPage(){if(currentPage>1){currentPage--;renderPage()}}
+function nextPage(){if(currentPage<totalPages){currentPage++;renderPage()}}
+async function savePdf(){
+  var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+  var pages=doc.getPages();
+  textItems.forEach(function(item){
+    var pg=pages[item.page-1];
+    if(!pg)return;
+    var h=pg.getHeight();
+    var r=item.color.match(/\w\w/g).map(function(c){return parseInt(c,16)/255});
+    pg.drawText(item.text,{x:item.x/scale,y:h-item.y/scale-item.size,size:item.size/scale*0.75,color:PDFLib.rgb(r[0],r[1],r[2])});
+  });
+  download(new Blob([await doc.save()],{type:"application/pdf"}),"edited.pdf");
+  document.getElementById("result").innerHTML="<p class='info'>✅ PDF saved with text!</p>";
+}
+  </script>
 </body>
 </html>
