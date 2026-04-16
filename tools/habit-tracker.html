@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker - Track Daily Habits Free Online | FreeToolHubs</title>
+  <meta name="description" content="Free online habit tracker. Track daily habits, build streaks, and improve your routine. Auto-saves to browser. No signup needed.">
+  <meta property="og:title" content="Habit Tracker — Free Online | FreeToolHubs">
+  <meta property="og:description" content="Track daily habits and build streaks — free, no signup">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/habit-tracker">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Habit Tracker","url":"https://freetoolhubs.com/tools/habit-tracker","description":"Track daily habits and build streaks","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/habit-tracker">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✅ Habit Tracker</div>
+    <div class="tool-section">
+      <h1>✅ Habit Tracker</h1>
+      <p class="info">Add habits, check them off daily, build streaks. Auto-saves to your browser.</p>
+      <div class="row"><input type="text" id="newHabit" placeholder="Add a new habit... (e.g. Study 2 hours)" style="flex:3"><button class="btn" onclick="addHabit()">+ Add</button></div>
+      <div id="today" style="margin:1rem 0;font-size:1.1rem;font-weight:600"></div>
+      <div id="habitList"></div>
+      <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-top:1.5rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Build better habits with this free online habit tracker. Add your daily habits, check them off each day, and track your streaks. Perfect for students tracking study hours, fitness goals, reading habits, and self-improvement. All data saves automatically in your browser — no account needed. Come back daily to maintain your streaks!</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var habits=JSON.parse(localStorage.getItem("habits")||"[]");
+var today=new Date().toISOString().split("T")[0];
+document.getElementById("today").textContent="Today: "+new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+function save(){localStorage.setItem("habits",JSON.stringify(habits))}
+function addHabit(){
+  var name=document.getElementById("newHabit").value.trim();
+  if(!name)return;
+  habits.push({name:name,log:{},created:today});
+  document.getElementById("newHabit").value="";save();render();
+}
+function toggleHabit(i){
+  if(habits[i].log[today])delete habits[i].log[today];
+  else habits[i].log[today]=true;
+  save();render();
+}
+function removeHabit(i){
+  if(confirm("Delete habit: "+habits[i].name+"?")){habits.splice(i,1);save();render()}
+}
+function getStreak(h){
+  var streak=0,d=new Date();
+  for(var j=0;j<365;j++){
+    var key=d.toISOString().split("T")[0];
+    if(h.log[key])streak++;else if(j>0)break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function render(){
+  var html="";
+  habits.forEach(function(h,i){
+    var done=h.log[today];
+    var streak=getStreak(h);
+    var totalDone=Object.keys(h.log).length;
+    var last7="";
+    for(var j=6;j>=0;j--){
+      var d=new Date();d.setDate(d.getDate()-j);
+      var key=d.toISOString().split("T")[0];
+      last7+='<span style="display:inline-block;width:20px;height:20px;border-radius:4px;margin:1px;background:'+(h.log[key]?"#4caf50":"var(--border)")+'"></span>';
+    }
+    html+='<div style="background:var(--card);padding:1rem;border-radius:12px;margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">';
+    html+='<button onclick="toggleHabit('+i+')" style="font-size:1.5rem;background:none;border:none;cursor:pointer">'+(done?"✅":"⬜")+'</button>';
+    html+='<div style="flex:2;min-width:120px"><strong style="'+(done?"text-decoration:line-through;opacity:.6":"")+'">'+h.name+'</strong><div style="margin-top:4px">'+last7+'</div></div>';
+    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+streak+'</div><div class="info" style="font-size:.7rem">streak</div></div>';
+    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700">'+totalDone+'</div><div class="info" style="font-size:.7rem">total</div></div>';
+    html+='<button onclick="removeHabit('+i+')" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">×</button></div>';
+  });
+  document.getElementById("habitList").innerHTML=html||'<p class="info">No habits yet. Add one above to get started!</p>';
+  var completed=habits.filter(function(h){return h.log[today]}).length;
+  var pct=habits.length?Math.round(completed/habits.length*100):0;
+  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent)">'+habits.length+'</div><div class="info">Habits</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+completed+'</div><div class="info">Done Today</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700">'+pct+'%</div><div class="info">Completion</div></div>';
+}
+render();
+  </script>
+</body>
+</html>

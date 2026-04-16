@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Name Picker & Team Generator Free | FreeToolHubs</title>
+  <meta name="description" content="Pick random names, make teams, spin the wheel. Perfect for teachers, events, games, and group activities. Free online tool.">
+  <meta property="og:title" content="Random Name Picker & Team Generator | FreeToolHubs">
+  <meta property="og:description" content="Pick random names and generate teams — free for teachers and events">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/name-picker">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Random Name Picker","url":"https://freetoolhubs.com/tools/name-picker","description":"Pick random names and generate teams","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/name-picker">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎯 Random Name Picker</div>
+    <div class="tool-section">
+      <h1>🎯 Random Name Picker & Team Generator</h1>
+      <p class="info">Enter names (one per line), then pick randomly or make teams.</p>
+      <textarea id="names" rows="6" placeholder="Enter names, one per line:&#10;Rahul&#10;Priya&#10;Amit&#10;Sneha&#10;Vikram"></textarea>
+      <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
+        <button class="btn" onclick="pickOne()" style="flex:1">🎲 Pick Random</button>
+        <button class="btn btn-outline" onclick="pickMultiple()" style="flex:1">🎯 Pick Multiple</button>
+        <button class="btn btn-outline" onclick="makeTeams()" style="flex:1">👥 Make Teams</button>
+        <button class="btn btn-outline" onclick="shuffleNames()" style="flex:1">🔀 Shuffle</button>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <label>Pick count:</label><input type="number" id="pickCount" value="1" min="1" style="width:60px">
+        <label>Teams:</label><input type="number" id="teamCount" value="2" min="2" max="10" style="width:60px">
+      </div>
+      <div id="result" style="margin-top:1rem;text-align:center;min-height:80px"></div>
+      <div id="history" style="margin-top:1rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A free random name picker and team generator. Enter a list of names and randomly pick one or more, generate balanced teams, or shuffle the entire list. Perfect for teachers picking students, event organizers making teams, games, giveaways, and group activities. Uses cryptographically secure randomization for fair results.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var hist=[];
+function getNames(){return document.getElementById("names").value.trim().split("\n").map(function(n){return n.trim()}).filter(function(n){return n})}
+function secureRandom(max){return crypto.getRandomValues(new Uint32Array(1))[0]%max}
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=secureRandom(i+1);var t=a[i];a[i]=a[j];a[j]=t}return a}
+function pickOne(){
+  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  var picked=names[secureRandom(names.length)];
+  document.getElementById("result").innerHTML='<div style="font-size:2rem;margin:.5rem 0">🎉</div><div style="font-size:1.8rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+picked+'</div>';
+  hist.unshift(picked);renderHistory();
+}
+function pickMultiple(){
+  var names=getNames();var count=Math.min(+document.getElementById("pickCount").value,names.length);
+  if(!names.length)return alert("Enter some names first!");
+  var shuffled=shuffle(names);var picked=shuffled.slice(0,count);
+  document.getElementById("result").innerHTML='<div style="font-size:1.5rem;margin:.5rem 0">🎯 Picked '+count+':</div>'+picked.map(function(n){return '<span style="display:inline-block;background:var(--card);padding:.4rem .8rem;border-radius:8px;margin:.2rem;font-weight:600">'+n+'</span>'}).join("");
+  hist.unshift(picked.join(", "));renderHistory();
+}
+function makeTeams(){
+  var names=getNames();var teamCount=+document.getElementById("teamCount").value;
+  if(!names.length)return alert("Enter some names first!");
+  var shuffled=shuffle(names);
+  var teams=[];for(var i=0;i<teamCount;i++)teams.push([]);
+  shuffled.forEach(function(n,i){teams[i%teamCount].push(n)});
+  var colors=["#4f8cff","#a855f7","#4caf50","#ff9800","#f44336","#00bcd4","#e91e63","#795548","#607d8b","#9c27b0"];
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.8rem">';
+  teams.forEach(function(team,i){
+    html+='<div style="background:var(--card);padding:1rem;border-radius:12px;border-top:3px solid '+colors[i%colors.length]+'"><strong>Team '+(i+1)+'</strong> ('+team.length+')<br>'+team.map(function(n){return '<div style="padding:.2rem 0">'+n+'</div>'}).join("")+'</div>';
+  });
+  html+='</div>';
+  document.getElementById("result").innerHTML=html;
+}
+function shuffleNames(){
+  var names=getNames();if(!names.length)return;
+  document.getElementById("names").value=shuffle(names).join("\n");
+  document.getElementById("result").innerHTML='<p class="info">🔀 Names shuffled!</p>';
+}
+function renderHistory(){
+  if(!hist.length)return;
+  document.getElementById("history").innerHTML='<h3>History</h3>'+hist.slice(0,10).map(function(h,i){return '<div style="padding:.2rem .5rem;color:var(--muted);font-size:.85rem">'+(i+1)+'. '+h+'</div>'}).join("");
+}
+  </script>
+</body>
+</html>

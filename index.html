@@ -46,6 +46,7 @@
 
     <h1>Free Online Tools</h1>
     <p style="color:var(--text2);margin-bottom:1rem">100% free. Runs in your browser. Your files never leave your device.</p>
+    <input type="text" id="searchTools" placeholder="🔍 Search tools... (e.g. PDF, image, typing, calculator)" oninput="filterTools()" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:1.5rem">
 
     <h2>📄 Document Tools</h2>
     <div class="tools-grid">
@@ -104,6 +105,8 @@
       <a href="tools/typing-test.html" class="tool-card">⌨️<br>Typing Test<br><small>Check WPM speed</small></a>
       <a href="tools/bmi-calculator.html" class="tool-card">⚖️<br>BMI Calculator<br><small>Check body mass index</small></a>
       <a href="tools/flashcards.html" class="tool-card">📚<br>Flashcards<br><small>Study & learn</small></a>
+      <a href="tools/habit-tracker.html" class="tool-card">✅<br>Habit Tracker<br><small>Build daily streaks</small></a>
+      <a href="tools/love-calculator.html" class="tool-card">💕<br>Love Calculator<br><small>Fun compatibility</small></a>
     </div>
 
     <h2>💼 Professional Tools</h2>
@@ -113,6 +116,9 @@
       <a href="tools/markdown-editor.html" class="tool-card">✍️<br>Markdown Editor<br><small>Live preview</small></a>
       <a href="tools/screen-recorder.html" class="tool-card">🎥<br>Screen Recorder<br><small>No install needed</small></a>
       <a href="tools/signature-maker.html" class="tool-card">✍️<br>Signature Maker<br><small>Draw & download</small></a>
+      <a href="tools/meme-generator.html" class="tool-card">😂<br>Meme Generator<br><small>Create memes</small></a>
+      <a href="tools/whiteboard.html" class="tool-card">🎨<br>Whiteboard<br><small>Draw & sketch</small></a>
+      <a href="tools/name-picker.html" class="tool-card">🎯<br>Name Picker<br><small>Random pick & teams</small></a>
     </div>
 
     <!-- AD SLOT: Middle -->
@@ -142,5 +148,14 @@
   </footer>
 
   <script src="js/common.js"></script>
+  <script>
+function filterTools(){
+  var q=document.getElementById("searchTools").value.toLowerCase();
+  var cards=document.querySelectorAll(".tool-card");
+  var sections=document.querySelectorAll(".tools-grid");
+  cards.forEach(function(c){c.style.display=c.textContent.toLowerCase().indexOf(q)>-1?"":"none"});
+  sections.forEach(function(s){var visible=s.querySelectorAll('.tool-card[style=""], .tool-card:not([style])');var hasVisible=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")hasVisible=true});s.style.display=hasVisible?"":"none";if(s.previousElementSibling&&s.previousElementSibling.tagName==="H2")s.previousElementSibling.style.display=hasVisible?"":"none"});
+}
+  </script>
 </body>
 </html>

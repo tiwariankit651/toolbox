@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meme Generator - Create Memes Online Free | FreeToolHubs</title>
+  <meta name="description" content="Create funny memes online for free. Upload image, add top and bottom text, customize font and color. Download and share. No signup needed.">
+  <meta property="og:title" content="Meme Generator — Free Online | FreeToolHubs">
+  <meta property="og:description" content="Create and download memes for free — no signup needed">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/meme-generator">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Meme Generator","url":"https://freetoolhubs.com/tools/meme-generator","description":"Create memes online for free","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/meme-generator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 😂 Meme Generator</div>
+    <div class="tool-section">
+      <h1>😂 Meme Generator</h1>
+      <p class="info">Upload an image, add text, download your meme. No watermark!</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here or click to upload<input type="file" id="inp" accept="image/*"></div>
+      <div id="editor" style="display:none">
+        <div class="row"><input type="text" id="topText" placeholder="Top text..." oninput="render()"><input type="text" id="bottomText" placeholder="Bottom text..." oninput="render()"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Font size</label><input type="range" id="fontSize" min="20" max="80" value="40" oninput="render()"></div>
+          <div><label>Text color</label><input type="color" id="textColor" value="#ffffff" oninput="render()" style="height:35px"></div>
+          <div><label>Outline</label><input type="color" id="outlineColor" value="#000000" oninput="render()" style="height:35px"></div>
+        </div>
+        <canvas id="memeCanvas" style="width:100%;max-width:600px;display:block;margin:1rem auto;border-radius:8px"></canvas>
+        <div class="row" style="justify-content:center"><button class="btn" onclick="downloadMeme()">💾 Download Meme</button></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Create memes online for free. Upload any image, add top and bottom text with customizable font size, color, and outline. Download as PNG with no watermark. Perfect for social media, WhatsApp, and fun with friends. Everything runs in your browser — no uploads to any server.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var img=null,canvas=document.getElementById("memeCanvas"),ctx=canvas.getContext("2d");
+setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){var i=new Image();i.onload=function(){img=i;canvas.width=i.width;canvas.height=i.height;document.getElementById("editor").style.display="block";render()};i.src=reader.result};reader.readAsDataURL(f[0])});
+function render(){
+  if(!img)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);
+  var size=+document.getElementById("fontSize").value*(canvas.width/600);
+  ctx.font="bold "+size+"px Impact,Arial,sans-serif";ctx.fillStyle=document.getElementById("textColor").value;ctx.strokeStyle=document.getElementById("outlineColor").value;ctx.lineWidth=size/15;ctx.textAlign="center";
+  var top=document.getElementById("topText").value.toUpperCase();
+  var bottom=document.getElementById("bottomText").value.toUpperCase();
+  if(top){ctx.strokeText(top,canvas.width/2,size+10);ctx.fillText(top,canvas.width/2,size+10)}
+  if(bottom){ctx.strokeText(bottom,canvas.width/2,canvas.height-20);ctx.fillText(bottom,canvas.width/2,canvas.height-20)}
+}
+function downloadMeme(){if(!img)return;canvas.toBlob(function(b){download(b,"meme.png")})}
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Whiteboard - Free Drawing Board | FreeToolHubs</title>
+  <meta name="description" content="Free online whiteboard and drawing board. Draw, write, sketch and export as image. Perfect for students, teachers, and brainstorming.">
+  <meta property="og:title" content="Online Whiteboard — Free Drawing Board | FreeToolHubs">
+  <meta property="og:description" content="Free online whiteboard for drawing, teaching, and brainstorming">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/whiteboard">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Online Whiteboard","url":"https://freetoolhubs.com/tools/whiteboard","description":"Free online whiteboard for drawing and teaching","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/whiteboard">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎨 Whiteboard</div>
+    <div class="tool-section">
+      <h1>🎨 Online Whiteboard</h1>
+      <p class="info">Draw, write, sketch. Use for teaching, brainstorming, or fun.</p>
+      <div class="row" style="flex-wrap:wrap;margin-bottom:.5rem">
+        <button class="btn" onclick="setTool('pen')" id="btnPen" style="background:var(--accent)">✏️ Pen</button>
+        <button class="btn btn-outline" onclick="setTool('eraser')" id="btnEraser">🧹 Eraser</button>
+        <input type="color" id="penColor" value="#000000" style="width:40px;height:35px;border:none;cursor:pointer" onchange="setTool('pen')">
+        <label>Size:</label><input type="range" id="penSize" min="1" max="30" value="3" style="max-width:120px">
+        <button class="btn btn-outline" onclick="undo()">↩ Undo</button>
+        <button class="btn btn-outline" onclick="clearBoard()">🗑️ Clear</button>
+      </div>
+      <div class="row" style="margin-bottom:.5rem">
+        <label>Background:</label>
+        <button class="btn btn-outline" onclick="setBg('#ffffff')" style="padding:.3rem .8rem">White</button>
+        <button class="btn btn-outline" onclick="setBg('#1a1a2e')" style="padding:.3rem .8rem">Dark</button>
+        <button class="btn btn-outline" onclick="setBg('#f0f0f0')" style="padding:.3rem .8rem">Gray</button>
+        <button class="btn btn-outline" onclick="setBg('#fffde7')" style="padding:.3rem .8rem">Yellow</button>
+      </div>
+      <canvas id="board" width="900" height="500" style="width:100%;background:#fff;border-radius:8px;cursor:crosshair;touch-action:none;border:1px solid var(--border)"></canvas>
+      <div class="row" style="margin-top:.8rem"><button class="btn" onclick="exportBoard()">💾 Download as PNG</button></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A free online whiteboard for drawing, sketching, and writing. Perfect for teachers explaining concepts, students making diagrams, brainstorming sessions, and quick sketches. Supports pen, eraser, custom colors, multiple background colors, undo, and export as PNG image. Works on desktop and mobile with touch support.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var c=document.getElementById("board"),ctx=c.getContext("2d"),drawing=false,tool="pen",strokes=[],current=[],bgColor="#ffffff";
+ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);
+function getPos(e){var r=c.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)}}
+function startDraw(e){e.preventDefault();drawing=true;var p=getPos(e);current=[{x:p.x,y:p.y,color:tool==="eraser"?bgColor:document.getElementById("penColor").value,size:+document.getElementById("penSize").value*(tool==="eraser"?3:1)}]}
+function draw(e){if(!drawing)return;e.preventDefault();var p=getPos(e);current.push({x:p.x,y:p.y,color:current[0].color,size:current[0].size});drawStroke(current)}
+function stopDraw(){if(!drawing)return;drawing=false;if(current.length>1)strokes.push(current.slice());current=[]}
+function drawStroke(s){if(s.length<2)return;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";ctx.moveTo(s[0].x,s[0].y);for(var i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
+function redraw(){ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);strokes.forEach(function(s){drawStroke(s)})}
+function setTool(t){tool=t;document.getElementById("btnPen").style.background=t==="pen"?"var(--accent)":"";document.getElementById("btnPen").className=t==="pen"?"btn":"btn btn-outline";document.getElementById("btnEraser").style.background=t==="eraser"?"var(--accent)":"";document.getElementById("btnEraser").className=t==="eraser"?"btn":"btn btn-outline"}
+function undo(){strokes.pop();redraw()}
+function clearBoard(){strokes=[];redraw()}
+function setBg(color){bgColor=color;c.style.background=color;redraw()}
+function exportBoard(){c.toBlob(function(b){download(b,"whiteboard.png")})}
+c.addEventListener("mousedown",startDraw);c.addEventListener("mousemove",draw);c.addEventListener("mouseup",stopDraw);c.addEventListener("mouseleave",stopDraw);
+c.addEventListener("touchstart",startDraw);c.addEventListener("touchmove",draw);c.addEventListener("touchend",stopDraw);
+  </script>
+</body>
+</html>
