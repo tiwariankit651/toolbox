@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Plotter - Plot Math Equations Free | FreeToolHubs</title>
+  <meta name="description" content="Plot mathematical equations and functions online. Supports linear, quadratic, trigonometric, and custom functions. Free graph plotter for students.">
+  <meta property="og:title" content="Graph Plotter — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/graph-plotter"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Graph Plotter","url":"https://freetoolhubs.com/tools/graph-plotter","description":"Plot math equations and functions","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/graph-plotter"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📈 Graph Plotter</div>
+    <div class="tool-section">
+      <h1>📈 Graph Plotter</h1>
+      <p class="info">Enter equations using x. Examples: x*x, Math.sin(x), 2*x+3</p>
+      <div class="row"><input type="text" id="eq1" value="x*x" placeholder="y = ..." oninput="plot()" style="flex:2"><input type="color" id="col1" value="#4f8cff" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+      <div class="row"><input type="text" id="eq2" value="2*x+1" placeholder="y = ... (optional)" oninput="plot()" style="flex:2"><input type="color" id="col2" value="#f44336" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+      <div class="row"><label>X range:</label><input type="number" id="xmin" value="-10" style="width:60px" oninput="plot()"> to <input type="number" id="xmax" value="10" style="width:60px" oninput="plot()"></div>
+      <canvas id="graph" width="700" height="450" style="width:100%;background:#fff;border-radius:8px;border:1px solid var(--border);margin-top:.5rem"></canvas>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:.8rem">
+        <button class="btn btn-outline" onclick="setEq('Math.sin(x)','Math.cos(x)')">sin & cos</button>
+        <button class="btn btn-outline" onclick="setEq('x*x','x*x*x')">x² & x³</button>
+        <button class="btn btn-outline" onclick="setEq('Math.sqrt(Math.abs(x))','')">√x</button>
+        <button class="btn btn-outline" onclick="setEq('1/x','')">1/x</button>
+        <button class="btn btn-outline" onclick="setEq('Math.log(Math.abs(x)+0.01)','')">ln(x)</button>
+        <button class="btn btn-outline" onclick="setEq('Math.abs(x)','')">|x|</button>
+      </div>
+      <div class="row" style="margin-top:.5rem"><button class="btn" onclick="var c=document.getElementById('graph');c.toBlob(function(b){download(b,'graph.png')})">💾 Download Graph</button></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Plot mathematical functions and equations online. Supports linear, quadratic, polynomial, trigonometric (sin, cos, tan), logarithmic, and custom functions. Plot two equations simultaneously to compare. Great for math students, teachers, and anyone learning algebra and calculus.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+function setEq(a,b){document.getElementById("eq1").value=a;document.getElementById("eq2").value=b;plot()}
+function plot(){
+  var c=document.getElementById("graph"),ctx=c.getContext("2d"),W=c.width,H=c.height;
+  var xmin=+document.getElementById("xmin").value||(-10),xmax=+document.getElementById("xmax").value||10;
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+  var sx=W/(xmax-xmin),yRange=20,sy=H/yRange,ox=-xmin*sx,oy=H/2;
+  // Grid
+  ctx.strokeStyle="#e0e0e0";ctx.lineWidth=0.5;
+  for(var gx=Math.ceil(xmin);gx<=xmax;gx++){var px=ox+gx*sx;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.fillStyle="#999";ctx.font="11px Arial";ctx.fillText(gx,px+2,oy+14)}
+  for(var gy=-10;gy<=10;gy++){var py=oy-gy*sy;if(py>0&&py<H){ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();if(gy!==0){ctx.fillStyle="#999";ctx.fillText(gy,ox+4,py-2)}}}
+  // Axes
+  ctx.strokeStyle="#333";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();
+  // Plot equations
+  [["eq1","col1"],["eq2","col2"]].forEach(function(pair){
+    var expr=document.getElementById(pair[0]).value.trim();if(!expr)return;
+    ctx.strokeStyle=document.getElementById(pair[1]).value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+    for(var px=0;px<W;px++){
+      var x=xmin+px/sx;
+      try{var y=eval(expr);if(isFinite(y)){var py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else if(py>-100&&py<H+100){ctx.lineTo(px,py)}}}catch(e){}
+    }
+    ctx.stroke();
+  });
+}
+plot();
+  </script>
+</body>
+</html>

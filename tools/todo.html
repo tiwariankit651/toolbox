@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List & Kanban Board Free Online | FreeToolHubs</title>
+  <meta name="description" content="Free online to-do list and Kanban board. Organize tasks into To Do, Doing, Done columns. Auto-saves to browser. No signup needed.">
+  <meta property="og:title" content="To-Do List & Kanban Board — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/todo"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"To-Do List & Kanban Board","url":"https://freetoolhubs.com/tools/todo","description":"Organize tasks with Kanban board","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/todo"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📋 To-Do & Kanban</div>
+    <div class="tool-section">
+      <h1>📋 To-Do List & Kanban Board</h1>
+      <p class="info">Add tasks and move them between columns. Auto-saves to browser.</p>
+      <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()"><button class="btn" onclick="addTask()">+ Add</button></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem">
+        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4f8cff">📝 To Do <span id="countTodo" class="info"></span></h3><div id="colTodo" style="min-height:100px"></div></div>
+        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #ff9800">🔄 Doing <span id="countDoing" class="info"></span></h3><div id="colDoing" style="min-height:100px"></div></div>
+        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4caf50">✅ Done <span id="countDone" class="info"></span></h3><div id="colDone" style="min-height:100px"></div></div>
+      </div>
+      <div class="row" style="margin-top:1rem;justify-content:center"><button class="btn btn-outline" onclick="clearDone()">🗑️ Clear Done</button></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A simple Kanban-style to-do list to organize your tasks. Add tasks, move them between To Do, Doing, and Done columns. Perfect for managing study plans, project tasks, and daily activities. All data saves automatically in your browser — no account needed.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var tasks=JSON.parse(localStorage.getItem("kanban")||"[]");
+function save(){localStorage.setItem("kanban",JSON.stringify(tasks))}
+function addTask(){var t=document.getElementById("newTask").value.trim();if(!t)return;tasks.push({text:t,col:"todo",created:Date.now()});document.getElementById("newTask").value="";save();render()}
+function moveTask(i,col){tasks[i].col=col;save();render()}
+function removeTask(i){tasks.splice(i,1);save();render()}
+function clearDone(){tasks=tasks.filter(function(t){return t.col!=="done"});save();render()}
+function render(){
+  var cols={todo:[],doing:[],done:[]};
+  tasks.forEach(function(t,i){t._i=i;if(cols[t.col])cols[t.col].push(t)});
+  ["todo","doing","done"].forEach(function(col){
+    var el=document.getElementById("col"+col.charAt(0).toUpperCase()+col.slice(1));
+    var colors={todo:"#4f8cff",doing:"#ff9800",done:"#4caf50"};
+    var nextCol={todo:"doing",doing:"done",done:"todo"};
+    var arrows={todo:"→ Doing",doing:"→ Done",done:"↩ To Do"};
+    el.innerHTML=cols[col].map(function(t){
+      return '<div style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[col]+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
+    }).join("")||'<p class="info" style="text-align:center;font-size:.8rem">Empty</p>';
+    document.getElementById("count"+col.charAt(0).toUpperCase()+col.slice(1)).textContent="("+cols[col].length+")";
+  });
+}
+render();
+  </script>
+</body>
+</html>
