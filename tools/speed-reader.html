@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speed Reader - Read Faster Online Free | FreeToolHubs</title>
+  <meta name="description" content="Speed reading tool. Paste text and read word-by-word at adjustable speed. Improve reading speed for exams and productivity. Free online.">
+  <meta property="og:title" content="Speed Reader — Read Faster | FreeToolHubs">
+  <meta property="og:description" content="Read faster with word-by-word speed reading — free online tool">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/speed-reader">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Speed Reader","url":"https://freetoolhubs.com/tools/speed-reader","description":"Speed reading tool for faster reading","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/speed-reader">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📖 Speed Reader</div>
+    <div class="tool-section">
+      <h1>📖 Speed Reader</h1>
+      <p class="info">Paste text below, set speed, and read word-by-word. Train your brain to read faster!</p>
+      <textarea id="text" rows="5" placeholder="Paste your text here... (article, notes, current affairs)"></textarea>
+      <div class="row" style="margin:.8rem 0;flex-wrap:wrap">
+        <label>Speed: <span id="wpmLabel">250</span> WPM</label>
+        <input type="range" id="wpm" min="100" max="800" value="250" step="25" oninput="document.getElementById('wpmLabel').textContent=this.value" style="flex:2">
+        <label>Font size:</label>
+        <input type="range" id="fsize" min="24" max="72" value="40" oninput="document.getElementById('display').style.fontSize=this.value+'px'" style="flex:1">
+      </div>
+      <div style="text-align:center;padding:3rem 1rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:120px">
+        <div id="display" style="font-size:40px;font-weight:700">Press Play to start</div>
+        <div id="progress" style="margin-top:1rem;font-size:.85rem;color:var(--muted)"></div>
+      </div>
+      <div class="row" style="justify-content:center">
+        <button class="btn" onclick="startReading()" id="playBtn">▶ Play</button>
+        <button class="btn btn-outline" onclick="pauseReading()">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="resetReading()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Improve your reading speed with this free speed reader. Paste any text — articles, current affairs, study notes — and read word-by-word at your chosen speed. Start at 250 WPM (average) and gradually increase to 400-600 WPM. Great for UPSC current affairs, newspaper reading, and exam preparation. Adjustable font size for comfortable reading.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var words=[],idx=0,interval=null,playing=false;
+function startReading(){
+  if(playing){return}
+  if(!words.length){var text=document.getElementById("text").value.trim();if(!text)return alert("Paste some text first!");words=text.split(/\s+/);idx=0}
+  playing=true;document.getElementById("playBtn").textContent="▶ Playing...";
+  var wpm=+document.getElementById("wpm").value;var delay=60000/wpm;
+  interval=setInterval(function(){
+    if(idx>=words.length){pauseReading();document.getElementById("display").textContent="Done!";document.getElementById("progress").textContent="Finished reading "+words.length+" words";return}
+    document.getElementById("display").textContent=words[idx];
+    document.getElementById("progress").textContent="Word "+(idx+1)+"/"+words.length+" ("+Math.round((idx+1)/words.length*100)+"%)";
+    idx++;
+  },delay);
+}
+function pauseReading(){playing=false;clearInterval(interval);document.getElementById("playBtn").textContent="▶ Resume"}
+function resetReading(){pauseReading();words=[];idx=0;document.getElementById("display").textContent="Press Play to start";document.getElementById("progress").textContent="";document.getElementById("playBtn").textContent="▶ Play"}
+  </script>
+</body>
+</html>

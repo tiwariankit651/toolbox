@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Income Tax Calculator India 2026 - Old vs New Regime | FreeToolHubs</title>
+  <meta name="description" content="Calculate income tax for FY 2025-26 under old and new regime. Compare tax liability, see tax slabs, and plan your savings. Free online calculator.">
+  <meta property="og:title" content="Income Tax Calculator India 2026 | FreeToolHubs">
+  <meta property="og:description" content="Calculate income tax under old and new regime — free online">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/tax-calculator">
+  <meta name="twitter:card" content="summary">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Income Tax Calculator","url":"https://freetoolhubs.com/tools/tax-calculator","description":"Calculate income tax under old and new regime for India","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/tax-calculator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 💰 Income Tax Calculator</div>
+    <div class="tool-section">
+      <h1>💰 Income Tax Calculator — India FY 2025-26</h1>
+      <p class="info">Compare tax under Old and New regime. Enter your annual income and deductions.</p>
+      <div class="row"><label>Annual Income (Rs.):</label><input type="number" id="income" placeholder="e.g. 1000000" style="flex:2"></div>
+      <div class="row"><label>Age group:</label><select id="age"><option value="general">Below 60</option><option value="senior">60-80 (Senior)</option><option value="supersenior">Above 80 (Super Senior)</option></select></div>
+      <h3 style="margin:1rem 0 .5rem">Deductions (Old Regime only)</h3>
+      <div class="row"><label>80C (LIC, PPF, ELSS):</label><input type="number" id="d80c" value="150000" style="flex:2"></div>
+      <div class="row"><label>80D (Health Insurance):</label><input type="number" id="d80d" value="25000" style="flex:2"></div>
+      <div class="row"><label>HRA Exemption:</label><input type="number" id="dhra" value="0" style="flex:2"></div>
+      <div class="row"><label>Other Deductions:</label><input type="number" id="dother" value="0" style="flex:2"></div>
+      <button class="btn" onclick="calc()" style="width:100%;margin-top:1rem">Calculate Tax</button>
+      <div id="result" style="display:none;margin-top:1.5rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #4f8cff"><h3>Old Regime</h3><div id="oldTax" style="font-size:1.8rem;font-weight:700;color:#4f8cff"></div><div class="info">Tax payable</div><div id="oldEffective" style="margin-top:.5rem"></div></div>
+          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #4caf50"><h3>New Regime</h3><div id="newTax" style="font-size:1.8rem;font-weight:700;color:#4caf50"></div><div class="info">Tax payable</div><div id="newEffective" style="margin-top:.5rem"></div></div>
+        </div>
+        <div id="recommendation" style="text-align:center;margin-top:1rem;padding:1rem;background:var(--card);border-radius:12px;font-weight:600"></div>
+        <div id="slabs" style="margin-top:1rem"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Calculate your income tax for FY 2025-26 (AY 2026-27) under both old and new tax regimes. Compare which regime saves you more tax. Includes standard deduction, Section 80C, 80D, HRA exemption, and other deductions. Shows effective tax rate and detailed slab-wise breakdown. Disclaimer: This is for estimation only. Consult a CA for exact tax filing.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+function fmt(n){return "Rs. "+n.toLocaleString("en-IN")}
+function calcOld(taxable,age){
+  var exempt=age==="senior"?300000:age==="supersenior"?500000:250000;
+  var slabs=[[exempt,0],[500000,0.05],[1000000,0.20],[Infinity,0.30]];
+  var tax=0,prev=0;
+  for(var i=0;i<slabs.length;i++){var limit=slabs[i][0],rate=slabs[i][1];if(taxable<=limit){tax+=(taxable-prev)*rate;break}else{tax+=(limit-prev)*rate;prev=limit}}
+  if(taxable<=500000)tax=0;
+  tax+=tax*0.04;return Math.round(tax);
+}
+function calcNew(income){
+  var std=75000;var taxable=Math.max(income-std,0);
+  var slabs=[[300000,0],[700000,0.05],[1000000,0.10],[1200000,0.15],[1500000,0.20],[Infinity,0.30]];
+  var tax=0,prev=0;
+  for(var i=0;i<slabs.length;i++){var limit=slabs[i][0],rate=slabs[i][1];if(taxable<=limit){tax+=(taxable-prev)*rate;break}else{tax+=(limit-prev)*rate;prev=limit}}
+  if(taxable<=700000)tax=0;
+  tax+=tax*0.04;return Math.round(tax);
+}
+function calc(){
+  var income=+document.getElementById("income").value;if(!income)return alert("Enter your income");
+  var age=document.getElementById("age").value;
+  var d80c=Math.min(+document.getElementById("d80c").value||0,150000);
+  var d80d=+document.getElementById("d80d").value||0;
+  var dhra=+document.getElementById("dhra").value||0;
+  var dother=+document.getElementById("dother").value||0;
+  var oldStd=50000;
+  var oldTaxable=Math.max(income-oldStd-d80c-d80d-dhra-dother,0);
+  var oldTax=calcOld(oldTaxable,age);
+  var newTax=calcNew(income);
+  document.getElementById("result").style.display="block";
+  document.getElementById("oldTax").textContent=fmt(oldTax);
+  document.getElementById("newTax").textContent=fmt(newTax);
+  document.getElementById("oldEffective").textContent="Effective rate: "+(income?((oldTax/income)*100).toFixed(1):0)+"%";
+  document.getElementById("newEffective").textContent="Effective rate: "+(income?((newTax/income)*100).toFixed(1):0)+"%";
+  var diff=Math.abs(oldTax-newTax);
+  if(oldTax<newTax)document.getElementById("recommendation").innerHTML='✅ <span style="color:#4f8cff">Old Regime</span> saves you '+fmt(diff)+' more!';
+  else if(newTax<oldTax)document.getElementById("recommendation").innerHTML='✅ <span style="color:#4caf50">New Regime</span> saves you '+fmt(diff)+' more!';
+  else document.getElementById("recommendation").textContent="Both regimes result in same tax.";
+}
+  </script>
+</body>
+</html>
