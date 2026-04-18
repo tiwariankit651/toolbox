@@ -10,6 +10,9 @@ function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId)
 // Register Service Worker for offline support & speed
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
+// Track recently used tools
+if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){var path=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');if(path&&path!==''){var rec=JSON.parse(localStorage.getItem('recentTools')||'[]');rec=rec.filter(function(r){return r!==path});rec.unshift(path);rec=rec.slice(0,8);localStorage.setItem('recentTools',JSON.stringify(rec))}}
+
 // Privacy badge + Share button on tool pages
 if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){
   var h1=document.querySelector('.tool-section h1');

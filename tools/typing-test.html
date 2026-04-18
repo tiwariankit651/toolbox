@@ -47,6 +47,11 @@
         <label>Language:</label>
         <select id="lang" onchange="reset()"><option value="en" selected>English</option><option value="hi">Hindi</option><option value="bn">Bengali</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="gu">Gujarati</option><option value="kn">Kannada</option><option value="pa">Punjabi</option><option value="ml">Malayalam</option><option value="mix">English + Numbers</option></select>
         <button class="btn" onclick="reset()">New Test</button>
+        <button class="btn btn-outline" onclick="document.getElementById('customTextArea').style.display=document.getElementById('customTextArea').style.display==='none'?'block':'none'">📝 Custom Text</button>
+      </div>
+      <div id="customTextArea" style="display:none;margin-bottom:1rem">
+        <textarea id="customText" rows="3" placeholder="Paste your own text here for practice..."></textarea>
+        <button class="btn" onclick="useCustom()" style="margin-top:.3rem">Use This Text</button>
       </div>
       <div id="textDisplay" style="background:var(--card);padding:1.2rem;border-radius:12px;font-size:1.1rem;line-height:1.8;letter-spacing:.5px;margin-bottom:1rem;min-height:100px"></div>
       <textarea id="typingInput" rows="4" placeholder="Start typing here..." style="width:100%;font-size:1rem;padding:.8rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:none" disabled></textarea>
@@ -142,6 +147,7 @@ function finish(){
   r.style.display="grid";
   r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
 }
+function useCustom(){var ct=document.getElementById("customText").value.trim();if(!ct)return alert("Paste some text first");text=ct;document.getElementById("textDisplay").innerHTML=text.split("").map(function(c){return "<span>"+c+"</span>"}).join("");document.getElementById("typingInput").value="";document.getElementById("typingInput").disabled=false;document.getElementById("typingInput").focus();document.getElementById("result").style.display="none";start=null;clearInterval(timer);document.getElementById("timer").textContent=document.getElementById("duration").value+"s";document.getElementById("customTextArea").style.display="none"}
 reset();
 </script>
 </body>
