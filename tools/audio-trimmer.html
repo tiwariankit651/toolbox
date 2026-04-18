@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Trimmer - Cut MP3 Online Free | FreeToolHubs</title>
+  <meta name="description" content="Trim and cut audio files online for free. Set start and end time, preview, and download. Supports MP3, WAV, OGG. No upload to server.">
+  <meta property="og:title" content="Audio Trimmer — Cut MP3 Free | FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/audio-trimmer"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Audio Trimmer","url":"https://freetoolhubs.com/tools/audio-trimmer","description":"Trim audio files online for free","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/audio-trimmer"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✂️ Audio Trimmer</div>
+    <div class="tool-section">
+      <h1>✂️ Audio Trimmer</h1>
+      <p class="info">Upload audio, set start and end time, trim and download.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop audio file here (MP3, WAV, OGG)<input type="file" id="inp" accept="audio/*"></div>
+      <div id="editor" style="display:none">
+        <audio id="audio" controls style="width:100%;margin:.8rem 0"></audio>
+        <div id="durInfo" class="info" style="margin-bottom:.5rem"></div>
+        <canvas id="waveform" height="80" style="width:100%;background:var(--card);border-radius:8px;margin-bottom:.5rem"></canvas>
+        <div class="row">
+          <div><label>Start (sec)</label><input type="number" id="startT" value="0" min="0" step="0.1" style="width:80px" oninput="updateRange()"></div>
+          <div style="flex:2"><label>Selection</label><input type="range" id="rangeStart" min="0" max="100" value="0" style="width:48%;display:inline" oninput="document.getElementById('startT').value=(this.value*1).toFixed(1);updateRange()"><input type="range" id="rangeEnd" min="0" max="100" value="100" style="width:48%;display:inline" oninput="document.getElementById('endT').value=(this.value*1).toFixed(1);updateRange()"></div>
+          <div><label>End (sec)</label><input type="number" id="endT" value="0" min="0" step="0.1" style="width:80px" oninput="updateRange()"></div>
+        </div>
+        <div class="row" style="margin-top:.5rem"><label>Output:</label><select id="fmt"><option value="wav">WAV</option><option value="webm">WebM</option></select></div>
+        <div class="row" style="margin-top:.8rem">
+          <button class="btn btn-outline" onclick="previewTrim()">▶ Preview Selection</button>
+          <button class="btn" onclick="trimAudio()" id="trimBtn">✂️ Trim & Download</button>
+        </div>
+        <div id="progress"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Trim and cut audio files directly in your browser. Upload MP3, WAV, or OGG files, set precise start and end times with visual waveform, preview your selection, and download the trimmed audio. Perfect for creating ringtones, cutting podcast clips, and editing audio for presentations. Your files never leave your device.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var audioCtx,audioBuffer,audioFile;
+setupDrop("drop","inp",function(f){
+  audioFile=f[0];
+  document.getElementById("audio").src=URL.createObjectURL(audioFile);
+  document.getElementById("editor").style.display="block";
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  var reader=new FileReader();
+  reader.onload=function(){audioCtx.decodeAudioData(reader.result,function(buf){
+    audioBuffer=buf;
+    var dur=buf.duration;
+    document.getElementById("endT").value=dur.toFixed(1);
+    document.getElementById("endT").max=dur;
+    document.getElementById("startT").max=dur;
+    document.getElementById("rangeStart").max=dur;
+    document.getElementById("rangeEnd").max=dur;
+    document.getElementById("rangeEnd").value=dur;
+    document.getElementById("durInfo").textContent="Duration: "+dur.toFixed(1)+"s | Channels: "+buf.numberOfChannels+" | Sample rate: "+buf.sampleRate+"Hz";
+    drawWaveform(buf);
+  })};
+  reader.readAsArrayBuffer(audioFile);
+});
+function drawWaveform(buf){
+  var canvas=document.getElementById("waveform");canvas.width=canvas.offsetWidth;
+  var ctx=canvas.getContext("2d");var data=buf.getChannelData(0);
+  var step=Math.ceil(data.length/canvas.width);var amp=canvas.height/2;
+  ctx.fillStyle="var(--card)";ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#4f8cff";ctx.lineWidth=1;ctx.beginPath();
+  for(var i=0;i<canvas.width;i++){var min=1,max=-1;
+    for(var j=0;j<step;j++){var d=data[i*step+j];if(d<min)min=d;if(d>max)max=d}
+    ctx.moveTo(i,amp+min*amp);ctx.lineTo(i,amp+max*amp);
+  }ctx.stroke();
+}
+function updateRange(){document.getElementById("rangeStart").value=document.getElementById("startT").value;document.getElementById("rangeEnd").value=document.getElementById("endT").value}
+function previewTrim(){var a=document.getElementById("audio");a.currentTime=+document.getElementById("startT").value;a.play();var end=+document.getElementById("endT").value;setTimeout(function(){a.pause()},((end-a.currentTime)*1000))}
+function trimAudio(){
+  if(!audioBuffer)return alert("Upload audio first");
+  var start=+document.getElementById("startT").value;var end=+document.getElementById("endT").value;
+  if(end<=start)return alert("End must be after start");
+  showProcessing("progress");
+  var sr=audioBuffer.sampleRate;var ch=audioBuffer.numberOfChannels;
+  var startSample=Math.floor(start*sr);var endSample=Math.floor(end*sr);
+  var len=endSample-startSample;
+  var trimmed=audioCtx.createBuffer(ch,len,sr);
+  for(var c=0;c<ch;c++){var src=audioBuffer.getChannelData(c);var dst=trimmed.getChannelData(c);for(var i=0;i<len;i++)dst[i]=src[startSample+i]}
+  var offCtx=new OfflineAudioContext(ch,len,sr);
+  var source=offCtx.createBufferSource();source.buffer=trimmed;source.connect(offCtx.destination);source.start();
+  offCtx.startRendering().then(function(rendered){
+    var wavBlob=bufferToWav(rendered);
+    download(wavBlob,"trimmed.wav");
+    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Trimmed! Duration: '+(end-start).toFixed(1)+'s</p>';
+  });
+}
+function bufferToWav(buf){
+  var ch=buf.numberOfChannels;var sr=buf.sampleRate;var len=buf.length;
+  var interleaved=new Float32Array(len*ch);
+  for(var c=0;c<ch;c++){var data=buf.getChannelData(c);for(var i=0;i<len;i++)interleaved[i*ch+c]=data[i]}
+  var dataLen=interleaved.length*2;var buffer=new ArrayBuffer(44+dataLen);var view=new DataView(buffer);
+  function writeStr(o,s){for(var i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i))}
+  writeStr(0,"RIFF");view.setUint32(4,36+dataLen,true);writeStr(8,"WAVE");writeStr(12,"fmt ");
+  view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,ch,true);
+  view.setUint32(24,sr,true);view.setUint32(28,sr*ch*2,true);view.setUint16(32,ch*2,true);view.setUint16(34,16,true);
+  writeStr(36,"data");view.setUint32(40,dataLen,true);
+  var offset=44;for(var i=0;i<interleaved.length;i++,offset+=2){var s=Math.max(-1,Math.min(1,interleaved[i]));view.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true)}
+  return new Blob([buffer],{type:"audio/wav"});
+}
+  </script>
+</body>
+</html>

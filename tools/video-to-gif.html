@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video to GIF Converter - Free Online | FreeToolHubs</title>
+  <meta name="description" content="Convert video to GIF online for free. Trim, set FPS, resize. Browser-based, no upload to server. Supports MP4, WebM, MOV.">
+  <meta property="og:title" content="Video to GIF Converter — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/video-to-gif"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Video to GIF","url":"https://freetoolhubs.com/tools/video-to-gif","description":"Convert video to GIF online","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/video-to-gif"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎬 Video to GIF</div>
+    <div class="tool-section">
+      <h1>🎬 Video to GIF Converter</h1>
+      <p class="info">Upload a video, set start/end time, FPS and width. Convert to GIF in your browser.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop video here (MP4, WebM, MOV)<input type="file" id="inp" accept="video/*"></div>
+      <div id="editor" style="display:none">
+        <video id="vid" controls style="width:100%;max-height:300px;border-radius:8px;margin:.5rem 0"></video>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Start (sec)</label><input type="number" id="startT" value="0" min="0" step="0.1" style="width:70px"></div>
+          <div><label>End (sec)</label><input type="number" id="endT" value="3" min="0.1" step="0.1" style="width:70px"></div>
+          <div><label>FPS</label><input type="number" id="fps" value="10" min="5" max="30" style="width:60px"></div>
+          <div><label>Width (px)</label><input type="number" id="gifW" value="320" min="100" max="800" style="width:70px"></div>
+        </div>
+        <button class="btn" onclick="convert()" style="width:100%;margin-top:.8rem" id="convertBtn">🎬 Convert to GIF</button>
+        <div id="progress" style="margin-top:.5rem"></div>
+        <div id="result"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert any video to GIF directly in your browser. Set custom start and end time, frames per second, and output width. Supports MP4, WebM, and MOV formats. Your video never leaves your device — everything is processed locally. Perfect for creating memes, social media content, and tutorials.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+var videoFile;
+setupDrop("drop","inp",function(f){
+  videoFile=f[0];var vid=document.getElementById("vid");
+  vid.src=URL.createObjectURL(videoFile);
+  vid.onloadedmetadata=function(){document.getElementById("endT").value=Math.min(3,vid.duration).toFixed(1);document.getElementById("endT").max=vid.duration};
+  document.getElementById("editor").style.display="block";
+});
+function convert(){
+  var vid=document.getElementById("vid");
+  var startT=+document.getElementById("startT").value;
+  var endT=+document.getElementById("endT").value;
+  var fps=+document.getElementById("fps").value;
+  var gifW=+document.getElementById("gifW").value;
+  var ratio=vid.videoHeight/vid.videoWidth;
+  var gifH=Math.round(gifW*ratio);
+  var duration=endT-startT;
+  var totalFrames=Math.ceil(duration*fps);
+  var delay=1000/fps;
+  document.getElementById("convertBtn").disabled=true;
+  document.getElementById("progress").innerHTML='<div style="text-align:center;padding:1rem"><div style="display:inline-block;width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p class="info">Capturing frames... 0/'+totalFrames+'</p></div>';
+  if(!document.getElementById("spinCSS")){var s=document.createElement("style");s.id="spinCSS";s.textContent="@keyframes spin{to{transform:rotate(360deg)}}";document.head.appendChild(s)}
+  var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
+  var ctx=canvas.getContext("2d");
+  var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
+  var frameIdx=0;
+  vid.currentTime=startT;
+  vid.onseeked=function(){
+    ctx.drawImage(vid,0,0,gifW,gifH);
+    gif.addFrame(ctx,{copy:true,delay:delay});
+    frameIdx++;
+    document.getElementById("progress").querySelector("p").textContent="Capturing frames... "+frameIdx+"/"+totalFrames;
+    if(frameIdx<totalFrames){vid.currentTime=startT+(frameIdx/fps)}
+    else{
+      document.getElementById("progress").querySelector("p").textContent="Encoding GIF...";
+      gif.on("finished",function(blob){
+        document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+(blob.size/1024).toFixed(1)+' KB | '+gifW+'x'+gifH+' | '+fps+' FPS</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
+        window._gifBlob=blob;
+        document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done!</p>';
+        document.getElementById("convertBtn").disabled=false;
+      });
+      gif.render();
+    }
+  };
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Contrast Checker - WCAG Accessibility Free | FreeToolHubs</title>
+  <meta name="description" content="Check color contrast ratio for WCAG accessibility compliance. Test text and background colors. Free online contrast checker for web designers.">
+  <meta property="og:title" content="Contrast Checker — WCAG Accessibility | FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/contrast-checker"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Contrast Checker","url":"https://freetoolhubs.com/tools/contrast-checker","description":"Check WCAG color contrast accessibility","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/contrast-checker"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎨 Contrast Checker</div>
+    <div class="tool-section">
+      <h1>🎨 Color Contrast Checker</h1>
+      <p class="info">Check if your text and background colors meet WCAG accessibility standards.</p>
+      <div class="row" style="flex-wrap:wrap">
+        <div><label>Text Color</label><br><input type="color" id="fg" value="#000000" oninput="check()" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="fgHex" value="#000000" oninput="document.getElementById('fg').value=this.value;check()" style="width:80px;text-align:center;font-size:.85rem;margin-top:4px"></div>
+        <button class="btn btn-outline" onclick="swap()" style="align-self:center;padding:.5rem">⇄ Swap</button>
+        <div><label>Background Color</label><br><input type="color" id="bg" value="#ffffff" oninput="check()" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="bgHex" value="#ffffff" oninput="document.getElementById('bg').value=this.value;check()" style="width:80px;text-align:center;font-size:.85rem;margin-top:4px"></div>
+      </div>
+      <div id="preview" style="padding:2rem;border-radius:12px;margin:1rem 0;text-align:center">
+        <div style="font-size:1.5rem;font-weight:700">Large Text Preview (18px+)</div>
+        <div style="font-size:1rem;margin-top:.5rem">Normal text preview — The quick brown fox jumps over the lazy dog. 0123456789</div>
+      </div>
+      <div id="ratio" style="text-align:center;font-size:2.5rem;font-weight:700;margin:.5rem 0"></div>
+      <div id="results" style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin:1rem 0"></div>
+      <h3 style="margin:1.5rem 0 .5rem">WCAG Standards</h3>
+      <div style="background:var(--card);padding:1rem;border-radius:8px;font-size:.9rem;line-height:1.8">
+        <p><strong>AA Normal Text:</strong> Minimum ratio 4.5:1</p>
+        <p><strong>AA Large Text (18px+ bold or 24px+):</strong> Minimum ratio 3:1</p>
+        <p><strong>AAA Normal Text:</strong> Minimum ratio 7:1</p>
+        <p><strong>AAA Large Text:</strong> Minimum ratio 4.5:1</p>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Check if your color combinations meet WCAG (Web Content Accessibility Guidelines) standards. Enter text and background colors to see the contrast ratio and whether it passes AA and AAA levels for normal and large text. Essential for web designers and developers building accessible websites. Includes color swap, hex input, and live preview.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+function hexToRgb(hex){hex=hex.replace("#","");return{r:parseInt(hex.substr(0,2),16),g:parseInt(hex.substr(2,2),16),b:parseInt(hex.substr(4,2),16)}}
+function luminance(r,g,b){var a=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return a[0]*0.2126+a[1]*0.7152+a[2]*0.0722}
+function contrastRatio(fg,bg){var l1=luminance(fg.r,fg.g,fg.b);var l2=luminance(bg.r,bg.g,bg.b);var lighter=Math.max(l1,l2);var darker=Math.min(l1,l2);return(lighter+0.05)/(darker+0.05)}
+function swap(){var f=document.getElementById("fg").value;var b=document.getElementById("bg").value;document.getElementById("fg").value=b;document.getElementById("bg").value=f;document.getElementById("fgHex").value=b;document.getElementById("bgHex").value=f;check()}
+function badge(pass){return pass?'<span style="background:#4caf50;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">✅ PASS</span>':'<span style="background:#f44336;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">❌ FAIL</span>'}
+function check(){
+  var fgHex=document.getElementById("fg").value;var bgHex=document.getElementById("bg").value;
+  document.getElementById("fgHex").value=fgHex;document.getElementById("bgHex").value=bgHex;
+  var fg=hexToRgb(fgHex);var bg=hexToRgb(bgHex);
+  var ratio=contrastRatio(fg,bg);
+  document.getElementById("preview").style.background=bgHex;document.getElementById("preview").style.color=fgHex;
+  document.getElementById("ratio").textContent=ratio.toFixed(2)+":1";
+  document.getElementById("ratio").style.color=ratio>=4.5?"#4caf50":ratio>=3?"#ff9800":"#f44336";
+  document.getElementById("results").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AA Normal Text</strong> (4.5:1)<br>'+badge(ratio>=4.5)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AA Large Text</strong> (3:1)<br>'+badge(ratio>=3)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AAA Normal Text</strong> (7:1)<br>'+badge(ratio>=7)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AAA Large Text</strong> (4.5:1)<br>'+badge(ratio>=4.5)+'</div>';
+}
+check();
+  </script>
+</body>
+</html>

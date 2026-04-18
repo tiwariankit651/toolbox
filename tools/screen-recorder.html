@@ -37,8 +37,13 @@
     <div class="tool-section" style="text-align:center">
       <h1>🎥 Screen Recorder</h1>
       <p class="info">Record your screen, tab, or window directly from the browser. No software needed.</p>
-      <div class="row" style="justify-content:center">
+      <div class="row" style="justify-content:center;flex-wrap:wrap">
         <label><input type="checkbox" id="audio"> Include Audio</label>
+        <label><input type="checkbox" id="camera"> Camera Overlay (PIP)</label>
+      </div>
+      <div id="camSelect" style="display:none;margin:.5rem 0"><label>Camera position:</label>
+        <select id="camPos"><option value="br">Bottom Right</option><option value="bl">Bottom Left</option><option value="tr">Top Right</option><option value="tl">Top Left</option></select>
+        <select id="camSize"><option value="150">Small</option><option value="200" selected>Medium</option><option value="280">Large</option></select>
       </div>
       <div style="margin:1.5rem 0">
         <button class="btn" onclick="startRec()" id="startBtn">🔴 Start Recording</button>
@@ -58,16 +63,47 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-let recorder,chunks=[],timer,secs=0;
+let recorder,chunks=[],timer,secs=0,camStream=null;
+document.getElementById('camera').onchange=function(){document.getElementById('camSelect').style.display=this.checked?'block':'none'};
 async function startRec(){
   try{
     const audio=document.getElementById('audio').checked;
-    const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio});
-    recorder=new MediaRecorder(stream,{mimeType:'video/webm'});
+    const useCamera=document.getElementById('camera').checked;
+    const screenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio});
+    let finalStream=screenStream;
+    if(useCamera){
+      try{
+        camStream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240},audio:false});
+        const canvas=document.createElement('canvas');
+        const screenTrack=screenStream.getVideoTracks()[0];
+        const screenSettings=screenTrack.getSettings();
+        canvas.width=screenSettings.width||1920;canvas.height=screenSettings.height||1080;
+        const ctx=canvas.getContext('2d');
+        const screenVid=document.createElement('video');screenVid.srcObject=screenStream;screenVid.muted=true;screenVid.play();
+        const camVid=document.createElement('video');camVid.srcObject=camStream;camVid.muted=true;camVid.play();
+        const camSize=+document.getElementById('camSize').value;
+        const camRatio=240/320;const camW=camSize;const camH=Math.round(camSize*camRatio);
+        const pos=document.getElementById('camPos').value;
+        const pad=20;
+        function getXY(){
+          if(pos==='bl')return[pad,canvas.height-camH-pad];
+          if(pos==='tr')return[canvas.width-camW-pad,pad];
+          if(pos==='tl')return[pad,pad];
+          return[canvas.width-camW-pad,canvas.height-camH-pad];
+        }
+        function draw(){ctx.drawImage(screenVid,0,0,canvas.width,canvas.height);var xy=getXY();ctx.save();ctx.beginPath();ctx.roundRect(xy[0],xy[1],camW,camH,12);ctx.clip();ctx.drawImage(camVid,xy[0],xy[1],camW,camH);ctx.restore();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xy[0],xy[1],camW,camH,12);ctx.stroke();requestAnimationFrame(draw)}
+        draw();
+        var canvasStream=canvas.captureStream(30);
+        if(audio&&screenStream.getAudioTracks().length){canvasStream.addTrack(screenStream.getAudioTracks()[0])}
+        finalStream=canvasStream;
+      }catch(e){console.log('Camera failed, recording without PIP')}
+    }
+    recorder=new MediaRecorder(finalStream,{mimeType:'video/webm'});
     chunks=[];secs=0;
     recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
     recorder.onstop=()=>{
-      stream.getTracks().forEach(t=>t.stop());
+      screenStream.getTracks().forEach(t=>t.stop());
+      if(camStream)camStream.getTracks().forEach(t=>t.stop());
       clearInterval(timer);
       const blob=new Blob(chunks,{type:'video/webm'});
       const url=URL.createObjectURL(blob);

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upscaler - Enhance & Enlarge Images Free | FreeToolHubs</title>
+  <meta name="description" content="Upscale and enhance low-resolution images online for free. Enlarge 2x to 4x with smoothing. Browser-based, no upload to server.">
+  <meta property="og:title" content="Image Upscaler — Enhance Images | FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/image-upscaler"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Image Upscaler","url":"https://freetoolhubs.com/tools/image-upscaler","description":"Upscale and enhance images","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/image-upscaler"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔍 Image Upscaler</div>
+    <div class="tool-section">
+      <h1>🔍 Image Upscaler & Enhancer</h1>
+      <p class="info">Enlarge low-resolution images with smoothing. Best for small images up to 500px.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div id="editor" style="display:none">
+        <div id="origInfo" class="info" style="margin:.5rem 0"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Scale:</label>
+          <button class="btn btn-outline" onclick="setScale(2)" id="s2">2x</button>
+          <button class="btn" onclick="setScale(3)" id="s3" style="background:var(--accent)">3x</button>
+          <button class="btn btn-outline" onclick="setScale(4)" id="s4">4x</button>
+          <label>Smoothing:</label>
+          <select id="smooth"><option value="high">High (Smooth)</option><option value="medium" selected>Medium</option><option value="low">Low (Sharp)</option></select>
+          <label>Sharpen:</label>
+          <input type="range" id="sharpen" min="0" max="100" value="30" style="max-width:100px">
+        </div>
+        <button class="btn" onclick="upscale()" style="width:100%;margin-top:.8rem" id="upBtn">🔍 Upscale Image</button>
+        <div id="result" style="margin-top:1rem"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Enlarge and enhance low-resolution images using advanced browser-based interpolation and sharpening. Upscale images 2x, 3x, or 4x with adjustable smoothing and sharpening. Best results with images under 500px. Note: This uses mathematical upscaling, not AI — results are good for basic enhancement but not comparable to AI tools like Topaz. Your images never leave your device.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var img=null,scale=3;
+setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";document.getElementById("origInfo").textContent="Original: "+i.width+" x "+i.height+" px"})});
+function setScale(s){scale=s;document.getElementById("s2").className=s===2?"btn":"btn btn-outline";document.getElementById("s3").className=s===3?"btn":"btn btn-outline";document.getElementById("s4").className=s===4?"btn":"btn btn-outline";if(s===2)document.getElementById("s2").style.background="var(--accent)";else document.getElementById("s2").style.background="";if(s===3)document.getElementById("s3").style.background="var(--accent)";else document.getElementById("s3").style.background="";if(s===4)document.getElementById("s4").style.background="var(--accent)";else document.getElementById("s4").style.background=""}
+function upscale(){
+  if(!img)return;showProcessing("result");
+  setTimeout(function(){
+    var w=img.width*scale,h=img.height*scale;
+    var smooth=document.getElementById("smooth").value;
+    var sharpenAmt=+document.getElementById("sharpen").value/100;
+    // Step 1: Upscale with smoothing
+    var c1=document.createElement("canvas");c1.width=w;c1.height=h;
+    var ctx1=c1.getContext("2d");
+    ctx1.imageSmoothingEnabled=smooth!=="low";
+    ctx1.imageSmoothingQuality=smooth==="high"?"high":"medium";
+    ctx1.drawImage(img,0,0,w,h);
+    // Step 2: Sharpen using unsharp mask
+    if(sharpenAmt>0){
+      var imageData=ctx1.getImageData(0,0,w,h);var d=imageData.data;
+      var c2=document.createElement("canvas");c2.width=w;c2.height=h;
+      var ctx2=c2.getContext("2d");ctx2.filter="blur(1px)";ctx2.drawImage(c1,0,0);
+      var blurred=ctx2.getImageData(0,0,w,h).data;
+      var amt=sharpenAmt*2;
+      for(var i=0;i<d.length;i+=4){d[i]=Math.min(255,Math.max(0,d[i]+amt*(d[i]-blurred[i])));d[i+1]=Math.min(255,Math.max(0,d[i+1]+amt*(d[i+1]-blurred[i+1])));d[i+2]=Math.min(255,Math.max(0,d[i+2]+amt*(d[i+2]-blurred[i+2])))}
+      ctx1.putImageData(imageData,0,0);
+    }
+    c1.toBlob(function(b){
+      document.getElementById("result").innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0"><div style="text-align:center"><p class="info">Original ('+img.width+'x'+img.height+')</p><img src="'+img.src+'" style="max-width:100%;border-radius:8px"></div><div style="text-align:center"><p class="info">Upscaled '+scale+'x ('+w+'x'+h+')</p><img src="'+URL.createObjectURL(b)+'" style="max-width:100%;border-radius:8px"></div></div><p class="info">Size: '+formatSize(b.size)+'</p><button class="btn" onclick="download(window._upBlob,\'upscaled.png\')">💾 Download</button>';
+      window._upBlob=b;
+    });
+  },100);
+}
+  </script>
+</body>
+</html>
