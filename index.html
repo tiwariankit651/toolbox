@@ -48,7 +48,8 @@
 
     <h1>Free Tools That Respect Your Privacy</h1>
     <p style="color:var(--text2);margin-bottom:.5rem">60+ browser-based tools — PDF, Image, Quiz, Flashcards, Typing Test & more. No signup. Your files never leave your device.</p>
-    <input type="text" id="searchTools" placeholder="🔍 Search tools... (e.g. PDF, image, typing, calculator)" oninput="filterTools()" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:1.5rem">
+    <input type="text" id="searchTools" placeholder="🔍 Search tools... (e.g. PDF, image, typing, calculator)" oninput="filterTools()" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:.5rem">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;gap:.5rem"><button onclick="setView('normal')" id="viewNormal" class="btn" style="padding:.3rem .6rem;font-size:.8rem">🔲 Normal</button><button onclick="setView('compact')" id="viewCompact" class="btn btn-outline" style="padding:.3rem .6rem;font-size:.8rem">▪️ Compact</button></div>
 
     <div class="section-header" id="doc-tools"><h2>📄 Document Tools</h2><span class="info">7 tools</span></div>
     <div class="tools-grid">
@@ -132,6 +133,8 @@
       <a href="tools/flashcards.html" class="tool-card">📚<br>Flashcards<br><small>Study & learn</small></a>
       <a href="tools/habit-tracker.html" class="tool-card">✅<br>Habit Tracker<br><small>Build daily streaks</small></a>
       <a href="tools/love-calculator.html" class="tool-card">💕<br>Love Calculator<br><small>Fun compatibility</small></a>
+      <a href="tools/whatsapp-direct.html" class="tool-card">💬<br>WhatsApp Direct<br><small>No save number</small></a>
+      <a href="tools/handwriting.html" class="tool-card">✍️<br>Handwriting<br><small>Assignment maker</small></a>
       <a href="tools/quiz-maker.html" class="tool-card">📝<br>MCQ Quiz<br><small>Create & take quizzes</small></a>
       <a href="tools/syllabus-tracker.html" class="tool-card">📋<br>Syllabus Tracker<br><small>Track exam progress</small></a>
       <a href="tools/speed-reader.html" class="tool-card">📖<br>Speed Reader<br><small>Read faster</small></a>
@@ -241,6 +244,12 @@ function filterTools(){
   document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=c.textContent.toLowerCase().indexOf(q)>-1?"":"none"});
   document.querySelectorAll(".tools-grid").forEach(function(s){var hasVisible=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")hasVisible=true});s.style.display=hasVisible?"":"none";var prev=s.previousElementSibling;if(prev)prev.style.display=hasVisible?"":"none"});
 }
+function setView(v){
+  var grids=document.querySelectorAll(".tools-grid");
+  if(v==="compact"){grids.forEach(function(g){g.style.gridTemplateColumns="repeat(auto-fill,minmax(110px,1fr))";g.style.gap=".5rem"});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding=".8rem .5rem";c.style.fontSize=".9rem"});document.getElementById("viewCompact").className="btn";document.getElementById("viewNormal").className="btn btn-outline";localStorage.setItem("toolView","compact")}
+  else{grids.forEach(function(g){g.style.gridTemplateColumns="";g.style.gap=""});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding="";c.style.fontSize=""});document.getElementById("viewNormal").className="btn";document.getElementById("viewCompact").className="btn btn-outline";localStorage.setItem("toolView","normal")}
+}
+if(localStorage.getItem("toolView")==="compact")setTimeout(function(){setView("compact")},100);
 if(window.innerWidth<600&&document.getElementById("mobileSearch"))document.getElementById("mobileSearch").style.display="block";
   </script>
 </body>

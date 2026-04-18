@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handwritten Assignment Maker - Text to Handwriting PDF | FreeToolHubs</title>
+  <meta name="description" content="Convert typed text to handwritten-style PDF. Choose fonts, ink colors, paper styles. Perfect for students making assignments. Free online tool.">
+  <meta property="og:title" content="Handwritten Assignment Maker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/handwriting"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Handwritten Assignment Maker","url":"https://freetoolhubs.com/tools/handwriting","description":"Convert text to handwritten PDF","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/handwriting"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Dancing+Script&family=Indie+Flower&family=Patrick+Hand&family=Shadows+Into+Light&display=swap');</style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✍️ Handwritten Assignment</div>
+    <div class="tool-section">
+      <h1>✍️ Handwritten Assignment Maker</h1>
+      <p class="info">Type your text, choose handwriting style, and download as image. Perfect for assignments.</p>
+      <textarea id="text" rows="8" placeholder="Type your assignment text here..."></textarea>
+      <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
+        <div><label>Font:</label><select id="font" onchange="preview()"><option value="Caveat">Caveat</option><option value="Indie Flower">Indie Flower</option><option value="Patrick Hand">Patrick Hand</option><option value="Dancing Script">Dancing Script</option><option value="Shadows Into Light">Shadows Into Light</option></select></div>
+        <div><label>Size:</label><input type="range" id="fsize" min="18" max="36" value="24" oninput="preview()" style="max-width:100px"></div>
+        <div><label>Ink:</label><select id="ink" onchange="preview()"><option value="#1a1aff">Blue</option><option value="#000000">Black</option><option value="#1a0a00">Dark Blue</option><option value="#8B0000">Red</option></select></div>
+        <div><label>Paper:</label><select id="paper" onchange="preview()"><option value="ruled">Ruled</option><option value="plain">Plain White</option><option value="grid">Grid</option><option value="yellow">Yellow Pad</option></select></div>
+      </div>
+      <div style="text-align:center;margin:1rem 0"><canvas id="page" style="max-width:100%;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.2)"></canvas></div>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="preview()">🔄 Preview</button><button class="btn" onclick="dl()">💾 Download Image</button></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert typed text into handwritten-style pages. Choose from 5 handwriting fonts, 4 ink colors, and 4 paper styles (ruled, plain, grid, yellow pad). Lines are drawn on ruled paper for realistic look. Download as PNG image. Perfect for students who need to submit handwritten assignments digitally. Note: This uses handwriting-style fonts, not actual handwriting simulation.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var c=document.getElementById("page"),ctx=c.getContext("2d");
+function preview(){
+  var text=document.getElementById("text").value||"Type your assignment text above...";
+  var font=document.getElementById("font").value;
+  var fsize=+document.getElementById("fsize").value;
+  var ink=document.getElementById("ink").value;
+  var paper=document.getElementById("paper").value;
+  var W=794,lineH=fsize*1.6,margin=80,topMargin=100;
+  var lines=[];var words=text.split(/\n/);
+  words.forEach(function(para){
+    if(!para.trim()){lines.push("");return}
+    var ws=para.split(/\s+/);var line="";
+    ctx.font=fsize+"px '"+font+"'";
+    ws.forEach(function(w){
+      if(ctx.measureText(line+w+" ").width>W-margin*2){lines.push(line.trim());line=""}
+      line+=w+" ";
+    });
+    if(line.trim())lines.push(line.trim());
+  });
+  var H=Math.max(1123,topMargin+lines.length*lineH+100);
+  c.width=W;c.height=H;
+  // Paper background
+  if(paper==="yellow"){ctx.fillStyle="#fffde7"}else{ctx.fillStyle="#ffffff"}
+  ctx.fillRect(0,0,W,H);
+  // Draw lines
+  if(paper==="ruled"||paper==="yellow"){
+    ctx.strokeStyle="rgba(200,200,220,0.5)";ctx.lineWidth=1;
+    for(var y=topMargin;y<H;y+=lineH){ctx.beginPath();ctx.moveTo(margin-20,y);ctx.lineTo(W-margin+20,y);ctx.stroke()}
+    ctx.strokeStyle="rgba(255,100,100,0.3)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(margin-10,0);ctx.lineTo(margin-10,H);ctx.stroke();
+  }
+  if(paper==="grid"){
+    ctx.strokeStyle="rgba(200,200,220,0.3)";ctx.lineWidth=0.5;
+    for(var x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+    for(var y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  }
+  // Write text
+  ctx.font=fsize+"px '"+font+"'";ctx.fillStyle=ink;
+  lines.forEach(function(line,i){
+    var x=margin+(Math.random()*3-1.5);
+    var y=topMargin+i*lineH+(Math.random()*2-1);
+    ctx.fillText(line,x,y);
+  });
+}
+function dl(){c.toBlob(function(b){download(b,"assignment.png")})}
+setTimeout(preview,500);
+  </script>
+</body>
+</html>
