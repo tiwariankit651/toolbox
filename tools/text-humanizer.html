@@ -24,6 +24,7 @@
         <select id="tone"><option value="casual">Casual</option><option value="professional" selected>Professional</option><option value="academic">Academic</option></select>
         <label>Level:</label>
         <select id="level"><option value="light">Light</option><option value="medium" selected>Medium</option><option value="heavy">Heavy</option></select>
+        <label><input type="checkbox" id="varySentence" checked> Vary Sentence Length</label>
         <button class="btn" onclick="humanize()" style="flex:1">✍️ Humanize</button>
       </div>
       <div id="result" style="display:none">
@@ -73,12 +74,28 @@ function humanize(){
     result=result.replace(/\. Therefore,/g,". So");
     result=result.replace(/\. Additionally,/g,". Plus,");
   }
+  // Step 5: Vary sentence length
+  if(document.getElementById("varySentence").checked){
+    var sents=result.split(/(?<=[.!?])\s+/);
+    sents=sents.map(function(s,i){
+      if(i>0&&i%4===0&&s.length>60){var mid=s.indexOf(", ");if(mid>15)return s.substring(0,mid+1)+" "+s.substring(mid+2).charAt(0).toUpperCase()+s.substring(mid+3)}
+      return s;
+    });
+    result=sents.join(" ");
+  }
   document.getElementById("output").value=result;
   document.getElementById("result").style.display="block";
   var origWords=text.split(/\s+/).length;var newWords=result.split(/\s+/).length;
   var changes=0;for(var i=0;i<Math.min(text.length,result.length);i++){if(text[i]!==result[i])changes++}
   var changePct=Math.round(changes/text.length*100);
-  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+origWords+'</strong><br><span class="info">Original words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+newWords+'</strong><br><span class="info">Output words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+changePct+'%</strong><br><span class="info">Changed</span></div>';
+  // Readability score (Flesch-Kincaid)
+  var sentences=result.split(/[.!?]+/).filter(function(s){return s.trim()}).length;
+  var words=result.split(/\s+/).length;
+  var syllables=0;result.toLowerCase().split(/\s+/).forEach(function(w){var s=w.replace(/[^a-z]/g,"").replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,"").match(/[aeiouy]{1,2}/g);syllables+=s?s.length:1});
+  var fk=206.835-1.015*(words/Math.max(sentences,1))-84.6*(syllables/Math.max(words,1));
+  fk=Math.max(0,Math.min(100,Math.round(fk)));
+  var readLevel=fk>=80?"Very Easy":fk>=60?"Easy":fk>=40?"Moderate":fk>=20?"Difficult":"Very Difficult";
+  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+origWords+'</strong><br><span class="info">Original</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+changePct+'%</strong><br><span class="info">Changed</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+fk+'/100</strong><br><span class="info">Readability ('+readLevel+')</span></div>';
 }
   </script>
 </body>

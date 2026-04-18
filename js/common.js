@@ -18,6 +18,10 @@ if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-g
     badge.style.cssText='display:inline-flex;align-items:center;gap:4px;font-size:.75rem;padding:.3rem .6rem;background:rgba(76,175,80,.15);color:#4caf50;border-radius:6px;margin-top:.5rem;font-weight:600';
     badge.innerHTML='🔒 100% Private — No uploads to server';
     h1.parentNode.insertBefore(badge,h1.nextSibling);
+    var offBadge=document.createElement('div');
+    offBadge.style.cssText='display:inline-flex;align-items:center;gap:4px;font-size:.7rem;padding:.2rem .5rem;background:rgba(79,140,255,.12);color:var(--accent);border-radius:6px;margin-top:.3rem;margin-left:.3rem';
+    offBadge.innerHTML='🔋 Works offline after first visit';
+    badge.parentNode.insertBefore(offBadge,badge.nextSibling);
     var shareDiv=document.createElement('div');
     shareDiv.style.cssText='margin-top:.8rem;display:flex;gap:6px;flex-wrap:wrap';
     var url=window.location.href;

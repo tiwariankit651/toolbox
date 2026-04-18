@@ -255,7 +255,12 @@
   <script>
 function filterTools(){
   var q=document.getElementById("searchTools").value.toLowerCase();
-  document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=c.textContent.toLowerCase().indexOf(q)>-1?"":"none"});
+  document.querySelectorAll(".tool-card").forEach(function(c){
+    var text=c.textContent.toLowerCase();
+    var match=text.indexOf(q)>-1;
+    if(!match&&q.length>2){var score=0;for(var i=0;i<q.length;i++){if(text.indexOf(q[i])>-1)score++}match=score>=q.length*0.7}
+    c.style.display=match?"":"none";
+  });
   document.querySelectorAll(".tools-grid").forEach(function(s){var hasVisible=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")hasVisible=true});s.style.display=hasVisible?"":"none";var prev=s.previousElementSibling;if(prev)prev.style.display=hasVisible?"":"none"});
 }
 function setView(v){
