@@ -47,9 +47,20 @@
     <!-- ad unit placeholder -->
 
     <h1>Free Tools That Respect Your Privacy</h1>
-    <p style="color:var(--text2);margin-bottom:.5rem">60+ browser-based tools — PDF, Image, Quiz, Flashcards, Typing Test & more. No signup. Your files never leave your device.</p>
-    <input type="text" id="searchTools" placeholder="🔍 Search tools... (e.g. PDF, image, typing, calculator)" oninput="filterTools()" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:.5rem">
+    <p style="color:var(--text2);margin-bottom:.5rem">80+ browser-based tools — PDF, Image, Quiz, Flashcards, Typing Test & more. No signup. Your files never leave your device.</p>
+    <input type="text" id="searchTools" placeholder="🔍 Search tools... (Ctrl+K)" oninput="filterTools()" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:.5rem">
     <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;gap:.5rem"><button onclick="setView('normal')" id="viewNormal" class="btn" style="padding:.3rem .6rem;font-size:.8rem">🔲 Normal</button><button onclick="setView('compact')" id="viewCompact" class="btn btn-outline" style="padding:.3rem .6rem;font-size:.8rem">▪️ Compact</button></div>
+
+    <div id="featuredTool" style="background:linear-gradient(135deg,rgba(79,140,255,.12),rgba(168,85,247,.12));padding:1.2rem;border-radius:12px;margin-bottom:1.5rem;border:1px solid rgba(79,140,255,.2);display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      <div style="font-size:2rem">⭐</div>
+      <div style="flex:1;min-width:200px"><strong>Featured Tool</strong> — <a href="tools/handwriting.html" style="color:var(--accent);font-weight:600">Handwritten Assignment Maker</a><br><span class="info">Convert typed text to handwriting-style pages. 5 fonts, 4 ink colors, ruled paper. Students love it!</span></div>
+      <a href="tools/handwriting.html" class="btn" style="text-decoration:none;white-space:nowrap">Try Now →</a>
+    </div>
+
+    <div id="favSection" style="display:none;margin-bottom:1.5rem">
+      <div class="section-header"><h2>❤️ Your Favorites</h2></div>
+      <div id="favGrid" class="tools-grid"></div>
+    </div>
 
     <div class="section-header" id="doc-tools"><h2>📄 Document Tools</h2><span class="info">7 tools</span></div>
     <div class="tools-grid">
@@ -254,6 +265,9 @@ function setView(v){
   else{grids.forEach(function(g){g.style.gridTemplateColumns="";g.style.gap=""});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding="";c.style.fontSize=""});document.getElementById("viewNormal").className="btn";document.getElementById("viewCompact").className="btn btn-outline";localStorage.setItem("toolView","normal")}
 }
 if(localStorage.getItem("toolView")==="compact")setTimeout(function(){setView("compact")},100);
+// Show favorites section
+var favs=JSON.parse(localStorage.getItem("favTools")||"[]");
+if(favs.length>0){document.getElementById("favSection").style.display="block";var favGrid=document.getElementById("favGrid");var allCards=document.querySelectorAll(".tool-card[href]");allCards.forEach(function(card){var href=card.getAttribute("href");if(!href)return;var name=href.replace("tools/","").replace(".html","");if(favs.indexOf(name)>-1){var clone=card.cloneNode(true);favGrid.appendChild(clone)}})}
 if(window.innerWidth<600&&document.getElementById("mobileSearch"))document.getElementById("mobileSearch").style.display="block";
   </script>
 </body>
