@@ -1,5 +1,5 @@
 // Shared utilities
-function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark')}
+function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark');document.querySelectorAll('canvas').forEach(function(c){if(c.style.background==='#fff'||c.style.background==='white')c.style.background=document.body.classList.contains('light')?'#fff':'#fff'})}
 if(localStorage.getItem('theme')==='light')document.body.classList.add('light');
 function copyText(t){navigator.clipboard.writeText(t);const b=event.target;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1000)}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}
