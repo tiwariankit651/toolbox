@@ -37,3 +37,6 @@ if(!localStorage.getItem('cookieConsent')){const d=document.createElement('div')
 function toggleFav(toolName,btn){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var idx=favs.indexOf(toolName);if(idx>-1){favs.splice(idx,1);btn.textContent='🤍'}else{favs.push(toolName);btn.textContent='❤️'}localStorage.setItem('favTools',JSON.stringify(favs))}
 // Auto-add fav buttons to tool cards on homepage
 if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('.tool-card').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var btn=document.createElement('span');btn.textContent=favs.indexOf(name)>-1?'❤️':'🤍';btn.style.cssText='position:absolute;top:4px;right:4px;cursor:pointer;font-size:.8rem;z-index:2';btn.onclick=function(e){e.preventDefault();e.stopPropagation();toggleFav(name,btn)};card.style.position='relative';card.appendChild(btn)})}
+
+// Ctrl+K search shortcut
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();var s=document.getElementById('searchTools');if(s){s.focus();s.scrollIntoView({behavior:'smooth'})}}});

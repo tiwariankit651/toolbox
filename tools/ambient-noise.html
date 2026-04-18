@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ambient Noise Generator - Focus Sounds Free | FreeToolHubs</title>
+  <meta name="description" content="Free ambient noise generator for focus and study. White noise, rain, forest, ocean sounds. Mix and adjust volume. No signup needed.">
+  <meta property="og:title" content="Ambient Noise — Focus Sounds | FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/ambient-noise"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Ambient Noise Generator","url":"https://freetoolhubs.com/tools/ambient-noise","description":"Ambient sounds for focus and study","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/ambient-noise"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🎧 Ambient Noise</div>
+    <div class="tool-section" style="text-align:center">
+      <h1>🎧 Ambient Noise Generator</h1>
+      <p class="info">Mix sounds for focus, study, sleep, or relaxation. Click to toggle, adjust volume.</p>
+      <div id="sounds" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin:1.5rem 0"></div>
+      <div class="row" style="justify-content:center;margin-top:1rem">
+        <button class="btn btn-outline" onclick="stopAll()">⏹ Stop All</button>
+        <div><label>Master Volume</label><input type="range" id="master" min="0" max="100" value="70" oninput="updateMaster()" style="width:150px"></div>
+      </div>
+      <div id="timer" style="margin-top:1rem">
+        <label>Sleep Timer:</label>
+        <select id="sleepTimer" onchange="setTimer()"><option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">1 hour</option><option value="120">2 hours</option></select>
+        <span id="timerDisplay" class="info"></span>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Ambient sounds help you focus, study, sleep, and relax. Mix multiple sounds together and adjust individual volumes. Uses browser-generated audio — no external files to load. Features include white noise, brown noise, pink noise, rain, thunder, wind, birds, fire, and ocean waves. Set a sleep timer to auto-stop. Perfect for Pomodoro study sessions, deep work, and meditation.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var actx=null,nodes={},active={};
+var soundDefs=[
+  {id:"white",name:"White Noise",emoji:"📻",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=buf;n.loop=true;return n}},
+  {id:"brown",name:"Brown Noise",emoji:"🟤",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);var v=0;for(var i=0;i<d.length;i++){v+=(Math.random()*2-1)*0.02;v=Math.max(-1,Math.min(1,v));d[i]=v}n.buffer=buf;n.loop=true;return n}},
+  {id:"pink",name:"Pink Noise",emoji:"🩷",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.969*b2+w*0.153852;b3=0.8665*b3+w*0.3104856;b4=0.55*b4+w*0.5329522;b5=-0.7616*b5-w*0.016898;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;b6=w*0.115926}n.buffer=buf;n.loop=true;return n}},
+  {id:"rain",name:"Rain",emoji:"🌧️",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.3;if(Math.random()<0.01)d[i]*=3}n.buffer=buf;n.loop=true;return n}},
+  {id:"wind",name:"Wind",emoji:"💨",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate);var d=buf.getChannelData(0);var v=0;for(var i=0;i<d.length;i++){v+=(Math.random()*2-1)*0.005;v*=0.998;d[i]=v+Math.sin(i/1000)*0.1*Math.random()}n.buffer=buf;n.loop=true;return n}},
+  {id:"fire",name:"Campfire",emoji:"🔥",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.15;if(Math.random()<0.005)d[i]=Math.random()*0.8}n.buffer=buf;n.loop=true;return n}},
+  {id:"birds",name:"Birds",emoji:"🐦",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=0;if(Math.random()<0.0003){for(var j=0;j<2000&&i+j<d.length;j++)d[i+j]=Math.sin(j*0.1*(2+Math.random()*3))*0.3*Math.exp(-j/500)}}n.buffer=buf;n.loop=true;return n}},
+  {id:"ocean",name:"Ocean Waves",emoji:"🌊",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*6,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){var wave=Math.sin(i/(ctx.sampleRate*3)*Math.PI);d[i]=(Math.random()*2-1)*0.2*wave}n.buffer=buf;n.loop=true;return n}}
+];
+var container=document.getElementById("sounds");
+soundDefs.forEach(function(s){
+  var div=document.createElement("div");
+  div.id="card_"+s.id;
+  div.style.cssText="background:var(--card);padding:1.2rem;border-radius:12px;cursor:pointer;transition:all .2s;border:2px solid transparent";
+  div.innerHTML='<div style="font-size:2.5rem">'+s.emoji+'</div><div style="font-weight:600;margin:.3rem 0">'+s.name+'</div><input type="range" min="0" max="100" value="50" style="width:100%" onclick="event.stopPropagation()" oninput="setVol(\''+s.id+'\',this.value)">';
+  div.onclick=function(){toggleSound(s.id)};
+  container.appendChild(div);
+});
+function toggleSound(id){
+  if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+  if(active[id]){active[id].source.stop();active[id].gain.disconnect();delete active[id];document.getElementById("card_"+id).style.borderColor="transparent";return}
+  var def=soundDefs.find(function(s){return s.id===id});
+  var source=def.gen(actx);var gain=actx.createGain();
+  gain.gain.value=0.5*(+document.getElementById("master").value/100);
+  source.connect(gain);gain.connect(actx.destination);source.start();
+  active[id]={source:source,gain:gain};
+  document.getElementById("card_"+id).style.borderColor="var(--accent)";
+}
+function setVol(id,v){if(active[id])active[id].gain.gain.value=(v/100)*(+document.getElementById("master").value/100)}
+function updateMaster(){var m=+document.getElementById("master").value/100;for(var id in active){var slider=document.getElementById("card_"+id).querySelector("input");active[id].gain.gain.value=(slider.value/100)*m}}
+function stopAll(){for(var id in active){active[id].source.stop();active[id].gain.disconnect();document.getElementById("card_"+id).style.borderColor="transparent"}active={}}
+var sleepInt;
+function setTimer(){clearInterval(sleepInt);var mins=+document.getElementById("sleepTimer").value;if(!mins){document.getElementById("timerDisplay").textContent="";return}var left=mins*60;sleepInt=setInterval(function(){left--;var m=Math.floor(left/60),s=left%60;document.getElementById("timerDisplay").textContent=m+":"+(s<10?"0":"")+s;if(left<=0){clearInterval(sleepInt);stopAll();document.getElementById("timerDisplay").textContent="Stopped"}},1000)}
+  </script>
+</body>
+</html>
