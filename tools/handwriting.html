@@ -27,7 +27,12 @@
         <div><label>Paper:</label><select id="paper" onchange="preview()"><option value="ruled">Ruled</option><option value="plain">Plain White</option><option value="grid">Grid</option><option value="yellow">Yellow Pad</option></select></div>
       </div>
       <div style="text-align:center;margin:1rem 0"><canvas id="page" style="max-width:100%;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.2)"></canvas></div>
-      <div class="row" style="justify-content:center"><button class="btn" onclick="preview()">🔄 Preview</button><button class="btn" onclick="dl()">💾 Download Image</button></div>
+      <div class="row" style="justify-content:center;flex-wrap:wrap">
+        <button class="btn" onclick="preview()">🔄 Preview</button>
+        <button class="btn" onclick="dl('png')">💾 PNG</button>
+        <button class="btn" onclick="dl('jpg')">💾 JPG</button>
+        <button class="btn" onclick="dlPdf()">💾 PDF</button>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert typed text into handwritten-style pages. Choose from 5 handwriting fonts, 4 ink colors, and 4 paper styles (ruled, plain, grid, yellow pad). Lines are drawn on ruled paper for realistic look. Download as PNG image. Perfect for students who need to submit handwritten assignments digitally. Note: This uses handwriting-style fonts, not actual handwriting simulation.</p></div>
   </div>
@@ -77,7 +82,19 @@ function preview(){
     ctx.fillText(line,x,y);
   });
 }
-function dl(){c.toBlob(function(b){download(b,"assignment.png")})}
+function dl(fmt){var mime=fmt==="jpg"?"image/jpeg":"image/png";c.toBlob(function(b){download(b,"assignment."+fmt)},mime,0.95)}
+function dlPdf(){
+  var imgData=c.toDataURL("image/png");
+  var w=c.width,h=c.height;
+  var pdfW=595.28,pdfH=pdfW*(h/w);
+  var pdf="";
+  // Simple PDF with embedded image
+  var img=new Image();img.src=imgData;
+  // Use canvas to create a printable page
+  var printWin=window.open("","_blank");
+  printWin.document.write('<html><head><title>Assignment</title><style>@page{margin:0}body{margin:0}img{width:100%;height:auto}</style></head><body><img src="'+imgData+'"><script>setTimeout(function(){window.print()},500)<\/script></body></html>');
+  printWin.document.close();
+}
 setTimeout(preview,500);
   </script>
 </body>
