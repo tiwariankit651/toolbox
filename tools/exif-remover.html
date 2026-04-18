@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXIF Metadata Remover - Remove Photo Location Data Free | FreeToolHubs</title>
+  <meta name="description" content="Remove EXIF metadata from photos. Strip location, camera info, and personal data from images. Protect your privacy. Free online tool.">
+  <meta property="og:title" content="EXIF Metadata Remover — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/exif-remover"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"EXIF Metadata Remover","url":"https://freetoolhubs.com/tools/exif-remover","description":"Remove EXIF metadata from photos for privacy","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/exif-remover"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔒 EXIF Remover</div>
+    <div class="tool-section">
+      <h1>🔒 EXIF Metadata Remover</h1>
+      <p class="info">Remove location, camera info, and personal data from your photos before sharing online. Supports multiple files.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
+      <div id="result"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>When you take a photo, your phone embeds hidden data (EXIF metadata) including GPS location, camera model, date/time, and more. Sharing photos online with this data can expose your home address. This tool strips all metadata by re-drawing the image on a clean canvas. Supports multiple files at once. Your photos never leave your device.</p>
+      <h2>What Gets Removed</h2>
+      <ul style="margin-left:1.5rem"><li>GPS location coordinates</li><li>Camera make and model</li><li>Date and time taken</li><li>Lens information</li><li>All other EXIF, IPTC, and XMP data</li></ul>
+    </div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+setupDrop("drop","inp",function(files){
+  var result=document.getElementById("result");result.innerHTML="";
+  Array.from(files).forEach(function(file,i){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement("canvas");c.width=img.width;c.height=img.height;
+        c.getContext("2d").drawImage(img,0,0);
+        c.toBlob(function(blob){
+          result.innerHTML+='<div style="background:var(--card);padding:1rem;border-radius:10px;margin:.5rem 0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><img src="'+URL.createObjectURL(blob)+'" style="width:60px;height:60px;object-fit:cover;border-radius:8px"><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+img.width+'x'+img.height+' | Original: '+formatSize(file.size)+' → Clean: '+formatSize(blob.size)+'</span><br><span style="color:#4caf50;font-size:.8rem">✅ All metadata removed</span></div><button class="btn" onclick="download(window._exif'+i+',\'clean_'+file.name.replace(/'/g,"")+'\')" style="white-space:nowrap">💾 Download</button></div>';
+          window["_exif"+i]=blob;
+        },"image/png");
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+});
+  </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to Pencil Sketch - Photo to Drawing Free | FreeToolHubs</title>
+  <meta name="description" content="Convert photos to pencil sketch drawings online for free. Adjust intensity and style. Browser-based, no upload to server.">
+  <meta property="og:title" content="Image to Pencil Sketch — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/pencil-sketch"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Image to Pencil Sketch","url":"https://freetoolhubs.com/tools/pencil-sketch","description":"Convert photos to pencil sketch drawings","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/pencil-sketch"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✏️ Pencil Sketch</div>
+    <div class="tool-section">
+      <h1>✏️ Image to Pencil Sketch</h1>
+      <p class="info">Convert any photo into a pencil sketch drawing. Adjust intensity and blur.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div id="editor" style="display:none">
+        <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
+          <div><label>Intensity: <span id="intVal">20</span></label><input type="range" id="intensity" min="5" max="50" value="20" oninput="document.getElementById('intVal').textContent=this.value;convert()" style="max-width:150px"></div>
+          <div><label>Blur: <span id="blurVal">3</span></label><input type="range" id="blur" min="1" max="10" value="3" oninput="document.getElementById('blurVal').textContent=this.value;convert()" style="max-width:150px"></div>
+          <div><label>Style:</label><select id="style" onchange="convert()"><option value="pencil">Pencil</option><option value="charcoal">Charcoal</option><option value="ink">Ink</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
+          <div style="text-align:center"><p class="info">Original</p><canvas id="orig" style="max-width:100%;border-radius:8px"></canvas></div>
+          <div style="text-align:center"><p class="info">Sketch</p><canvas id="sketch" style="max-width:100%;border-radius:8px"></canvas></div>
+        </div>
+        <div class="row" style="justify-content:center"><button class="btn" onclick="dl()">💾 Download Sketch</button></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Transform any photo into a pencil sketch, charcoal drawing, or ink style artwork. Uses edge detection and color dodge blending — all processed in your browser. Adjust intensity and blur for different effects. Perfect for social media profile pictures, art projects, and fun. Your photos never leave your device.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var img=null;
+setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";var oc=document.getElementById("orig");oc.width=i.width;oc.height=i.height;oc.getContext("2d").drawImage(i,0,0);convert()})});
+function convert(){
+  if(!img)return;
+  var w=img.width,h=img.height;
+  var sc=document.getElementById("sketch");sc.width=w;sc.height=h;var ctx=sc.getContext("2d");
+  var intensity=+document.getElementById("intensity").value;
+  var blurR=+document.getElementById("blur").value;
+  var style=document.getElementById("style").value;
+  // Step 1: Draw original grayscale
+  ctx.drawImage(img,0,0);
+  var imageData=ctx.getImageData(0,0,w,h);var d=imageData.data;
+  for(var i=0;i<d.length;i+=4){var gray=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;d[i]=d[i+1]=d[i+2]=gray}
+  ctx.putImageData(imageData,0,0);
+  // Step 2: Create inverted blurred version
+  var c2=document.createElement("canvas");c2.width=w;c2.height=h;var ctx2=c2.getContext("2d");
+  ctx2.filter="blur("+blurR+"px)";ctx2.drawImage(sc,0,0);
+  var blurred=ctx2.getImageData(0,0,w,h).data;
+  // Step 3: Color dodge blend
+  var out=ctx.getImageData(0,0,w,h);var od=out.data;
+  for(var i=0;i<od.length;i+=4){
+    var base=od[i];var inv=255-blurred[i];
+    var result=Math.min(255,base*256/(256-inv+1));
+    if(style==="charcoal"){result=result<128?result*0.5:result;result=Math.min(255,result*1.2)}
+    else if(style==="ink"){result=result<intensity*5?0:255}
+    else{result=Math.min(255,result+(255-result)*0.1)}
+    od[i]=od[i+1]=od[i+2]=result;
+  }
+  ctx.putImageData(out,0,0);
+  // Step 4: Enhance contrast
+  ctx.globalCompositeOperation="multiply";ctx.globalAlpha=0.1*intensity/20;ctx.drawImage(sc,0,0);ctx.globalCompositeOperation="source-over";ctx.globalAlpha=1;
+}
+function dl(){document.getElementById("sketch").toBlob(function(b){download(b,"sketch.png")})}
+  </script>
+</body>
+</html>
