@@ -44,6 +44,10 @@
         <button class="btn" onclick="tx('sentence')">Sentence case</button>
         <button class="btn" onclick="tx('reverse')">Reverse</button>
         <button class="btn" onclick="tx('slug')">slug-case</button>
+        <button class="btn" onclick="tx('camel')">camelCase</button>
+        <button class="btn" onclick="tx('pascal')">PascalCase</button>
+        <button class="btn" onclick="tx('snake')">snake_case</button>
+        <button class="btn" onclick="tx('constant')">CONSTANT_CASE</button>
         <button class="btn btn-outline" onclick="tx('dedup')">Remove Duplicates</button>
         <button class="btn btn-outline" onclick="tx('sort')">Sort Lines</button>
         <button class="btn btn-outline" onclick="tx('trim')">Trim Lines</button>
@@ -61,6 +65,6 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>function stats(){const t=document.getElementById("t").value;const w=t.trim()?t.trim().split(/\s+/).length:0;document.getElementById("st").textContent="Characters: "+t.length+" | Words: "+w+" | Sentences: "+(t.trim()?t.split(/[.!?]+/).filter(s=>s.trim()).length:0)+" | Lines: "+(t?t.split("\n").length:0)}
-function tx(m){const e=document.getElementById("t");let t=e.value;switch(m){case"upper":t=t.toUpperCase();break;case"lower":t=t.toLowerCase();break;case"title":t=t.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());break;case"sentence":t=t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/g,(m,p,c)=>p+c.toUpperCase());break;case"reverse":t=t.split("").reverse().join("");break;case"slug":t=t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");break;case"dedup":t=[...new Set(t.split("\n"))].join("\n");break;case"sort":t=t.split("\n").sort().join("\n");break;case"trim":t=t.split("\n").map(l=>l.trim()).join("\n");break}e.value=t;stats()}
+function tx(m){const e=document.getElementById("t");let t=e.value;var words=t.replace(/[^a-zA-Z0-9\s]/g," ").trim().split(/\s+/);switch(m){case"upper":t=t.toUpperCase();break;case"lower":t=t.toLowerCase();break;case"title":t=t.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());break;case"sentence":t=t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/g,(m,p,c)=>p+c.toUpperCase());break;case"reverse":t=t.split("").reverse().join("");break;case"slug":t=t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");break;case"camel":t=words.map(function(w,i){w=w.toLowerCase();return i===0?w:w[0].toUpperCase()+w.slice(1)}).join("");break;case"pascal":t=words.map(function(w){w=w.toLowerCase();return w[0].toUpperCase()+w.slice(1)}).join("");break;case"snake":t=words.map(function(w){return w.toLowerCase()}).join("_");break;case"constant":t=words.map(function(w){return w.toUpperCase()}).join("_");break;case"dedup":t=[...new Set(t.split("\n"))].join("\n");break;case"sort":t=t.split("\n").sort().join("\n");break;case"trim":t=t.split("\n").map(l=>l.trim()).join("\n");break}e.value=t;stats()}
 function lorem(){document.getElementById("t").value="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";stats()}</script>
 </body></html>
