@@ -159,6 +159,16 @@
 
     <!-- AD SLOT: Bottom -->
     <!-- ad unit placeholder -->
+
+    <div style="background:var(--card);padding:1.5rem;border-radius:12px;text-align:center;margin-top:1.5rem">
+      <h3>💡 Can't find what you need?</h3>
+      <p class="info" style="margin:.5rem 0">Tell us what tool you want and we'll build it!</p>
+      <a href="contact.html" class="btn" style="display:inline-block;text-decoration:none">📩 Request a Tool</a>
+    </div>
+  </div>
+
+  <div id="mobileSearch" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:.5rem;background:var(--surface);border-top:1px solid var(--border);z-index:999">
+    <input type="text" placeholder="🔍 Search tools..." oninput="document.getElementById('searchTools').value=this.value;filterTools()" style="width:100%;padding:.6rem .8rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.9rem">
   </div>
 
   <footer>
@@ -210,11 +220,10 @@
   <script>
 function filterTools(){
   var q=document.getElementById("searchTools").value.toLowerCase();
-  var cards=document.querySelectorAll(".tool-card");
-  var sections=document.querySelectorAll(".tools-grid");
-  cards.forEach(function(c){c.style.display=c.textContent.toLowerCase().indexOf(q)>-1?"":"none"});
-  sections.forEach(function(s){var visible=s.querySelectorAll('.tool-card[style=""], .tool-card:not([style])');var hasVisible=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")hasVisible=true});s.style.display=hasVisible?"":"none";if(s.previousElementSibling&&s.previousElementSibling.tagName==="H2")s.previousElementSibling.style.display=hasVisible?"":"none"});
+  document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=c.textContent.toLowerCase().indexOf(q)>-1?"":"none"});
+  document.querySelectorAll(".tools-grid").forEach(function(s){var hasVisible=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")hasVisible=true});s.style.display=hasVisible?"":"none";var prev=s.previousElementSibling;if(prev)prev.style.display=hasVisible?"":"none"});
 }
+if(window.innerWidth<600&&document.getElementById("mobileSearch"))document.getElementById("mobileSearch").style.display="block";
   </script>
 </body>
 </html>
