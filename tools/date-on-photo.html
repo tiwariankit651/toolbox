@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Date on Photo - For Government Forms Free | FreeToolHubs</title>
+  <meta name="description" content="Add date text on photos for government exam forms. Required for SSC, UPSC, Banking applications. Free online tool.">
+  <meta property="og:title" content="Add Date on Photo - For Government Forms Free"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/date-on-photo"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Add Date on Photo - For Government Forms Free","url":"https://freetoolhubs.com/tools/date-on-photo","description":"Add date text on photos for government exam forms. Required for SSC, UPSC, Banking applications. Free online tool.","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/date-on-photo"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 📅 Date on Photo</div>
+    <div class="tool-section">
+      <h1>📅 Add Date on Photo</h1>
+      <p class="info">Add date text on your photo — required for many government exam forms.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop photo here<input type="file" id="inp" accept="image/*"></div>
+      <div id="editor" style="display:none">
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Date:</label><input type="date" id="dateVal" oninput="render()"></div>
+          <div><label>Position:</label><select id="pos" onchange="render()"><option value="bottom">Bottom Strip</option><option value="top">Top Strip</option><option value="corner">Bottom-Right Corner</option></select></div>
+          <div><label>Text Color:</label><input type="color" id="txtCol" value="#000000" oninput="render()" style="height:35px;width:40px;border:none"></div>
+        </div>
+        <canvas id="canvas" style="max-width:100%;border-radius:8px;margin:.5rem 0"></canvas>
+        <div class="row"><button class="btn" onclick="document.getElementById('canvas').toBlob(function(b){download(b,'photo_dated.jpg')},'image/jpeg',0.95)">💾 Download</button></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Many government exam forms (SSC, UPSC, Banking, Railway) require the date of photograph to be printed on the image. This tool adds a clean white strip with the date at the bottom or top of your photo. Upload your photo, select the date, and download. Your photo never leaves your device.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var img=null;
+document.getElementById("dateVal").valueAsDate=new Date();
+setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";render()})});
+function render(){
+  if(!img)return;var c=document.getElementById("canvas"),ctx=c.getContext("2d");
+  var pos=document.getElementById("pos").value;var stripH=40;
+  c.width=img.width;c.height=img.height+(pos!=="corner"?stripH:0);
+  if(pos==="top"){ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,stripH);ctx.drawImage(img,0,stripH)}
+  else if(pos==="bottom"){ctx.drawImage(img,0,0);ctx.fillStyle="#fff";ctx.fillRect(0,img.height,c.width,stripH)}
+  else{c.height=img.height;ctx.drawImage(img,0,0)}
+  var date=document.getElementById("dateVal").value;if(date){var d=new Date(date);date=d.toLocaleDateString("en-IN",{day:"2-digit",month:"2-digit",year:"numeric"})}else{date=""}
+  ctx.fillStyle=document.getElementById("txtCol").value;ctx.font="bold 16px Arial";ctx.textAlign="center";
+  if(pos==="top")ctx.fillText(date,c.width/2,stripH/2+6);
+  else if(pos==="bottom")ctx.fillText(date,c.width/2,img.height+stripH/2+6);
+  else{ctx.textAlign="right";ctx.fillStyle="rgba(255,255,255,0.8)";ctx.fillRect(c.width-130,c.height-30,130,30);ctx.fillStyle=document.getElementById("txtCol").value;ctx.fillText(date,c.width-10,c.height-10)}
+}
+  </script>
+</body></html>
