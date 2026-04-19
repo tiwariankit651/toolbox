@@ -36,11 +36,16 @@
     <!-- ad unit placeholder -->
     <div class="tool-section">
       <h1>📄 Resume Builder</h1>
-      <p class="info">Fill the form below and download a clean, professional PDF resume.</p>
+      <p class="info">Fill the form, choose a template, and download a professional PDF resume.</p>
+      <div class="row" style="margin-bottom:1rem"><label>Template:</label>
+        <select id="template"><option value="classic">📋 Classic (Clean)</option><option value="modern">🎨 Modern (Blue Accent)</option><option value="minimal">✨ Minimal (Simple)</option></select>
+        <label>Accent Color:</label><input type="color" id="accentColor" value="#4f8cff" style="width:40px;height:35px;border:none">
+      </div>
       <h2>Personal Info</h2>
       <div class="row"><input type="text" id="name" placeholder="Full Name"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)"></div>
       <div class="row"><input type="email" id="email" placeholder="Email"><input type="text" id="phone" placeholder="Phone"></div>
-      <input type="text" id="location" placeholder="City, Country">
+      <div class="row"><input type="text" id="location" placeholder="City, Country"><input type="text" id="linkedin" placeholder="LinkedIn URL (optional)"></div>
+      <input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)">
       <h2 style="margin-top:1rem">Summary</h2>
       <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px"></textarea>
       <h2 style="margin-top:1rem">Skills (comma separated)</h2>
@@ -51,7 +56,11 @@
       <h2 style="margin-top:1rem">Education</h2>
       <div id="edu"></div>
       <button class="btn btn-outline" onclick="addEdu()">+ Add Education</button>
-      <button class="btn" onclick="genResume()" style="margin-top:1.5rem">📄 Generate & Download PDF</button>
+      <h2 style="margin-top:1rem">Certifications (optional)</h2>
+      <input type="text" id="certs" placeholder="e.g. AWS Certified, Google Analytics, NPTEL Python">
+      <h2 style="margin-top:1rem">Languages (optional)</h2>
+      <input type="text" id="languages" placeholder="e.g. English (Fluent), Hindi (Native), French (Basic)">
+      <button class="btn" onclick="genResume()" style="margin-top:1.5rem;width:100%">📄 Generate & Download PDF</button>
       <div id="result"></div>
     </div>
     <!-- ad unit placeholder -->
@@ -79,50 +88,75 @@ addExp();addEdu();
 
 async function genResume(){
   const v=id=>document.getElementById(id).value.trim();
+  const tmpl=document.getElementById("template").value;
+  const acHex=document.getElementById("accentColor").value;
+  const acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;
   const doc=await PDFLib.PDFDocument.create();
   const pg=doc.addPage([595,842]);
   const f=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
   const b=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-  const blue=PDFLib.rgb(0.31,0.55,1);const dark=PDFLib.rgb(0.1,0.1,0.15);const gray=PDFLib.rgb(0.4,0.4,0.45);
+  const accent=PDFLib.rgb(acR,acG,acB);const dark=PDFLib.rgb(0.1,0.1,0.15);const gray=PDFLib.rgb(0.4,0.4,0.45);const white=PDFLib.rgb(1,1,1);
   let y=790;
-  const t=(s,x,yy,font,sz,col)=>{pg.drawText(s,{x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy};
+  const t=(s,x,yy,font,sz,col)=>{if(!s)return yy;pg.drawText(s,{x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy};
+  const wrapText=(s,x,yy,font,sz,maxW,col)=>{if(!s)return yy;var words=s.split(' ');var ln='';words.forEach(function(w){if((font||f).widthOfTextAtSize(ln+' '+w,sz||10)>maxW){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);ln=w}else ln+=(ln?' ':'')+w});if(ln){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4)}return yy};
   const line=yy=>{pg.drawLine({start:{x:50,y:yy},end:{x:545,y:yy},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-15};
-  const section=(title,yy)=>{yy-=10;t(title,50,yy,b,13,blue);return line(yy-5)};
+  const section=(title,yy)=>{yy-=10;t(title,50,yy,b,13,accent);return line(yy-5)};
 
-  // Header
-  t(v('name')||'Your Name',50,y,b,22,blue);y-=20;
-  t(v('title')||'',50,y,f,12,gray);y-=18;
-  const contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
-  t(contact,50,y,f,9,gray);y-=10;y=line(y);
+  // Template: Modern — blue header bar
+  if(tmpl==="modern"){pg.drawRectangle({x:0,y:770,width:595,height:72,color:accent});
+    t(v('name')||'Your Name',50,810,b,24,white);y=800;
+    t(v('title')||'',50,790,f,12,white);y=775;
+    var contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
+    t(contact,50,y,f,9,white);y=755;y=line(y);
+  }
+  // Template: Classic
+  else if(tmpl==="classic"){
+    t(v('name')||'Your Name',50,y,b,22,accent);y-=20;
+    t(v('title')||'',50,y,f,12,gray);y-=18;
+    var contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
+    t(contact,50,y,f,9,gray);y-=10;
+    var links=[v('linkedin'),v('portfolio')].filter(Boolean).join('  |  ');
+    if(links){t(links,50,y,f,8,accent);y-=10}
+    y=line(y);
+  }
+  // Template: Minimal
+  else{
+    t(v('name')||'Your Name',50,y,b,20,dark);y-=18;
+    t(v('title')||'',50,y,f,11,gray);y-=16;
+    var contact=[v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).join(' • ');
+    t(contact,50,y,f,8,gray);y-=10;y=line(y);
+  }
 
   // Summary
-  if(v('summary')){y=section('SUMMARY',y);const words=v('summary').split(' ');let ln='';
-    words.forEach(w=>{if(f.widthOfTextAtSize(ln+' '+w,10)>490){t(ln,50,y,f,10);y-=14;ln=w}else ln+=(ln?' ':'')+w});
-    if(ln){t(ln,50,y,f,10);y-=14}}
+  if(v('summary')){y=section('SUMMARY',y);y=wrapText(v('summary'),50,y,f,10,490)}
 
   // Skills
-  if(v('skills')){y=section('SKILLS',y);t(v('skills'),50,y,f,10);y-=14}
+  if(v('skills')){y=section('SKILLS',y);y=wrapText(v('skills'),50,y,f,10,490)}
 
   // Experience
-  const exps=document.querySelectorAll('#exp > div');
+  var exps=document.querySelectorAll('#exp > div');
   if(exps.length){y=section('EXPERIENCE',y);
-    exps.forEach(e=>{const inp=e.querySelectorAll('input');const ta=e.querySelector('textarea');
-      t(inp[1]?.value||'Role',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
-      t(inp[0]?.value||'Company',50,y,f,10,gray);y-=14;
-      if(ta?.value){const words=ta.value.split(' ');let ln='• ';
-        words.forEach(w=>{if(f.widthOfTextAtSize(ln+' '+w,9)>480){t(ln,55,y,f,9);y-=12;ln=w}else ln+=(ln==='• '?'':' ')+w});
-        if(ln){t(ln,55,y,f,9);y-=12}}y-=8})}
+    exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');
+      t(inp[1]?.value||'',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
+      t(inp[0]?.value||'',50,y,f,10,gray);y-=14;
+      if(ta?.value){y=wrapText('• '+ta.value.replace(/\n/g,'\n• '),55,y,f,9,480)}y-=6})}
 
   // Education
-  const edus=document.querySelectorAll('#edu > div');
+  var edus=document.querySelectorAll('#edu > div');
   if(edus.length){y=section('EDUCATION',y);
-    edus.forEach(e=>{const inp=e.querySelectorAll('input');
-      t(inp[1]?.value||'Degree',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
-      t((inp[0]?.value||'')+(inp[3]?.value?' — '+inp[3].value:''),50,y,f,10,gray);y-=20})}
+    edus.forEach(function(e){var inp=e.querySelectorAll('input');
+      t(inp[1]?.value||'',50,y,b,11);t(inp[2]?.value||'',430,y,f,9,gray);y-=14;
+      t((inp[0]?.value||'')+(inp[3]?.value?' — '+inp[3].value:''),50,y,f,10,gray);y-=18})}
 
-  const blob=new Blob([await doc.save()],{type:'application/pdf'});
+  // Certifications
+  if(v('certs')){y=section('CERTIFICATIONS',y);y=wrapText(v('certs'),50,y,f,10,490)}
+
+  // Languages
+  if(v('languages')){y=section('LANGUAGES',y);t(v('languages'),50,y,f,10);y-=14}
+
+  var blob=new Blob([await doc.save()],{type:'application/pdf'});
   download(blob,'resume.pdf');
-  document.getElementById('result').innerHTML="<p class='info'>✅ Resume downloaded!</p>";
+  document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>✅ Resume downloaded! Template: "+tmpl+"</p>";
 }
   </script>
 </body>

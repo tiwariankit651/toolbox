@@ -146,7 +146,20 @@ function finish(){
   var r=document.getElementById("result");
   r.style.display="grid";
   r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
+  // Save to leaderboard
+  var lb=JSON.parse(localStorage.getItem("typingLB")||"[]");
+  lb.push({wpm:wpm,acc:acc,date:new Date().toLocaleDateString("en-IN"),lang:document.getElementById("lang").value,diff:document.getElementById("difficulty").value});
+  lb.sort(function(a,b){return b.wpm-a.wpm});lb=lb.slice(0,10);
+  localStorage.setItem("typingLB",JSON.stringify(lb));
+  // Show leaderboard
+  var lbHtml='<div style="grid-column:1/-1;margin-top:.5rem"><h3>🏆 Your Best Scores</h3>';
+  lb.forEach(function(s,i){lbHtml+='<div style="background:var(--card);padding:.4rem .8rem;border-radius:6px;margin:.2rem 0;display:flex;justify-content:space-between"><span>'+(i+1)+'. '+s.wpm+' WPM ('+s.acc+'%)</span><span class="info">'+s.date+'</span></div>'});
+  lbHtml+='</div>';
+  // Certificate button
+  lbHtml+='<div style="grid-column:1/-1;text-align:center;margin-top:.5rem"><button class="btn" onclick="genCert('+wpm+','+acc+')">🎓 Download Certificate</button></div>';
+  r.innerHTML+=lbHtml;
 }
+function genCert(wpm,acc){var c=document.createElement("canvas");c.width=800;c.height=500;var ctx=c.getContext("2d");var grd=ctx.createLinearGradient(0,0,800,500);grd.addColorStop(0,"#4f8cff");grd.addColorStop(1,"#a855f7");ctx.fillStyle=grd;ctx.fillRect(0,0,800,500);ctx.fillStyle="#fff";ctx.fillRect(20,20,760,460);ctx.fillStyle="#4f8cff";ctx.font="bold 28px Georgia";ctx.textAlign="center";ctx.fillText("Certificate of Achievement",400,80);ctx.fillStyle="#333";ctx.font="16px Arial";ctx.fillText("This certifies that the holder has achieved",400,130);ctx.font="bold 48px Georgia";ctx.fillStyle="#4f8cff";ctx.fillText(wpm+" WPM",400,200);ctx.fillStyle="#333";ctx.font="16px Arial";ctx.fillText("Words Per Minute with "+acc+"% Accuracy",400,240);ctx.fillText("on the FreeToolHubs Typing Speed Test",400,270);ctx.font="14px Arial";ctx.fillStyle="#666";ctx.fillText("Date: "+new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}),400,320);ctx.fillText("freetoolhubs.com/tools/typing-test",400,350);ctx.strokeStyle="#4f8cff";ctx.lineWidth=3;ctx.strokeRect(30,30,740,440);c.toBlob(function(b){download(b,"typing_certificate.png")})}
 function useCustom(){var ct=document.getElementById("customText").value.trim();if(!ct)return alert("Paste some text first");text=ct;document.getElementById("textDisplay").innerHTML=text.split("").map(function(c){return "<span>"+c+"</span>"}).join("");document.getElementById("typingInput").value="";document.getElementById("typingInput").disabled=false;document.getElementById("typingInput").focus();document.getElementById("result").style.display="none";start=null;clearInterval(timer);document.getElementById("timer").textContent=document.getElementById("duration").value+"s";document.getElementById("customTextArea").style.display="none"}
 reset();
 </script>
