@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammar Checker - Check English Grammar Free | FreeToolHubs</title>
+  <meta name="description" content="Check English grammar and style online for free. Highlights common errors, suggests fixes. Browser-based, no upload.">
+  <meta property="og:title" content="Grammar Checker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/grammar-checker"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/grammar-checker"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ✏️ Grammar Checker</div>
+    <div class="tool-section">
+      <h1>✏️ Grammar & Style Checker</h1>
+      <p class="info">Paste your text to check for common grammar errors and style issues.</p>
+      <textarea id="input" rows="8" placeholder="Paste your text here..."></textarea>
+      <button class="btn" onclick="check()" style="width:100%;margin-top:.5rem">✏️ Check Grammar</button>
+      <div id="stats" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem"></div>
+      <div id="result" style="margin-top:1rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Check your English text for common grammar and style errors. Detects issues like double spaces, missing capitalization, common misspellings, passive voice, wordy phrases, and more. Shows suggestions with highlighted errors. Note: This is rule-based, not AI — it catches common mistakes but cannot replace a human editor. Your text never leaves your browser.</p></div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var rules=[
+  {p:/\s{2,}/g,m:"Double space detected",fix:"Use single space",t:"spacing"},
+  {p:/[.!?]\s+[a-z]/g,m:"Sentence should start with capital letter",fix:"Capitalize after period",t:"capitalization"},
+  {p:/\bi\b(?!')/g,m:"'i' should be capitalized to 'I'",fix:"Use 'I' instead of 'i'",t:"capitalization"},
+  {p:/\b(teh|hte|adn|taht|wiht|thier|recieve|occured|seperate|definately|accomodate|occurence|neccessary|goverment|enviroment)\b/gi,m:"Possible misspelling",fix:"Check spelling",t:"spelling"},
+  {p:/\b(very unique|very perfect|most unique|more better|more worse|most best)\b/gi,m:"Redundant modifier",fix:"Remove 'very/more/most' — word is already absolute",t:"style"},
+  {p:/\b(utilize|utilise)\b/gi,m:"Wordy — use 'use' instead",fix:"Replace with 'use'",t:"style"},
+  {p:/\b(in order to)\b/gi,m:"Wordy phrase",fix:"Replace with 'to'",t:"style"},
+  {p:/\b(at this point in time)\b/gi,m:"Wordy phrase",fix:"Replace with 'now'",t:"style"},
+  {p:/\b(due to the fact that)\b/gi,m:"Wordy phrase",fix:"Replace with 'because'",t:"style"},
+  {p:/\b(a large number of)\b/gi,m:"Wordy phrase",fix:"Replace with 'many'",t:"style"},
+  {p:/\b(is|are|was|were|been|being)\s+\w+ed\b/gi,m:"Possible passive voice",fix:"Consider using active voice",t:"style"},
+  {p:/[,]{2,}/g,m:"Multiple commas",fix:"Use single comma",t:"punctuation"},
+  {p:/[.]{2}(?!\.)/g,m:"Double period",fix:"Use single period or ellipsis (...)",t:"punctuation"},
+  {p:/\b(alot)\b/gi,m:"'alot' is not a word",fix:"Use 'a lot' (two words)",t:"spelling"},
+  {p:/\b(could of|would of|should of)\b/gi,m:"Incorrect phrase",fix:"Use 'could have/would have/should have'",t:"grammar"},
+  {p:/\b(their|there|they're)\b/gi,m:"Check their/there/they're usage",fix:"their=possession, there=place, they're=they are",t:"grammar"},
+  {p:/\b(your|you're)\b/gi,m:"Check your/you're usage",fix:"your=possession, you're=you are",t:"grammar"},
+  {p:/\b(its|it's)\b/gi,m:"Check its/it's usage",fix:"its=possession, it's=it is",t:"grammar"},
+  {p:/\b(then|than)\b/gi,m:"Check then/than usage",fix:"then=time, than=comparison",t:"grammar"},
+  {p:/\b(affect|effect)\b/gi,m:"Check affect/effect usage",fix:"affect=verb, effect=noun (usually)",t:"grammar"}
+];
+function check(){
+  var text=document.getElementById("input").value;
+  if(!text.trim())return alert("Paste some text first");
+  var issues=[];
+  rules.forEach(function(r){
+    var match;while((match=r.p.exec(text))!==null){
+      if(r.t==="grammar"||r.t==="spelling"||r.t==="punctuation"||r.t==="spacing"||r.t==="capitalization"||(r.t==="style"&&match[0].length>3)){
+        issues.push({pos:match.index,len:match[0].length,text:match[0],msg:r.m,fix:r.fix,type:r.t});
+      }
+    }
+  });
+  // Remove duplicate positions
+  var seen={};issues=issues.filter(function(i){var k=i.pos+"-"+i.type;if(seen[k])return false;seen[k]=true;return true});
+  issues.sort(function(a,b){return a.pos-b.pos});
+  var words=text.split(/\s+/).length;var sentences=text.split(/[.!?]+/).filter(function(s){return s.trim()}).length;
+  var colors={spelling:"#f44336",grammar:"#ff9800",style:"#4f8cff",punctuation:"#9c27b0",spacing:"#607d8b",capitalization:"#ff5722"};
+  document.getElementById("stats").style.display="grid";
+  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+words+'</strong><br><span class="info">Words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+issues.length+'</strong><br><span class="info">Issues Found</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+(issues.length===0?"Excellent!":issues.length<5?"Good":"Needs Work")+'</strong><br><span class="info">Rating</span></div>';
+  if(issues.length===0){document.getElementById("result").innerHTML='<p style="color:#4caf50;text-align:center;font-size:1.2rem;margin:1rem 0">✅ No issues found! Your text looks good.</p>';return}
+  var html='<h3>Issues Found ('+issues.length+')</h3>';
+  issues.forEach(function(i,idx){
+    html+='<div style="background:var(--card);padding:.8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[i.type]+'"><span style="background:'+colors[i.type]+'22;color:'+colors[i.type]+';padding:.1rem .4rem;border-radius:4px;font-size:.75rem;text-transform:uppercase">'+i.type+'</span> <strong>"'+i.text+'"</strong><br><span class="info">'+i.msg+'</span><br><span style="color:#4caf50;font-size:.85rem">💡 '+i.fix+'</span></div>';
+  });
+  document.getElementById("result").innerHTML=html;
+}
+  </script>
+</body></html>
