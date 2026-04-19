@@ -55,11 +55,22 @@
         <button onclick="setTool('whiteout')" id="btn-whiteout">⬜ White-out</button>
         <button onclick="setTool('rect')" id="btn-rect">▭ Rectangle</button>
         <button onclick="setTool('arrow')" id="btn-arrow">➡️ Arrow</button>
+        <button onclick="setTool('note')" id="btn-note">📌 Note</button>
+        <button onclick="insertImage()" id="btn-img">🖼️ Image</button>
+        <input type="file" id="imgInput" accept="image/*" style="display:none">
         <input type="color" id="color" value="#ff0000" title="Color">
         <select id="brushSize"><option value="2">Thin</option><option value="4" selected>Medium</option><option value="8">Thick</option></select>
+        <select id="fontFamily" title="Font"><option value="Arial">Arial</option><option value="Times New Roman">Times New Roman</option><option value="Courier New">Courier</option><option value="Georgia">Georgia</option></select>
         <input type="number" id="textSize" value="16" min="8" max="72" style="width:60px" title="Text size">
         <button onclick="undoLast()">↩️ Undo</button>
+        <button onclick="zoomIn()">🔍+</button>
+        <button onclick="zoomOut()">🔍-</button>
         <button class="btn" onclick="savePDF()">💾 Save PDF</button>
+      </div>
+      <div id="pageNav" style="display:none;text-align:center;margin:.5rem 0">
+        <button class="btn btn-outline" onclick="goPage(-1)" style="padding:.3rem .8rem">◀ Prev</button>
+        <span id="pageInfo" style="padding:0 1rem;font-weight:600"></span>
+        <button class="btn btn-outline" onclick="goPage(1)" style="padding:.3rem .8rem">Next ▶</button>
       </div>
       <div id="viewer"></div>
     </div>
@@ -79,14 +90,36 @@
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 let file,pdfDoc,tool="text",pages=[],overlays=[];
-const SCALE=2;
+let SCALE=2;
+let currentPage=0,totalPages=0;
 
 setupDrop("drop","inp",f=>{file=f[0];loadPDF()});
+
+function zoomIn(){SCALE=Math.min(SCALE+0.5,4);rerender()}
+function zoomOut(){SCALE=Math.max(SCALE-0.5,1);rerender()}
+function goPage(dir){var target=currentPage+dir;if(target>=0&&target<totalPages){currentPage=target;var viewer=document.getElementById("viewer");var wraps=viewer.querySelectorAll(".page-wrap");wraps.forEach(function(w,i){w.style.display=i===currentPage?"block":"none"});document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages}}
+function rerender(){if(pdfDoc)loadPDF()}
+function insertImage(){document.getElementById("imgInput").click()}
+document.getElementById("imgInput").addEventListener("change",function(){
+  var f=this.files[0];if(!f)return;
+  var reader=new FileReader();reader.onload=function(){
+    var img=new Image();img.onload=function(){
+      var wrap=document.getElementById("viewer").querySelectorAll(".page-wrap")[currentPage];
+      if(!wrap)return;var oc=wrap.querySelector(".overlay-canvas");var ctx=oc.getContext("2d");
+      var w=Math.min(img.width,200);var h=img.height*(w/img.width);
+      ctx.drawImage(img,50,50,w,h);
+      overlays[currentPage].push({type:"image",img:img,x:50,y:50,w:w,h:h});
+    };img.src=reader.result;
+  };reader.readAsDataURL(f);
+});
 
 async function loadPDF(){
   const data=await file.arrayBuffer();
   pdfDoc=await pdfjsLib.getDocument({data}).promise;
   document.getElementById("toolbar").style.display="flex";
+  document.getElementById("pageNav").style.display="block";
+  totalPages=pdfDoc.numPages;
+  document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages;
   const viewer=document.getElementById("viewer");
   viewer.innerHTML="";pages=[];overlays=[];
 
@@ -114,9 +147,10 @@ async function loadPDF(){
 
 function setTool(t){
   tool=t;
-  document.querySelectorAll(".toolbar button").forEach(b=>b.classList.remove("active"));
-  const btn=document.getElementById("btn-"+t);
-  if(btn)btn.classList.add("active");
+  document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+  var btn=document.getElementById('btn-'+t);if(btn)btn.classList.add('active');
+  if(t==='note')document.getElementById('viewer').style.cursor='pointer';
+  else document.getElementById('viewer').style.cursor=t==='text'?'text':'crosshair';
 }
 
 function setupOverlay(canvas,ov){
@@ -128,9 +162,24 @@ function setupOverlay(canvas,ov){
       const txt=prompt("Enter text:");
       if(txt){
         const sz=+document.getElementById("textSize").value;
-        ov.ctx.font=sz+"px sans-serif";
+        const ff=document.getElementById("fontFamily").value;
+        ov.ctx.font=sz+"px '"+ff+"'";
         ov.ctx.fillStyle=document.getElementById("color").value;
         ov.ctx.fillText(txt,sx,sy);
+        ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+      }
+      return;
+    }
+    if(tool==="note"){
+      const txt=prompt("Enter sticky note:");
+      if(txt){
+        ov.ctx.fillStyle="rgba(255,255,100,0.9)";
+        ov.ctx.fillRect(sx,sy-60,180,65);
+        ov.ctx.strokeStyle="#e6d800";ov.ctx.lineWidth=1;ov.ctx.strokeRect(sx,sy-60,180,65);
+        ov.ctx.fillStyle="#333";ov.ctx.font="12px Arial";
+        var words=txt.split(" ");var line="";var ly=sy-45;
+        words.forEach(function(w){if(ov.ctx.measureText(line+w+" ").width>170){ov.ctx.fillText(line,sx+5,ly);ly+=14;line=""}line+=w+" "});
+        if(line)ov.ctx.fillText(line,sx+5,ly);
         ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
       }
       return;
