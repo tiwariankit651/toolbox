@@ -61,6 +61,7 @@
             <div class="card-back" id="cardBack">Answer will appear here</div>
           </div>
         </div>
+        <div style="text-align:center;font-size:.85rem;margin-bottom:.5rem;color:var(--muted)">👆 Click the card to flip and see the answer</div>
         <div style="text-align:center;font-size:.9rem;margin-bottom:.5rem" class="info">Card <span id="cardNum">0</span> / <span id="cardTotal">0</span></div>
         <div class="score-bar">
           <button class="btn-dont" onclick="markCard(false)">❌ Don't Know</button>
@@ -136,8 +137,10 @@ function loadSet(name){
 function showCard(){
   if(!deck.length)return;
   document.getElementById("flashcard").classList.remove("flipped");
-  document.getElementById("cardFront").textContent=deck[idx].front;
-  document.getElementById("cardBack").textContent=deck[idx].back;
+  var front=deck[idx].front||"No question";
+  var back=deck[idx].back||"No answer";
+  document.getElementById("cardFront").textContent=front;
+  document.getElementById("cardBack").textContent=back;
   document.getElementById("cardNum").textContent=idx+1;
   document.getElementById("cardTotal").textContent=deck.length;
   updateScore();
