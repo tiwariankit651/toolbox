@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker - Monthly Expense Manager Free | FreeToolHubs</title>
+  <meta name="description" content="Track monthly expenses and income. See spending breakdown with visual chart. Auto-saves to browser. Free tool.">
+  <meta property="og:title" content="Budget Tracker - Monthly Expense Manager Free"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/budget-tracker"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/budget-tracker"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 💰 Budget Tracker</div><div class="tool-section">
+      <h1>💰 Budget / Expense Tracker</h1>
+      <p class="info">Track your monthly income and expenses. Auto-saves to browser.</p>
+      <div class="row"><input type="text" id="desc" placeholder="Description (e.g. Rent, Food)" style="flex:2"><input type="number" id="amt" placeholder="Amount (₹)" style="flex:1"><select id="type"><option value="expense">Expense</option><option value="income">Income</option></select><button class="btn" onclick="addEntry()">+</button></div>
+      <div id="summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:1rem 0"></div>
+      <div id="entries"></div>
+      <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A simple budget and expense tracker. Add income and expenses, see your balance and spending summary. All data saves in your browser — no account needed. Perfect for students and professionals managing monthly budgets.</p></div></div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>var entries=JSON.parse(localStorage.getItem("budget")||"[]");
+function save(){localStorage.setItem("budget",JSON.stringify(entries))}
+function addEntry(){var d=document.getElementById("desc").value.trim();var a=+document.getElementById("amt").value;var t=document.getElementById("type").value;if(!d||!a)return alert("Fill description and amount");entries.push({desc:d,amt:a,type:t,date:new Date().toLocaleDateString("en-IN")});document.getElementById("desc").value="";document.getElementById("amt").value="";save();render()}
+function removeEntry(i){entries.splice(i,1);save();render()}
+function clearAll(){if(confirm("Clear all entries?")){entries=[];save();render()}}
+function render(){
+  var income=0,expense=0;entries.forEach(function(e){if(e.type==="income")income+=e.amt;else expense+=e.amt});
+  var balance=income-expense;
+  document.getElementById("summary").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#4caf50">+'+income.toLocaleString("en-IN")+'</div><div class="info">Income</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#f44336">-'+expense.toLocaleString("en-IN")+'</div><div class="info">Expenses</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:'+(balance>=0?"var(--accent)":"#f44336")+'">'+balance.toLocaleString("en-IN")+'</div><div class="info">Balance</div></div>';
+  document.getElementById("entries").innerHTML=entries.slice().reverse().map(function(e,i){var idx=entries.length-1-i;return '<div style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;align-items:center;gap:.5rem;border-left:3px solid '+(e.type==="income"?"#4caf50":"#f44336")+'"><div style="flex:1"><strong>'+e.desc+'</strong><br><span class="info">'+e.date+'</span></div><div style="font-weight:700;color:'+(e.type==="income"?"#4caf50":"#f44336")+'">'+(e.type==="income"?"+":"-")+"₹"+e.amt.toLocaleString("en-IN")+'</div><button onclick="removeEntry('+idx+')" style="background:none;border:none;color:#f44336;cursor:pointer">×</button></div>'}).join("")||'<p class="info">No entries yet.</p>'}
+render()</script>
+</body></html>
