@@ -36,13 +36,22 @@
     <!-- ad unit placeholder -->
     <div class="tool-section">
       <h1>🗒️ Quick Notes</h1>
-      <p class="info">Your notes auto-save to this browser. They stay even after you close the tab.</p>
-      <textarea id="notes" placeholder="Start typing your notes..." style="min-height:350px;font-size:1rem;line-height:1.7" oninput="save()"></textarea>
-      <div class="row">
-        <p class="info" id="status">✅ Saved</p>
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('notes').value)">📋 Copy</button>
-        <button class="btn btn-outline" onclick="if(confirm('Clear all notes?')){document.getElementById('notes').value='';save()}">🗑️ Clear</button>
-        <button class="btn" onclick="download(new Blob([document.getElementById('notes').value],{type:'text/plain'}),'notes.txt')">💾 Download .txt</button>
+      <p class="info">Multiple notes with auto-save. Create, organize, and never lose your ideas.</p>
+      <div class="row" style="margin-bottom:.5rem">
+        <input type="text" id="newTitle" placeholder="New note title..." style="flex:3">
+        <button class="btn" onclick="addNote()">+ New Note</button>
+      </div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:.5rem;min-height:400px">
+        <div id="noteList" style="background:var(--card);border-radius:8px;padding:.5rem;overflow-y:auto;max-height:450px"></div>
+        <div>
+          <textarea id="noteContent" placeholder="Select a note or create new..." style="min-height:350px;font-size:1rem;line-height:1.7;width:100%" oninput="saveNote()"></textarea>
+          <div class="row" style="margin-top:.3rem">
+            <span class="info" id="status">✅ Saved</span>
+            <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('noteContent').value)">📋 Copy</button>
+            <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('noteContent').value],{type:'text/plain'}),(notes[activeNote]?.title||'note')+'.txt')">💾 Download</button>
+            <button class="btn btn-outline" onclick="deleteNote()" style="color:#f44336">🗑️ Delete</button>
+          </div>
+        </div>
       </div>
     </div>
     <!-- ad unit placeholder -->
@@ -55,9 +64,24 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const n=document.getElementById("notes");
-n.value=localStorage.getItem("toolbox-notes")||"";
-function save(){localStorage.setItem("toolbox-notes",n.value);document.getElementById("status").textContent="✅ Auto-saved"}
+var notes=JSON.parse(localStorage.getItem("multiNotes")||"[]");
+var activeNote=0;
+// Migrate old single note
+if(!notes.length){var old=localStorage.getItem("toolbox-notes");if(old)notes.push({title:"My Notes",content:old,date:Date.now()});else notes.push({title:"Welcome",content:"Start typing your notes here!\n\nYou can create multiple notes using the + button.",date:Date.now()})}
+function save(){localStorage.setItem("multiNotes",JSON.stringify(notes))}
+function addNote(){var t=document.getElementById("newTitle").value.trim()||"Untitled";notes.unshift({title:t,content:"",date:Date.now()});activeNote=0;document.getElementById("newTitle").value="";save();render()}
+function selectNote(i){activeNote=i;document.getElementById("noteContent").value=notes[i].content;render()}
+function saveNote(){if(notes[activeNote]){notes[activeNote].content=document.getElementById("noteContent").value;notes[activeNote].date=Date.now();save();document.getElementById("status").textContent="✅ Auto-saved"}}
+function deleteNote(){if(notes.length<=1)return alert("Cannot delete last note");if(confirm("Delete '"+notes[activeNote].title+"'?")){notes.splice(activeNote,1);activeNote=0;save();render()}}
+function render(){
+  document.getElementById("noteList").innerHTML=notes.map(function(n,i){
+    var active=i===activeNote;
+    var date=new Date(n.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+    return '<div onclick="selectNote('+i+')" style="padding:.5rem;border-radius:6px;cursor:pointer;margin:.2rem 0;background:'+(active?"var(--accent)":"transparent")+';color:'+(active?"#fff":"var(--text)")+'"><strong style="font-size:.85rem">'+n.title+'</strong><br><span style="font-size:.7rem;opacity:.7">'+date+" — "+n.content.substring(0,30)+'...</span></div>';
+  }).join("");
+  document.getElementById("noteContent").value=notes[activeNote]?.content||"";
+}
+render();
   </script>
 </body>
 </html>

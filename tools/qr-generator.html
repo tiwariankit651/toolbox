@@ -37,6 +37,20 @@
     <!-- ad unit placeholder -->
     <div class="tool-section"><h1>📱 QR Code Generator</h1><p class="info">Generate QR codes for any URL or text. Customize size and color.</p>
       <input type="text" id="qrText" placeholder="Enter URL or text..." oninput="gen()">
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="showWifi()" style="font-size:.8rem">📶 WiFi QR</button>
+        <button class="btn btn-outline" onclick="showVcard()" style="font-size:.8rem">👤 Contact Card</button>
+      </div>
+      <div id="wifiForm" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0">
+        <div class="row"><input type="text" id="wifiName" placeholder="WiFi Name (SSID)"><select id="wifiEnc"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">No Password</option></select></div>
+        <input type="text" id="wifiPass" placeholder="WiFi Password">
+        <button class="btn" onclick="genWifi()" style="margin-top:.3rem">Generate WiFi QR</button>
+      </div>
+      <div id="vcardForm" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0">
+        <div class="row"><input type="text" id="vcName" placeholder="Full Name"><input type="text" id="vcPhone" placeholder="Phone"></div>
+        <div class="row"><input type="text" id="vcEmail" placeholder="Email"><input type="text" id="vcOrg" placeholder="Company (optional)"></div>
+        <button class="btn" onclick="genVcard()" style="margin-top:.3rem">Generate Contact QR</button>
+      </div>
       <div class="row"><div><label>Size (px)</label><input type="number" id="qrSize" value="300" min="64" max="1024"></div><div><label>Color</label><input type="color" id="qrColor" value="#000000" style="height:42px"></div></div>
       <button class="btn" onclick="gen()">Generate QR Code</button>
       <div id="result" class="preview-area"></div>
@@ -56,5 +70,10 @@
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>function gen(){const t=document.getElementById("qrText").value.trim();if(!t)return;const s=+document.getElementById("qrSize").value||300;const c=document.getElementById("qrColor").value;const qr=qrcode(0,'M');qr.addData(t);qr.make();const count=qr.getModuleCount();const cv=document.createElement('canvas');cv.width=s;cv.height=s;const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,s,s);const px=s/count;ctx.fillStyle=c;for(let r=0;r<count;r++)for(let col=0;col<count;col++)if(qr.isDark(r,col))ctx.fillRect(col*px,r*px,px+1,px+1);const img=cv.toDataURL('image/png');document.getElementById("result").innerHTML="<img src=\""+img+"\" alt=\"QR Code\" style=\"margin:1rem 0\"><br><button class=\"btn\" onclick=\"const a=document.createElement('a');a.href='"+img+"';a.download='qrcode.png';a.click()\">Download QR Code</button>"}</script>
+  <script>
+function showWifi(){document.getElementById("wifiForm").style.display=document.getElementById("wifiForm").style.display==="none"?"block":"none";document.getElementById("vcardForm").style.display="none"}
+function showVcard(){document.getElementById("vcardForm").style.display=document.getElementById("vcardForm").style.display==="none"?"block":"none";document.getElementById("wifiForm").style.display="none"}
+function genWifi(){var n=document.getElementById("wifiName").value;var p=document.getElementById("wifiPass").value;var e=document.getElementById("wifiEnc").value;document.getElementById("qrText").value="WIFI:T:"+e+";S:"+n+";P:"+p+";;";gen()}
+function genVcard(){var n=document.getElementById("vcName").value;var p=document.getElementById("vcPhone").value;var e=document.getElementById("vcEmail").value;var o=document.getElementById("vcOrg").value;document.getElementById("qrText").value="BEGIN:VCARD\nVERSION:3.0\nFN:"+n+"\nTEL:"+p+"\nEMAIL:"+e+(o?"\nORG:"+o:"")+"\nEND:VCARD";gen()}
+function gen(){const t=document.getElementById("qrText").value.trim();if(!t)return;const s=+document.getElementById("qrSize").value||300;const c=document.getElementById("qrColor").value;const qr=qrcode(0,'M');qr.addData(t);qr.make();const count=qr.getModuleCount();const cv=document.createElement('canvas');cv.width=s;cv.height=s;const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,s,s);const px=s/count;ctx.fillStyle=c;for(let r=0;r<count;r++)for(let col=0;col<count;col++)if(qr.isDark(r,col))ctx.fillRect(col*px,r*px,px+1,px+1);const img=cv.toDataURL('image/png');document.getElementById("result").innerHTML="<img src=\""+img+"\" alt=\"QR Code\" style=\"margin:1rem 0\"><br><button class=\"btn\" onclick=\"const a=document.createElement('a');a.href='"+img+"';a.download='qrcode.png';a.click()\">Download QR Code</button>"}</script>
 </body></html>

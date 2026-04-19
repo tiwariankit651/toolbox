@@ -38,7 +38,7 @@
     <div class="tool-section"><h1>🖼️ Compress Images Online</h1><p class="info">Reduce image file size up to 90%. Adjust quality slider for best results.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div class="row"><label>Quality: <strong id="qv">70</strong>%</label><input type="range" id="qual" min="5" max="100" value="70" oninput="document.getElementById('qv').textContent=this.value" style="flex:3"></div>
-      <button class="btn" onclick="compress()" id="goBtn" disabled>Compress Image</button>
+      <button class="btn" onclick="compressAll()" id="goBtn" disabled style="width:100%">Compress All Images</button>
       <div id="result" class="preview-area"></div>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How much can images be compressed?</summary><p>Typically 50-90% size reduction depending on the quality setting. A quality of 70% gives great results for most images.</p></details>
@@ -56,7 +56,15 @@
     <p style="margin-top:.5rem">© 2026 Ankit Tiwari. All rights reserved.</p>
   </footer>
   <script src="../js/common.js"></script>
-  <script>let file;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class=\"info\">Loaded: "+file.name+" ("+formatSize(file.size)+")</p>"});
-async function compress(){if(!file)return;const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);c.toBlob(b=>{const s=((1-b.size/file.size)*100).toFixed(1);document.getElementById("result").innerHTML="<p class=\"info\">Original: "+formatSize(file.size)+" → Compressed: "+formatSize(b.size)+" ("+s+"% smaller)</p><img src=\""+URL.createObjectURL(b)+"\"><br><button class=\"btn\" onclick=\"download(window._b,'compressed.jpg')\">Download</button>";window._b=b},"image/jpeg",document.getElementById("qual").value/100)}</script>
+  <script>let files=[];
+setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(f=>f.name+" ("+formatSize(f.size)+")").join(", ")+"</p>"});
+async function compressAll(){if(!files.length)return;var qual=document.getElementById("qual").value/100;var html="";var totalOrig=0,totalComp=0;
+for(var i=0;i<files.length;i++){var file=files[i];var img=await loadImage(file);var c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);
+var blob=await new Promise(function(resolve){c.toBlob(resolve,"image/jpeg",qual)});
+var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
+window["_cb"+i]=blob;
+html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><img src="'+URL.createObjectURL(blob)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px"><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller)</span></div><button class="btn" onclick="download(window._cb'+i+',\'compressed_'+file.name.replace(/\.[^.]+$/,".jpg")+'\')">💾</button></div>';}
+var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
+html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center"><strong>Total: '+formatSize(totalOrig)+' → '+formatSize(totalComp)+' ('+totalSaved+'% saved)</strong></div>'+html;
+document.getElementById("result").innerHTML=html}</script>
 </body></html>
