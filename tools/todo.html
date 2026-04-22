@@ -18,7 +18,10 @@
     <div class="tool-section">
       <h1>📋 To-Do List & Kanban Board</h1>
       <p class="info">Add tasks and move them between columns. Auto-saves to browser.</p>
-      <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()"><button class="btn" onclick="addTask()">+ Add</button></div>
+      <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()">
+        <select id="priority"><option value="normal">Normal</option><option value="high">🔴 High</option><option value="low">🟢 Low</option></select>
+        <input type="date" id="dueDate" title="Due date (optional)">
+        <button class="btn" onclick="addTask()">+ Add</button></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem">
         <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4f8cff">📝 To Do <span id="countTodo" class="info"></span></h3><div id="colTodo" style="min-height:100px"></div></div>
         <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #ff9800">🔄 Doing <span id="countDoing" class="info"></span></h3><div id="colDoing" style="min-height:100px"></div></div>
@@ -33,7 +36,7 @@
   <script>
 var tasks=JSON.parse(localStorage.getItem("kanban")||"[]");
 function save(){localStorage.setItem("kanban",JSON.stringify(tasks))}
-function addTask(){var t=document.getElementById("newTask").value.trim();if(!t)return;tasks.push({text:t,col:"todo",created:Date.now()});document.getElementById("newTask").value="";save();render()}
+function addTask(){var t=document.getElementById("newTask").value.trim();if(!t)return;tasks.push({text:t,col:"todo",created:Date.now(),priority:document.getElementById("priority").value,due:document.getElementById("dueDate").value||""});document.getElementById("newTask").value="";document.getElementById("dueDate").value="";save();render()}
 function moveTask(i,col){tasks[i].col=col;save();render()}
 function removeTask(i){tasks.splice(i,1);save();render()}
 function clearDone(){tasks=tasks.filter(function(t){return t.col!=="done"});save();render()}
@@ -46,7 +49,7 @@ function render(){
     var nextCol={todo:"doing",doing:"done",done:"todo"};
     var arrows={todo:"→ Doing",doing:"→ Done",done:"↩ To Do"};
     el.innerHTML=cols[col].map(function(t){
-      return '<div style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[col]+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
+      return '<div style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[col]+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+(t.priority==="high"?' <span style="color:#f44336;font-size:.75rem">🔴 HIGH</span>':t.priority==="low"?' <span style="color:#4caf50;font-size:.75rem">🟢 LOW</span>':"")+(t.due?' <span style="color:var(--muted);font-size:.75rem">📅 '+t.due+'</span>':"")+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
     }).join("")||'<p class="info" style="text-align:center;font-size:.8rem">Empty</p>';
     document.getElementById("count"+col.charAt(0).toUpperCase()+col.slice(1)).textContent="("+cols[col].length+")";
   });
