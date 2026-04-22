@@ -23,7 +23,7 @@
         <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
           <div><label>Intensity: <span id="intVal">20</span></label><input type="range" id="intensity" min="5" max="50" value="20" oninput="document.getElementById('intVal').textContent=this.value;convert()" style="max-width:150px"></div>
           <div><label>Blur: <span id="blurVal">3</span></label><input type="range" id="blur" min="1" max="10" value="3" oninput="document.getElementById('blurVal').textContent=this.value;convert()" style="max-width:150px"></div>
-          <div><label>Style:</label><select id="style" onchange="convert()"><option value="pencil">Pencil</option><option value="charcoal">Charcoal</option><option value="ink">Ink</option></select></div>
+          <div><label>Style:</label><select id="style" onchange="convert()"><option value="pencil">Pencil</option><option value="charcoal">Charcoal</option><option value="ink">Ink</option><option value="watercolor">Watercolor</option><option value="sepia">Sepia Vintage</option><option value="pop">Pop Art</option></select></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
           <div style="text-align:center"><p class="info">Original</p><canvas id="orig" style="max-width:100%;border-radius:8px"></canvas></div>
@@ -62,6 +62,9 @@ function convert(){
     var result=Math.min(255,base*256/(256-inv+1));
     if(style==="charcoal"){result=result<128?result*0.5:result;result=Math.min(255,result*1.2)}
     else if(style==="ink"){result=result<intensity*5?0:255}
+    else if(style==="watercolor"){var orig=imageData.data[i];result=Math.round(result/32)*32;od[i]=Math.round(orig*0.3+result*0.7);od[i+1]=Math.round(imageData.data[i+1]*0.3+result*0.7);od[i+2]=Math.round(imageData.data[i+2]*0.3+result*0.7);continue}
+    else if(style==="sepia"){var r2=Math.min(255,result*1.2);var g2=result;var b2=result*0.8;od[i]=r2;od[i+1]=g2;od[i+2]=b2;continue}
+    else if(style==="pop"){var orig2=imageData.data[i];result=Math.round(orig2/64)*85;od[i]=result;od[i+1]=Math.round(imageData.data[i+1]/64)*85;od[i+2]=Math.round(imageData.data[i+2]/64)*85;continue}
     else{result=Math.min(255,result+(255-result)*0.1)}
     od[i]=od[i+1]=od[i+2]=result;
   }

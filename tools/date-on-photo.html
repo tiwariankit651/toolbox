@@ -21,6 +21,8 @@
       <div id="editor" style="display:none">
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
           <div><label>Date:</label><input type="date" id="dateVal" oninput="render()"></div>
+          <div><label>Format:</label><select id="dateFmt" onchange="render()"><option value="dd/mm/yyyy">DD/MM/YYYY</option><option value="dd-mm-yyyy">DD-MM-YYYY</option><option value="yyyy-mm-dd">YYYY-MM-DD</option><option value="dd mon yyyy">DD Mon YYYY</option></select></div>
+          <div><label>Custom text:</label><input type="text" id="customTxt" placeholder="Optional extra text" oninput="render()" style="max-width:150px"></div>
           <div><label>Position:</label><select id="pos" onchange="render()"><option value="bottom">Bottom Strip</option><option value="top">Top Strip</option><option value="corner">Bottom-Right Corner</option></select></div>
           <div><label>Text Color:</label><input type="color" id="txtCol" value="#000000" oninput="render()" style="height:35px;width:40px;border:none"></div>
         </div>
@@ -43,7 +45,16 @@ function render(){
   if(pos==="top"){ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,stripH);ctx.drawImage(img,0,stripH)}
   else if(pos==="bottom"){ctx.drawImage(img,0,0);ctx.fillStyle="#fff";ctx.fillRect(0,img.height,c.width,stripH)}
   else{c.height=img.height;ctx.drawImage(img,0,0)}
-  var date=document.getElementById("dateVal").value;if(date){var d=new Date(date);date=d.toLocaleDateString("en-IN",{day:"2-digit",month:"2-digit",year:"numeric"})}else{date=""}
+  var date=document.getElementById("dateVal").value;
+  var fmt=document.getElementById("dateFmt").value;
+  var custom=document.getElementById("customTxt").value;
+  if(date){var d=new Date(date);var dd=String(d.getDate()).padStart(2,"0");var mm=String(d.getMonth()+1).padStart(2,"0");var yyyy=d.getFullYear();var mon=d.toLocaleDateString("en",{month:"short"});
+    if(fmt==="dd/mm/yyyy")date=dd+"/"+mm+"/"+yyyy;
+    else if(fmt==="dd-mm-yyyy")date=dd+"-"+mm+"-"+yyyy;
+    else if(fmt==="yyyy-mm-dd")date=yyyy+"-"+mm+"-"+dd;
+    else date=dd+" "+mon+" "+yyyy;
+  }
+  if(custom)date=(date?date+" — ":"")+custom;
   ctx.fillStyle=document.getElementById("txtCol").value;ctx.font="bold 16px Arial";ctx.textAlign="center";
   if(pos==="top")ctx.fillText(date,c.width/2,stripH/2+6);
   else if(pos==="bottom")ctx.fillText(date,c.width/2,img.height+stripH/2+6);
