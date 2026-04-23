@@ -10,6 +10,12 @@ function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId)
 // Register Service Worker for offline support & speed
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
+// Offline banner
+window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
+window.addEventListener('offline',function(){if(!document.getElementById('offlineBanner')){var b=document.createElement('div');b.id='offlineBanner';b.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff9800;color:#fff;text-align:center;padding:8px;font-size:.85rem;font-weight:600;z-index:9999';b.textContent='📴 You are offline — this tool still works! Your files stay on your device.';document.body.appendChild(b)}});
+// Show offline tip once
+if(!localStorage.getItem('offlineTipShown')&&document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){setTimeout(function(){var tip=document.createElement('div');tip.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--accent);padding:1rem;border-radius:12px;max-width:280px;z-index:9998;box-shadow:0 4px 20px rgba(0,0,0,.3)';tip.innerHTML='<div style="font-weight:600;margin-bottom:.3rem">💡 Did you know?</div><div style="font-size:.85rem;color:var(--muted)">This tool works offline! Bookmark it for use without internet.</div><button onclick="this.parentElement.remove();localStorage.setItem(\'offlineTipShown\',\'1\')" style="margin-top:.5rem;padding:.3rem .8rem;border:none;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem">Got it!</button>';document.body.appendChild(tip)},3000)}
+
 // Track recently used tools
 if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){var path=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');if(path&&path!==''){var rec=JSON.parse(localStorage.getItem('recentTools')||'[]');rec=rec.filter(function(r){return r!==path});rec.unshift(path);rec=rec.slice(0,8);localStorage.setItem('recentTools',JSON.stringify(rec))}}
 
