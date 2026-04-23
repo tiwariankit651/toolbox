@@ -58,13 +58,13 @@ function preview(){
   var ink=document.getElementById("ink").value;
   var paper=document.getElementById("paper").value;
   var W=794,lineH=fsize*1.6,margin=80,topMargin=100;
-  var lines=[];var words=text.split(/\n/);
-  words.forEach(function(para){
+  var lines=[];var paras=text.split(/\n/);
+  ctx.font=fsize+"px '"+font+"'";
+  paras.forEach(function(para){
     if(!para.trim()){lines.push("");return}
     var ws=para.split(/\s+/);var line="";
-    ctx.font=fsize+"px '"+font+"'";
     ws.forEach(function(w){
-      if(ctx.measureText(line+w+" ").width>W-margin*2){lines.push(line.trim());line=""}
+      if(ctx.measureText(line+w+" ").width>W-margin*2-20){lines.push(line.trim());line=""}
       line+=w+" ";
     });
     if(line.trim())lines.push(line.trim());
@@ -92,6 +92,8 @@ function preview(){
     var y=topMargin+i*lineH+(Math.random()*2-1);
     ctx.fillText(line,x,y);
   });
+  // Page number
+  if(document.getElementById("showPageNum")&&document.getElementById("showPageNum").checked){ctx.fillStyle="#999";ctx.font="12px Arial";ctx.textAlign="center";ctx.fillText("- 1 -",W/2,H-20);ctx.textAlign="left"}
 }
 function dl(fmt){var mime=fmt==="jpg"?"image/jpeg":"image/png";c.toBlob(function(b){download(b,"assignment."+fmt)},mime,0.95)}
 function dlPdf(){
