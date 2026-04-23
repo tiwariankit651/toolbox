@@ -58,6 +58,7 @@ function calc(){
   const dob=new Date(document.getElementById("dob").value);
   if(isNaN(dob))return alert("Select a valid date");
   const now=new Date();
+  if(dob>now)return alert("Date of birth cannot be in the future!");
   let y=now.getFullYear()-dob.getFullYear(),m=now.getMonth()-dob.getMonth(),d=now.getDate()-dob.getDate();
   if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}
   if(m<0){y--;m+=12}
