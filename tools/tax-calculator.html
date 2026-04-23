@@ -30,7 +30,15 @@
       <h3 style="margin:1rem 0 .5rem">Deductions (Old Regime only)</h3>
       <div class="row"><label>80C (LIC, PPF, ELSS):</label><input type="number" id="d80c" value="150000" style="flex:2"></div>
       <div class="row"><label>80D (Health Insurance):</label><input type="number" id="d80d" value="25000" style="flex:2"></div>
-      <div class="row"><label>HRA Exemption:</label><input type="number" id="dhra" value="0" style="flex:2"></div>
+      <div class="row"><label>HRA Exemption:</label><input type="number" id="dhra" value="0" style="flex:2"><button class="btn btn-outline" onclick="calcHRA()" style="font-size:.8rem">Calculate HRA</button></div>
+      <div id="hraCalc" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin:.3rem 0">
+        <div class="row"><label>Basic Salary (monthly):</label><input type="number" id="hraBasic" placeholder="e.g. 30000" style="flex:2"></div>
+        <div class="row"><label>HRA Received (monthly):</label><input type="number" id="hraReceived" placeholder="e.g. 15000" style="flex:2"></div>
+        <div class="row"><label>Rent Paid (monthly):</label><input type="number" id="hraRent" placeholder="e.g. 12000" style="flex:2"></div>
+        <div class="row"><label>Metro city?</label><select id="hraMetro"><option value="yes">Yes (50% of basic)</option><option value="no">No (40% of basic)</option></select></div>
+        <button class="btn" onclick="doHRA()" style="margin-top:.3rem;font-size:.85rem">Calculate & Apply</button>
+        <div id="hraResult" class="info" style="margin-top:.3rem"></div>
+      </div>
       <div class="row"><label>Other Deductions:</label><input type="number" id="dother" value="0" style="flex:2"></div>
       <button class="btn" onclick="calc()" style="width:100%;margin-top:1rem">Calculate Tax</button>
       <div id="result" style="display:none;margin-top:1.5rem">
@@ -64,6 +72,8 @@ function calcNew(income){
   if(taxable<=700000)tax=0;
   tax+=tax*0.04;return Math.round(tax);
 }
+function calcHRA(){document.getElementById("hraCalc").style.display=document.getElementById("hraCalc").style.display==="none"?"block":"none"}
+function doHRA(){var basic=+document.getElementById("hraBasic").value*12;var received=+document.getElementById("hraReceived").value*12;var rent=+document.getElementById("hraRent").value*12;var metro=document.getElementById("hraMetro").value==="yes"?0.5:0.4;var a=received;var b=metro*basic;var c=rent-0.1*basic;var exempt=Math.max(0,Math.min(a,b,c));document.getElementById("dhra").value=Math.round(exempt);document.getElementById("hraResult").textContent="HRA Exemption: ₹"+Math.round(exempt).toLocaleString("en-IN")+" (Min of: ₹"+Math.round(a).toLocaleString("en-IN")+", ₹"+Math.round(b).toLocaleString("en-IN")+", ₹"+Math.round(Math.max(0,c)).toLocaleString("en-IN")+")"}
 function calc(){
   var income=+document.getElementById("income").value;if(!income)return alert("Enter your income");
   var age=document.getElementById("age").value;

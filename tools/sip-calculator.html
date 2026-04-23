@@ -17,7 +17,16 @@
     <div class="tool-section">
       <h1>💹 SIP Calculator</h1>
       <p class="info">Calculate mutual fund SIP returns. See how your money grows over time.</p>
-      <div class="row"><label>Monthly SIP (₹):</label><input type="number" id="sip" value="5000" style="flex:2"></div>
+      <div class="row" style="margin-bottom:.5rem"><button class="btn" onclick="setCalcMode('sip')" id="modeSip">SIP</button><button class="btn btn-outline" onclick="setCalcMode('lump')" id="modeLump">Lumpsum</button><button class="btn btn-outline" onclick="setCalcMode('goal')" id="modeGoal">Goal Planner</button></div>
+      <div id="sipFields">
+        <div class="row"><label>Monthly SIP (₹):</label><input type="number" id="sip" value="5000" style="flex:2"></div>
+      </div>
+      <div id="lumpFields" style="display:none">
+        <div class="row"><label>Lumpsum Amount (₹):</label><input type="number" id="lump" value="100000" style="flex:2"></div>
+      </div>
+      <div id="goalFields" style="display:none">
+        <div class="row"><label>Target Amount (₹):</label><input type="number" id="goal" value="1000000" style="flex:2"></div>
+      </div>
       <div class="row"><label>Expected Return (% p.a.):</label><input type="number" id="rate" value="12" step="0.5" style="flex:2"></div>
       <div class="row"><label>Time Period (years):</label><input type="number" id="years" value="10" style="flex:2"></div>
       <button class="btn" onclick="calc()" style="width:100%;margin-top:.5rem">💹 Calculate</button>
@@ -36,6 +45,12 @@
   <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
   <script src="../js/common.js"></script>
   <script>
-function calc(){var sip=+document.getElementById("sip").value;var rate=+document.getElementById("rate").value/100/12;var months=+document.getElementById("years").value*12;var fv=sip*((Math.pow(1+rate,months)-1)/rate)*(1+rate);var invested=sip*months;var returns=fv-invested;document.getElementById("invested").textContent="₹"+Math.round(invested).toLocaleString("en-IN");document.getElementById("returns").textContent="₹"+Math.round(returns).toLocaleString("en-IN");document.getElementById("total").textContent="₹"+Math.round(fv).toLocaleString("en-IN");var pctInv=Math.round(invested/fv*100);document.getElementById("barInv").style.width=pctInv+"%";document.getElementById("barRet").style.width=(100-pctInv)+"%";document.getElementById("result").style.display="block"}
+var calcMode="sip";
+function setCalcMode(m){calcMode=m;document.getElementById("sipFields").style.display=m==="sip"?"":"none";document.getElementById("lumpFields").style.display=m==="lump"?"":"none";document.getElementById("goalFields").style.display=m==="goal"?"":"none";document.getElementById("modeSip").className=m==="sip"?"btn":"btn btn-outline";document.getElementById("modeLump").className=m==="lump"?"btn":"btn btn-outline";document.getElementById("modeGoal").className=m==="goal"?"btn":"btn btn-outline"}
+function calc(){var rate=+document.getElementById("rate").value/100/12;var months=+document.getElementById("years").value*12;var invested,returns,fv;
+if(calcMode==="sip"){var sip=+document.getElementById("sip").value;fv=sip*((Math.pow(1+rate,months)-1)/rate)*(1+rate);invested=sip*months;returns=fv-invested}
+else if(calcMode==="lump"){var lump=+document.getElementById("lump").value;fv=lump*Math.pow(1+rate,months);invested=lump;returns=fv-invested}
+else{var goal=+document.getElementById("goal").value;var sipNeeded=goal/((Math.pow(1+rate,months)-1)/rate*(1+rate));invested=sipNeeded*months;fv=goal;returns=fv-invested;document.getElementById("invested").textContent="₹"+Math.round(sipNeeded).toLocaleString("en-IN")+"/month";document.getElementById("returns").textContent="₹"+Math.round(returns).toLocaleString("en-IN");document.getElementById("total").textContent="₹"+Math.round(fv).toLocaleString("en-IN");var pctInv=Math.round(invested/fv*100);document.getElementById("barInv").style.width=pctInv+"%";document.getElementById("barRet").style.width=(100-pctInv)+"%";document.getElementById("result").style.display="block";return}
+document.getElementById("invested").textContent="₹"+Math.round(invested).toLocaleString("en-IN");document.getElementById("returns").textContent="₹"+Math.round(returns).toLocaleString("en-IN");document.getElementById("total").textContent="₹"+Math.round(fv).toLocaleString("en-IN");var pctInv=Math.round(invested/fv*100);document.getElementById("barInv").style.width=pctInv+"%";document.getElementById("barRet").style.width=(100-pctInv)+"%";document.getElementById("result").style.display="block"}
   </script>
 </body></html>
