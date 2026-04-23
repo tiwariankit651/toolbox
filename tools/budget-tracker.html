@@ -15,7 +15,7 @@
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 💰 Budget Tracker</div><div class="tool-section">
       <h1>💰 Budget / Expense Tracker</h1>
       <p class="info">Track your monthly income and expenses. Auto-saves to browser.</p>
-      <div class="row"><input type="text" id="desc" placeholder="Description (e.g. Rent, Food)" style="flex:2"><input type="number" id="amt" placeholder="Amount (₹)" style="flex:1"><select id="type"><option value="expense">Expense</option><option value="income">Income</option></select><button class="btn" onclick="addEntry()">+</button></div>
+      <div class="row"><input type="text" id="desc" placeholder="Description" style="flex:2"><input type="number" id="amt" placeholder="Amount (₹)" style="flex:1"><select id="type"><option value="expense">Expense</option><option value="income">Income</option></select><select id="category"><option value="food">🍔 Food</option><option value="rent">🏠 Rent</option><option value="transport">🚗 Transport</option><option value="shopping">🛍️ Shopping</option><option value="bills">💡 Bills</option><option value="health">🏥 Health</option><option value="education">📚 Education</option><option value="entertainment">🎬 Entertainment</option><option value="salary">💰 Salary</option><option value="other">📦 Other</option></select><button class="btn" onclick="addEntry()">+</button></div>
       <div id="summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:1rem 0"></div>
       <div id="entries"></div>
       <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button></div>
@@ -25,7 +25,7 @@
   <script src="../js/common.js"></script>
   <script>var entries=JSON.parse(localStorage.getItem("budget")||"[]");
 function save(){localStorage.setItem("budget",JSON.stringify(entries))}
-function addEntry(){var d=document.getElementById("desc").value.trim();var a=+document.getElementById("amt").value;var t=document.getElementById("type").value;if(!d||!a)return alert("Fill description and amount");entries.push({desc:d,amt:a,type:t,date:new Date().toLocaleDateString("en-IN")});document.getElementById("desc").value="";document.getElementById("amt").value="";save();render()}
+function addEntry(){var d=document.getElementById("desc").value.trim();var a=+document.getElementById("amt").value;var t=document.getElementById("type").value;var cat=document.getElementById("category").value;if(!d||!a)return alert("Fill description and amount");entries.push({desc:d,amt:a,type:t,cat:cat,date:new Date().toLocaleDateString("en-IN")});document.getElementById("desc").value="";document.getElementById("amt").value="";save();render()}
 function removeEntry(i){entries.splice(i,1);save();render()}
 function clearAll(){if(confirm("Clear all entries?")){entries=[];save();render()}}
 function render(){
