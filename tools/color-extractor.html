@@ -29,10 +29,12 @@
   var colors={};for(var i=0;i<data.length;i+=16){var r=Math.round(data[i]/32)*32,g=Math.round(data[i+1]/32)*32,b=Math.round(data[i+2]/32)*32;var key=r+","+g+","+b;colors[key]=(colors[key]||0)+1}
   var sorted=Object.entries(colors).sort(function(a,b){return b[1]-a[1]}).slice(0,8);
   var html='<div style="display:flex;gap:.5rem;margin:.5rem 0;flex-wrap:wrap">';
-  sorted.forEach(function(c){var rgb=c[0].split(",");var hex="#"+rgb.map(function(v){return(+v).toString(16).padStart(2,"0")}).join("");
-    html+='<div onclick="navigator.clipboard.writeText(\''+hex+'\');this.querySelector(\'small\').textContent=\'Copied!\'" style="cursor:pointer;text-align:center"><div style="width:70px;height:70px;border-radius:10px;background:'+hex+';border:2px solid var(--border)"></div><small style="font-size:.7rem">'+hex+'</small></div>'});
-  html+="</div>";
-  document.getElementById("result").innerHTML='<img src="'+img.src+'" style="max-width:200px;border-radius:8px;margin:.5rem 0"><h3>Dominant Colors</h3>'+html+'<p class="info">Click any color to copy HEX code</p>';
+  var cssVars=":root {<br>";
+  sorted.forEach(function(c,i){var rgb=c[0].split(",");var hex="#"+rgb.map(function(v){return(+v).toString(16).padStart(2,"0")}).join("");
+    html+='<div onclick="navigator.clipboard.writeText(\''+hex+'\');this.querySelector(\'small\').textContent=\'Copied!\'" style="cursor:pointer;text-align:center"><div style="width:70px;height:70px;border-radius:10px;background:'+hex+';border:2px solid var(--border)"></div><small style="font-size:.7rem">'+hex+'</small></div>';
+    cssVars+="&nbsp;&nbsp;--color-"+(i+1)+": "+hex+";<br>"});
+  html+="</div>";cssVars+="}";
+  document.getElementById("result").innerHTML='<img src="'+img.src+'" style="max-width:200px;border-radius:8px;margin:.5rem 0"><h3>Dominant Colors</h3>'+html+'<p class="info">Click any color to copy HEX code</p><h3 style="margin-top:1rem">CSS Variables</h3><div style="background:var(--card);padding:.8rem;border-radius:8px;font-family:monospace;font-size:.8rem">'+cssVars+'</div><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.querySelector(\'[style*=monospace]\').textContent)" style="margin-top:.3rem;font-size:.8rem">📋 Copy CSS</button>';
 })})</script>
 </body>
 </html>

@@ -46,7 +46,8 @@
         <select id="camSize"><option value="150">Small</option><option value="200" selected>Medium</option><option value="280">Large</option></select>
       </div>
       <div style="margin:1.5rem 0">
-        <button class="btn" onclick="startRec()" id="startBtn">🔴 Start Recording</button>
+        <label>Countdown:</label><select id="countdown"><option value="0">None</option><option value="3" selected>3 sec</option><option value="5">5 sec</option></select>
+        <button class="btn" onclick="startWithCountdown()" id="startBtn">🔴 Start Recording</button>
         <button class="btn btn-outline" onclick="stopRec()" id="stopBtn" disabled>⏹ Stop</button>
       </div>
       <p class="info" id="status"></p>
@@ -64,6 +65,7 @@
   <script src="../js/common.js"></script>
   <script>
 let recorder,chunks=[],timer,secs=0,camStream=null;
+function startWithCountdown(){var cd=+document.getElementById("countdown").value;if(!cd){startRec();return}document.getElementById("status").textContent="Starting in "+cd+"...";document.getElementById("startBtn").disabled=true;var i=setInterval(function(){cd--;if(cd<=0){clearInterval(i);startRec()}else{document.getElementById("status").textContent="Starting in "+cd+"..."}},1000)}
 document.getElementById('camera').onchange=function(){document.getElementById('camSelect').style.display=this.checked?'block':'none'};
 async function startRec(){
   try{

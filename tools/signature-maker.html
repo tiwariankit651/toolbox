@@ -27,6 +27,7 @@
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/signature-maker">
   <link rel="stylesheet" href="../css/style.css">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Caveat&family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Satisfy&display=swap');</style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head>
 <body>
@@ -37,6 +38,11 @@
     <div class="tool-section">
       <h1>✍️ Digital Signature Maker</h1>
       <p class="info">Draw your signature below. Download as transparent PNG.</p>
+      <div class="row" style="margin-bottom:.5rem"><button class="btn" onclick="setSignMode('draw')" id="mDraw">✏️ Draw</button><button class="btn btn-outline" onclick="setSignMode('type')" id="mType">⌨️ Type</button></div>
+      <div id="typeMode" style="display:none;margin-bottom:.5rem">
+        <input type="text" id="typedName" placeholder="Type your name..." oninput="renderTyped()" style="font-size:1.2rem;text-align:center">
+        <div class="row"><label>Font:</label><select id="signFont" onchange="renderTyped()"><option value="'Dancing Script',cursive">Dancing Script</option><option value="'Great Vibes',cursive">Great Vibes</option><option value="'Pacifico',cursive">Pacifico</option><option value="'Caveat',cursive">Caveat</option><option value="'Satisfy',cursive">Satisfy</option></select></div>
+      </div>
       <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap">
         <label>Color:</label>
         <input type="color" id="penColor" value="#000000" style="width:40px;height:35px;border:none;cursor:pointer">
@@ -62,6 +68,9 @@
   <script src="../js/common.js"></script>
   <script>
 const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+var signMode="draw";
+function setSignMode(m){signMode=m;document.getElementById("mDraw").className=m==="draw"?"btn":"btn btn-outline";document.getElementById("mType").className=m==="type"?"btn":"btn btn-outline";document.getElementById("typeMode").style.display=m==="type"?"block":"none";canvas.style.cursor=m==="draw"?"crosshair":"default";if(m==="type")renderTyped()}
+function renderTyped(){var name=document.getElementById("typedName").value||"Your Name";var font=document.getElementById("signFont").value;var color=document.getElementById("penColor").value;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle=color;ctx.font="60px "+font;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(name,canvas.width/2,canvas.height/2)}
 let drawing=false,strokes=[],current=[];
 function getPos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}}
 function startDraw(e){e.preventDefault();drawing=true;current=[{...getPos(e),color:document.getElementById("penColor").value,size:+document.getElementById("penSize").value}]}
