@@ -40,6 +40,8 @@
         <label>Count:</label><input type="number" id="count" value="3" min="1" max="50">
         <label>Type:</label>
         <select id="type"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select>
+        <label>Language:</label>
+        <select id="lang"><option value="latin">Latin (Lorem Ipsum)</option><option value="hindi">Hindi</option><option value="english">English</option></select>
         <button class="btn" onclick="gen()">Generate</button>
       </div>
       <div id="out" class="result-box" style="white-space:pre-wrap;max-height:400px;overflow:auto"></div>
@@ -55,11 +57,16 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const W="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum".split(" ");
+const WL="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum".split(" ");
+const WH="यह एक परीक्षण पाठ है जो हिंदी भाषा में लिखा गया है शिक्षा का महत्व बहुत अधिक है हमारे देश में विभिन्न प्रकार की संस्कृतियाँ पाई जाती हैं प्रकृति ने हमें अनेक उपहार दिए हैं जीवन में सफलता प्राप्त करने के लिए कठिन परिश्रम आवश्यक है विज्ञान और प्रौद्योगिकी ने मानव जीवन को सरल बना दिया है स्वास्थ्य ही सबसे बड़ा धन है समय का सदुपयोग करना चाहिए पर्यावरण की रक्षा करना हम सबका कर्तव्य है".split(" ");
+const WE="the quick brown fox jumps over lazy dog and runs through forest while birds sing in trees above water flows gently down stream past green meadows where flowers bloom under bright sunshine during warm summer days people enjoy walking along paths reading books sharing stories with friends family gathering together celebrating life moments creating memories that last forever".split(" ");
+var W=WL;
 function rw(){return W[Math.floor(Math.random()*W.length)]}
 function sent(){const l=8+Math.floor(Math.random()*12);let s=rw();s=s[0].toUpperCase()+s.slice(1);for(let i=1;i<l;i++)s+=" "+rw();return s+"."}
 function para(){const n=4+Math.floor(Math.random()*4);return Array.from({length:n},sent).join(" ")}
 function gen(){
+  var lang=document.getElementById("lang").value;
+  W=lang==="hindi"?WH:lang==="english"?WE:WL;
   const c=+document.getElementById("count").value;
   const t=document.getElementById("type").value;
   let out;

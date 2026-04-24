@@ -62,7 +62,9 @@ function analyze(){
   const flesch=words>0?Math.round(206.835-1.015*(words/(sentences||1))-84.6*(syllables/words)):0;
   const s=document.getElementById("stats");
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  s.innerHTML=card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Read Time",readMin+" min")+card("Readability",flesch>60?"Easy":flesch>30?"Medium":"Hard");
+  s.innerHTML=card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Read Time",readMin+" min")+card("Readability",flesch>60?"Easy ("+flesch+")":flesch>30?"Medium ("+flesch+")":"Hard ("+flesch+")");
+  // Keyword density
+  if(words>5){var freq={};t.toLowerCase().replace(/[^a-zA-Z\s]/g,"").split(/\s+/).forEach(function(w){if(w.length>3)freq[w]=(freq[w]||0)+1});var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,10);var kd='<div style="margin-top:1rem"><h3>Top Keywords</h3>';sorted.forEach(function(k){var pct=(k[1]/words*100).toFixed(1);kd+='<div style="display:flex;align-items:center;gap:.5rem;margin:.2rem 0"><span style="min-width:100px;font-weight:600">'+k[0]+'</span><div style="flex:1;height:8px;background:var(--border);border-radius:4px"><div style="height:100%;width:'+Math.min(pct*10,100)+'%;background:var(--accent);border-radius:4px"></div></div><span class="info">'+k[1]+' ('+pct+'%)</span></div>'});kd+='</div>';s.innerHTML+=kd}
 }
 analyze();
   </script>

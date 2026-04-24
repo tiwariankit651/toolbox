@@ -47,6 +47,11 @@
         <button class="btn" onclick="calc()">Calculate CGPA</button>
       </div>
       <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
+        <h3>Quick GPA ↔ Percentage Converter</h3>
+        <div class="row"><input type="number" id="qGpa" placeholder="Enter CGPA" step="0.1" style="flex:1"><select id="qScale"><option value="10">10-point</option><option value="4">4-point</option></select><button class="btn btn-outline" onclick="quickConvert()">Convert</button></div>
+        <div id="qResult" class="info" style="margin-top:.3rem"></div>
+      </div>
     </div>
     <div style="min-height:90px"></div>
   </div>
@@ -83,6 +88,7 @@ function calc(){
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
   document.getElementById('result').innerHTML=card('CGPA',cgpa+'/'+scale)+card('Percentage',pct+'%')+card('Subjects',subjects)+card('Total Credits',totalCredits);
 }
+function quickConvert(){var gpa=+document.getElementById("qGpa").value;var scale=+document.getElementById("qScale").value;if(!gpa)return;var pct=scale===10?(gpa*9.5).toFixed(1):(gpa*25).toFixed(1);document.getElementById("qResult").textContent="CGPA "+gpa+" ("+scale+"-point) = "+pct+"% | Grade: "+(pct>=90?"A+":pct>=80?"A":pct>=70?"B+":pct>=60?"B":pct>=50?"C":"D")}
   </script>
 </body>
 </html>

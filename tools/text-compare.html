@@ -42,7 +42,7 @@
         <div><label><strong>Text 1 (Original)</strong></label><textarea id="t1" placeholder="Paste original text..." style="min-height:200px"></textarea></div>
         <div><label><strong>Text 2 (To Check)</strong></label><textarea id="t2" placeholder="Paste text to compare..." style="min-height:200px"></textarea></div>
       </div>
-      <button class="btn" onclick="compare()" style="margin-top:1rem">Compare & Check Similarity</button>
+      <div class="row" style="margin-top:.5rem"><button class="btn" onclick="compare()">Compare Similarity</button><button class="btn btn-outline" onclick="lineDiff()">📝 Line-by-Line Diff</button></div>
       <div id="result" style="margin:1rem 0"></div>
     </div>
     <div style="min-height:90px"></div>
@@ -80,6 +80,7 @@ function compare(){
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center;display:inline-block;min-width:140px;margin:.3rem'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
   document.getElementById('result').innerHTML=card('Similarity',pct+'%')+card('Status',level)+card('Matched',matched+'/'+s2raw.length+' sentences')+'<div class="result-box" style="margin-top:1rem;white-space:pre-wrap;line-height:1.8"><strong>Highlighted Result:</strong><br><br>'+html2+'</div><p class="info"><span class="diff-match">Green = matching</span> &nbsp; <span class="diff-miss">Red = unique</span></p>';
 }
+function lineDiff(){var t1=document.getElementById("t1").value.split("\n");var t2=document.getElementById("t2").value.split("\n");var mx=Math.max(t1.length,t2.length);var html="<div style=\"font-family:monospace;font-size:.85rem;margin-top:1rem\">";var a=0,r=0,s=0;for(var i=0;i<mx;i++){var l1=t1[i]||"";var l2=t2[i]||"";if(l1===l2){html+="<div style=\"padding:.2rem .5rem;background:rgba(76,175,80,.1);border-left:3px solid #4caf50;margin:1px 0\">"+(l1||"(empty)")+"</div>";s++}else{if(l1){html+="<div style=\"padding:.2rem .5rem;background:rgba(244,67,54,.1);border-left:3px solid #f44336;margin:1px 0\">- "+l1+"</div>";r++}if(l2){html+="<div style=\"padding:.2rem .5rem;background:rgba(76,175,80,.15);border-left:3px solid #4caf50;margin:1px 0\">+ "+l2+"</div>";a++}}}html+="</div>";document.getElementById("result").innerHTML="<strong>"+s+" same, +"+a+" added, -"+r+" removed</strong>"+html}
   </script>
 </body>
 </html>
