@@ -51,7 +51,13 @@
       <input type="text" id="journal" placeholder="Journal name (for articles)">
       <div class="row"><input type="text" id="vol" placeholder="Volume"><input type="text" id="pages" placeholder="Pages (e.g. 12-25)"></div>
       <button class="btn" onclick="generate()" style="margin-top:.5rem">Generate Citation</button>
+      <button class="btn btn-outline" onclick="addToBib()" style="margin-top:.5rem">+ Add to Bibliography</button>
       <div id="result" style="margin:1rem 0"></div>
+      <div id="bibSection" style="display:none;margin-top:1rem">
+        <h3>📚 Bibliography (<span id="bibCount">0</span> sources)</h3>
+        <div id="bibList" style="background:var(--card);padding:1rem;border-radius:8px;font-family:serif;line-height:2"></div>
+        <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('bibList').innerText)">📋 Copy All</button><button class="btn btn-outline" onclick="download(new Blob([document.getElementById('bibList').innerText]),('bibliography.txt'))">💾 Download</button><button class="btn btn-outline" onclick="bibItems=[];renderBib()" style="color:#f44336">🗑️ Clear</button></div>
+      </div>
     </div>
     <div style="min-height:90px"></div>
   </div>
@@ -84,6 +90,9 @@ function generate(){
   }
   document.getElementById('result').innerHTML='<div class="result-box" style="line-height:1.8;font-family:serif;font-size:1rem">'+cite+'<button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.innerText)">Copy</button></div>';
 }
+var bibItems=[];
+function addToBib(){var r=document.getElementById("result").innerText;if(!r)return alert("Generate a citation first");bibItems.push(r.replace("Copy","").trim());renderBib()}
+function renderBib(){document.getElementById("bibSection").style.display=bibItems.length?"block":"none";document.getElementById("bibCount").textContent=bibItems.length;document.getElementById("bibList").innerHTML=bibItems.map(function(b,i){return "<div style=\"margin-bottom:.5rem\">"+(i+1)+". "+b+"</div>"}).join("")}
   </script>
 </body>
 </html>

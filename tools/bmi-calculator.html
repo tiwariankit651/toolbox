@@ -103,8 +103,13 @@ function calc(){
   const hm=h/100;
   const normalLow=(18.5*hm*hm).toFixed(1);
   const normalHigh=(24.9*hm*hm).toFixed(1);
+  // BMR calculation (Mifflin-St Jeor)
+  var age=document.getElementById("age")?30:30;
+  var bmrMale=Math.round(10*w+6.25*h-5*age+5);
+  var bmrFemale=Math.round(10*w+6.25*h-5*age-161);
+  var idealLow=(18.5*hm*hm).toFixed(1);
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.3rem;font-weight:700;color:var(--accent)'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  document.getElementById("info").innerHTML=card("Your BMI",bmi.toFixed(1))+card("Category",cat)+card("Healthy Weight",normalLow+" - "+normalHigh+" kg");
+  document.getElementById("info").innerHTML=card("Your BMI",bmi.toFixed(1))+card("Category",cat)+card("Healthy Weight",normalLow+" - "+normalHigh+" kg")+card("Ideal Weight",idealLow+" - "+normalHigh+" kg")+card("BMR (Male)",bmrMale+" cal/day")+card("BMR (Female)",bmrFemale+" cal/day");
   document.getElementById("result").style.display="block";
 }
   </script>
