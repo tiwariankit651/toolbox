@@ -29,6 +29,8 @@
       <div class="row" style="margin:.8rem 0;flex-wrap:wrap">
         <label>Speed: <span id="wpmLabel">250</span> WPM</label>
         <input type="range" id="wpm" min="100" max="800" value="250" step="25" oninput="document.getElementById('wpmLabel').textContent=this.value" style="flex:2">
+        <label>Chunk:</label>
+        <select id="chunk"><option value="1">1 word</option><option value="2">2 words</option><option value="3" selected>3 words</option><option value="5">5 words</option></select>
         <label>Font size:</label>
         <input type="range" id="fsize" min="24" max="72" value="40" oninput="document.getElementById('display').style.fontSize=this.value+'px'" style="flex:1">
       </div>
@@ -52,12 +54,12 @@ function startReading(){
   if(playing){return}
   if(!words.length){var text=document.getElementById("text").value.trim();if(!text)return alert("Paste some text first!");words=text.split(/\s+/);idx=0}
   playing=true;document.getElementById("playBtn").textContent="▶ Playing...";
-  var wpm=+document.getElementById("wpm").value;var delay=60000/wpm;
+  var wpm=+document.getElementById("wpm").value;var chunk=+document.getElementById("chunk").value;var delay=60000/wpm*chunk;
   interval=setInterval(function(){
     if(idx>=words.length){pauseReading();document.getElementById("display").textContent="Done!";document.getElementById("progress").textContent="Finished reading "+words.length+" words";return}
-    document.getElementById("display").textContent=words[idx];
+    document.getElementById("display").textContent=words.slice(idx,idx+chunk).join(" ");
     document.getElementById("progress").textContent="Word "+(idx+1)+"/"+words.length+" ("+Math.round((idx+1)/words.length*100)+"%)";
-    idx++;
+    idx+=chunk;
   },delay);
 }
 function pauseReading(){playing=false;clearInterval(interval);document.getElementById("playBtn").textContent="▶ Resume"}

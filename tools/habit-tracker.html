@@ -85,6 +85,11 @@ function render(){
   var completed=habits.filter(function(h){return h.log[today]}).length;
   var pct=habits.length?Math.round(completed/habits.length*100):0;
   document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent)">'+habits.length+'</div><div class="info">Habits</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+completed+'</div><div class="info">Done Today</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700">'+pct+'%</div><div class="info">Completion</div></div>';
+  // Weekly report
+  var weekHtml='<div style="margin-top:1rem"><h3>📊 Weekly Report</h3><div style="display:flex;gap:3px;margin:.5rem 0">';
+  for(var d=6;d>=0;d--){var dt=new Date();dt.setDate(dt.getDate()-d);var key=dt.toISOString().split("T")[0];var dayDone=0;habits.forEach(function(h){if(h.log[key])dayDone++});var dayPct=habits.length?Math.round(dayDone/habits.length*100):0;var color=dayPct>=80?"#4caf50":dayPct>=50?"#ff9800":dayPct>0?"#f44336":"var(--border)";weekHtml+='<div style="flex:1;text-align:center"><div style="height:60px;background:var(--card);border-radius:4px;position:relative;overflow:hidden"><div style="position:absolute;bottom:0;width:100%;height:'+dayPct+'%;background:'+color+';border-radius:4px"></div></div><div style="font-size:.65rem;margin-top:2px">'+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()]+'</div></div>'}
+  weekHtml+='</div></div>';
+  document.getElementById("stats").innerHTML+=weekHtml;
 }
 render();
   </script>
