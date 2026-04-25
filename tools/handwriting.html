@@ -90,7 +90,19 @@ function preview(){
   lines.forEach(function(line,i){
     var x=margin+(Math.random()*3-1.5);
     var y=topMargin+i*lineH+(Math.random()*2-1);
-    ctx.fillText(line,x,y);
+    // Render with letter variation for realism
+    var chars=line.split("");
+    var cx=x;
+    chars.forEach(function(ch){
+      ctx.save();
+      ctx.translate(cx,y);
+      ctx.rotate((Math.random()-0.5)*0.03);
+      var sizeVar=fsize+(Math.random()-0.5)*2;
+      ctx.font=sizeVar+"px '"+font+"'";
+      ctx.fillText(ch,0,(Math.random()-0.5)*1.5);
+      cx+=ctx.measureText(ch).width+(Math.random()-0.5)*0.5;
+      ctx.restore();
+    });
   });
   // Page number
   if(document.getElementById("showPageNum")&&document.getElementById("showPageNum").checked){ctx.fillStyle="#999";ctx.font="12px Arial";ctx.textAlign="center";ctx.fillText("- 1 -",W/2,H-20);ctx.textAlign="left"}
