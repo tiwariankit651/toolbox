@@ -24,6 +24,8 @@
           <div><label>Intensity: <span id="intVal">20</span></label><input type="range" id="intensity" min="5" max="50" value="20" oninput="document.getElementById('intVal').textContent=this.value;convert()" style="max-width:150px"></div>
           <div><label>Blur: <span id="blurVal">3</span></label><input type="range" id="blur" min="1" max="10" value="3" oninput="document.getElementById('blurVal').textContent=this.value;convert()" style="max-width:150px"></div>
           <div><label>Style:</label><select id="style" onchange="convert()"><option value="pencil">Pencil</option><option value="charcoal">Charcoal</option><option value="ink">Ink</option><option value="watercolor">Watercolor</option><option value="sepia">Sepia Vintage</option><option value="pop">Pop Art</option></select></div>
+          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0" oninput="document.getElementById('conVal').textContent=this.value;convert()" style="max-width:120px"></div>
+          <div><label>Brightness: <span id="briVal">0</span></label><input type="range" id="brightness" min="-50" max="50" value="0" oninput="document.getElementById('briVal').textContent=this.value;convert()" style="max-width:120px"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
           <div style="text-align:center"><p class="info">Original</p><canvas id="orig" style="max-width:100%;border-radius:8px"></canvas></div>
@@ -71,6 +73,9 @@ function convert(){
   ctx.putImageData(out,0,0);
   // Step 4: Enhance contrast
   ctx.globalCompositeOperation="multiply";ctx.globalAlpha=0.1*intensity/20;ctx.drawImage(sc,0,0);ctx.globalCompositeOperation="source-over";ctx.globalAlpha=1;
+  // Apply contrast and brightness
+  var con=+document.getElementById("contrast").value;var bri=+document.getElementById("brightness").value;
+  if(con!==0||bri!==0){var fd=ctx.getImageData(0,0,w,h);var dd=fd.data;var factor=(259*(con+255))/(255*(259-con));for(var j=0;j<dd.length;j+=4){dd[j]=Math.min(255,Math.max(0,factor*(dd[j]-128)+128+bri));dd[j+1]=Math.min(255,Math.max(0,factor*(dd[j+1]-128)+128+bri));dd[j+2]=Math.min(255,Math.max(0,factor*(dd[j+2]-128)+128+bri))}ctx.putImageData(fd,0,0)}
 }
 function dl(){document.getElementById("sketch").toBlob(function(b){download(b,"sketch.png")})}
   </script>
