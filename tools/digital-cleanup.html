@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Cleanup Tool - Blur Sensitive Data & Remove Metadata | FreeToolHubs</title>
+  <meta name="description" content="Blur sensitive information in screenshots, remove EXIF metadata, hide personal data. Privacy-first tool. Everything runs in your browser.">
+  <meta property="og:title" content="Digital Cleanup — Privacy Tool | FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/digital-cleanup"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Digital Cleanup Tool","url":"https://freetoolhubs.com/tools/digital-cleanup","description":"Blur sensitive data and remove metadata from images","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/digital-cleanup"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔒 Digital Cleanup</div>
+    <div class="tool-section">
+      <h1>🔒 Digital Cleanup Tool</h1>
+      <p class="info">Blur sensitive areas, remove metadata, and clean your images before sharing. Drag to select areas to blur.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here (screenshot, photo, document)<input type="file" id="inp" accept="image/*"></div>
+      <div id="editor" style="display:none">
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <button class="btn" onclick="setMode('blur')" id="mBlur" style="background:var(--accent)">🔲 Blur Area</button>
+          <button class="btn btn-outline" onclick="setMode('black')" id="mBlack">⬛ Black Out</button>
+          <button class="btn btn-outline" onclick="setMode('pixelate')" id="mPixel">🟦 Pixelate</button>
+          <label>Intensity:</label><input type="range" id="blurInt" min="5" max="30" value="15" style="max-width:100px">
+          <button class="btn btn-outline" onclick="undoLast()">↩ Undo</button>
+        </div>
+        <p class="info">👆 Drag on the image to select areas to blur/hide. Release to apply.</p>
+        <div style="position:relative;display:inline-block;margin:.5rem 0">
+          <canvas id="canvas" style="max-width:100%;border-radius:8px;cursor:crosshair;border:1px solid var(--border)"></canvas>
+        </div>
+        <div style="margin-top:.5rem">
+          <label><input type="checkbox" id="stripExif" checked> 🔒 Remove all metadata (EXIF, GPS, camera info)</label>
+        </div>
+        <div class="row" style="margin-top:.8rem">
+          <button class="btn" onclick="downloadClean()">💾 Download Clean Image</button>
+        </div>
+        <div id="report" style="display:none;margin-top:.5rem"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Protect your privacy before sharing images online. This tool lets you blur, black out, or pixelate sensitive areas in screenshots and photos — like bank account numbers, phone numbers, addresses, or faces. It also strips all EXIF metadata (GPS location, camera info, date) from the image. Everything runs in your browser — your images never leave your device. Perfect for sharing screenshots on social media, sending documents, or posting product photos.</p>
+      <h2>What You Can Do</h2>
+      <ul style="margin-left:1.5rem;line-height:2"><li><strong>Blur</strong> — Gaussian blur on selected area (adjustable intensity)</li><li><strong>Black Out</strong> — Completely cover area with black</li><li><strong>Pixelate</strong> — Mosaic effect on selected area</li><li><strong>Remove Metadata</strong> — Strip GPS, camera, date, software info</li></ul>
+      <h2>Common Use Cases</h2>
+      <ul style="margin-left:1.5rem;line-height:2"><li>Hide bank account/card numbers in screenshots</li><li>Blur faces in photos before posting online</li><li>Remove phone numbers and addresses</li><li>Strip location data from photos</li><li>Clean screenshots for bug reports</li></ul>
+    </div>
+  </div>
+  <footer><div class="footer-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg><span>Ankit Tiwari</span></div><p>🧰 ToolBox</p><p><a href="../">Home</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p><p style="margin-top:.5rem">© 2026 Ankit Tiwari</p></footer>
+  <script src="../js/common.js"></script>
+  <script>
+var img=null,canvas=document.getElementById("canvas"),ctx,mode="blur",drawing=false,startX,startY,history=[];
+setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){var i=new Image();i.onload=function(){img=i;canvas.width=i.width;canvas.height=i.height;ctx=canvas.getContext("2d");ctx.drawImage(i,0,0);document.getElementById("editor").style.display="block";history=[ctx.getImageData(0,0,canvas.width,canvas.height)]};i.src=reader.result};reader.readAsDataURL(f[0])});
+function setMode(m){mode=m;["mBlur","mBlack","mPixel"].forEach(function(id){document.getElementById(id).className="btn btn-outline";document.getElementById(id).style.background=""});var map={blur:"mBlur",black:"mBlack",pixelate:"mPixel"};document.getElementById(map[m]).className="btn";document.getElementById(map[m]).style.background="var(--accent)"}
+canvas.addEventListener("mousedown",function(e){drawing=true;var r=canvas.getBoundingClientRect();startX=(e.clientX-r.left)*(canvas.width/r.width);startY=(e.clientY-r.top)*(canvas.height/r.height)});
+canvas.addEventListener("mouseup",function(e){if(!drawing)return;drawing=false;var r=canvas.getBoundingClientRect();var endX=(e.clientX-r.left)*(canvas.width/r.width);var endY=(e.clientY-r.top)*(canvas.height/r.height);var x=Math.min(startX,endX),y=Math.min(startY,endY),w=Math.abs(endX-startX),h=Math.abs(endY-startY);if(w<5||h<5)return;history.push(ctx.getImageData(0,0,canvas.width,canvas.height));applyEffect(x,y,w,h)});
+canvas.addEventListener("touchstart",function(e){e.preventDefault();var t=e.touches[0];var r=canvas.getBoundingClientRect();startX=(t.clientX-r.left)*(canvas.width/r.width);startY=(t.clientY-r.top)*(canvas.height/r.height);drawing=true});
+canvas.addEventListener("touchend",function(e){if(!drawing)return;drawing=false;var t=e.changedTouches[0];var r=canvas.getBoundingClientRect();var endX=(t.clientX-r.left)*(canvas.width/r.width);var endY=(t.clientY-r.top)*(canvas.height/r.height);var x=Math.min(startX,endX),y=Math.min(startY,endY),w=Math.abs(endX-startX),h=Math.abs(endY-startY);if(w<5||h<5)return;history.push(ctx.getImageData(0,0,canvas.width,canvas.height));applyEffect(x,y,w,h)});
+function applyEffect(x,y,w,h){
+  var intensity=+document.getElementById("blurInt").value;
+  if(mode==="black"){ctx.fillStyle="#000";ctx.fillRect(x,y,w,h)}
+  else if(mode==="pixelate"){var size=intensity;var data=ctx.getImageData(x,y,w,h);for(var py=0;py<h;py+=size){for(var px=0;px<w;px+=size){var i=(py*w+px)*4;var r=data.data[i],g=data.data[i+1],b=data.data[i+2];ctx.fillStyle="rgb("+r+","+g+","+b+")";ctx.fillRect(x+px,y+py,size,size)}}}
+  else{var tc=document.createElement("canvas");tc.width=w;tc.height=h;var tctx=tc.getContext("2d");tctx.drawImage(canvas,x,y,w,h,0,0,w,h);for(var pass=0;pass<3;pass++){tctx.filter="blur("+intensity+"px)";tctx.drawImage(tc,0,0)}ctx.drawImage(tc,x,y)}
+}
+function undoLast(){if(history.length>1){history.pop();ctx.putImageData(history[history.length-1],0,0)}}
+function downloadClean(){
+  var out=document.createElement("canvas");out.width=canvas.width;out.height=canvas.height;out.getContext("2d").drawImage(canvas,0,0);
+  out.toBlob(function(b){download(b,"cleaned_image.png");
+    var report='<div style="background:var(--card);padding:1rem;border-radius:8px"><h3 style="color:#4caf50">✅ Cleanup Report</h3><ul style="margin-left:1rem;line-height:2">';
+    report+="<li>✅ Sensitive areas processed ("+mode+" applied)</li>";
+    if(document.getElementById("stripExif").checked)report+="<li>✅ EXIF metadata removed (GPS, camera, date, software)</li>";
+    report+="<li>✅ Image re-rendered on clean canvas</li>";
+    report+="<li>✅ Original: "+img.width+"x"+img.height+" | Clean: "+formatSize(b.size)+"</li>";
+    report+="</ul></div>";
+    document.getElementById("report").innerHTML=report;document.getElementById("report").style.display="block"});
+}
+  </script>
+</body>
+</html>
