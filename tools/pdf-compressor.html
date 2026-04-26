@@ -121,8 +121,8 @@ async function compressPDF(){
   document.getElementById("result").innerHTML='<div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;margin:.5rem 0"><div style="font-size:1.5rem;font-weight:700;color:'+(bigger?"#ff9800":"#4caf50")+'">'+(!bigger?saved+"% smaller":"No reduction possible")+'</div><div class="info" style="margin:.5rem 0">Original: '+formatSize(file.size)+' → Compressed: '+formatSize(blob.size)+'</div><div style="display:flex;height:12px;border-radius:6px;overflow:hidden;max-width:300px;margin:.5rem auto"><div style="width:'+(100-parseFloat(saved))+'%;background:#4caf50"></div><div style="width:'+saved+'%;background:var(--border)"></div></div><p class="info">'+totalPages+' pages | Quality: '+(quality*100)+'% | DPI: '+dpi+'</p></div>';
   
   if(!bigger){
-    document.getElementById("result").innerHTML+='<button class="btn" onclick="download(window._compBlob,\'compressed_'+file.name+'\')" style="width:100%">💾 Download Compressed PDF ('+formatSize(blob.size)+')</button>';
     window._compBlob=blob;
+    document.getElementById("result").innerHTML+='<button class="btn" onclick="download(window._compBlob,\'compressed.pdf\')" style="width:100%;margin-top:.5rem">💾 Download Compressed PDF ('+formatSize(blob.size)+')</button>';
   }else{
     document.getElementById("result").innerHTML+='<p class="info">💡 Try lower quality or DPI settings for more compression.</p>';
   }
