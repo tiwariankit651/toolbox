@@ -37,13 +37,21 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>📦 Compress PDF — Reduce File Size</h1>
-      <p class="info">Reduce PDF size for government portals, email attachments & uploads. Compresses embedded images.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF(s) here — supports multiple files<input type="file" id="inp" accept=".pdf" multiple></div>
+      <p class="info">Reduce PDF size for government portals, email attachments & uploads.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
       <div class="row">
-        <label>Image Quality:</label>
-        <select id="quality"><option value="0.3">Low (smallest file)</option><option value="0.5" selected>Medium (recommended)</option><option value="0.7">High (better quality)</option></select>
+        <label>Compression Level:</label>
+        <select id="quality">
+          <option value="0.3">🔴 Maximum (smallest file ~70-90% smaller)</option>
+          <option value="0.5" selected>🟡 Medium (recommended ~50-70% smaller)</option>
+          <option value="0.7">🟢 Light (~30-50% smaller)</option>
+          <option value="0.85">🔵 Minimal (~10-30% smaller, best quality)</option>
+        </select>
       </div>
-      <button class="btn" onclick="compressPDF()" id="goBtn" disabled>Compress PDF</button>
+      <div class="row"><label>DPI:</label>
+        <select id="dpi"><option value="72">72 (smallest)</option><option value="100">100 (good for screen)</option><option value="150" selected>150 (recommended)</option><option value="200">200 (print quality)</option></select>
+      </div>
+      <button class="btn" onclick="compressPDF()" id="goBtn" disabled style="width:100%">📦 Compress PDF</button>
       <div id="result" class="preview-area"></div>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How does PDF compression work?</summary><p>It re-encodes embedded images at lower quality and removes unused objects, reducing file size significantly.</p></details>
@@ -60,46 +68,64 @@
     <p><a href="../">Home</a> | <a href="../about.html">About</a> | <a href="../privacy.html">Privacy</a> | <a href="../contact.html">Contact</a></p>
     <p style="margin-top:.5rem">© 2026 Ankit Tiwari. All rights reserved.</p>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-let file;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>Loaded: "+file.name+" ("+formatSize(file.size)+")</p>"});
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+var file;
+setupDrop("drop","inp",function(f){file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>Loaded: "+file.name+" ("+formatSize(file.size)+")</p>"});
 
 async function compressPDF(){
   if(!file)return;
   document.getElementById("goBtn").disabled=true;
-  document.getElementById("result").innerHTML="<p class='info'>⏳ Compressing...</p>";
-  const q=+document.getElementById("quality").value;
-  const src=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
-  const doc=await PDFLib.PDFDocument.create();
-  const pages=await doc.copyPages(src,src.getPageIndices());
-  pages.forEach(p=>doc.addPage(p));
-  // Re-encode images at lower quality
-  const enumeratedIndirectObjects=doc.context.enumerateIndirectObjects();
-  for(const[ref,obj]of enumeratedIndirectObjects){
-    if(obj instanceof PDFLib.PDFStream){
-      const dict=obj.dict;
-      const subtype=dict.get(PDFLib.PDFName.of("Subtype"));
-      if(subtype&&subtype.toString()==="/Image"){
-        try{
-          const w=dict.get(PDFLib.PDFName.of("Width"));
-          const h=dict.get(PDFLib.PDFName.of("Height"));
-          if(w&&h){
-            const width=w instanceof PDFLib.PDFNumber?w.asNumber():parseInt(w.toString());
-            const height=h instanceof PDFLib.PDFNumber?h.asNumber():parseInt(h.toString());
-            const c=document.createElement("canvas");
-            c.width=Math.round(width*q);c.height=Math.round(height*q);
-          }
-        }catch(e){}
-      }
-    }
+  var quality=+document.getElementById("quality").value;
+  var dpi=+document.getElementById("dpi").value;
+  var scale=dpi/72;
+  
+  document.getElementById("result").innerHTML="<p class='info'>⏳ Loading PDF...</p>";
+  
+  var data=await file.arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:data}).promise;
+  var totalPages=pdf.numPages;
+  
+  var newDoc=await PDFLib.PDFDocument.create();
+  
+  for(var i=1;i<=totalPages;i++){
+    document.getElementById("result").innerHTML="<p class='info'>⏳ Compressing page "+i+"/"+totalPages+"...</p>";
+    
+    var page=await pdf.getPage(i);
+    var vp=page.getViewport({scale:scale});
+    
+    var canvas=document.createElement("canvas");
+    canvas.width=vp.width;
+    canvas.height=vp.height;
+    var ctx=canvas.getContext("2d");
+    
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+    
+    var imgData=canvas.toDataURL("image/jpeg",quality);
+    var imgBytes=Uint8Array.from(atob(imgData.split(",")[1]),function(c){return c.charCodeAt(0)});
+    var img=await newDoc.embedJpg(imgBytes);
+    
+    var origVp=page.getViewport({scale:1});
+    var newPage=newDoc.addPage([origVp.width,origVp.height]);
+    newPage.drawImage(img,{x:0,y:0,width:origVp.width,height:origVp.height});
   }
-  const out=await doc.save();
-  const blob=new Blob([out],{type:"application/pdf"});
-  const saved=((1-blob.size/file.size)*100).toFixed(1);
-  document.getElementById("result").innerHTML="<p class='info'>✅ Original: "+formatSize(file.size)+" → Compressed: "+formatSize(blob.size)+" ("+saved+"% smaller)</p><button class='btn' onclick='download(window._b,\"compressed.pdf\")'>Download Compressed PDF</button>";
-  window._b=blob;
+  
+  var outBytes=await newDoc.save();
+  var blob=new Blob([outBytes],{type:"application/pdf"});
+  var saved=((1-blob.size/file.size)*100).toFixed(1);
+  var bigger=blob.size>=file.size;
+  
+  document.getElementById("result").innerHTML='<div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;margin:.5rem 0"><div style="font-size:1.5rem;font-weight:700;color:'+(bigger?"#ff9800":"#4caf50")+'">'+(!bigger?saved+"% smaller":"No reduction possible")+'</div><div class="info" style="margin:.5rem 0">Original: '+formatSize(file.size)+' → Compressed: '+formatSize(blob.size)+'</div><div style="display:flex;height:12px;border-radius:6px;overflow:hidden;max-width:300px;margin:.5rem auto"><div style="width:'+(100-parseFloat(saved))+'%;background:#4caf50"></div><div style="width:'+saved+'%;background:var(--border)"></div></div><p class="info">'+totalPages+' pages | Quality: '+(quality*100)+'% | DPI: '+dpi+'</p></div>';
+  
+  if(!bigger){
+    document.getElementById("result").innerHTML+='<button class="btn" onclick="download(window._compBlob,\'compressed_'+file.name+'\')" style="width:100%">💾 Download Compressed PDF ('+formatSize(blob.size)+')</button>';
+    window._compBlob=blob;
+  }else{
+    document.getElementById("result").innerHTML+='<p class="info">💡 Try lower quality or DPI settings for more compression.</p>';
+  }
   document.getElementById("goBtn").disabled=false;
 }
   </script>
