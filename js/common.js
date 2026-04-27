@@ -50,6 +50,10 @@ window.checkFileSize=function(files,maxMB){maxMB=maxMB||50;var total=0;Array.fro
 window.cleanupMemory=function(){if(window.gc)window.gc();var imgs=document.querySelectorAll('img[src^="blob:"]');imgs.forEach(function(img){URL.revokeObjectURL(img.src)})};
 setInterval(function(){var mem=performance&&performance.memory?performance.memory.usedJSHeapSize:0;if(mem>200*1024*1024)cleanupMemory()},30000);
 
+// Global error handler for tools
+window.addEventListener('error',function(e){console.error('Tool error:',e.message);var result=document.getElementById('result');if(result&&!result.innerHTML.includes('error')){result.innerHTML+='<p style="color:#f44336;margin-top:.5rem">❌ Error: '+e.message+'. Try a different file or refresh the page.</p>'}});
+window.addEventListener('unhandledrejection',function(e){console.error('Async error:',e.reason);var result=document.getElementById('result');if(result){result.innerHTML='<p style="color:#f44336">❌ Processing failed. The file may be corrupted or too large. Try a smaller file.</p>'}});
+
 // Cookie Consent Banner
 if(!localStorage.getItem('cookieConsent')){const d=document.createElement('div');d.id='cookieConsent';d.innerHTML='<p>We use cookies and third-party services (Google Analytics, AdSense) to improve your experience and show relevant ads. By continuing, you agree to our <a href="/privacy.html" style="color:#4fc3f7">Privacy Policy</a>.</p><button id="acceptCookies">Accept</button><button id="rejectCookies" style="background:transparent;color:#fff;border:1px solid #fff;margin-left:8px">Reject</button>';d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;padding:16px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;font-size:14px';d.querySelector('#acceptCookies').style.cssText='background:#4fc3f7;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:bold';document.body.appendChild(d);d.querySelector('#acceptCookies').onclick=()=>{localStorage.setItem('cookieConsent','accepted');d.remove()};d.querySelector('#rejectCookies').onclick=()=>{localStorage.setItem('cookieConsent','rejected');d.remove()}}
 
