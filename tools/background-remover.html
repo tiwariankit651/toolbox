@@ -77,6 +77,15 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+<script>
+// Inline fallbacks in case common.js fails
+if(typeof setupDrop==="undefined"){function setupDrop(dropId,inputId,cb){var drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener("dragover",function(e){e.preventDefault()});drop.addEventListener("drop",function(e){e.preventDefault();cb(e.dataTransfer.files)});inp.addEventListener("change",function(){cb(inp.files)})}}
+if(typeof loadImage==="undefined"){function loadImage(file){return new Promise(function(r){var img=new Image();img.onload=function(){r(img)};img.src=URL.createObjectURL(file)})}}
+if(typeof formatSize==="undefined"){function formatSize(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(1)+" KB";return(b/1048576).toFixed(1)+" MB"}}
+if(typeof download==="undefined"){function download(blob,name){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click()}}
+if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el==="string")el=document.getElementById(el);if(el)el.innerHTML="<p class=\"info\">⏳ Processing...</p>"}}
+</script>
+
   <script>let file;
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
 async function go(){if(!file)return;showProcessing("result");document.getElementById("goBtn").disabled=true;setTimeout(async function(){const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const bg=[d[0],d[1],d[2]];for(let i=0;i<d.length;i+=4){if(Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2])<t*3)d[i+3]=0}ctx.putImageData(data,0,0);c.toBlob(b=>{document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">Download PNG</button>";window._b=b;document.getElementById("goBtn").disabled=false},"image/png")},100)}</script>
