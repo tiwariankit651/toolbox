@@ -55,16 +55,19 @@
       </div>
       <div class="timer-display" id="display">25:00</div>
       <p class="info" id="label">🎯 Focus Time</p>
+      <p class="info" id="currentTask" style="font-weight:600;margin:.5rem 0"></p>
       <div class="timer-controls">
         <button class="btn" onclick="startTimer()" id="startBtn">▶ Start</button>
         <button class="btn btn-outline" onclick="pauseTimer()">⏸ Pause</button>
         <button class="btn btn-outline" onclick="resetTimer()">↺ Reset</button>
+        <a href="ambient-noise.html" target="_blank" class="btn btn-outline" style="text-decoration:none">🎵 Play Focus Sounds</a>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:2rem 0;max-width:400px;margin-left:auto;margin-right:auto" id="stats">
         <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="sessions">0</div><div class="info">Sessions</div></div>
         <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="totalMin">0</div><div class="info">Minutes</div></div>
         <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="streak">0</div><div class="info">Today's Streak</div></div>
       </div>
+      <div style="background:var(--card);padding:1rem;border-radius:12px;max-width:400px;margin:1rem auto" id="weeklyStats"></div>
       <div style="max-width:400px;margin:0 auto">
         <h3>📝 Task List</h3>
         <div class="row"><input type="text" id="pomTask" placeholder="What are you working on?" style="flex:3" onkeydown="if(event.key==='Enter')addPomTask()"><button class="btn" onclick="addPomTask()">+</button></div>
@@ -110,6 +113,11 @@
 let mins=25,secs=0,interval=null,mode='Focus',sessions=0,totalMin=0;
 function pad(n){return n<10?'0'+n:n}
 function render(){document.getElementById('display').textContent=pad(mins)+':'+pad(secs)}
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function getHistory(){return JSON.parse(localStorage.getItem('pomHistory')||'{}')}
+function saveSession(){var h=getHistory();var k=todayKey();h[k]=(h[k]||0)+1;localStorage.setItem('pomHistory',JSON.stringify(h));renderWeekly()}
+function renderWeekly(){var h=getHistory(),today=new Date(),days=[],total=0;for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);var k=d.toISOString().slice(0,10);var c=h[k]||0;total+=c;days.push(d.toLocaleDateString('en',{weekday:'short'})+': '+c)}document.getElementById('weeklyStats').innerHTML='<strong>📊 Weekly Stats</strong><div style="margin-top:.5rem;font-size:.9rem">Today: <strong>'+(h[todayKey()]||0)+'</strong> pomodoros | Week: <strong>'+total+'</strong></div><div style="font-size:.8rem;color:var(--text2);margin-top:.3rem">'+days.join(' · ')+'</div>'}
+function showCurrentTask(){var t=pomTasks.find(function(x){return!x.done});document.getElementById('currentTask').textContent=t?'📌 Working on: '+t.text:''}
 function setMode(m,label,btn){
   clearInterval(interval);interval=null;
   document.querySelectorAll('.mode-btns button').forEach(b=>b.classList.remove('active'));
@@ -122,9 +130,11 @@ function setMode(m,label,btn){
 function startTimer(){
   if(interval)return;
   if(document.getElementById('customRow').style.display!=='none')mins=+document.getElementById('customMin').value||25;
+  showCurrentTask();
   interval=setInterval(()=>{
     if(secs===0){if(mins===0){clearInterval(interval);interval=null;sessions++;totalMin+=mode==='Focus'?25:5;
       document.getElementById('sessions').textContent=sessions;document.getElementById('totalMin').textContent=totalMin;document.getElementById('streak').textContent=sessions;
+      if(mode==='Focus')saveSession();
       try{new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Mj4yGe3J3gIeLjIqFfXZ1fIKIi4uIhH15eX6Dh4qKiIV/e3l8gYaJioiGgn56eX2BhYiJiIaCf3t5fIGFiImIhoJ+e3l8gYWIiYiGgn57eXyBhYiJiIaCfnt5fIGFiImIhoJ+e3l8gYWIiYiGgn57eQ==').play()}catch(e){}
       alert((mode==='Focus'?'🎯 Focus session complete! Take a break.':'☕ Break over! Time to focus.'));return}mins--;secs=59}
     else secs--;render()
@@ -133,12 +143,12 @@ function startTimer(){
 function pauseTimer(){clearInterval(interval);interval=null}
 function resetTimer(){clearInterval(interval);interval=null;mins=25;secs=0;render()}
 var pomTasks=JSON.parse(localStorage.getItem("pomTasks")||"[]");
-function addPomTask(){var t=document.getElementById("pomTask").value.trim();if(!t)return;pomTasks.push({text:t,done:false});document.getElementById("pomTask").value="";savePomTasks();renderPomTasks()}
-function togglePomTask(i){pomTasks[i].done=!pomTasks[i].done;savePomTasks();renderPomTasks()}
-function removePomTask(i){pomTasks.splice(i,1);savePomTasks();renderPomTasks()}
+function addPomTask(){var t=document.getElementById("pomTask").value.trim();if(!t)return;pomTasks.push({text:t,done:false});document.getElementById("pomTask").value="";savePomTasks();renderPomTasks();showCurrentTask()}
+function togglePomTask(i){pomTasks[i].done=!pomTasks[i].done;savePomTasks();renderPomTasks();showCurrentTask()}
+function removePomTask(i){pomTasks.splice(i,1);savePomTasks();renderPomTasks();showCurrentTask()}
 function savePomTasks(){localStorage.setItem("pomTasks",JSON.stringify(pomTasks))}
 function renderPomTasks(){document.getElementById("pomTasks").innerHTML=pomTasks.map(function(t,i){return '<div style="background:var(--card);padding:.4rem .6rem;border-radius:6px;margin:.2rem 0;display:flex;align-items:center;gap:.5rem;'+(t.done?"opacity:.5":"")+'"><span onclick="togglePomTask('+i+')" style="cursor:pointer;font-size:1.1rem">'+(t.done?"✅":"⬜")+'</span><span style="flex:1;'+(t.done?"text-decoration:line-through":"")+'">'+t.text+'</span><button onclick="removePomTask('+i+')" style="background:none;border:none;color:#f44336;cursor:pointer">×</button></div>'}).join("")||'<p class="info">No tasks yet</p>'}
-renderPomTasks();render();
+renderPomTasks();render();showCurrentTask();renderWeekly();
   </script>
 </body>
 </html>

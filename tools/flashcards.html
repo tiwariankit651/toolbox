@@ -23,10 +23,11 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
-    .card{width:100%;max-width:500px;height:280px;margin:1.5rem auto;perspective:1000px;cursor:pointer}
-    .card-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+    .card{width:100%;max-width:500px;height:280px;margin:1.5rem auto;perspective:1200px;cursor:pointer}
+    .card-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
     .card.flipped .card-inner{transform:rotateY(180deg)}
-    .card-front,.card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;font-size:1.3rem;line-height:1.6}
+    .card-front,.card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;font-size:1.3rem;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,.12);transition:box-shadow .3s}
+    .card:hover .card-front,.card:hover .card-back{box-shadow:0 12px 32px rgba(0,0,0,.18)}
     .card-front{background:linear-gradient(135deg,#4f8cff,#a855f7);color:#fff;font-weight:600}
     .card-back{background:var(--card);border:2px solid var(--accent);transform:rotateY(180deg);color:var(--text)}
     .score-bar{display:flex;gap:.5rem;justify-content:center;margin:1rem 0}
@@ -63,10 +64,12 @@
         </div>
         <div style="text-align:center;font-size:.85rem;margin-bottom:.5rem;color:var(--muted)">👆 Click the card to flip and see the answer</div>
         <div style="text-align:center;font-size:.9rem;margin-bottom:.5rem" class="info">Card <span id="cardNum">0</span> / <span id="cardTotal">0</span></div>
+        <div id="srInfo" style="text-align:center;font-size:.8rem;color:var(--muted);margin-bottom:.3rem"></div>
         <div class="score-bar">
-          <button class="btn-dont" onclick="markCard(false)">❌ Don't Know</button>
-          <button onclick="markCard(true)" style="background:#ff9800;color:#fff;padding:.6rem 1rem;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600">🤔 Hard</button>
-          <button class="btn-know" onclick="markCard(true)">✅ Easy</button>
+          <button class="btn-dont" onclick="rateCard(0)">❌ Again</button>
+          <button onclick="rateCard(3)" style="background:#ff9800;color:#fff;padding:.6rem 1rem;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600">🤔 Hard</button>
+          <button onclick="rateCard(4)" style="background:#8bc34a;color:#fff;padding:.6rem 1rem;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600">👍 Good</button>
+          <button class="btn-know" onclick="rateCard(5)">✅ Easy</button>
         </div>
         <div class="row" style="justify-content:center;margin-top:.5rem">
           <button class="btn btn-outline" onclick="prevCard()">◀ Prev</button>
@@ -87,8 +90,10 @@
         <div class="row" style="margin-top:.5rem">
           <button class="btn" onclick="studyCustom()">📖 Study My Cards</button>
           <button class="btn btn-outline" onclick="exportCards()">📤 Export</button>
-          <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Import</button>
+          <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCards(event)">
+          <button class="btn btn-outline" onclick="document.getElementById('importCsv').click()">📥 Import CSV</button>
+          <input type="file" id="importCsv" accept=".csv,.txt" style="display:none" onchange="importCsv(event)">
         </div>
       </div>
     </div>
@@ -128,7 +133,28 @@ var readySets={
 "English Vocabulary":[["Ubiquitous","Present everywhere"],["Ephemeral","Lasting for a very short time"],["Pragmatic","Dealing with things realistically"],["Eloquent","Fluent and persuasive in speaking"],["Resilient","Able to recover quickly from difficulties"],["Ambiguous","Open to more than one interpretation"],["Benevolent","Well-meaning and kindly"],["Diligent","Showing care and effort in work"],["Inevitable","Certain to happen; unavoidable"],["Meticulous","Great attention to detail"],["Profound","Very great or intense"],["Tenacious","Holding firmly; persistent"],["Versatile","Able to adapt to many functions"],["Candid","Truthful and straightforward"],["Gregarious","Fond of company; sociable"],["Altruistic","निःस्वार्थ (selfless, caring for others)"],["Ambivalent","दुविधा में (having mixed feelings)"],["Complacent","आत्मसंतुष्ट (self-satisfied, unconcerned)"],["Debilitate","कमजोर करना (to weaken)"],["Exacerbate","बिगाड़ना (to make worse)"],["Frugal","मितव्ययी (economical, thrifty)"],["Gratuitous","अनावश्यक (unnecessary, uncalled for)"],["Hypothetical","काल्पनिक (based on assumption)"],["Impeccable","निर्दोष (flawless, perfect)"],["Juxtapose","साथ रखना (to place side by side for comparison)"]],
 "Computer Knowledge":[["CPU full form?","Central Processing Unit"],["RAM full form?","Random Access Memory"],["ROM full form?","Read Only Memory"],["HTML full form?","HyperText Markup Language"],["URL full form?","Uniform Resource Locator"],["HTTP full form?","HyperText Transfer Protocol"],["What is an algorithm?","Step-by-step procedure to solve a problem"],["Binary system uses?","Only 0 and 1"],["1 KB equals?","1024 Bytes"],["1 MB equals?","1024 KB"],["What does OS stand for?","Operating System"],["Examples of OS?","Windows, Linux, macOS, Android"],["What is a virus in computing?","Malicious program that damages data"],["What is a firewall?","Security system that monitors network traffic"],["Who is the father of computers?","Charles Babbage"],["What is RAM?","Temporary memory that loses data when power off"],["What is ROM?","Permanent memory that retains data"],["What is an IP address?","Unique numerical label for each device on network"],["HTTP vs HTTPS?","HTTPS is secure (encrypted) version of HTTP"],["What is cloud computing?","Storing and accessing data over internet instead of local"],["What is phishing?","Fraudulent attempt to steal personal information"],["What is a cookie in web?","Small data file stored by websites in browser"],["What is bandwidth?","Maximum data transfer rate of a network"],["What is malware?","Malicious software designed to harm computers"],["Full form of PDF?","Portable Document Format"]]
 };
-var deck=[],idx=0,score={know:0,dont:0},customCards=[];
+var deck=[],idx=0,score={know:0,dont:0},customCards=[],srData={};
+function loadSR(){var s=localStorage.getItem("fcSR");if(s)srData=JSON.parse(s);}
+function saveSR(){localStorage.setItem("fcSR",JSON.stringify(srData));}
+function getSR(key){return srData[key]||{ef:2.5,interval:0,reps:0,due:0};}
+function sm2(key,quality){
+  var d=getSR(key);
+  if(quality<3){d.reps=0;d.interval=1;}
+  else{
+    if(d.reps===0)d.interval=1;
+    else if(d.reps===1)d.interval=6;
+    else d.interval=Math.round(d.interval*d.ef);
+    d.reps++;
+  }
+  d.ef=Math.max(1.3,d.ef+(.1-(5-quality)*(.08+(5-quality)*.02)));
+  d.due=Date.now()+d.interval*86400000;
+  srData[key]=d;saveSR();
+}
+function cardKey(c){return c.front.substring(0,50);}
+function sortByDue(){
+  var now=Date.now();
+  deck.sort(function(a,b){return getSR(cardKey(a)).due-getSR(cardKey(b)).due;});
+}
 function showTab(t){
   document.getElementById("study").style.display=t==="study"?"":"none";
   document.getElementById("sets").style.display=t==="sets"?"":"none";
@@ -148,6 +174,7 @@ function renderSets(){
 function loadSet(name){
   deck=readySets[name].map(function(c){return{front:c[0],back:c[1]}});
   idx=0;score={know:0,dont:0};
+  sortByDue();
   document.getElementById("deckInfo").textContent="Studying: "+name;
   showTab("study");showCard();
 }
@@ -160,12 +187,20 @@ function showCard(){
   document.getElementById("cardBack").textContent=back;
   document.getElementById("cardNum").textContent=idx+1;
   document.getElementById("cardTotal").textContent=deck.length;
+  var sr=getSR(cardKey(deck[idx]));
+  var info=document.getElementById("srInfo");
+  if(sr.due){
+    var due=new Date(sr.due);
+    var now=Date.now();
+    info.textContent=sr.due<=now?"⏰ Due for review":"📅 Next review: "+due.toLocaleDateString();
+  }else{info.textContent="🆕 New card";}
   updateScore();
 }
 function flipCard(){document.getElementById("flashcard").classList.toggle("flipped")}
-function markCard(knew){
+function rateCard(quality){
   if(!deck.length)return;
-  if(knew)score.know++;else score.dont++;
+  sm2(cardKey(deck[idx]),quality);
+  if(quality>=3)score.know++;else score.dont++;
   updateScore();nextCard();
 }
 function nextCard(){if(!deck.length)return;idx=(idx+1)%deck.length;showCard()}
@@ -198,6 +233,7 @@ function renderCustomList(){
 function studyCustom(){
   if(!customCards.length)return alert("Add some cards first");
   deck=customCards.slice();idx=0;score={know:0,dont:0};
+  sortByDue();
   document.getElementById("deckInfo").textContent="Studying: My Cards ("+deck.length+" cards)";
   showTab("study");showCard();
 }
@@ -214,10 +250,28 @@ function importCards(e){
       if(Array.isArray(data)){customCards=customCards.concat(data);localStorage.setItem("fcCustom",JSON.stringify(customCards));renderCustomList();alert("Imported "+data.length+" cards!");}
     }catch(err){alert("Invalid file")}
   };
-  reader.readAsText(file);
+  reader.readAsText(file);e.target.value="";
+}
+function importCsv(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var lines=reader.result.split(/\r?\n/).filter(function(l){return l.trim();});
+    var count=0;
+    lines.forEach(function(line){
+      var sep=line.indexOf(",");
+      if(sep<1)return;
+      var front=line.substring(0,sep).trim().replace(/^"|"$/g,"");
+      var back=line.substring(sep+1).trim().replace(/^"|"$/g,"");
+      if(front&&back){customCards.push({front:front,back:back});count++;}
+    });
+    if(count){localStorage.setItem("fcCustom",JSON.stringify(customCards));renderCustomList();alert("Imported "+count+" cards from CSV!");}
+    else alert("No valid cards found. Use format: front,back");
+  };
+  reader.readAsText(file);e.target.value="";
 }
 var saved=localStorage.getItem("fcCustom");if(saved)customCards=JSON.parse(saved);
-updateScore();
+loadSR();updateScore();
   </script>
 </body>
 </html>

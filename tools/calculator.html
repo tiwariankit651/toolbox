@@ -40,7 +40,15 @@
       <input type="text" id="expr" placeholder="e.g. sin(45) + sqrt(16)" style="font-size:1.3rem;text-align:right;font-family:monospace" readonly>
       <div id="result" style="text-align:right;font-size:1.8rem;font-weight:700;padding:.5rem;min-height:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:.8rem" id="keys"></div>
-      <div id="history" style="margin-top:1rem"></div>
+      <div style="margin-top:1rem">
+        <button onclick="toggleHistory()" style="background:var(--card);border:none;border-radius:8px;padding:.5rem 1rem;cursor:pointer;color:var(--text);font-size:.9rem">📜 History <span id="histToggle">▼</span></button>
+        <div id="history" style="display:none;margin-top:.5rem;border:1px solid var(--border);border-radius:8px;padding:.5rem;max-height:200px;overflow-y:auto"></div>
+      </div>
+      <div style="margin-top:1rem">
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:.4rem">Quick Conversions:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="convBtns"></div>
+        <div id="convResult" style="margin-top:.5rem;font-size:1rem;font-weight:600;min-height:1.5rem"></div>
+      </div>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A full-featured scientific calculator that works in your browser. Perform basic arithmetic, trigonometric functions (sin, cos, tan), logarithms (log, ln), square roots, powers, factorials, and more. Supports keyboard input. Perfect for students, engineers, and daily calculations.</p><h2>How to Use</h2><ol style='margin-left:1.5rem;line-height:2'><li>Click buttons or type on keyboard</li><li>Use sin, cos, tan for trigonometry (in degrees)</li><li>Use log, ln for logarithms</li><li>Use ^ for powers, ! for factorial</li><li>Press = or Enter to calculate</li></ol><h2>Supported Functions</h2><p>This scientific calculator supports basic arithmetic, trigonometric functions (sin, cos, tan), logarithms (log base 10, natural log), square root, powers, factorial, pi, and Euler's number. Calculation history is shown below. Works offline after first visit.</p>
@@ -87,12 +95,13 @@ const keys=[
 ];
 const el=document.getElementById('keys');
 keys.forEach(row=>row.forEach(k=>{const b=document.createElement('button');b.textContent=k;b.style.cssText='padding:.8rem;font-size:1.1rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text)';b.onclick=()=>press(k);el.appendChild(b)}));
-// Add 0 button spanning
 const zeroRow=document.createElement('div');zeroRow.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-top:6px';
 ['0','Ans','±','='].forEach(k=>{const b=document.createElement('button');b.textContent=k;b.style.cssText='padding:.8rem;font-size:1.1rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text)';b.onclick=()=>press(k);zeroRow.appendChild(b)});
 el.parentNode.insertBefore(zeroRow,el.nextSibling);
 
-let expr='',lastAns=0,hist=[];
+let expr='',lastAns=0,hist=JSON.parse(localStorage.getItem('calcHist')||'[]');
+renderHistory();
+
 function press(k){
   const d=document.getElementById('expr');
   if(k==='C'){expr='';d.value='';document.getElementById('result').textContent='';return}
@@ -122,11 +131,34 @@ function calc(){
     lastAns=r;
     const display=document.getElementById('expr').value;
     hist.unshift(display+' = '+r);
+    if(hist.length>10)hist.length=10;
+    localStorage.setItem('calcHist',JSON.stringify(hist));
     document.getElementById('result').textContent='= '+r;
-    document.getElementById('history').innerHTML=hist.slice(0,5).map(h=>'<div style="padding:.3rem .5rem;color:var(--muted);font-size:.85rem">'+h+'</div>').join('');
+    renderHistory();
     expr=String(r);
   }catch(e){document.getElementById('result').textContent='Error'}
 }
+function renderHistory(){
+  document.getElementById('history').innerHTML=hist.map(h=>'<div style="padding:.3rem .5rem;color:var(--text2);font-size:.85rem">'+h+'</div>').join('')||('<div style="padding:.3rem .5rem;color:var(--text2);font-size:.85rem">No history yet</div>');
+}
+function toggleHistory(){
+  const h=document.getElementById('history'),t=document.getElementById('histToggle');
+  if(h.style.display==='none'){h.style.display='block';t.textContent='▲'}else{h.style.display='none';t.textContent='▼'}
+}
+// Unit conversions
+const convs=[
+  {label:'km→mi',fn:v=>(v*0.621371).toFixed(4)+' mi',prompt:'km'},
+  {label:'mi→km',fn:v=>(v*1.60934).toFixed(4)+' km',prompt:'mi'},
+  {label:'kg→lb',fn:v=>(v*2.20462).toFixed(4)+' lb',prompt:'kg'},
+  {label:'lb→kg',fn:v=>(v*0.453592).toFixed(4)+' kg',prompt:'lb'},
+  {label:'°C→°F',fn:v=>(v*9/5+32).toFixed(2)+' °F',prompt:'°C'},
+  {label:'°F→°C',fn:v=>((v-32)*5/9).toFixed(2)+' °C',prompt:'°F'},
+  {label:'cm→in',fn:v=>(v/2.54).toFixed(4)+' in',prompt:'cm'},
+  {label:'in→cm',fn:v=>(v*2.54).toFixed(4)+' cm',prompt:'in'}
+];
+const cb=document.getElementById('convBtns');
+convs.forEach(c=>{const b=document.createElement('button');b.textContent=c.label;b.style.cssText='padding:.4rem .7rem;font-size:.85rem;border:none;border-radius:6px;cursor:pointer;background:var(--card);color:var(--text)';b.onclick=()=>{const v=parseFloat(lastAns||document.getElementById('expr').value);if(isNaN(v)){document.getElementById('convResult').textContent='Enter a number first';return}document.getElementById('convResult').textContent=v+' '+c.prompt+' = '+c.fn(v)};cb.appendChild(b)});
+
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter')calc();
   else if(e.key==='Escape')press('C');

@@ -70,17 +70,22 @@
       <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text2)">© 2026 FreeToolHubs. All rights reserved. All processing happens in your browser.</p>
     </div>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>let files=[];
+  <script>let files=[],compressedBlobs=[];
 function updateEstimate(){var q=+document.getElementById("qual").value;var est=q<30?"~90% smaller":q<50?"~70% smaller":q<70?"~50% smaller":q<85?"~30% smaller":"~10% smaller";document.getElementById("estimate").textContent=est}
 setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(f=>f.name+" ("+formatSize(f.size)+")").join(", ")+"</p>";updateEstimate()});
-async function compressAll(){if(!files.length)return;var qual=document.getElementById("qual").value/100;var fmt=document.getElementById("outFmt").value;var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":"jpg";var html="";var totalOrig=0,totalComp=0;
+async function compressAll(){if(!files.length)return;var qual=document.getElementById("qual").value/100;var fmt=document.getElementById("outFmt").value;var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":"jpg";var html="";var totalOrig=0,totalComp=0;compressedBlobs=[];
 for(var i=0;i<files.length;i++){var file=files[i];var img=await loadImage(file);var c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);
 var blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,qual)});
 var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
+var outName='compressed_'+file.name.replace(/\.[^.]+$/,"."+ext);
+compressedBlobs.push({blob:blob,name:outName});
 window["_cb"+i]=blob;
-html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><img src="'+URL.createObjectURL(blob)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px"><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller)</span></div><button class="btn" onclick="download(window._cb'+i+',\'compressed_'+file.name.replace(/\.[^.]+$/,"."+ext)+'\')">💾</button></div>';}
+var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
+html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><div style="display:flex;gap:.3rem;align-items:center"><img src="'+origUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c" title="Original"><span style="font-size:.7rem">→</span><img src="'+compUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60" title="Compressed"></div><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller)</span></div><button class="btn" onclick="download(window._cb'+i+',\''+outName+'\')">💾</button></div>';}
 var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
-html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center"><strong>Total: '+formatSize(totalOrig)+' → '+formatSize(totalComp)+' ('+totalSaved+'% saved)</strong></div>'+html;
-document.getElementById("result").innerHTML=html}</script>
+html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center"><strong>Total: '+formatSize(totalOrig)+' → '+formatSize(totalComp)+' ('+totalSaved+'% saved)</strong>'+(compressedBlobs.length>1?'<br><button class="btn" style="margin-top:.5rem" onclick="downloadZip()">📦 Download All as ZIP</button>':'')+'</div>'+html;
+document.getElementById("result").innerHTML=html}
+async function downloadZip(){var zip=new JSZip();compressedBlobs.forEach(function(item){zip.file(item.name,item.blob)});var content=await zip.generateAsync({type:"blob"});download(content,"compressed_images.zip")}</script>
 </body></html>

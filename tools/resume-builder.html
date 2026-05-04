@@ -48,8 +48,10 @@
       <input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)">
       <h2 style="margin-top:1rem">Summary</h2>
       <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px"></textarea>
-      <h2 style="margin-top:1rem">Skills (comma separated)</h2>
-      <input type="text" id="skills" placeholder="e.g. JavaScript, Python, React, Communication">
+      <h2 style="margin-top:1rem">Skills</h2>
+      <div id="skillsList"></div>
+      <div class="row"><input type="text" id="newSkill" placeholder="Skill name"><select id="newSkillRating"><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3" selected>★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select><button class="btn btn-outline" onclick="addSkill()">+ Add Skill</button></div>
+      <input type="text" id="skills" placeholder="Or paste comma-separated: JavaScript, Python, React" style="margin-top:.3rem">
       <h2 style="margin-top:1rem">Experience</h2>
       <div id="exp"></div>
       <button class="btn btn-outline" onclick="addExp()">+ Add Experience</button>
@@ -60,7 +62,8 @@
       <input type="text" id="certs" placeholder="e.g. AWS Certified, Google Analytics, NPTEL Python">
       <h2 style="margin-top:1rem">Languages (optional)</h2>
       <input type="text" id="languages" placeholder="e.g. English (Fluent), Hindi (Native), French (Basic)">
-      <button class="btn" onclick="genResume()" style="margin-top:1.5rem;width:100%">📄 Generate & Download PDF</button>
+      <p class="info" style="font-size:.8rem;margin-top:1rem">🤖 <strong>ATS-Friendly:</strong> The generated PDF uses standard fonts and clean formatting, making it compatible with Applicant Tracking Systems used by recruiters.</p>
+      <button class="btn" onclick="genResume()" style="margin-top:1rem;width:100%">📄 Generate & Download PDF</button>
       <div id="result"></div>
     </div>
     <div style="min-height:90px">
@@ -100,6 +103,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
+var ratedSkills=[];
+function addSkill(){
+  var name=document.getElementById('newSkill').value.trim();
+  if(!name)return;
+  var rating=parseInt(document.getElementById('newSkillRating').value);
+  ratedSkills.push({name:name,rating:rating});
+  document.getElementById('newSkill').value='';
+  renderSkills();
+}
+function removeSkill(i){ratedSkills.splice(i,1);renderSkills()}
+function renderSkills(){
+  var h='';ratedSkills.forEach(function(s,i){
+    h+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);padding:.3rem .6rem;border-radius:8px;margin:.2rem">'+s.name+' <span style="color:#f5a623">'+'●'.repeat(s.rating)+'</span><span style="color:#ccc">'+'●'.repeat(5-s.rating)+'</span><button onclick="removeSkill('+i+')" style="border:none;background:none;cursor:pointer;color:#e55">✕</button></span>';
+  });document.getElementById('skillsList').innerHTML=h;
+}
 function addExp(){
   const d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';
   d.innerHTML='<div class="row"><input type="text" placeholder="Company"><input type="text" placeholder="Role"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)"></div><textarea placeholder="Key responsibilities..." style="min-height:60px"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove()" style="margin-top:.3rem">✕ Remove</button>';
@@ -156,8 +174,16 @@ async function genResume(){
   // Summary
   if(v('summary')){y=section('SUMMARY',y);y=wrapText(v('summary'),50,y,f,10,490)}
 
-  // Skills
-  if(v('skills')){y=section('SKILLS',y);y=wrapText(v('skills'),50,y,f,10,490)}
+  // Skills with rating dots
+  var allSkills=ratedSkills.slice();
+  if(v('skills')){v('skills').split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3})})}
+  if(allSkills.length){y=section('SKILLS',y);
+    allSkills.forEach(function(s){
+      t(s.name,50,y,f,10);
+      for(var i=0;i<5;i++){pg.drawCircle({x:200+i*12,y:y+3,size:4,color:i<s.rating?accent:PDFLib.rgb(.82,.82,.85)})}
+      y-=16;
+    });
+  }
 
   // Experience
   var exps=document.querySelectorAll('#exp > div');
