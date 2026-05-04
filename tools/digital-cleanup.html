@@ -90,7 +90,7 @@ function applyEffect(x,y,w,h){
   var intensity=+document.getElementById("blurInt").value;
   if(mode==="black"){ctx.fillStyle="#000";ctx.fillRect(x,y,w,h)}
   else if(mode==="pixelate"){var size=intensity;var data=ctx.getImageData(x,y,w,h);for(var py=0;py<h;py+=size){for(var px=0;px<w;px+=size){var i=(py*w+px)*4;var r=data.data[i],g=data.data[i+1],b=data.data[i+2];ctx.fillStyle="rgb("+r+","+g+","+b+")";ctx.fillRect(x+px,y+py,size,size)}}}
-  else{var tc=document.createElement("canvas");tc.width=w;tc.height=h;var tctx=tc.getContext("2d");tctx.drawImage(canvas,x,y,w,h,0,0,w,h);var tc2=document.createElement("canvas");tc2.width=w;tc2.height=h;var tctx2=tc2.getContext("2d");for(var pass=0;pass<3;pass++){tctx2.filter="blur("+intensity+"px)";tctx2.drawImage(tc,0,0);tctx.drawImage(tc2,0,0)}ctx.drawImage(tc,x,y)}
+  else{var tc=document.createElement("canvas");tc.width=w;tc.height=h;var tctx=tc.getContext("2d");tctx.drawImage(canvas,x,y,w,h,0,0,w,h);for(var pass=0;pass<3;pass++){var tc2=document.createElement("canvas");tc2.width=w;tc2.height=h;var tctx2=tc2.getContext("2d");tctx2.filter="blur("+intensity+"px)";tctx2.drawImage(tc,0,0);tctx.clearRect(0,0,w,h);tctx.drawImage(tc2,0,0)}ctx.drawImage(tc,x,y)}
 }
 function undoLast(){if(history.length>1){history.pop();ctx.putImageData(history[history.length-1],0,0)}}
 function downloadClean(){

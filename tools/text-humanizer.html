@@ -107,7 +107,7 @@ function humanize(){
   if(document.getElementById("varySentence").checked){
     var sents=result.split(/(?<=[.!?])\s+/);
     sents=sents.map(function(s,i){
-      if(i>0&&i%4===0&&s.length>60){var mid=s.indexOf(", ");if(mid>15)return s.substring(0,mid+1)+" "+s.substring(mid+2).charAt(0).toUpperCase()+s.substring(mid+3)}
+      if(i>0&&i%4===0&&s.length>60){var mid=s.indexOf(", ");if(mid>15&&mid<s.length-5)return s.substring(0,mid+1)+" "+s.charAt(mid+2).toUpperCase()+s.substring(mid+3)}
       return s;
     });
     result=sents.join(" ");

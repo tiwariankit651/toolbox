@@ -120,7 +120,7 @@ async function startRec(){
           if(pos==='tl')return[pad,pad];
           return[canvas.width-camW-pad,canvas.height-camH-pad];
         }
-        function draw(){ctx.drawImage(screenVid,0,0,canvas.width,canvas.height);var xy=getXY();ctx.save();ctx.beginPath();ctx.roundRect(xy[0],xy[1],camW,camH,12);ctx.clip();ctx.drawImage(camVid,xy[0],xy[1],camW,camH);ctx.restore();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xy[0],xy[1],camW,camH,12);ctx.stroke();requestAnimationFrame(draw)}
+        function draw(){ctx.drawImage(screenVid,0,0,canvas.width,canvas.height);var xy=getXY();ctx.save();ctx.beginPath();if(ctx.roundRect){ctx.roundRect(xy[0],xy[1],camW,camH,12)}else{var r=12,x=xy[0],y=xy[1];ctx.moveTo(x+r,y);ctx.arcTo(x+camW,y,x+camW,y+camH,r);ctx.arcTo(x+camW,y+camH,x,y+camH,r);ctx.arcTo(x,y+camH,x,y,r);ctx.arcTo(x,y,x+camW,y,r);ctx.closePath()}ctx.clip();ctx.drawImage(camVid,xy[0],xy[1],camW,camH);ctx.restore();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();if(ctx.roundRect){ctx.roundRect(xy[0],xy[1],camW,camH,12)}else{var r2=12,x2=xy[0],y2=xy[1];ctx.moveTo(x2+r2,y2);ctx.arcTo(x2+camW,y2,x2+camW,y2+camH,r2);ctx.arcTo(x2+camW,y2+camH,x2,y2+camH,r2);ctx.arcTo(x2,y2+camH,x2,y2,r2);ctx.arcTo(x2,y2,x2+camW,y2,r2);ctx.closePath()}ctx.stroke();requestAnimationFrame(draw)}
         draw();
         var canvasStream=canvas.captureStream(30);
         if(audio&&screenStream.getAudioTracks().length){canvasStream.addTrack(screenStream.getAudioTracks()[0])}

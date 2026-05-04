@@ -136,9 +136,45 @@ async function process(){
   for(const[sx,sy]of samples){const i=(sy*c.width+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
   br/=4;bg2/=4;bb/=4;
   const [nr,ng,nb]=hexToRgb(bgColor);
+  // Create mask of background pixels
+  const mask=new Uint8Array(c.width*c.height);
   for(let i=0;i<d.length;i+=4){
     const diff=Math.abs(d[i]-br)+Math.abs(d[i+1]-bg2)+Math.abs(d[i+2]-bb);
-    if(diff<t*3){d[i]=nr;d[i+1]=ng;d[i+2]=nb;d[i+3]=255}
+    if(diff<t*3) mask[i/4]=1;
+  }
+  // Draw new background
+  const useGrad=document.getElementById("useGradient").checked;
+  if(useGrad){
+    const g1=document.getElementById("gradColor1").value;
+    const g2=document.getElementById("gradColor2").value;
+    const grad=ctx.createLinearGradient(0,0,c.width,c.height);
+    grad.addColorStop(0,g1);grad.addColorStop(1,g2);
+    ctx.fillStyle=grad;ctx.fillRect(0,0,c.width,c.height);
+  }else{
+    ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);
+  }
+  // Draw original non-background pixels on top
+  ctx.drawImage(img,0,0);
+  const finalData=ctx.getImageData(0,0,c.width,c.height);
+  const fd=finalData.data;
+  // Re-draw: for background pixels use the new bg, for foreground keep original
+  ctx.putImageData(data,0,0);
+  if(useGrad){
+    const g1=document.getElementById("gradColor1").value;
+    const g2=document.getElementById("gradColor2").value;
+    const bgCanvas=document.createElement("canvas");bgCanvas.width=c.width;bgCanvas.height=c.height;
+    const bgCtx=bgCanvas.getContext("2d");
+    const grad=bgCtx.createLinearGradient(0,0,c.width,c.height);
+    grad.addColorStop(0,g1);grad.addColorStop(1,g2);
+    bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,c.width,c.height);
+    const bgData=bgCtx.getImageData(0,0,c.width,c.height).data;
+    for(let i=0;i<d.length;i+=4){
+      if(mask[i/4]){d[i]=bgData[i];d[i+1]=bgData[i+1];d[i+2]=bgData[i+2];d[i+3]=255}
+    }
+  }else{
+    for(let i=0;i<d.length;i+=4){
+      if(mask[i/4]){d[i]=nr;d[i+1]=ng;d[i+2]=nb;d[i+3]=255}
+    }
   }
   ctx.putImageData(data,0,0);
   c.toBlob(b=>{
