@@ -90,13 +90,26 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
   <script>let file;
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
 async function go(){if(!file)return;showProcessing("result");document.getElementById("goBtn").disabled=true;setTimeout(async function(){const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
-// Flood fill from edges - compare each pixel to its neighbor AND to corner bg color
-const visited=new Uint8Array(w*h);
+// Compute grayscale + edge map first
+const gray=new Uint8Array(w*h);
+for(let i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
+// Sobel edge detection
+const edge=new Uint8Array(w*h);
+for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){
+  const idx=y*w+x;
+  const gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
+  const gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
+  edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
+}}
+// Background color from corners
 const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
 let br=0,bg2=0,bb=0;
 for(const[cx,cy]of corners){const i=(cy*w+cx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
 br/=4;bg2/=4;bb/=4;
-// Seed edges
+// Edge threshold - pixels with edge strength above this are boundaries
+const edgeThresh=30;
+// Flood fill from edges, stops at strong edges
+const visited=new Uint8Array(w*h);
 const queue=[];
 for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
 for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
@@ -107,21 +120,12 @@ while(qi<queue.length){
   const idx=y*w+x;
   if(visited[idx])continue;
   const pi=idx*4;
-  // Must be similar to the background color from corners
   const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
   if(diffBg>=t*3)continue;
+  // Stop at strong edges
+  if(edge[idx]>edgeThresh&&qi>w*4)continue;
   visited[idx]=1;
-  // Only spread to neighbors that are also similar to background
-  const nx=[x-1,x+1,x,x],ny=[y,y,y-1,y+1];
-  for(let n=0;n<4;n++){
-    const ax=nx[n],ay=ny[n];
-    if(ax<0||ax>=w||ay<0||ay>=h)continue;
-    if(visited[ay*w+ax])continue;
-    const npi=(ay*w+ax)*4;
-    // Neighbor must be similar to current pixel (local similarity)
-    const diffLocal=Math.abs(d[pi]-d[npi])+Math.abs(d[pi+1]-d[npi+1])+Math.abs(d[pi+2]-d[npi+2]);
-    if(diffLocal<t*2) queue.push(ax,ay);
-  }
+  queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
 }
 for(let i=0;i<w*h;i++){if(visited[i])d[i*4+3]=0}
 ctx.putImageData(data,0,0);c.toBlob(b=>{document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">Download PNG</button>";window._b=b;document.getElementById("goBtn").disabled=false},"image/png")},100)}</script>

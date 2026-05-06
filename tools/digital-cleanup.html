@@ -23,6 +23,7 @@
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
           <button class="btn" onclick="setMode('blur')" id="mBlur" style="background:var(--accent)">🔲 Blur Area</button>
           <button class="btn btn-outline" onclick="setMode('black')" id="mBlack">⬛ Black Out</button>
+          <button class="btn btn-outline" onclick="setMode('white')" id="mWhite">⬜ White Out</button>
           <button class="btn btn-outline" onclick="setMode('pixelate')" id="mPixel">🟦 Pixelate</button>
           <label>Intensity:</label><input type="range" id="blurInt" min="5" max="30" value="15" style="max-width:100px">
           <button class="btn btn-outline" onclick="undoLast()">↩ Undo</button>
@@ -81,7 +82,7 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
   <script>
 var img=null,canvas=document.getElementById("canvas"),ctx,mode="blur",drawing=false,startX,startY,undoStack=[];
 setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){var i=new Image();i.onload=function(){img=i;var maxW=800;var scale=img.width>maxW?maxW/img.width:1;canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(i,0,0,canvas.width,canvas.height);document.getElementById("editor").style.display="block";undoStack=[ctx.getImageData(0,0,canvas.width,canvas.height)]};i.src=reader.result};reader.readAsDataURL(f[0])});
-function setMode(m){mode=m;["mBlur","mBlack","mPixel"].forEach(function(id){document.getElementById(id).className="btn btn-outline";document.getElementById(id).style.background=""});var map={blur:"mBlur",black:"mBlack",pixelate:"mPixel"};document.getElementById(map[m]).className="btn";document.getElementById(map[m]).style.background="var(--accent)"}
+function setMode(m){mode=m;["mBlur","mBlack","mWhite","mPixel"].forEach(function(id){document.getElementById(id).className="btn btn-outline";document.getElementById(id).style.background=""});var map={blur:"mBlur",black:"mBlack",white:"mWhite",pixelate:"mPixel"};document.getElementById(map[m]).className="btn";document.getElementById(map[m]).style.background="var(--accent)"}
 canvas.addEventListener("mousedown",function(e){drawing=true;var r=canvas.getBoundingClientRect();startX=(e.clientX-r.left)*(canvas.width/r.width);startY=(e.clientY-r.top)*(canvas.height/r.height)});
 canvas.addEventListener("mouseup",function(e){if(!drawing)return;drawing=false;var r=canvas.getBoundingClientRect();var endX=(e.clientX-r.left)*(canvas.width/r.width);var endY=(e.clientY-r.top)*(canvas.height/r.height);var x=Math.min(startX,endX),y=Math.min(startY,endY),w=Math.abs(endX-startX),h=Math.abs(endY-startY);if(w<5||h<5)return;undoStack.push(ctx.getImageData(0,0,canvas.width,canvas.height));applyEffect(x,y,w,h)});
 canvas.addEventListener("touchstart",function(e){e.preventDefault();var t=e.touches[0];var r=canvas.getBoundingClientRect();startX=(t.clientX-r.left)*(canvas.width/r.width);startY=(t.clientY-r.top)*(canvas.height/r.height);drawing=true});
@@ -89,6 +90,7 @@ canvas.addEventListener("touchend",function(e){if(!drawing)return;drawing=false;
 function applyEffect(x,y,w,h){
   var intensity=+document.getElementById("blurInt").value;
   if(mode==="black"){ctx.fillStyle="#000";ctx.fillRect(x,y,w,h)}
+  else if(mode==="white"){ctx.fillStyle="#fff";ctx.fillRect(x,y,w,h)}
   else if(mode==="pixelate"){var size=intensity;var data=ctx.getImageData(x,y,w,h);for(var py=0;py<h;py+=size){for(var px=0;px<w;px+=size){var i=(py*w+px)*4;var r=data.data[i],g=data.data[i+1],b=data.data[i+2];ctx.fillStyle="rgb("+r+","+g+","+b+")";ctx.fillRect(x+px,y+py,size,size)}}}
   else{var tc=document.createElement("canvas");tc.width=w;tc.height=h;var tctx=tc.getContext("2d");tctx.drawImage(canvas,x,y,w,h,0,0,w,h);for(var pass=0;pass<3;pass++){var tc2=document.createElement("canvas");tc2.width=w;tc2.height=h;var tctx2=tc2.getContext("2d");tctx2.filter="blur("+intensity+"px)";tctx2.drawImage(tc,0,0);tctx.clearRect(0,0,w,h);tctx.drawImage(tc2,0,0)}ctx.drawImage(tc,x,y)}
 }
