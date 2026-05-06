@@ -130,51 +130,44 @@ async function process(){
   const data=ctx.getImageData(0,0,c.width,c.height);
   const d=data.data;
   const t=+document.getElementById("thresh").value;
+  const w=c.width,h=c.height;
   // Sample background from corners
-  const samples=[[0,0],[c.width-1,0],[0,c.height-1],[c.width-1,c.height-1]];
+  const samples=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
   let br=0,bg2=0,bb=0;
-  for(const[sx,sy]of samples){const i=(sy*c.width+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
+  for(const[sx,sy]of samples){const i=(sy*w+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
   br/=4;bg2/=4;bb/=4;
   const [nr,ng,nb]=hexToRgb(bgColor);
-  // Create mask of background pixels
-  const mask=new Uint8Array(c.width*c.height);
-  for(let i=0;i<d.length;i+=4){
-    const diff=Math.abs(d[i]-br)+Math.abs(d[i+1]-bg2)+Math.abs(d[i+2]-bb);
-    if(diff<t*3) mask[i/4]=1;
+  // Flood fill from edges to find connected background
+  const mask=new Uint8Array(w*h);
+  const queue=[];
+  for(let x=0;x<w;x++){queue.push(x,0,x,h-1)}
+  for(let y=0;y<h;y++){queue.push(0,y,w-1,y)}
+  let qi=0;
+  while(qi<queue.length){
+    const x=queue[qi++],y=queue[qi++];
+    if(x<0||x>=w||y<0||y>=h)continue;
+    const idx=y*w+x;
+    if(mask[idx])continue;
+    const pi=idx*4;
+    const diff=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+    if(diff>=t*3)continue;
+    mask[idx]=1;
+    queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
   }
-  // Draw new background
+  // Apply new background color/gradient to masked pixels
   const useGrad=document.getElementById("useGradient").checked;
   if(useGrad){
     const g1=document.getElementById("gradColor1").value;
     const g2=document.getElementById("gradColor2").value;
-    const grad=ctx.createLinearGradient(0,0,c.width,c.height);
-    grad.addColorStop(0,g1);grad.addColorStop(1,g2);
-    ctx.fillStyle=grad;ctx.fillRect(0,0,c.width,c.height);
-  }else{
-    ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);
-  }
-  // Draw original non-background pixels on top
-  ctx.drawImage(img,0,0);
-  const finalData=ctx.getImageData(0,0,c.width,c.height);
-  const fd=finalData.data;
-  // Re-draw: for background pixels use the new bg, for foreground keep original
-  ctx.putImageData(data,0,0);
-  if(useGrad){
-    const g1=document.getElementById("gradColor1").value;
-    const g2=document.getElementById("gradColor2").value;
-    const bgCanvas=document.createElement("canvas");bgCanvas.width=c.width;bgCanvas.height=c.height;
+    const bgCanvas=document.createElement("canvas");bgCanvas.width=w;bgCanvas.height=h;
     const bgCtx=bgCanvas.getContext("2d");
-    const grad=bgCtx.createLinearGradient(0,0,c.width,c.height);
+    const grad=bgCtx.createLinearGradient(0,0,w,h);
     grad.addColorStop(0,g1);grad.addColorStop(1,g2);
-    bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,c.width,c.height);
-    const bgData=bgCtx.getImageData(0,0,c.width,c.height).data;
-    for(let i=0;i<d.length;i+=4){
-      if(mask[i/4]){d[i]=bgData[i];d[i+1]=bgData[i+1];d[i+2]=bgData[i+2];d[i+3]=255}
-    }
+    bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,w,h);
+    const bgData=bgCtx.getImageData(0,0,w,h).data;
+    for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=bgData[p];d[p+1]=bgData[p+1];d[p+2]=bgData[p+2];d[p+3]=255}}
   }else{
-    for(let i=0;i<d.length;i+=4){
-      if(mask[i/4]){d[i]=nr;d[i+1]=ng;d[i+2]=nb;d[i+3]=255}
-    }
+    for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=nr;d[p+1]=ng;d[p+2]=nb;d[p+3]=255}}
   }
   ctx.putImageData(data,0,0);
   c.toBlob(b=>{

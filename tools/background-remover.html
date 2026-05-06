@@ -88,5 +88,32 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
 
   <script>let file;
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
-async function go(){if(!file)return;showProcessing("result");document.getElementById("goBtn").disabled=true;setTimeout(async function(){const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const bg=[d[0],d[1],d[2]];for(let i=0;i<d.length;i+=4){if(Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2])<t*3)d[i+3]=0}ctx.putImageData(data,0,0);c.toBlob(b=>{document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">Download PNG</button>";window._b=b;document.getElementById("goBtn").disabled=false},"image/png")},100)}</script>
+async function go(){if(!file)return;showProcessing("result");document.getElementById("goBtn").disabled=true;setTimeout(async function(){const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
+// Flood fill from all 4 edges to find connected background
+const visited=new Uint8Array(w*h);
+const queue=[];
+// Sample background color from corners
+const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+let br=0,bg2=0,bb=0;
+for(const[cx,cy]of corners){const i=(cy*w+cx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
+br/=4;bg2/=4;bb/=4;
+// Seed from all edge pixels
+for(let x=0;x<w;x++){queue.push(x);queue.push(0);queue.push(x);queue.push(h-1)}
+for(let y=0;y<h;y++){queue.push(0);queue.push(y);queue.push(w-1);queue.push(y)}
+// BFS flood fill
+let qi=0;
+while(qi<queue.length){
+  const x=queue[qi++],y=queue[qi++];
+  if(x<0||x>=w||y<0||y>=h)continue;
+  const idx=y*w+x;
+  if(visited[idx])continue;
+  const pi=idx*4;
+  const diff=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+  if(diff>=t*3)continue;
+  visited[idx]=1;
+  queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
+}
+// Make background transparent
+for(let i=0;i<w*h;i++){if(visited[i])d[i*4+3]=0}
+ctx.putImageData(data,0,0);c.toBlob(b=>{document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">Download PNG</button>";window._b=b;document.getElementById("goBtn").disabled=false},"image/png")},100)}</script>
 </body></html>
