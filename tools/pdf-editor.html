@@ -37,6 +37,8 @@
     #viewer canvas{display:block;margin:0 auto 1rem;box-shadow:var(--shadow);border-radius:4px}
     .overlay-canvas{position:absolute;top:0;left:0;cursor:crosshair}
     .page-wrap{position:relative;display:inline-block;margin-bottom:1rem;width:100%}
+    .sticky-note{position:absolute;width:160px;min-height:60px;background:#fff59d;border:1px solid #e6d800;border-radius:4px;padding:4px 6px;font-size:12px;box-shadow:2px 2px 6px rgba(0,0,0,.2);cursor:move;z-index:10}
+    .sticky-note textarea{width:100%;min-height:50px;border:none;background:transparent;font-size:12px;resize:vertical;outline:none;font-family:Arial,sans-serif}
   </style>
 </head>
 <body>
@@ -55,7 +57,7 @@
         <button onclick="setTool('whiteout')" id="btn-whiteout">⬜ White-out</button>
         <button onclick="setTool('rect')" id="btn-rect">▭ Rectangle</button>
         <button onclick="setTool('arrow')" id="btn-arrow">➡️ Arrow</button>
-        <button onclick="setTool('note')" id="btn-note">📌 Note</button>
+        <button onclick="setTool('note')" id="btn-note">📌 Sticky Note</button>
         <button onclick="insertImage()" id="btn-img">🖼️ Image</button>
         <input type="file" id="imgInput" accept="image/*" style="display:none">
         <input type="color" id="color" value="#ff0000" title="Color">
@@ -122,7 +124,7 @@ document.getElementById("imgInput").addEventListener("change",function(){
       if(!wrap)return;var oc=wrap.querySelector(".overlay-canvas");var ctx=oc.getContext("2d");
       var w=Math.min(img.width,200);var h=img.height*(w/img.width);
       ctx.drawImage(img,50,50,w,h);
-      overlays[currentPage].push({type:"image",img:img,x:50,y:50,w:w,h:h});
+      overlays[currentPage].history.push(ctx.getImageData(0,0,oc.width,oc.height));
     };img.src=reader.result;
   };reader.readAsDataURL(f);
 });
@@ -185,21 +187,22 @@ function setupOverlay(canvas,ov){
       return;
     }
     if(tool==="note"){
-      const txt=prompt("Enter sticky note:");
-      if(txt){
-        ov.ctx.fillStyle="rgba(255,255,100,0.9)";
-        ov.ctx.fillRect(sx,sy-60,180,65);
-        ov.ctx.strokeStyle="#e6d800";ov.ctx.lineWidth=1;ov.ctx.strokeRect(sx,sy-60,180,65);
-        ov.ctx.fillStyle="#333";ov.ctx.font="12px Arial";
-        var words=txt.split(" ");var line="";var ly=sy-45;
-        words.forEach(function(w){if(ov.ctx.measureText(line+w+" ").width>170){ov.ctx.fillText(line,sx+5,ly);ly+=14;line=""}line+=w+" "});
-        if(line)ov.ctx.fillText(line,sx+5,ly);
-        ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
-      }
+      const wrap=canvas.parentElement;
+      const note=document.createElement("div");
+      note.className="sticky-note";note.style.left=sx+"px";note.style.top=sy+"px";
+      const ta=document.createElement("textarea");
+      ta.placeholder="Type note...";
+      note.appendChild(ta);wrap.appendChild(note);
+      ta.focus();
+      // drag support
+      let dragging=false,dx,dy;
+      note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging=true;dx=ev.offsetX;dy=ev.offsetY;ev.stopPropagation()});
+      document.addEventListener("mousemove",function(ev){if(!dragging)return;var wr=wrap.getBoundingClientRect();note.style.left=(ev.clientX-wr.left-dx)+"px";note.style.top=(ev.clientY-wr.top-dy)+"px"});
+      document.addEventListener("mouseup",function(){dragging=false});
       return;
     }
     drawing=true;
-    if(tool==="draw"||tool==="highlight"){
+    if(tool==="draw"){
       ov.ctx.beginPath();ov.ctx.moveTo(sx,sy);
     }
     ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
@@ -214,8 +217,10 @@ function setupOverlay(canvas,ov){
       ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;ov.ctx.lineCap="round";
       ov.ctx.lineTo(x,y);ov.ctx.stroke();
     }else if(tool==="highlight"){
-      ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs*4;ov.ctx.globalAlpha=0.3;ov.ctx.lineCap="round";
-      ov.ctx.lineTo(x,y);ov.ctx.stroke();ov.ctx.globalAlpha=1;
+      // live preview: restore state and draw rect
+      if(ov.history.length)ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);
+      ov.ctx.fillStyle="rgba(255,255,0,0.35)";
+      ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
     }
   });
   canvas.addEventListener("mouseup",e=>{
@@ -224,7 +229,10 @@ function setupOverlay(canvas,ov){
     const x=e.clientX-r.left,y=e.clientY-r.top;
     const col=document.getElementById("color").value;
     const bs=+document.getElementById("brushSize").value;
-    if(tool==="whiteout"){
+    if(tool==="highlight"){
+      ov.ctx.fillStyle="rgba(255,255,0,0.35)";
+      ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
+    }else if(tool==="whiteout"){
       ov.ctx.fillStyle="#ffffff";
       ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
     }else if(tool==="rect"){
@@ -254,18 +262,30 @@ function undoLast(){
 async function savePDF(){
   const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
   const pgs=doc.getPages();
+  const wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
   for(let i=0;i<pgs.length;i++){
-    // Merge overlay onto page
     const merged=document.createElement("canvas");
     merged.width=pages[i].canvas.width;merged.height=pages[i].canvas.height;
     const mctx=merged.getContext("2d");
     mctx.drawImage(pages[i].canvas,0,0);
     mctx.drawImage(overlays[i].canvas,0,0);
+    // Render sticky notes
+    const notes=wraps[i].querySelectorAll(".sticky-note");
+    notes.forEach(function(n){
+      var x=parseInt(n.style.left)||0,y=parseInt(n.style.top)||0;
+      var w=n.offsetWidth,h=n.offsetHeight;
+      mctx.fillStyle="rgba(255,255,157,0.95)";mctx.fillRect(x,y,w,h);
+      mctx.strokeStyle="#e6d800";mctx.lineWidth=1;mctx.strokeRect(x,y,w,h);
+      var ta=n.querySelector("textarea");
+      if(ta&&ta.value){mctx.fillStyle="#333";mctx.font="12px Arial";
+        var lines=ta.value.split("\n"),ly=y+16;
+        lines.forEach(function(l){mctx.fillText(l,x+5,ly);ly+=14});
+      }
+    });
     const blob=await new Promise(r=>merged.toBlob(r,"image/jpeg",0.92));
     const img=await doc.embedJpg(await blob.arrayBuffer());
     const pg=pgs[i];
     const{width,height}=pg.getSize();
-    // Draw image over entire page
     pg.drawImage(img,{x:0,y:0,width,height});
   }
   const out=await doc.save();
