@@ -37,6 +37,7 @@
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>✂️ Remove Image Background</h1><p class="info">Remove background from images. Works best with solid/simple backgrounds.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row"><label>Threshold: <strong id="tv">30</strong></label><input type="range" id="thresh" min="5" max="100" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3"></div>
       <p class="info">Higher threshold = more background removed. Adjust if result is not perfect.</p>
       <button class="btn" onclick="go()" id="goBtn" disabled>Remove Background</button>
@@ -87,7 +88,7 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
 </script>
 
   <script>let file;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
 async function go(){if(!file)return;showProcessing("result");document.getElementById("goBtn").disabled=true;setTimeout(async function(){const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
 // Flood fill from all 4 edges to find connected background
 const visited=new Uint8Array(w*h);

@@ -47,6 +47,7 @@
       <h1>🎨 Image Background Changer</h1>
       <p class="info">Remove background and replace with white, blue, red or any custom color. Great for passport photos, ID cards & documents.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row">
         <label>Detection Threshold: <strong id="tv">30</strong></label>
         <input type="range" id="thresh" min="5" max="120" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3">
@@ -107,7 +108,7 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
 
   <script>
 let file,bgColor="#ffffff";
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
+setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
 
 function pickColor(c,btn){
   bgColor=c;
