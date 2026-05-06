@@ -138,11 +138,11 @@ async function process(){
   for(const[sx,sy]of samples){const i=(sy*w+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
   br/=4;bg2/=4;bb/=4;
   const [nr,ng,nb]=hexToRgb(bgColor);
-  // Flood fill from edges to find connected background
+  // Flood fill from edges - dual check: match bg color AND local neighbor similarity
   const mask=new Uint8Array(w*h);
   const queue=[];
-  for(let x=0;x<w;x++){queue.push(x,0,x,h-1)}
-  for(let y=0;y<h;y++){queue.push(0,y,w-1,y)}
+  for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
+  for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
   let qi=0;
   while(qi<queue.length){
     const x=queue[qi++],y=queue[qi++];
@@ -150,10 +150,18 @@ async function process(){
     const idx=y*w+x;
     if(mask[idx])continue;
     const pi=idx*4;
-    const diff=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
-    if(diff>=t*3)continue;
+    const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+    if(diffBg>=t*3)continue;
     mask[idx]=1;
-    queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
+    const nx=[x-1,x+1,x,x],ny=[y,y,y-1,y+1];
+    for(let n=0;n<4;n++){
+      const ax=nx[n],ay=ny[n];
+      if(ax<0||ax>=w||ay<0||ay>=h)continue;
+      if(mask[ay*w+ax])continue;
+      const npi=(ay*w+ax)*4;
+      const diffLocal=Math.abs(d[pi]-d[npi])+Math.abs(d[pi+1]-d[npi+1])+Math.abs(d[pi+2]-d[npi+2]);
+      if(diffLocal<t*2) queue.push(ax,ay);
+    }
   }
   // Apply new background color/gradient to masked pixels
   const useGrad=document.getElementById("useGradient").checked;
