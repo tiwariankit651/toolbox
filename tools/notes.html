@@ -41,10 +41,14 @@
         <input type="text" id="newTitle" placeholder="New note title..." style="flex:3">
         <button class="btn" onclick="addNote()">+ New Note</button>
       </div>
+      <div class="row" style="margin-bottom:.5rem">
+        <input type="text" id="searchInput" placeholder="🔍 Search notes..." style="flex:1" oninput="searchNotes()">
+      </div>
       <div style="display:grid;grid-template-columns:200px 1fr;gap:.5rem;min-height:400px">
         <div id="noteList" style="background:var(--card);border-radius:8px;padding:.5rem;overflow-y:auto;max-height:450px"></div>
-        <div>
-          <textarea id="noteContent" placeholder="Select a note or create new..." style="min-height:350px;font-size:1rem;line-height:1.7;width:100%" oninput="saveNote()"></textarea>
+        <div style="position:relative">
+          <div id="highlightLayer" style="position:absolute;top:0;left:0;right:0;bottom:auto;min-height:350px;padding:8px 12px;font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;pointer-events:none;border-radius:8px;overflow:hidden;font-family:inherit"></div>
+          <textarea id="noteContent" placeholder="Select a note or create new..." style="min-height:350px;font-size:1rem;line-height:1.7;width:100%;background:transparent;position:relative" oninput="saveNote();highlightSearch()"></textarea>
           <div class="row" style="margin-top:.3rem">
             <span class="info" id="status">✅ Saved</span>
             <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('noteContent').value)">📋 Copy</button>
@@ -90,13 +94,26 @@ function addNote(){var t=document.getElementById("newTitle").value.trim()||"Unti
 function selectNote(i){activeNote=i;document.getElementById("noteContent").value=notes[i].content;render()}
 function saveNote(){if(notes[activeNote]){notes[activeNote].content=document.getElementById("noteContent").value;notes[activeNote].date=Date.now();save();document.getElementById("status").textContent="✅ Auto-saved"}}
 function deleteNote(){if(notes.length<=1)return alert("Cannot delete last note");if(confirm("Delete '"+notes[activeNote].title+"'?")){notes.splice(activeNote,1);activeNote=0;save();render()}}
+var searchTerm="";
+function searchNotes(){searchTerm=document.getElementById("searchInput").value.toLowerCase();render();highlightSearch()}
+function highlightSearch(){
+  var layer=document.getElementById("highlightLayer");
+  if(!searchTerm){layer.innerHTML="";return}
+  var text=document.getElementById("noteContent").value;
+  var escaped=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  var term=searchTerm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  var re=new RegExp("("+term+")","gi");
+  layer.innerHTML=escaped.replace(re,'<mark style="background:#ffeb3b88;border-radius:2px">$1</mark>');
+}
 function render(){
-  document.getElementById("noteList").innerHTML=notes.map(function(n,i){
-    var active=i===activeNote;
+  var filtered=notes.map(function(n,i){return{n:n,i:i}}).filter(function(o){return!searchTerm||o.n.title.toLowerCase().includes(searchTerm)||o.n.content.toLowerCase().includes(searchTerm)});
+  document.getElementById("noteList").innerHTML=filtered.map(function(o){
+    var n=o.n,i=o.i,active=i===activeNote;
     var date=new Date(n.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
     return '<div onclick="selectNote('+i+')" style="padding:.5rem;border-radius:6px;cursor:pointer;margin:.2rem 0;background:'+(active?"var(--accent)":"transparent")+';color:'+(active?"#fff":"var(--text)")+'"><strong style="font-size:.85rem">'+n.title+'</strong><br><span style="font-size:.7rem;opacity:.7">'+date+" — "+n.content.substring(0,30)+'...</span></div>';
   }).join("");
   document.getElementById("noteContent").value=notes[activeNote]?.content||"";
+  highlightSearch();
 }
 render();
   </script>

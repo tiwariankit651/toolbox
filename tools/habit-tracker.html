@@ -28,6 +28,7 @@
       <div class="row"><input type="text" id="newHabit" placeholder="Add a new habit... (e.g. Study 2 hours)" style="flex:3"><button class="btn" onclick="addHabit()">+ Add</button></div>
       <div id="today" style="margin:1rem 0;font-size:1.1rem;font-weight:600"></div>
       <div id="habitList"></div>
+      <div id="heatmap" style="margin-top:1.5rem"></div>
       <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-top:1.5rem"></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Build better daily habits with streak tracking and weekly reports. Add your habits (study 2 hours, exercise, read newspaper, drink water, etc.), check them off each day, and watch your streaks grow. The 7-day visual history shows your consistency at a glance. Weekly bar chart report shows completion percentage for each day. See total habits, completed today, and overall completion rate. All data saves automatically in your browser — come back daily to maintain your streaks. Perfect for students building study routines, fitness goals, and self-improvement.</p>
@@ -91,6 +92,17 @@ function getStreak(h){
   }
   return streak;
 }
+function getLongestStreak(h){
+  var keys=Object.keys(h.log).sort();
+  if(!keys.length)return 0;
+  var max=1,cur=1;
+  for(var i=1;i<keys.length;i++){
+    var prev=new Date(keys[i-1]),next=new Date(keys[i]);
+    if((next-prev)===86400000)cur++;else cur=1;
+    if(cur>max)max=cur;
+  }
+  return max;
+}
 function render(){
   var html="";
   habits.forEach(function(h,i){
@@ -106,7 +118,9 @@ function render(){
     html+='<div style="background:var(--card);padding:1rem;border-radius:12px;margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">';
     html+='<button onclick="toggleHabit('+i+')" style="font-size:1.5rem;background:none;border:none;cursor:pointer">'+(done?"✅":"⬜")+'</button>';
     html+='<div style="flex:2;min-width:120px"><strong style="'+(done?"text-decoration:line-through;opacity:.6":"")+'">'+h.name+'</strong><div style="margin-top:4px">'+last7+'</div></div>';
-    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+streak+'</div><div class="info" style="font-size:.7rem">streak</div></div>';
+    var longest=getLongestStreak(h);
+    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+streak+'</div><div class="info" style="font-size:.7rem">current streak</div></div>';
+    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:#ff9800">'+longest+'</div><div class="info" style="font-size:.7rem">longest streak</div></div>';
     html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700">'+totalDone+'</div><div class="info" style="font-size:.7rem">total</div></div>';
     html+='<button onclick="removeHabit('+i+')" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">×</button></div>';
   });
@@ -119,6 +133,11 @@ function render(){
   for(var d=6;d>=0;d--){var dt=new Date();dt.setDate(dt.getDate()-d);var key=dt.toISOString().split("T")[0];var dayDone=0;habits.forEach(function(h){if(h.log[key])dayDone++});var dayPct=habits.length?Math.round(dayDone/habits.length*100):0;var color=dayPct>=80?"#4caf50":dayPct>=50?"#ff9800":dayPct>0?"#f44336":"var(--border)";weekHtml+='<div style="flex:1;text-align:center"><div style="height:60px;background:var(--card);border-radius:4px;position:relative;overflow:hidden"><div style="position:absolute;bottom:0;width:100%;height:'+dayPct+'%;background:'+color+';border-radius:4px"></div></div><div style="font-size:.65rem;margin-top:2px">'+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()]+'</div></div>'}
   weekHtml+='</div></div>';
   document.getElementById("stats").innerHTML+=weekHtml;
+  // 30-day heatmap
+  var hmHtml='<div style="background:var(--card);padding:1rem;border-radius:12px"><h3 style="margin-bottom:.5rem">🟩 30-Day Heatmap</h3><div style="display:flex;gap:3px;flex-wrap:wrap">';
+  for(var d=29;d>=0;d--){var dt=new Date();dt.setDate(dt.getDate()-d);var key=dt.toISOString().split("T")[0];var count=0;habits.forEach(function(h){if(h.log[key])count++});var intensity=habits.length?count/habits.length:0;var bg=intensity===0?"var(--border)":intensity<=0.25?"#c6e48b":intensity<=0.5?"#7bc96f":intensity<=0.75?"#239a3b":"#196127";hmHtml+='<div title="'+key+': '+count+'/'+habits.length+'" style="width:18px;height:18px;border-radius:3px;background:'+bg+'"></div>'}
+  hmHtml+='</div><div style="display:flex;align-items:center;gap:4px;margin-top:.5rem;font-size:.7rem"><span>Less</span><span style="width:12px;height:12px;border-radius:2px;background:var(--border);display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#c6e48b;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#7bc96f;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#239a3b;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#196127;display:inline-block"></span><span>More</span></div></div>';
+  document.getElementById("heatmap").innerHTML=hmHtml;
 }
 render();
   </script>

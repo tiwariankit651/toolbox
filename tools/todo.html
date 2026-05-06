@@ -19,7 +19,7 @@
       <h1>📋 To-Do List & Kanban Board</h1>
       <p class="info">Add tasks and move them between columns. Auto-saves to browser.</p>
       <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()">
-        <select id="priority"><option value="normal">Normal</option><option value="high">🔴 High</option><option value="low">🟢 Low</option></select>
+        <select id="priority"><option value="medium">Medium</option><option value="high">🔴 High</option><option value="low">🟢 Low</option></select>
         <input type="date" id="dueDate" title="Due date (optional)">
         <button class="btn" onclick="addTask()">+ Add</button></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem">
@@ -69,6 +69,8 @@ function addTask(){var t=document.getElementById("newTask").value.trim();if(!t)r
 function moveTask(i,col){tasks[i].col=col;save();render()}
 function removeTask(i){tasks.splice(i,1);save();render()}
 function clearDone(){tasks=tasks.filter(function(t){return t.col!=="done"});save();render()}
+function isOverdue(t){if(!t.due||t.col==="done")return false;var today=new Date();today.setHours(0,0,0,0);return new Date(t.due+"T00:00:00")<today}
+function priBadge(p){if(p==="high")return ' <span style="background:#f44336;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">HIGH</span>';if(p==="medium"||p==="normal")return ' <span style="background:#ff9800;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">MED</span>';if(p==="low")return ' <span style="background:#4caf50;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">LOW</span>';return ""}
 function render(){
   var cols={todo:[],doing:[],done:[]};
   tasks.forEach(function(t,i){t._i=i;if(cols[t.col])cols[t.col].push(t)});
@@ -78,7 +80,10 @@ function render(){
     var nextCol={todo:"doing",doing:"done",done:"todo"};
     var arrows={todo:"→ Doing",doing:"→ Done",done:"↩ To Do"};
     el.innerHTML=cols[col].map(function(t){
-      return '<div style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[col]+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+(t.priority==="high"?' <span style="color:#f44336;font-size:.75rem">🔴 HIGH</span>':t.priority==="low"?' <span style="color:#4caf50;font-size:.75rem">🟢 LOW</span>':"")+(t.due?' <span style="color:var(--muted);font-size:.75rem">📅 '+t.due+'</span>':"")+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
+      var overdue=isOverdue(t);
+      var border=overdue?"#f44336":colors[col];
+      var bg=overdue?"rgba(244,67,54,.08)":"var(--card)";
+      return '<div style="background:'+bg+';padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+border+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+priBadge(t.priority)+(t.due?' <span style="color:'+(overdue?"#f44336":"var(--muted)")+';font-size:.75rem;'+(overdue?"font-weight:bold":"")+'">'+(overdue?"⚠️":"📅")+' '+t.due+'</span>':"")+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
     }).join("")||'<p class="info" style="text-align:center;font-size:.8rem">Empty</p>';
     document.getElementById("count"+col.charAt(0).toUpperCase()+col.slice(1)).textContent="("+cols[col].length+")";
   });

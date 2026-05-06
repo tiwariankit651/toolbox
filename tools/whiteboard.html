@@ -32,6 +32,8 @@
         <button class="btn btn-outline" onclick="setTool('rect')" id="btnRect">▭ Rect</button>
         <button class="btn btn-outline" onclick="setTool('circle')" id="btnCircle">○ Circle</button>
         <button class="btn btn-outline" onclick="setTool('line')" id="btnLine">╱ Line</button>
+        <button class="btn btn-outline" onclick="setTool('arrow')" id="btnArrow">→ Arrow</button>
+        <button class="btn btn-outline" onclick="setTool('sticky')" id="btnSticky">📝 Sticky</button>
         <input type="color" id="penColor" value="#000000" style="width:40px;height:35px;border:none;cursor:pointer" onchange="setTool('pen')">
         <label>Size:</label><input type="range" id="penSize" min="1" max="30" value="3" style="max-width:120px">
         <button class="btn btn-outline" onclick="undo()">↩ Undo</button>
@@ -87,7 +89,8 @@ function getPos(e){var r=c.getBoundingClientRect();var t=e.touches?e.touches[0]:
 var shapeStart=null;
 function startDraw(e){e.preventDefault();var p=getPos(e);
   if(tool==="text"){var txt=prompt("Enter text:");if(txt){ctx.fillStyle=document.getElementById("penColor").value;ctx.font=(+document.getElementById("penSize").value*5)+"px Arial";ctx.fillText(txt,p.x,p.y)}return}
-  if(tool==="rect"||tool==="circle"||tool==="line"){shapeStart=p;drawing=true;return}
+  if(tool==="sticky"){var note=document.createElement("div");note.contentEditable=true;note.style.cssText="position:absolute;background:#fffde7;border:1px solid #e6d600;padding:8px;min-width:80px;min-height:50px;font-size:14px;box-shadow:2px 2px 6px rgba(0,0,0,.2);z-index:10;outline:none;";var r2=c.getBoundingClientRect();note.style.left=(r2.left+p.x*(r2.width/c.width))+"px";note.style.top=(r2.top+p.y*(r2.height/c.height)+window.scrollY)+"px";document.body.appendChild(note);note.focus();return}
+  if(tool==="rect"||tool==="circle"||tool==="line"||tool==="arrow"){shapeStart=p;drawing=true;return}
   drawing=true;current=[{x:p.x,y:p.y,color:tool==="eraser"?bgColor:document.getElementById("penColor").value,size:+document.getElementById("penSize").value*(tool==="eraser"?3:1)}]}
 function draw(e){if(!drawing)return;e.preventDefault();if(shapeStart)return;var p=getPos(e);current.push({x:p.x,y:p.y,color:current[0].color,size:current[0].size});drawStroke(current)}
 function stopDraw(e){if(!drawing)return;drawing=false;
@@ -95,12 +98,13 @@ function stopDraw(e){if(!drawing)return;drawing=false;
     var col=document.getElementById("penColor").value;var sz=+document.getElementById("penSize").value;ctx.strokeStyle=col;ctx.lineWidth=sz;ctx.beginPath();
     if(tool==="rect"){ctx.rect(shapeStart.x,shapeStart.y,p.x-shapeStart.x,p.y-shapeStart.y)}
     else if(tool==="circle"){var rx=Math.abs(p.x-shapeStart.x)/2,ry=Math.abs(p.y-shapeStart.y)/2;ctx.ellipse(shapeStart.x+(p.x-shapeStart.x)/2,shapeStart.y+(p.y-shapeStart.y)/2,rx,ry,0,0,Math.PI*2)}
+    else if(tool==="arrow"){ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(p.x,p.y);ctx.stroke();var angle=Math.atan2(p.y-shapeStart.y,p.x-shapeStart.x),hl=sz*4;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle-Math.PI/6),p.y-hl*Math.sin(angle-Math.PI/6));ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle+Math.PI/6),p.y-hl*Math.sin(angle+Math.PI/6));ctx.stroke()}
     else{ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(p.x,p.y)}
     ctx.stroke();shapeStart=null;return}
   if(current.length>1)strokes.push(current.slice());current=[]}
 function drawStroke(s){if(s.length<2)return;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";ctx.moveTo(s[0].x,s[0].y);for(var i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
 function redraw(){ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);strokes.forEach(function(s){drawStroke(s)})}
-function setTool(t){tool=t;["btnPen","btnEraser","btnText","btnRect","btnCircle","btnLine"].forEach(function(id){var el=document.getElementById(id);if(el){el.className="btn btn-outline";el.style.background=""}});var btn=document.getElementById("btn"+t.charAt(0).toUpperCase()+t.slice(1));if(btn){btn.className="btn";btn.style.background="var(--accent)"}}
+function setTool(t){tool=t;["btnPen","btnEraser","btnText","btnRect","btnCircle","btnLine","btnArrow","btnSticky"].forEach(function(id){var el=document.getElementById(id);if(el){el.className="btn btn-outline";el.style.background=""}});var btn=document.getElementById("btn"+t.charAt(0).toUpperCase()+t.slice(1));if(btn){btn.className="btn";btn.style.background="var(--accent)"}}
 function undo(){strokes.pop();redraw()}
 function clearBoard(){strokes=[];redraw()}
 function setBg(color){bgColor=color;c.style.background=color;redraw()}

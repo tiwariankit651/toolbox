@@ -94,19 +94,19 @@ function summarize(){
     return{text:s,score:score,idx:i};
   });
   scored.sort(function(a,b){return b.score-a.score});
-  var top=scored.slice(0,maxPoints);
-  top.sort(function(a,b){return a.idx-b.idx});
+  var topSentences=scored.slice(0,maxPoints);
+  topSentences.sort(function(a,b){return a.idx-b.idx});
   var origWords=text.split(/\s+/).length;
-  var sumWords=top.reduce(function(a,s){return a+s.text.split(/\s+/).length},0);
+  var sumWords=topSentences.reduce(function(a,s){return a+s.text.split(/\s+/).length},0);
   document.getElementById("stats").style.display="grid";
   document.getElementById("stats").style.gridTemplateColumns="repeat(3,1fr)";
   document.getElementById("stats").style.gap=".5rem";
   document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+origWords+'</strong><br><span class="info">Original words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+sumWords+'</strong><br><span class="info">Summary words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+Math.round((1-sumWords/origWords)*100)+'%</strong><br><span class="info">Reduced</span></div>';
   document.getElementById("result").style.display="block";
   var fmt=document.getElementById("sumFormat").value;
-  if(fmt==="bullet")document.getElementById("summary").innerHTML=top.map(function(s){return '<p style="margin:.4rem 0">• '+s.text+'.</p>'}).join("");
-  else if(fmt==="paragraph")document.getElementById("summary").innerHTML='<p>'+top.map(function(s){return s.text}).join(". ")+'. </p>';
-  else document.getElementById("summary").innerHTML=top.map(function(s,i){return '<p style="margin:.5rem 0"><strong>'+(i+1)+'.</strong> '+s.text+'.</p>'}).join("");
+  if(fmt==="bullet")document.getElementById("summary").innerHTML=topSentences.map(function(s){return '<p style="margin:.4rem 0">• '+s.text+'.</p>'}).join("");
+  else if(fmt==="paragraph")document.getElementById("summary").innerHTML='<p>'+topSentences.map(function(s){return s.text}).join(". ")+'. </p>';
+  else document.getElementById("summary").innerHTML=topSentences.map(function(s,i){return '<p style="margin:.5rem 0"><strong>'+(i+1)+'.</strong> '+s.text+'.</p>'}).join("");
 }
   </script>
 </body>

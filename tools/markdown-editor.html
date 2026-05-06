@@ -46,7 +46,18 @@
       <h1>✍️ Markdown Editor</h1>
       <p class="info">Write Markdown on the left, see live preview on the right.</p>
       <div class="editor-wrap">
-        <div><label><strong>Markdown</strong></label><textarea id="md" oninput="render()" style="min-height:400px;font-family:monospace"># Hello World
+        <div><label><strong>Markdown</strong></label>
+        <div class="md-toolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('**','**')"><b>B</b></button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('*','*')"><i>I</i></button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('[','](url)')">🔗 Link</button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('![alt](',')')">🖼 Image</button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('## ','')">H</button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('- ','')">☰ List</button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('`','`')">&lt;/&gt; Code</button>
+          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('> ','')">❝ Quote</button>
+        </div>
+        <textarea id="md" oninput="render()" style="min-height:400px;font-family:monospace"># Hello World
 
 This is **bold** and *italic* text.
 
@@ -73,6 +84,7 @@ code block
         <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('md').value)">📋 Copy MD</button>
         <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('preview-area').innerHTML)">📋 Copy HTML</button>
         <button class="btn" onclick="download(new Blob([document.getElementById('md').value]),'document.md')">💾 Download .md</button>
+        <button class="btn" onclick="exportHTML()">📄 Export HTML</button>
       </div>
     </div>
     <div style="min-height:90px">
@@ -101,6 +113,20 @@ code block
   </footer>
   <script src="../js/common.js"></script>
   <script>
+function ins(before,after){
+  const ta=document.getElementById('md');
+  const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  const sel=v.substring(s,e)||'text';
+  ta.value=v.substring(0,s)+before+sel+after+v.substring(e);
+  ta.selectionStart=s+before.length;
+  ta.selectionEnd=s+before.length+sel.length;
+  ta.focus();render();
+}
+function exportHTML(){
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Exported Markdown</title></head><body>'+document.getElementById('preview-area').innerHTML+'</body></html>';
+  download(new Blob([html],{type:'text/html'}),'document.html');
+}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
 function render(){
   let md=document.getElementById('md').value;
   // Simple markdown parser
