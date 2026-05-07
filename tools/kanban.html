@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Kanban Board - Free Project Management Tool | FreeToolHubs</title>
+  <meta name="description" content="Free online Kanban board with drag & drop, multiple boards, priorities, due dates, color labels, search, filter, and JSON export. No signup. Saves to localStorage.">
+  <meta property="og:title" content="Advanced Kanban Board — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/kanban"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Advanced Kanban Board","url":"https://freetoolhubs.com/tools/kanban","description":"Free online Kanban board with drag and drop, multiple boards, priorities, and localStorage persistence","applicationCategory":"ProjectManagement","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/kanban"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<style>
+.kanban-wrap{display:flex;gap:1rem;overflow-x:auto;padding:1rem 0;min-height:400px}
+.kanban-col{min-width:260px;max-width:300px;flex:1;background:var(--card);border-radius:12px;padding:.8rem;display:flex;flex-direction:column}
+.kanban-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;font-weight:700;font-size:.95rem}
+.kanban-col-header input{font-size:.95rem;font-weight:700;background:none;border:none;color:var(--text);width:100%;outline:none}
+.kanban-cards{flex:1;min-height:60px;display:flex;flex-direction:column;gap:.4rem}
+.kanban-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem;cursor:grab;position:relative;font-size:.85rem;border-left:4px solid var(--border)}
+.kanban-card.dragging{opacity:.4}
+.kanban-card .card-title{font-weight:600;margin-bottom:.2rem}
+.kanban-card .card-desc{color:var(--text2);font-size:.8rem;margin-bottom:.3rem}
+.kanban-card .card-meta{display:flex;gap:.4rem;flex-wrap:wrap;font-size:.75rem}
+.kanban-card .card-meta span{padding:.1rem .4rem;border-radius:4px;background:var(--card)}
+.kanban-card .card-actions{position:absolute;top:.4rem;right:.4rem;display:flex;gap:.2rem}
+.kanban-card .card-actions button{border:none;background:none;cursor:pointer;font-size:.75rem;opacity:.6}
+.kanban-card .card-actions button:hover{opacity:1}
+.priority-high{border-left-color:#f44336!important}
+.priority-med{border-left-color:#ff9800!important}
+.priority-low{border-left-color:#4caf50!important}
+.kanban-col.drag-over{background:var(--bg);outline:2px dashed var(--accent)}
+.board-bar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.board-bar select,.board-bar input,.board-bar button{font-size:.85rem;padding:.3rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+.board-bar button{cursor:pointer}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border-radius:12px;padding:1.5rem;width:90%;max-width:400px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-top:0}
+.modal label{display:block;font-size:.85rem;font-weight:600;margin-top:.6rem}
+.modal input,.modal textarea,.modal select{width:100%;padding:.4rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.9rem;margin-top:.2rem;box-sizing:border-box}
+.modal textarea{resize:vertical;min-height:60px}
+.modal-btns{display:flex;gap:.5rem;margin-top:1rem}
+.modal-btns button{flex:1;padding:.5rem;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+.color-opts{display:flex;gap:.3rem;margin-top:.3rem}
+.color-opts span{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.color-opts span.sel{border-color:var(--text)}
+</style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📋 Kanban Board</div>
+    <div class="tool-section">
+      <h1>📋 Advanced Kanban Board</h1>
+      <p class="info">Organize tasks with drag & drop. Multiple boards, priorities, due dates, color labels, search & filter. Everything saves to your browser.</p>
+
+      <div class="board-bar">
+        <select id="boardSelect" onchange="switchBoard()"></select>
+        <button onclick="newBoard()">+ Board</button>
+        <button onclick="deleteBoard()">🗑️</button>
+        <button onclick="addColumn()">+ Column</button>
+        <button onclick="exportBoard()">📤 Export JSON</button>
+        <input type="text" id="searchInput" placeholder="🔍 Search cards..." oninput="renderBoard()">
+        <select id="filterPriority" onchange="renderBoard()"><option value="">All Priorities</option><option value="High">High</option><option value="Med">Med</option><option value="Low">Low</option></select>
+        <select id="filterColor" onchange="renderBoard()"><option value="">All Colors</option><option value="#f44336">Red</option><option value="#ff9800">Orange</option><option value="#4caf50">Green</option><option value="#2196f3">Blue</option><option value="#9c27b0">Purple</option><option value="#607d8b">Gray</option></select>
+      </div>
+
+      <div id="kanban" class="kanban-wrap"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>About This Tool</h2>
+      <p>The Advanced Kanban Board is a full-featured project management tool that runs entirely in your browser. Inspired by tools like Trello and Jira, it provides a visual way to organize tasks across customizable columns using the proven Kanban methodology. Whether you're managing a software project, planning a marketing campaign, or organizing personal tasks, this board adapts to your workflow.</p>
+      <p>Every piece of data — your boards, columns, cards, and settings — is stored in your browser's localStorage. Nothing is ever sent to a server, which means complete privacy and zero dependency on internet connectivity after the first load. You can create multiple boards for different projects, customize column names, and drag cards between columns as work progresses. Cards support titles, descriptions, priority levels (High, Medium, Low), due dates, and color labels for visual categorization.</p>
+      <p>The search and filter functionality lets you quickly find specific cards across all columns, while the JSON export feature allows you to back up your boards or share them with teammates. The drag-and-drop interface uses the native HTML5 Drag API for smooth, responsive interactions without any external library dependencies.</p>
+
+      <h2>Benefits of Using This Tool</h2>
+      <ul style="margin-left:1.5rem;line-height:2">
+        <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on boards or cards</li>
+        <li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
+        <li><strong>Complete Privacy</strong> — All data stays in your browser. Nothing is uploaded to any server</li>
+        <li><strong>Works Offline</strong> — After first visit, this tool works without internet connection</li>
+        <li><strong>No Installation</strong> — Works directly in your web browser on any device</li>
+        <li><strong>Multiple Boards</strong> — Create separate boards for different projects or contexts</li>
+        <li><strong>Drag & Drop</strong> — Intuitive card movement between columns</li>
+        <li><strong>Rich Cards</strong> — Priority, due dates, descriptions, and color labels</li>
+        <li><strong>Search & Filter</strong> — Quickly find cards by text, priority, or color</li>
+        <li><strong>Export/Backup</strong> — Download your board data as JSON anytime</li>
+      </ul>
+
+      <h2>Frequently Asked Questions</h2>
+      <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Create as many boards and cards as you want.</p></details>
+      <details><summary>Is my data safe?</summary><p>All data is stored in your browser's localStorage. It never leaves your device and is not sent to any server. However, clearing your browser data will remove it, so use the JSON export feature for backups.</p></details>
+      <details><summary>Does it work on mobile?</summary><p>Yes, the board is responsive and works on mobile devices. Drag and drop works via touch events on supported browsers. For the best experience, desktop is recommended for complex boards.</p></details>
+      <details><summary>Does it work offline?</summary><p>Yes! After your first visit, this tool works without internet connection. It is a Progressive Web App (PWA) that caches locally.</p></details>
+      <details><summary>How many boards/cards can I create?</summary><p>There's no artificial limit. You're only limited by your browser's localStorage capacity (typically 5-10MB), which is enough for thousands of cards.</p></details>
+      <details><summary>Can I share my board with others?</summary><p>Use the "Export JSON" button to download your board data, then share the file. The recipient can import it (or you can build a workflow around it). Real-time collaboration is not supported since there's no server.</p></details>
+      <details><summary>Can I use this for commercial purposes?</summary><p>Yes, use this tool for any purpose — personal, educational, or commercial project management.</p></details>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cardModal">
+    <div class="modal">
+      <h3 id="modalTitle">Add Card</h3>
+      <label>Title *</label><input type="text" id="cardTitleInput">
+      <label>Description</label><textarea id="cardDescInput"></textarea>
+      <label>Priority</label>
+      <select id="cardPriorityInput"><option value="Med">Medium</option><option value="High">High</option><option value="Low">Low</option></select>
+      <label>Due Date</label><input type="date" id="cardDueInput">
+      <label>Color Label</label>
+      <div class="color-opts" id="colorOpts">
+        <span style="background:#f44336" onclick="pickColor(this)" data-c="#f44336"></span>
+        <span style="background:#ff9800" onclick="pickColor(this)" data-c="#ff9800"></span>
+        <span style="background:#4caf50" onclick="pickColor(this)" data-c="#4caf50"></span>
+        <span style="background:#2196f3" onclick="pickColor(this)" data-c="#2196f3"></span>
+        <span style="background:#9c27b0" onclick="pickColor(this)" data-c="#9c27b0"></span>
+        <span style="background:#607d8b" onclick="pickColor(this)" data-c="#607d8b"></span>
+      </div>
+      <div class="modal-btns">
+        <button onclick="closeModal()" style="background:var(--bg);color:var(--text)">Cancel</button>
+        <button onclick="saveCard()" style="background:var(--accent);color:#fff">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width:900px;margin:0 auto;padding:1.5rem 1rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.8rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <strong>FreeToolHubs</strong>
+      </div>
+      <p style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.8rem">Free online tools that respect your privacy. 100% browser-based.</p>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text2)">© 2026 FreeToolHubs. All rights reserved. All processing happens in your browser.</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+var STORAGE='kanban_data';
+var data=JSON.parse(localStorage.getItem(STORAGE)||'null');
+if(!data)data={boards:[{name:'My Board',columns:[{name:'To Do',cards:[]},{name:'In Progress',cards:[]},{name:'Done',cards:[]}]}],active:0};
+var editingCard=null,editingCol=null,selectedColor='';
+
+function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
+function board(){return data.boards[data.active]}
+
+function renderBoardSelect(){
+  var s=document.getElementById('boardSelect');
+  s.innerHTML=data.boards.map(function(b,i){return '<option value="'+i+'"'+(i===data.active?' selected':'')+'>'+b.name+'</option>'}).join('');
+}
+
+function switchBoard(){data.active=+document.getElementById('boardSelect').value;renderBoard()}
+
+function newBoard(){
+  var name=prompt('Board name:');
+  if(!name)return;
+  data.boards.push({name:name,columns:[{name:'To Do',cards:[]},{name:'In Progress',cards:[]},{name:'Done',cards:[]}]});
+  data.active=data.boards.length-1;save();renderBoardSelect();renderBoard();
+}
+
+function deleteBoard(){
+  if(data.boards.length<2){alert('Cannot delete the only board');return}
+  if(!confirm('Delete board "'+board().name+'"?'))return;
+  data.boards.splice(data.active,1);data.active=0;save();renderBoardSelect();renderBoard();
+}
+
+function addColumn(){
+  var name=prompt('Column name:');
+  if(!name)return;
+  board().columns.push({name:name,cards:[]});save();renderBoard();
+}
+
+function deleteColumn(ci){
+  if(!confirm('Delete column "'+board().columns[ci].name+'" and all its cards?'))return;
+  board().columns.splice(ci,1);save();renderBoard();
+}
+
+function renameColumn(ci,el){
+  board().columns[ci].name=el.value;save();
+}
+
+function renderBoard(){
+  var search=document.getElementById('searchInput').value.toLowerCase();
+  var fp=document.getElementById('filterPriority').value;
+  var fc=document.getElementById('filterColor').value;
+  var wrap=document.getElementById('kanban');
+  wrap.innerHTML=board().columns.map(function(col,ci){
+    var cards=col.cards.filter(function(c){
+      if(search&&c.title.toLowerCase().indexOf(search)===-1&&(c.desc||'').toLowerCase().indexOf(search)===-1)return false;
+      if(fp&&c.priority!==fp)return false;
+      if(fc&&c.color!==fc)return false;
+      return true;
+    });
+    return '<div class="kanban-col" data-col="'+ci+'" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="drop(event,'+ci+')">'+
+      '<div class="kanban-col-header"><input value="'+col.name+'" onchange="renameColumn('+ci+',this)"><span style="display:flex;gap:.2rem"><button onclick="openModal('+ci+')" style="border:none;background:none;cursor:pointer;font-size:1rem" title="Add card">+</button><button onclick="deleteColumn('+ci+')" style="border:none;background:none;cursor:pointer;font-size:.8rem" title="Delete column">🗑️</button></span></div>'+
+      '<div class="kanban-cards">'+cards.map(function(c,cdi){
+        var realIdx=col.cards.indexOf(c);
+        return '<div class="kanban-card priority-'+c.priority.toLowerCase()+'" draggable="true" ondragstart="dragStart(event,'+ci+','+realIdx+')" style="border-left-color:'+(c.color||'var(--border)')+'">'+
+          '<div class="card-actions"><button onclick="openEditModal('+ci+','+realIdx+')" title="Edit">✏️</button><button onclick="deleteCard('+ci+','+realIdx+')" title="Delete">✕</button></div>'+
+          '<div class="card-title">'+c.title+'</div>'+
+          (c.desc?'<div class="card-desc">'+c.desc+'</div>':'')+
+          '<div class="card-meta"><span>'+c.priority+'</span>'+(c.due?'<span>📅 '+c.due+'</span>':'')+'</div></div>';
+      }).join('')+'</div></div>';
+  }).join('');
+  renderBoardSelect();
+}
+
+function openModal(ci){editingCol=ci;editingCard=null;selectedColor='';document.getElementById('modalTitle').textContent='Add Card';document.getElementById('cardTitleInput').value='';document.getElementById('cardDescInput').value='';document.getElementById('cardPriorityInput').value='Med';document.getElementById('cardDueInput').value='';document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});document.getElementById('cardModal').classList.add('active')}
+
+function openEditModal(ci,cdi){
+  var c=board().columns[ci].cards[cdi];editingCol=ci;editingCard=cdi;selectedColor=c.color||'';
+  document.getElementById('modalTitle').textContent='Edit Card';
+  document.getElementById('cardTitleInput').value=c.title;
+  document.getElementById('cardDescInput').value=c.desc||'';
+  document.getElementById('cardPriorityInput').value=c.priority;
+  document.getElementById('cardDueInput').value=c.due||'';
+  document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.toggle('sel',s.dataset.c===selectedColor)});
+  document.getElementById('cardModal').classList.add('active');
+}
+
+function closeModal(){document.getElementById('cardModal').classList.remove('active')}
+
+function pickColor(el){
+  document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});
+  if(selectedColor===el.dataset.c){selectedColor=''}else{el.classList.add('sel');selectedColor=el.dataset.c}
+}
+
+function saveCard(){
+  var title=document.getElementById('cardTitleInput').value.trim();
+  if(!title){alert('Title is required');return}
+  var card={title:title,desc:document.getElementById('cardDescInput').value.trim(),priority:document.getElementById('cardPriorityInput').value,due:document.getElementById('cardDueInput').value,color:selectedColor};
+  if(editingCard!==null){board().columns[editingCol].cards[editingCard]=card}else{board().columns[editingCol].cards.push(card)}
+  save();closeModal();renderBoard();
+}
+
+function deleteCard(ci,cdi){if(confirm('Delete this card?')){board().columns[ci].cards.splice(cdi,1);save();renderBoard()}}
+
+var dragData={};
+function dragStart(e,ci,cdi){dragData={col:ci,card:cdi};e.dataTransfer.effectAllowed='move';e.target.classList.add('dragging')}
+function dragOver(e,el){e.preventDefault();el.classList.add('drag-over')}
+function dragLeave(el){el.classList.remove('drag-over')}
+function drop(e,targetCol){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(dragData.col===undefined)return;
+  var card=board().columns[dragData.col].cards.splice(dragData.card,1)[0];
+  board().columns[targetCol].cards.push(card);
+  save();renderBoard();
+}
+
+function exportBoard(){
+  var blob=new Blob([JSON.stringify(board(),null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=board().name.replace(/\s+/g,'_')+'.json';a.click();
+}
+
+renderBoard();
+</script>
+</body>
+</html>
