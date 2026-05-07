@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Mind Map Maker - Create Visual Mind Maps Online | FreeToolHubs</title>
+  <meta name="description" content="Create beautiful mind maps online for free. Add nodes, drag to reposition, change colors, use templates, and export as PNG. No signup required.">
+  <meta property="og:title" content="Mind Map Maker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/mind-map"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Mind Map Maker","url":"https://freetoolhubs.com/tools/mind-map","description":"Create visual mind maps online with drag-and-drop nodes, templates, and PNG export","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/mind-map"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    #canvas-wrap{position:relative;width:100%;height:500px;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
+    #map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+    .node{position:absolute;padding:8px 16px;border-radius:20px;background:#4f8cff;color:#fff;cursor:grab;user-select:none;font-size:.9rem;font-weight:500;white-space:nowrap;min-width:60px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:box-shadow .2s}
+    .node:hover{box-shadow:0 4px 16px rgba(0,0,0,.25)}
+    .node.selected{outline:3px solid #ff9800}
+    .controls{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0}
+    .controls button,.controls select{font-size:.85rem}
+    #node-editor{display:none;background:var(--card);padding:1rem;border-radius:10px;margin:.8rem 0;border:1px solid var(--border)}
+    #node-editor label{font-size:.85rem;font-weight:600}
+    #node-editor input[type=text]{width:100%;padding:.4rem;margin:.3rem 0 .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+    #node-editor input[type=color]{width:50px;height:35px;border:none;border-radius:6px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🧠 Mind Map Maker</div>
+    <div class="tool-section">
+      <h1>🧠 Mind Map Maker</h1>
+      <p class="info">Create visual mind maps with draggable nodes, color coding, templates, and PNG export. All in your browser.</p>
+
+      <div class="controls">
+        <button class="btn" onclick="addChild()">➕ Add Child</button>
+        <button class="btn btn-outline" onclick="zoomIn()">🔍+</button>
+        <button class="btn btn-outline" onclick="zoomOut()">🔍−</button>
+        <button class="btn btn-outline" onclick="exportPNG()">📥 Export PNG</button>
+        <button class="btn btn-outline" onclick="saveMap()">💾 Save</button>
+        <button class="btn btn-outline" onclick="loadMap()">📂 Load</button>
+        <select onchange="loadTemplate(this.value)" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+          <option value="">📋 Templates...</option>
+          <option value="project">Project Planning</option>
+          <option value="study">Study Notes</option>
+          <option value="brainstorm">Brainstorm</option>
+        </select>
+      </div>
+
+      <div id="node-editor">
+        <label>Node Text</label>
+        <input type="text" id="edit-text" oninput="updateNodeText(this.value)">
+        <label>Color</label>
+        <input type="color" id="edit-color" value="#4f8cff" onchange="updateNodeColor(this.value)">
+        <button class="btn btn-outline" onclick="deleteNode()" style="margin-left:1rem;font-size:.8rem;color:#f44336">🗑 Delete</button>
+      </div>
+
+      <div id="canvas-wrap">
+        <svg id="map-svg"></svg>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About Mind Map Maker</h2>
+<p>The Mind Map Maker is a powerful, completely free online tool that helps you visually organize your thoughts, ideas, and information in a hierarchical, branching structure. Mind mapping is a proven technique used by students, professionals, writers, and creative thinkers worldwide to improve brainstorming sessions, plan projects, take structured notes, and solve complex problems. Our tool brings this powerful methodology directly to your browser with zero installation, no account creation, and complete privacy since all data stays on your device.</p>
+<p>Whether you're planning a complex project with multiple deliverables, studying for exams by organizing course material into digestible chunks, brainstorming creative ideas for a new venture, or simply trying to make sense of interconnected concepts, this mind map tool provides an intuitive drag-and-drop interface that makes visual thinking effortless. Each node can be customized with different colors for visual categorization, and the entire map can be exported as a high-quality PNG image for sharing or embedding in presentations and documents.</p>
+<h2>Key Features</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><strong>Drag & Drop Nodes</strong> — Freely reposition any node by dragging</li>
+<li><strong>Editable Text</strong> — Click any node to edit its content</li>
+<li><strong>Color Coding</strong> — Assign colors to categorize branches</li>
+<li><strong>Add/Delete Nodes</strong> — Build your map with unlimited child nodes</li>
+<li><strong>Zoom Controls</strong> — Zoom in and out for large maps</li>
+<li><strong>Export as PNG</strong> — Download your mind map as an image</li>
+<li><strong>Save & Load</strong> — Persist maps in localStorage</li>
+<li><strong>Templates</strong> — Start quickly with Project Planning, Study Notes, or Brainstorm</li>
+</ul>
+<h2>Benefits of Using This Tool</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><strong>100% Free</strong> — No hidden charges or premium tiers</li>
+<li><strong>No Signup Required</strong> — Start mapping immediately</li>
+<li><strong>Complete Privacy</strong> — All data stays in your browser</li>
+<li><strong>Works Offline</strong> — No server dependency after loading</li>
+<li><strong>No Installation</strong> — Runs directly in any modern browser</li>
+<li><strong>Mobile Friendly</strong> — Responsive design for all devices</li>
+</ul>
+<h2>Frequently Asked Questions</h2>
+<details><summary>How do I add a new node?</summary><p>Click on any existing node to select it, then click the "Add Child" button. A new child node will appear connected to the selected node.</p></details>
+<details><summary>Can I change the color of nodes?</summary><p>Yes! Select a node by clicking it, then use the color picker in the editor panel to change its color for visual categorization.</p></details>
+<details><summary>How do I move nodes around?</summary><p>Simply click and drag any node to reposition it on the canvas. The connecting lines will update automatically.</p></details>
+<details><summary>Can I save my mind map?</summary><p>Yes, click the "Save" button to store your mind map in your browser's localStorage. Click "Load" to restore it later.</p></details>
+<details><summary>How do I export my mind map?</summary><p>Click "Export PNG" to download your entire mind map as a high-quality PNG image that you can share or embed in documents.</p></details>
+<details><summary>What are the templates for?</summary><p>Templates provide pre-built mind map structures for common use cases: Project Planning (with phases and tasks), Study Notes (with subjects and topics), and Brainstorm (with idea categories).</p></details>
+<details><summary>Is there a limit on the number of nodes?</summary><p>No hard limit. You can add as many nodes as you need, though very large maps may benefit from the zoom controls.</p></details>
+</div>
+  </div>
+  <footer>
+    <div style="max-width:900px;margin:0 auto;padding:1.5rem 1rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.8rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <strong>FreeToolHubs</strong>
+      </div>
+      <p style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.8rem">Free online tools that respect your privacy. 100% browser-based.</p>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text2)">© 2026 FreeToolHubs. All rights reserved. All processing happens in your browser.</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+var nodes=[],selectedId=null,scale=1,dragId=null,dragOff={x:0,y:0};
+var wrap=document.getElementById("canvas-wrap"),svg=document.getElementById("map-svg");
+var idCounter=1;
+
+function createNode(text,x,y,parentId,color){
+  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff"};
+  nodes.push(n);renderAll();return n;
+}
+
+function renderAll(){
+  // Clear
+  wrap.querySelectorAll(".node").forEach(function(el){el.remove()});
+  svg.innerHTML="";
+  nodes.forEach(function(n){
+    // Draw line to parent
+    if(n.parentId!==null){
+      var p=nodes.find(function(nd){return nd.id===n.parentId});
+      if(p){
+        var line=document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1",(p.x+50)*scale);line.setAttribute("y1",(p.y+18)*scale);
+        line.setAttribute("x2",(n.x+50)*scale);line.setAttribute("y2",(n.y+18)*scale);
+        line.setAttribute("stroke",n.color);line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.6");
+        svg.appendChild(line);
+      }
+    }
+    // Draw node
+    var div=document.createElement("div");
+    div.className="node"+(n.id===selectedId?" selected":"");
+    div.textContent=n.text;
+    div.style.left=(n.x*scale)+"px";div.style.top=(n.y*scale)+"px";
+    div.style.background=n.color;
+    div.style.transform="scale("+scale+")";div.style.transformOrigin="top left";
+    div.dataset.id=n.id;
+    div.onmousedown=function(e){startDrag(e,n.id)};
+    div.ontouchstart=function(e){startDrag(e.touches[0],n.id);e.preventDefault()};
+    div.onclick=function(e){if(!moved)selectNode(n.id)};
+    wrap.appendChild(div);
+  });
+}
+
+var moved=false;
+function startDrag(e,id){
+  dragId=id;moved=false;
+  var n=nodes.find(function(nd){return nd.id===id});
+  var rect=wrap.getBoundingClientRect();
+  dragOff.x=e.clientX-rect.left-n.x*scale;
+  dragOff.y=e.clientY-rect.top-n.y*scale;
+}
+
+document.addEventListener("mousemove",onDrag);
+document.addEventListener("touchmove",function(e){if(dragId)onDrag(e.touches[0])});
+function onDrag(e){
+  if(!dragId)return;moved=true;
+  var rect=wrap.getBoundingClientRect();
+  var n=nodes.find(function(nd){return nd.id===dragId});
+  n.x=Math.max(0,(e.clientX-rect.left-dragOff.x)/scale);
+  n.y=Math.max(0,(e.clientY-rect.top-dragOff.y)/scale);
+  renderAll();
+}
+document.addEventListener("mouseup",function(){dragId=null});
+document.addEventListener("touchend",function(){dragId=null});
+
+function selectNode(id){
+  selectedId=id;
+  var n=nodes.find(function(nd){return nd.id===id});
+  document.getElementById("node-editor").style.display="block";
+  document.getElementById("edit-text").value=n.text;
+  document.getElementById("edit-color").value=n.color;
+  renderAll();
+}
+
+function updateNodeText(v){
+  var n=nodes.find(function(nd){return nd.id===selectedId});
+  if(n){n.text=v;renderAll()}
+}
+function updateNodeColor(v){
+  var n=nodes.find(function(nd){return nd.id===selectedId});
+  if(n){n.color=v;renderAll()}
+}
+
+function addChild(){
+  var parent=nodes.find(function(nd){return nd.id===selectedId})||nodes[0];
+  if(!parent)return;
+  var angle=Math.random()*Math.PI*2;
+  var dist=120+Math.random()*40;
+  createNode("New Idea",parent.x+Math.cos(angle)*dist,parent.y+Math.sin(angle)*dist,parent.id,parent.color);
+}
+
+function deleteNode(){
+  if(!selectedId||nodes.length<=1)return;
+  // Remove node and its children recursively
+  var toRemove=[selectedId];
+  function findChildren(pid){
+    nodes.forEach(function(n){if(n.parentId===pid){toRemove.push(n.id);findChildren(n.id)}});
+  }
+  findChildren(selectedId);
+  nodes=nodes.filter(function(n){return toRemove.indexOf(n.id)===-1});
+  selectedId=null;
+  document.getElementById("node-editor").style.display="none";
+  renderAll();
+}
+
+function zoomIn(){scale=Math.min(2,scale+0.15);renderAll()}
+function zoomOut(){scale=Math.max(0.4,scale-0.15);renderAll()}
+
+function exportPNG(){
+  var c=document.createElement("canvas");
+  var bounds={minX:Infinity,minY:Infinity,maxX:0,maxY:0};
+  nodes.forEach(function(n){
+    if(n.x<bounds.minX)bounds.minX=n.x;if(n.y<bounds.minY)bounds.minY=n.y;
+    if(n.x+120>bounds.maxX)bounds.maxX=n.x+120;if(n.y+40>bounds.maxY)bounds.maxY=n.y+40;
+  });
+  var pad=60;c.width=bounds.maxX-bounds.minX+pad*2;c.height=bounds.maxY-bounds.minY+pad*2;
+  var ctx=c.getContext("2d");
+  ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,c.width,c.height);
+  // Lines
+  nodes.forEach(function(n){
+    if(n.parentId!==null){
+      var p=nodes.find(function(nd){return nd.id===n.parentId});
+      if(p){
+        ctx.beginPath();ctx.moveTo(p.x-bounds.minX+pad+50,p.y-bounds.minY+pad+15);
+        ctx.lineTo(n.x-bounds.minX+pad+50,n.y-bounds.minY+pad+15);
+        ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.globalAlpha=0.6;ctx.stroke();ctx.globalAlpha=1;
+      }
+    }
+  });
+  // Nodes
+  nodes.forEach(function(n){
+    var nx=n.x-bounds.minX+pad,ny=n.y-bounds.minY+pad;
+    ctx.fillStyle=n.color;
+    ctx.beginPath();ctx.roundRect(nx,ny,100,30,15);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="bold 13px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(n.text,nx+50,ny+15);
+  });
+  c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mindmap.png";a.click()});
+}
+
+function saveMap(){localStorage.setItem("mindmap",JSON.stringify({nodes:nodes,idCounter:idCounter}));alert("Mind map saved!")}
+function loadMap(){
+  var d=localStorage.getItem("mindmap");
+  if(d){var obj=JSON.parse(d);nodes=obj.nodes;idCounter=obj.idCounter;selectedId=null;renderAll();alert("Mind map loaded!")}
+  else alert("No saved mind map found.");
+}
+
+function loadTemplate(t){
+  if(!t)return;nodes=[];idCounter=1;selectedId=null;
+  var cx=wrap.clientWidth/2-50,cy=200;
+  if(t==="project"){
+    createNode("Project",cx,cy,null,"#4f8cff");
+    createNode("Planning",cx-180,cy-100,1,"#a855f7");
+    createNode("Design",cx+150,cy-100,1,"#10b981");
+    createNode("Development",cx-180,cy+100,1,"#f59e0b");
+    createNode("Testing",cx+150,cy+100,1,"#ef4444");
+    createNode("Timeline",cx-300,cy-160,2,"#a855f7");
+    createNode("Resources",cx-100,cy-160,2,"#a855f7");
+    createNode("UI/UX",cx+100,cy-160,3,"#10b981");
+    createNode("Architecture",cx+280,cy-160,3,"#10b981");
+  }else if(t==="study"){
+    createNode("Subject",cx,cy,null,"#10b981");
+    createNode("Chapter 1",cx-180,cy-100,1,"#4f8cff");
+    createNode("Chapter 2",cx+150,cy-100,1,"#a855f7");
+    createNode("Chapter 3",cx-180,cy+100,1,"#f59e0b");
+    createNode("Key Terms",cx+150,cy+100,1,"#ef4444");
+    createNode("Topic A",cx-300,cy-160,2,"#4f8cff");
+    createNode("Topic B",cx-100,cy-160,2,"#4f8cff");
+    createNode("Topic C",cx+100,cy-160,3,"#a855f7");
+  }else if(t==="brainstorm"){
+    createNode("Main Idea",cx,cy,null,"#f59e0b");
+    createNode("Who?",cx-180,cy-100,1,"#4f8cff");
+    createNode("What?",cx+150,cy-100,1,"#a855f7");
+    createNode("How?",cx-180,cy+100,1,"#10b981");
+    createNode("Why?",cx+150,cy+100,1,"#ef4444");
+    createNode("When?",cx,cy+180,1,"#ec4899");
+  }
+  renderAll();
+}
+
+// Init with central node
+createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
+selectNode(1);
+  </script>
+</body>
+</html>

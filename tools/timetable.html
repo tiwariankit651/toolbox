@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Timetable Maker - Free Schedule Creator | FreeToolHubs</title>
+  <meta name="description" content="Create beautiful weekly timetables and schedules online for free. Color-coded subjects, drag to fill, export as PNG, print-friendly. No signup required.">
+  <meta property="og:title" content="Weekly Timetable Maker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/timetable"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/timetable"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Weekly Timetable Maker","url":"https://freetoolhubs.com/tools/timetable","description":"Create weekly timetables and schedules with color-coded subjects, drag-to-fill, PNG export, and print support.","applicationCategory":"UtilityApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <style>
+    .tt-wrap{overflow-x:auto;margin:1rem 0}
+    .tt-table{border-collapse:collapse;width:100%;min-width:700px;font-size:.8rem}
+    .tt-table th,.tt-table td{border:1px solid var(--border,#ddd);padding:4px 6px;text-align:center;min-width:80px;height:32px;cursor:pointer;user-select:none;transition:opacity .1s}
+    .tt-table th{background:var(--card);font-weight:600;position:sticky;top:0}
+    .tt-table td:hover{opacity:.8}
+    .tt-table td.selected{outline:2px solid var(--accent,#4f8cff);outline-offset:-2px}
+    .tt-table .time-col{font-weight:600;cursor:default;min-width:60px;background:var(--card)}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.active{display:flex}
+    .modal{background:var(--bg,#fff);border-radius:12px;padding:1.5rem;max-width:360px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+    .modal h3{margin:0 0 1rem}
+    .modal input[type=text]{width:100%;padding:.5rem;border-radius:8px;border:1px solid var(--border,#ddd);margin-bottom:.8rem;font-size:1rem;background:var(--bg)}
+    .color-options{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+    .color-opt{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s}
+    .color-opt:hover,.color-opt.active{transform:scale(1.2);border-color:var(--text,#333)}
+    .tpl-btns{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+    .tpl-btns button{font-size:.75rem;padding:.3rem .6rem}
+    .save-row{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+    .save-row input{flex:1;min-width:120px}
+    .save-row select{flex:1;min-width:120px}
+    @media print{nav,footer,.no-print,.breadcrumb{display:none!important}.tt-table{font-size:9pt}.container{max-width:100%}}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📅 Weekly Timetable Maker</div>
+    <div class="tool-section">
+      <h1>📅 Weekly Timetable Maker</h1>
+      <p class="info">Click cells to add subjects. Drag to select multiple cells. Color-code your schedule.</p>
+
+      <div class="no-print">
+        <div class="tpl-btns">
+          <strong style="width:100%;margin-bottom:.3rem">Templates:</strong>
+          <button class="btn btn-outline" onclick="loadTemplate('school')">🏫 School</button>
+          <button class="btn btn-outline" onclick="loadTemplate('college')">🎓 College</button>
+          <button class="btn btn-outline" onclick="loadTemplate('work')">💼 Work</button>
+          <button class="btn btn-outline" onclick="loadTemplate('exam')">📝 Exam Prep</button>
+          <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button>
+        </div>
+        <div class="save-row">
+          <input type="text" id="ttName" placeholder="Timetable name...">
+          <button class="btn" onclick="saveTT()">💾 Save</button>
+          <select id="ttList" onchange="loadSaved()"><option value="">— Load Saved —</option></select>
+          <button class="btn btn-outline" onclick="deleteSaved()">🗑️</button>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+          <button class="btn" onclick="exportPNG()">📷 Export PNG</button>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+        </div>
+      </div>
+
+      <div class="tt-wrap" id="ttWrap">
+        <table class="tt-table" id="ttTable"></table>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+<p>The Weekly Timetable Maker is a powerful, free online scheduling tool designed to help students, professionals, and anyone who needs to organize their week efficiently. Whether you're managing school classes, university lectures, work shifts, or study sessions, this tool provides an intuitive visual interface to plan your entire week at a glance.</p>
+<p>Built entirely in your browser, this timetable creator requires no downloads, no signups, and no server uploads. Your schedule data stays private on your device using localStorage. The tool features a full 7-day grid covering 6 AM to 10 PM with one-hour time blocks, giving you complete flexibility to plan early mornings through late evenings.</p>
+<p>Color-coding makes it easy to distinguish between different subjects, activities, or priorities. Simply click any cell to add an activity and choose from a palette of vibrant colors, or let the tool auto-assign colors for you. Need to fill multiple time slots with the same activity? Just drag across cells to select a range and fill them all at once — perfect for double periods, long meetings, or extended study blocks.</p>
+<p>Save multiple timetables for different weeks or purposes, switch between them instantly, and export your finished schedule as a high-quality PNG image to share with classmates, colleagues, or print for your wall. The print-friendly view ensures your timetable looks great on paper too. Pre-made templates for School, College, Work, and Exam Prep give you a head start so you can customize rather than build from scratch.</p>
+
+<h2>Benefits of Using This Tool</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
+<li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
+<li><strong>Complete Privacy</strong> — All processing happens in your browser. Your data is never uploaded to any server</li>
+<li><strong>Save Multiple Schedules</strong> — Store different timetables for different weeks or purposes</li>
+<li><strong>Export as PNG</strong> — Download your timetable as an image to share or print</li>
+<li><strong>Drag to Fill</strong> — Quickly assign the same subject to multiple time slots</li>
+<li><strong>Color-Coded</strong> — Visually distinguish subjects and activities at a glance</li>
+<li><strong>Pre-Made Templates</strong> — Start with School, College, Work, or Exam Prep layouts</li>
+<li><strong>Print-Friendly</strong> — Clean print layout for physical copies</li>
+<li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
+</ul>
+
+<h2>Frequently Asked Questions</h2>
+<details><summary>Is this timetable maker really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Create as many timetables as you want without paying anything.</p></details>
+<details><summary>Is my schedule data safe and private?</summary><p>Absolutely. All data is stored locally in your browser's localStorage. Nothing is ever sent to a server. We physically cannot access your timetable data.</p></details>
+<details><summary>Can I save multiple timetables?</summary><p>Yes! Give each timetable a name and save it. You can create separate schedules for different weeks, semesters, or purposes and switch between them anytime.</p></details>
+<details><summary>How do I add a subject to multiple time slots at once?</summary><p>Click and drag across multiple cells to select them. When you release, a dialog will appear where you can enter the subject name and pick a color. All selected cells will be filled at once.</p></details>
+<details><summary>Can I export or share my timetable?</summary><p>Yes, click "Export PNG" to download your timetable as a high-quality image. You can share it via messaging apps, email, or social media. You can also use the Print button for a paper copy.</p></details>
+<details><summary>Does it work on mobile devices?</summary><p>Yes, the timetable works on all devices. On smaller screens, you can scroll horizontally to view the full week. All features including drag-select work on touch devices.</p></details>
+<details><summary>What are the pre-made templates?</summary><p>Templates give you a starting point: School (typical class schedule), College (lecture blocks with gaps), Work (9-5 with meetings), and Exam Prep (study blocks with breaks). You can customize any template after loading it.</p></details>
+<details><summary>Can I change colors after adding a subject?</summary><p>Yes, simply click on any filled cell to open the editor. You can change the subject name, pick a new color, or clear the cell entirely.</p></details>
+</div>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h3>Add Subject / Activity</h3>
+      <input type="text" id="subjectInput" placeholder="e.g. Mathematics, Lunch, Meeting...">
+      <div class="color-options" id="colorOpts"></div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn" onclick="applySubject()" style="flex:1">✓ Apply</button>
+        <button class="btn btn-outline" onclick="clearCells()" style="flex:1">🗑️ Clear</button>
+        <button class="btn btn-outline" onclick="closeModal()" style="flex:1">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width:900px;margin:0 auto;padding:1.5rem 1rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.8rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <strong>FreeToolHubs</strong>
+      </div>
+      <p style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.8rem">Free online tools that respect your privacy. 100% browser-based.</p>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text2)">© 2026 FreeToolHubs. All rights reserved. All processing happens in your browser.</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const HOURS=[];for(let h=6;h<=22;h++)HOURS.push(h);
+const COLORS=['#4f8cff','#f44336','#4caf50','#ff9800','#9c27b0','#00bcd4','#e91e63','#8bc34a','#ff5722','#3f51b5','#009688','#ffc107'];
+let grid={},selectedCells=[],isDragging=false,colorIdx=0,subjectColors={};
+
+function timeLabel(h){return(h>12?h-12:h)+(h>=12?' PM':' AM')}
+
+function buildTable(){
+  const t=document.getElementById('ttTable');
+  let html='<thead><tr><th class="time-col">Time</th>';
+  DAYS.forEach(d=>{html+='<th>'+d+'</th>'});
+  html+='</tr></thead><tbody>';
+  HOURS.forEach(h=>{
+    html+='<tr><td class="time-col">'+timeLabel(h)+'</td>';
+    DAYS.forEach(d=>{
+      const key=d+'-'+h;
+      const cell=grid[key];
+      const bg=cell?'background:'+cell.color+';color:#fff':'';
+      html+='<td data-key="'+key+'" style="'+bg+'">'+(cell?cell.subject:'')+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  t.innerHTML=html;
+  attachEvents();
+}
+
+function attachEvents(){
+  const cells=document.querySelectorAll('#ttTable td:not(.time-col)');
+  cells.forEach(c=>{
+    c.addEventListener('mousedown',e=>{isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()});
+    c.addEventListener('mouseenter',()=>{if(isDragging)toggleSelect(c)});
+    c.addEventListener('touchstart',e=>{isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()},{passive:false});
+    c.addEventListener('touchmove',e=>{
+      const touch=e.touches[0];
+      const el=document.elementFromPoint(touch.clientX,touch.clientY);
+      if(el&&el.dataset.key&&!selectedCells.includes(el.dataset.key)){toggleSelect(el)}
+      e.preventDefault();
+    },{passive:false});
+  });
+  document.addEventListener('mouseup',endDrag);
+  document.addEventListener('touchend',endDrag);
+}
+
+function toggleSelect(c){
+  const key=c.dataset.key;
+  if(!selectedCells.includes(key)){selectedCells.push(key);c.classList.add('selected')}
+}
+
+function endDrag(){
+  if(!isDragging)return;
+  isDragging=false;
+  if(selectedCells.length>0)openModal();
+}
+
+function openModal(){
+  const m=document.getElementById('modal');
+  m.classList.add('active');
+  const inp=document.getElementById('subjectInput');
+  if(selectedCells.length===1&&grid[selectedCells[0]]){
+    inp.value=grid[selectedCells[0]].subject;
+    setActiveColor(grid[selectedCells[0]].color);
+  }else{inp.value='';setActiveColor(COLORS[colorIdx%COLORS.length])}
+  inp.focus();
+  renderColors();
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('active');
+  document.querySelectorAll('.selected').forEach(c=>c.classList.remove('selected'));
+  selectedCells=[];
+}
+
+function renderColors(){
+  const wrap=document.getElementById('colorOpts');
+  wrap.innerHTML=COLORS.map(c=>'<div class="color-opt'+(c===activeColor?' active':'')+'" style="background:'+c+'" onclick="setActiveColor(\''+c+'\')"></div>').join('');
+}
+
+var activeColor=COLORS[0];
+function setActiveColor(c){activeColor=c;renderColors()}
+
+function applySubject(){
+  const subject=document.getElementById('subjectInput').value.trim();
+  if(!subject){closeModal();return}
+  if(!subjectColors[subject])subjectColors[subject]=activeColor;
+  selectedCells.forEach(key=>{grid[key]={subject,color:activeColor}});
+  colorIdx++;
+  closeModal();
+  buildTable();
+}
+
+function clearCells(){
+  selectedCells.forEach(key=>{delete grid[key]});
+  closeModal();
+  buildTable();
+}
+
+function clearAll(){if(confirm('Clear entire timetable?')){grid={};subjectColors={};buildTable()}}
+
+// Save/Load
+function saveTT(){
+  const name=document.getElementById('ttName').value.trim();
+  if(!name){alert('Enter a name');return}
+  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  saved[name]={grid,subjectColors};
+  localStorage.setItem('tt_saved',JSON.stringify(saved));
+  loadList();
+  document.getElementById('ttName').value='';
+}
+
+function loadList(){
+  const sel=document.getElementById('ttList');
+  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  sel.innerHTML='<option value="">— Load Saved —</option>';
+  Object.keys(saved).forEach(n=>{sel.innerHTML+='<option value="'+n+'">'+n+'</option>'});
+}
+
+function loadSaved(){
+  const name=document.getElementById('ttList').value;
+  if(!name)return;
+  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  if(saved[name]){grid=saved[name].grid||{};subjectColors=saved[name].subjectColors||{};buildTable()}
+}
+
+function deleteSaved(){
+  const name=document.getElementById('ttList').value;
+  if(!name)return;
+  if(!confirm('Delete "'+name+'"?'))return;
+  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  delete saved[name];
+  localStorage.setItem('tt_saved',JSON.stringify(saved));
+  loadList();
+}
+
+// Export PNG
+function exportPNG(){
+  const table=document.getElementById('ttTable');
+  const canvas=document.createElement('canvas');
+  const rows=table.rows;
+  const cols=rows[0].cells.length;
+  const cw=110,ch=36,pad=10;
+  canvas.width=cols*cw+pad*2;
+  canvas.height=rows.length*ch+pad*2;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  for(let r=0;r<rows.length;r++){
+    for(let c=0;c<rows[r].cells.length;c++){
+      const cell=rows[r].cells[c];
+      const x=pad+c*cw,y=pad+r*ch;
+      if(cell.style.background){ctx.fillStyle=cell.style.background;ctx.fillRect(x,y,cw,ch);ctx.fillStyle='#fff'}
+      else if(r===0||c===0){ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y,cw,ch);ctx.fillStyle='#333'}
+      else{ctx.fillStyle='#333'}
+      ctx.strokeStyle='#ccc';ctx.strokeRect(x,y,cw,ch);
+      ctx.font=(r===0||c===0)?'bold 11px sans-serif':'11px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(cell.textContent,x+cw/2,y+ch/2);
+    }
+  }
+  const link=document.createElement('a');
+  link.download='timetable.png';
+  link.href=canvas.toDataURL();
+  link.click();
+}
+
+// Templates
+const TEMPLATES={
+  school:{
+    'Mon-8':'Math','Mon-9':'English','Mon-10':'Science','Mon-11':'History','Mon-12':'Lunch','Mon-13':'Art','Mon-14':'PE',
+    'Tue-8':'English','Tue-9':'Math','Tue-10':'Geography','Tue-11':'Science','Tue-12':'Lunch','Tue-13':'Music','Tue-14':'Library',
+    'Wed-8':'Science','Wed-9':'Math','Wed-10':'English','Wed-11':'Computer','Wed-12':'Lunch','Wed-13':'History','Wed-14':'Sports',
+    'Thu-8':'Math','Thu-9':'Science','Thu-10':'English','Thu-11':'Art','Thu-12':'Lunch','Thu-13':'Geography','Thu-14':'PE',
+    'Fri-8':'English','Fri-9':'History','Fri-10':'Math','Fri-11':'Science','Fri-12':'Lunch','Fri-13':'Music','Fri-14':'Free Period'
+  },
+  college:{
+    'Mon-9':'Calculus','Mon-10':'Calculus','Mon-12':'Physics Lab','Mon-13':'Physics Lab','Mon-15':'Literature',
+    'Tue-10':'Chemistry','Tue-11':'Chemistry','Tue-14':'Programming','Tue-15':'Programming',
+    'Wed-9':'Calculus','Wed-11':'Physics','Wed-14':'Study Group',
+    'Thu-10':'Chemistry','Thu-11':'Chemistry','Thu-13':'Literature','Thu-15':'Programming','Thu-16':'Programming',
+    'Fri-9':'Physics','Fri-10':'Physics','Fri-12':'Seminar','Fri-14':'Study Group'
+  },
+  work:{
+    'Mon-9':'Standup','Mon-10':'Deep Work','Mon-11':'Deep Work','Mon-12':'Lunch','Mon-13':'Meetings','Mon-14':'Email','Mon-15':'Project A','Mon-16':'Project A',
+    'Tue-9':'Standup','Tue-10':'Project B','Tue-11':'Project B','Tue-12':'Lunch','Tue-13':'Deep Work','Tue-14':'Deep Work','Tue-15':'Review','Tue-16':'Planning',
+    'Wed-9':'Standup','Wed-10':'Deep Work','Wed-11':'Deep Work','Wed-12':'Team Lunch','Wed-13':'1:1s','Wed-14':'Project A','Wed-15':'Project A','Wed-16':'Admin',
+    'Thu-9':'Standup','Thu-10':'Project B','Thu-11':'Project B','Thu-12':'Lunch','Thu-13':'Deep Work','Thu-14':'Deep Work','Thu-15':'Meetings','Thu-16':'Email',
+    'Fri-9':'Standup','Fri-10':'Deep Work','Fri-11':'Deep Work','Fri-12':'Lunch','Fri-13':'Retro','Fri-14':'Learning','Fri-15':'Wrap-up'
+  },
+  exam:{
+    'Mon-7':'Math','Mon-8':'Math','Mon-9':'Break','Mon-10':'Physics','Mon-11':'Physics','Mon-12':'Lunch','Mon-14':'Chemistry','Mon-15':'Chemistry','Mon-17':'Revision',
+    'Tue-7':'English','Tue-8':'English','Tue-9':'Break','Tue-10':'Biology','Tue-11':'Biology','Tue-12':'Lunch','Tue-14':'Math','Tue-15':'Math','Tue-17':'Practice Tests',
+    'Wed-7':'Physics','Wed-8':'Physics','Wed-9':'Break','Wed-10':'Chemistry','Wed-11':'Chemistry','Wed-12':'Lunch','Wed-14':'English','Wed-15':'English','Wed-17':'Revision',
+    'Thu-7':'Biology','Thu-8':'Biology','Thu-9':'Break','Thu-10':'Math','Thu-11':'Math','Thu-12':'Lunch','Thu-14':'Physics','Thu-15':'Physics','Thu-17':'Practice Tests',
+    'Sat-8':'Full Mock Test','Sat-9':'Full Mock Test','Sat-10':'Full Mock Test','Sat-11':'Full Mock Test','Sat-14':'Review Answers','Sat-15':'Review Answers',
+    'Sun-9':'Weak Topics','Sun-10':'Weak Topics','Sun-11':'Weak Topics','Sun-14':'Light Revision','Sun-15':'Light Revision'
+  }
+};
+
+function loadTemplate(name){
+  if(Object.keys(grid).length>0&&!confirm('Load template? This will replace current timetable.'))return;
+  grid={};subjectColors={};
+  const tpl=TEMPLATES[name];
+  const subjects=new Set(Object.values(tpl));
+  let ci=0;
+  subjects.forEach(s=>{subjectColors[s]=COLORS[ci%COLORS.length];ci++});
+  Object.entries(tpl).forEach(([key,subject])=>{grid[key]={subject,color:subjectColors[subject]}});
+  buildTable();
+}
+
+// Init
+buildTable();
+loadList();
+document.getElementById('subjectInput').addEventListener('keydown',e=>{if(e.key==='Enter')applySubject()});
+</script>
+</body>
+</html>
