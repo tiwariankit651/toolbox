@@ -5,51 +5,107 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSS Gradient Generator - Create Gradients Free | FreeToolHubs</title>
-  <meta name="description" content="Generate beautiful CSS gradients. Pick colors, adjust direction, copy CSS code. Free online gradient maker for web designers.">
-  <meta property="og:title" content="CSS Gradient Generator — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/gradient-generator"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CSS Gradient Generator","url":"https://freetoolhubs.com/tools/gradient-generator","description":"Generate CSS gradients","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <title>Advanced CSS Gradient Generator - Linear, Radial, Conic | FreeToolHubs</title>
+  <meta name="description" content="Advanced CSS gradient generator with multi-stop colors, linear, radial, conic gradients. Live preview, copy CSS, export as image. Free online tool.">
+  <meta property="og:title" content="Advanced Gradient Generator — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/gradient-generator"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Advanced CSS Gradient Generator","url":"https://freetoolhubs.com/tools/gradient-generator","description":"Advanced CSS gradient generator with multi-stop colors","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/gradient-generator"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .stop-row{display:flex;align-items:center;gap:.5rem;margin:.3rem 0;padding:.4rem;background:var(--card);border-radius:8px}
+    .stop-row input[type=color]{width:40px;height:35px;border:none;border-radius:6px;cursor:pointer}
+    .stop-row input[type=range]{flex:1}
+    .stop-row button{background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem}
+    .preset-card{height:70px;border-radius:10px;cursor:pointer;transition:transform .2s}
+    .preset-card:hover{transform:scale(1.05)}
+    #preview{height:250px;border-radius:16px;margin-bottom:1rem;transition:background .3s;position:relative}
+    .tab-btn{padding:.5rem 1rem;border:none;background:var(--card);color:var(--text);border-radius:8px 8px 0 0;cursor:pointer;font-size:.9rem}
+    .tab-btn.active{background:var(--accent);color:#fff}
+  </style>
 </head>
 <body>
   <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
-    <div class="breadcrumb"><a href="../">Home</a> → 🎨 Gradient Generator</div>
+    <div class="breadcrumb"><a href="../">Home</a> → 🎨 Advanced Gradient Generator</div>
     <div class="tool-section">
-      <h1>🎨 CSS Gradient Generator</h1>
-      <p class="info">Pick colors, choose direction, copy CSS code.</p>
-      <div id="preview" style="height:200px;border-radius:12px;margin-bottom:1rem;background:linear-gradient(90deg,#4f8cff,#a855f7)"></div>
-      <div class="row" style="flex-wrap:wrap">
-        <div><label>Color 1</label><input type="color" id="c1" value="#4f8cff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
-        <div><label>Color 2</label><input type="color" id="c2" value="#a855f7" oninput="gen()" style="height:40px;width:60px;border:none"></div>
-        <div><label>Color 3 (optional)</label><input type="color" id="c3" value="#ff6b6b" oninput="gen()" style="height:40px;width:60px;border:none"><label><input type="checkbox" id="useC3" onchange="gen()"> Use</label></div>
+      <h1>🎨 Advanced CSS Gradient Generator</h1>
+      <p class="info">Create stunning gradients with multiple color stops, 3 gradient types, and 30+ presets. Copy CSS or download as image.</p>
+
+      <div id="preview"></div>
+
+      <div style="margin-bottom:1rem">
+        <button class="tab-btn active" onclick="setType('linear',this)">Linear</button>
+        <button class="tab-btn" onclick="setType('radial',this)">Radial</button>
+        <button class="tab-btn" onclick="setType('conic',this)">Conic</button>
+        <button class="tab-btn" onclick="setType('repeating-linear',this)">Repeating</button>
       </div>
-      <div class="row" style="margin:.8rem 0">
-        <label>Type:</label><select id="type" onchange="gen()"><option value="linear">Linear</option><option value="radial">Radial</option></select>
-        <label>Direction:</label><input type="range" id="deg" min="0" max="360" value="90" oninput="gen()" style="flex:2"><span id="degVal">90°</span>
+
+      <div id="linearOpts" class="row" style="margin:.5rem 0">
+        <label>Angle: <strong id="degVal">90</strong>°</label>
+        <input type="range" id="deg" min="0" max="360" value="90" oninput="document.getElementById('degVal').textContent=this.value;gen()" style="flex:2">
       </div>
-      <div style="background:var(--card);padding:1rem;border-radius:8px;font-family:monospace;font-size:.9rem;word-break:break-all" id="code"></div>
-      <div class="row" style="margin-top:.5rem"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('code').textContent);this.textContent='Copied!';setTimeout(()=>this.textContent='📋 Copy CSS',1000)">📋 Copy CSS</button></div>
-      <h3 style="margin:1.5rem 0 .5rem">Preset Gradients</h3>
+      <div id="radialOpts" style="display:none" class="row">
+        <label>Shape:</label><select id="radialShape" onchange="gen()"><option value="circle">Circle</option><option value="ellipse">Ellipse</option></select>
+        <label>Position:</label><select id="radialPos" onchange="gen()"><option value="center">Center</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option><option value="top left">Top Left</option><option value="top right">Top Right</option><option value="bottom left">Bottom Left</option><option value="bottom right">Bottom Right</option></select>
+      </div>
+
+      <h3 style="margin:.8rem 0 .3rem">Color Stops</h3>
+      <div id="stops"></div>
+      <button class="btn btn-outline" onclick="addStop()" style="margin-top:.5rem;font-size:.85rem">+ Add Color Stop</button>
+
+      <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem;font-family:monospace;font-size:.85rem;word-break:break-all;line-height:1.6" id="code"></div>
+      <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
+        <button class="btn" onclick="copyCSS()">📋 Copy CSS</button>
+        <button class="btn btn-outline" onclick="downloadImg()">💾 Download PNG</button>
+        <button class="btn btn-outline" onclick="randomGradient()">🎲 Random</button>
+        <button class="btn btn-outline" onclick="saveGradient()">💾 Save</button>
+      </div>
+
+      <div id="saved" style="margin-top:1rem;display:none">
+        <h3>💾 Saved Gradients</h3>
+        <div id="savedList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:.5rem"></div>
+      </div>
+
+      <h3 style="margin:1.5rem 0 .5rem">🎨 Preset Gradients</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px" id="presets"></div>
+
+      <h3 style="margin:1.5rem 0 .5rem">📐 CSS Output Formats</h3>
+      <div class="row" style="flex-wrap:wrap;gap:.5rem">
+        <button class="btn btn-outline" onclick="copyAs('tailwind')" style="font-size:.8rem">Tailwind</button>
+        <button class="btn btn-outline" onclick="copyAs('scss')" style="font-size:.8rem">SCSS Variable</button>
+        <button class="btn btn-outline" onclick="copyAs('rgba')" style="font-size:.8rem">RGBA Format</button>
+      </div>
+      <div id="altCode" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin-top:.5rem;font-family:monospace;font-size:.8rem"></div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Generate beautiful CSS gradients for your websites and projects. Choose from linear or radial gradients, pick two or three colors, adjust the angle, and copy the CSS code with one click. Includes 12 preset gradients for quick inspiration. Perfect for web designers, front-end developers, and anyone creating modern UI designs. The generated CSS code works in all modern browsers. Your designs stay in your browser — nothing is uploaded.</p>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+<p>The most advanced CSS gradient generator available online — completely free. Create linear, radial, conic, and repeating gradients with unlimited color stops. Features include live preview, angle/position controls, 30+ curated presets, random gradient generation, save favorites to localStorage, download as PNG image, and multiple CSS output formats (standard, Tailwind, SCSS). Perfect for web designers, UI/UX professionals, front-end developers, and anyone creating modern interfaces. Supports all modern CSS gradient syntax including conic gradients for pie charts and color wheels.</p>
+<h2>Key Features</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><strong>4 Gradient Types</strong> — Linear, Radial, Conic, and Repeating gradients</li>
+<li><strong>Unlimited Color Stops</strong> — Add as many colors as you want with position control</li>
+<li><strong>Live Preview</strong> — See changes instantly as you adjust</li>
+<li><strong>30+ Presets</strong> — Curated beautiful gradients for quick use</li>
+<li><strong>Download as PNG</strong> — Export gradient as image for use anywhere</li>
+<li><strong>Multiple Formats</strong> — CSS, Tailwind, SCSS output</li>
+<li><strong>Save Favorites</strong> — Store your best gradients locally</li>
+<li><strong>Random Generator</strong> — Get inspired with random color combinations</li>
+</ul>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
 <li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
-<li><strong>Complete Privacy</strong> — All processing happens in your browser. Your files are never uploaded to any server</li>
-<li><strong>Works Offline</strong> — After first visit, this tool works without internet connection</li>
-<li><strong>No Installation</strong> — Works directly in your web browser on any device</li>
-<li><strong>Fast Processing</strong> — No waiting for server response, everything is instant</li>
+<li><strong>Complete Privacy</strong> — All processing happens in your browser</li>
+<li><strong>Works Offline</strong> — After first visit, works without internet</li>
+<li><strong>No Installation</strong> — Works directly in your web browser</li>
 <li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
 </ul>
 <h2>Frequently Asked Questions</h2>
-<details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Use it as many times as you want.</p></details>
-<details><summary>Is my data safe?</summary><p>Absolutely. All processing happens in your browser using JavaScript. Your files and data are never uploaded to any server. We physically cannot access your data.</p></details>
-<details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, laptop, tablet, and mobile phone. No app installation needed.</p></details>
-<details><summary>Does it work offline?</summary><p>Yes! After your first visit, this tool works without internet connection. It is a Progressive Web App (PWA) that caches locally.</p></details>
-<details><summary>Can I use this for commercial purposes?</summary><p>Yes, all output from this tool is yours to use for any purpose — personal, educational, or commercial.</p></details>
+<details><summary>What gradient types are supported?</summary><p>Linear (directional), Radial (circular/elliptical from a point), Conic (angular sweep), and Repeating-linear (pattern). All use standard CSS syntax.</p></details>
+<details><summary>Can I add more than 3 colors?</summary><p>Yes! Click "Add Color Stop" to add unlimited colors. Each stop has its own color picker and position slider.</p></details>
+<details><summary>How do I use the generated CSS?</summary><p>Copy the CSS code and paste it as the background property of any HTML element in your stylesheet.</p></details>
+<details><summary>Can I download the gradient as an image?</summary><p>Yes! Click "Download PNG" to save the gradient as a 1920x1080 PNG image for use in presentations, social media, or design projects.</p></details>
+<details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits.</p></details>
+<details><summary>Does it work on mobile?</summary><p>Yes, fully responsive and works on all devices.</p></details>
 </div>
   </div>
   <footer>
@@ -67,21 +123,192 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var presetList=[["#ff9a9e","#fad0c4"],["#a18cd1","#fbc2eb"],["#fad0c4","#ffd1ff"],["#ff8177","#b12a5b"],["#00c6ff","#0072ff"],["#f857a6","#ff5858"],["#4facfe","#00f2fe"],["#43e97b","#38f9d7"],["#fa709a","#fee140"],["#a8edea","#fed6e3"],["#d4fc79","#96e6a1"],["#667eea","#764ba2"]];
+var gradType="linear";
+var stops=[{color:"#4f8cff",pos:0},{color:"#a855f7",pos:100}];
+
+var presetList=[
+  ["linear-gradient(135deg,#667eea,#764ba2)","Purple Dream"],
+  ["linear-gradient(135deg,#f093fb,#f5576c)","Pink Blush"],
+  ["linear-gradient(135deg,#4facfe,#00f2fe)","Ocean Blue"],
+  ["linear-gradient(135deg,#43e97b,#38f9d7)","Mint Fresh"],
+  ["linear-gradient(135deg,#fa709a,#fee140)","Sunset"],
+  ["linear-gradient(135deg,#a18cd1,#fbc2eb)","Lavender"],
+  ["linear-gradient(135deg,#ff9a9e,#fecfef)","Soft Pink"],
+  ["linear-gradient(135deg,#ffecd2,#fcb69f)","Peach"],
+  ["linear-gradient(135deg,#ff8177,#b12a5b)","Cherry"],
+  ["linear-gradient(135deg,#00c6ff,#0072ff)","Sky"],
+  ["linear-gradient(135deg,#f857a6,#ff5858)","Hot Pink"],
+  ["linear-gradient(135deg,#d4fc79,#96e6a1)","Lime"],
+  ["linear-gradient(135deg,#a8edea,#fed6e3)","Pastel"],
+  ["linear-gradient(135deg,#5ee7df,#b490ca)","Teal Purple"],
+  ["linear-gradient(135deg,#c3cfe2,#f5f7fa)","Silver"],
+  ["linear-gradient(135deg,#0c3483,#a2b6df)","Navy"],
+  ["linear-gradient(135deg,#fc5c7d,#6a82fb)","Retro"],
+  ["linear-gradient(135deg,#11998e,#38ef7d)","Emerald"],
+  ["linear-gradient(135deg,#ee0979,#ff6a00)","Fire"],
+  ["linear-gradient(135deg,#7f7fd5,#86a8e7,#91eae4)","Triple"],
+  ["radial-gradient(circle,#ff9a9e,#fad0c4,#fad0c4)","Radial Blush"],
+  ["conic-gradient(from 0deg,#ff0000,#ff8800,#ffff00,#00ff00,#0088ff,#8800ff,#ff0000)","Rainbow"],
+  ["conic-gradient(from 0deg,#4f8cff,#a855f7,#4f8cff)","Conic Duo"],
+  ["repeating-linear-gradient(45deg,#606dbc,#606dbc 10px,#465298 10px,#465298 20px)","Stripes"],
+  ["linear-gradient(180deg,#0f0c29,#302b63,#24243e)","Midnight"],
+  ["linear-gradient(135deg,#f12711,#f5af19)","Orange Fire"],
+  ["linear-gradient(135deg,#c471f5,#fa71cd)","Neon"],
+  ["linear-gradient(135deg,#2b5876,#4e4376)","Deep Space"],
+  ["linear-gradient(135deg,#e8cbc0,#636fa4)","Dusty Rose"],
+  ["linear-gradient(135deg,#f7971e,#ffd200)","Gold"]
+];
+
+function renderStops(){
+  var html="";
+  stops.forEach(function(s,i){
+    html+='<div class="stop-row"><input type="color" value="'+s.color+'" onchange="stops['+i+'].color=this.value;gen()"><input type="range" min="0" max="100" value="'+s.pos+'" oninput="stops['+i+'].pos=+this.value;gen()"><span style="min-width:35px;font-size:.8rem">'+s.pos+'%</span>'+(stops.length>2?'<button onclick="stops.splice('+i+',1);renderStops();gen()">✕</button>':'')+'</div>';
+  });
+  document.getElementById("stops").innerHTML=html;
+}
+
+function addStop(){
+  var lastColor=stops[stops.length-1].color;
+  stops.push({color:randomColor(),pos:Math.min(100,stops[stops.length-1].pos+Math.round(100/(stops.length+1)))});
+  renderStops();gen();
+}
+
+function randomColor(){return"#"+Math.floor(Math.random()*16777215).toString(16).padStart(6,"0")}
+
+function setType(t,btn){
+  gradType=t;
+  document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active")});
+  btn.classList.add("active");
+  document.getElementById("linearOpts").style.display=(t==="linear"||t==="repeating-linear")?"flex":"none";
+  document.getElementById("radialOpts").style.display=t==="radial"?"flex":"none";
+  gen();
+}
+
 function gen(){
-  var c1=document.getElementById("c1").value,c2=document.getElementById("c2").value;
-  var useC3=document.getElementById("useC3").checked,c3=document.getElementById("c3").value;
-  var type=document.getElementById("type").value,deg=document.getElementById("deg").value;
-  document.getElementById("degVal").textContent=deg+"°";
-  var colors=c1+", "+c2+(useC3?", "+c3:"");
-  var css=type==="radial"?"radial-gradient(circle, "+colors+")":"linear-gradient("+deg+"deg, "+colors+")";
+  var colorStr=stops.map(function(s){return s.color+" "+s.pos+"%"}).join(", ");
+  var css="";
+  if(gradType==="linear"){
+    css="linear-gradient("+document.getElementById("deg").value+"deg, "+colorStr+")";
+  }else if(gradType==="radial"){
+    var shape=document.getElementById("radialShape").value;
+    var pos=document.getElementById("radialPos").value;
+    css="radial-gradient("+shape+" at "+pos+", "+colorStr+")";
+  }else if(gradType==="conic"){
+    css="conic-gradient(from "+document.getElementById("deg").value+"deg, "+colorStr+")";
+  }else{
+    css="repeating-linear-gradient("+document.getElementById("deg").value+"deg, "+colorStr+")";
+  }
   document.getElementById("preview").style.background=css;
   document.getElementById("code").textContent="background: "+css+";";
 }
-function setPreset(a,b){document.getElementById("c1").value=a;document.getElementById("c2").value=b;document.getElementById("useC3").checked=false;gen()}
+
+function copyCSS(){
+  navigator.clipboard.writeText(document.getElementById("code").textContent);
+  event.target.textContent="Copied!";setTimeout(function(){event.target.textContent="📋 Copy CSS"},1000);
+}
+
+function downloadImg(){
+  var c=document.createElement("canvas");c.width=1920;c.height=1080;
+  var ctx=c.getContext("2d");
+  var el=document.getElementById("preview");
+  var bg=getComputedStyle(el).backgroundImage;
+  // Draw gradient on canvas
+  var tempDiv=document.createElement("div");tempDiv.style.cssText="width:1920px;height:1080px;position:fixed;top:-9999px;background:"+bg;
+  document.body.appendChild(tempDiv);
+  // Use html2canvas approach - draw via CSS
+  ctx.fillStyle="#000";ctx.fillRect(0,0,1920,1080);
+  // Parse gradient and draw
+  var cssText=document.getElementById("code").textContent.replace("background: ","").replace(";","");
+  // Create gradient on canvas
+  if(gradType==="linear"||gradType==="repeating-linear"){
+    var angle=(+document.getElementById("deg").value)*Math.PI/180;
+    var x1=960-Math.cos(angle)*960,y1=540-Math.sin(angle)*540;
+    var x2=960+Math.cos(angle)*960,y2=540+Math.sin(angle)*540;
+    var grad=ctx.createLinearGradient(x1,y1,x2,y2);
+    stops.forEach(function(s){grad.addColorStop(s.pos/100,s.color)});
+    ctx.fillStyle=grad;ctx.fillRect(0,0,1920,1080);
+  }else if(gradType==="radial"){
+    var grad=ctx.createRadialGradient(960,540,0,960,540,960);
+    stops.forEach(function(s){grad.addColorStop(s.pos/100,s.color)});
+    ctx.fillStyle=grad;ctx.fillRect(0,0,1920,1080);
+  }else{
+    var grad=ctx.createConicGradient(0,960,540);
+    stops.forEach(function(s){grad.addColorStop(s.pos/100,s.color)});
+    ctx.fillStyle=grad;ctx.fillRect(0,0,1920,1080);
+  }
+  tempDiv.remove();
+  c.toBlob(function(b){download(b,"gradient.png")});
+}
+
+function randomGradient(){
+  var n=2+Math.floor(Math.random()*3);
+  stops=[];
+  for(var i=0;i<n;i++) stops.push({color:randomColor(),pos:Math.round(i*100/(n-1))});
+  document.getElementById("deg").value=Math.floor(Math.random()*360);
+  document.getElementById("degVal").textContent=document.getElementById("deg").value;
+  renderStops();gen();
+}
+
+function saveGradient(){
+  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  saved.unshift(document.getElementById("code").textContent);
+  if(saved.length>20)saved.length=20;
+  localStorage.setItem("savedGrads",JSON.stringify(saved));
+  renderSaved();
+}
+
+function renderSaved(){
+  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  if(!saved.length){document.getElementById("saved").style.display="none";return}
+  document.getElementById("saved").style.display="block";
+  document.getElementById("savedList").innerHTML=saved.map(function(s,i){
+    var bg=s.replace("background: ","").replace(";","");
+    return'<div class="preset-card" style="background:'+bg+'" onclick="loadSaved('+i+')" title="Click to load"></div>';
+  }).join("");
+}
+
+function loadSaved(i){
+  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  document.getElementById("preview").style.background=saved[i].replace("background: ","").replace(";","");
+  document.getElementById("code").textContent=saved[i];
+}
+
+function loadPreset(css){
+  document.getElementById("preview").style.background=css;
+  document.getElementById("code").textContent="background: "+css+";";
+}
+
+function copyAs(fmt){
+  var css=document.getElementById("code").textContent;
+  var val=css.replace("background: ","").replace(";","");
+  var out="";
+  if(fmt==="tailwind"){
+    out="/* Tailwind - use arbitrary value */\nclass=\"bg-["+val.replace(/\s+/g,"_")+"]\"";
+  }else if(fmt==="scss"){
+    out="$gradient: "+val+";\n.element { background: $gradient; }";
+  }else{
+    // Convert hex to rgba
+    out=css.replace(/#([0-9a-f]{6})/gi,function(m,h){
+      return"rgba("+parseInt(h.slice(0,2),16)+","+parseInt(h.slice(2,4),16)+","+parseInt(h.slice(4,6),16)+",1)";
+    });
+  }
+  document.getElementById("altCode").style.display="block";
+  document.getElementById("altCode").textContent=out;
+  navigator.clipboard.writeText(out);
+}
+
+// Init presets
 var ph=document.getElementById("presets");
-presetList.forEach(function(p){var d=document.createElement("div");d.style.cssText="height:60px;border-radius:8px;cursor:pointer;background:linear-gradient(135deg,"+p[0]+","+p[1]+")";d.onclick=function(){setPreset(p[0],p[1])};ph.appendChild(d)});
-gen();
+presetList.forEach(function(p){
+  var d=document.createElement("div");
+  d.className="preset-card";
+  d.style.background=p[0];
+  d.title=p[1];
+  d.onclick=function(){loadPreset(p[0])};
+  ph.appendChild(d);
+});
+
+renderStops();gen();renderSaved();
   </script>
 </body>
 </html>
