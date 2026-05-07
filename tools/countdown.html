@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Countdown Timer | ToolBox</title>
+  <meta name="description" content="Create countdown timers for events, deadlines, birthdays. Save multiple countdowns, share via URL. Free online countdown timer.">
+  <meta property="og:title" content="Event Countdown Timer — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Create and share event countdown timers">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/countdown">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Event Countdown Timer — FreeToolHubs">
+  <meta name="twitter:description" content="Create and share event countdown timers">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Event Countdown Timer","url":"https://freetoolhubs.com/tools/countdown","description":"Create countdown timers for events, deadlines, birthdays. Save multiple countdowns and share via URL.","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/countdown">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .countdown-display{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.5rem 0;text-align:center}
+    .countdown-display .unit{background:var(--card);padding:1.5rem .5rem;border-radius:12px;border:1px solid var(--border)}
+    .countdown-display .num{font-size:2.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .countdown-display .label{font-size:.8rem;color:var(--text2);margin-top:.3rem}
+    .saved-item{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1rem;background:var(--card);border-radius:10px;margin:.5rem 0;border:1px solid var(--border)}
+    .saved-item .name{font-weight:600}
+    .saved-item .meta{font-size:.8rem;color:var(--text2)}
+    .celebration{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+    .confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:fall 3s linear forwards}
+    @keyframes fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    @media(max-width:500px){.countdown-display .num{font-size:1.8rem}.countdown-display{gap:.5rem}}
+  </style>
+</head>
+<body>
+  <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ⏳ Event Countdown Timer</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section">
+      <h1>⏳ Event Countdown Timer</h1>
+      <p class="info">Create countdown timers for your events. Save multiple countdowns and share them via URL.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0">
+        <div><label style="font-size:.85rem;font-weight:600">Event Name</label><input type="text" id="eventName" placeholder="e.g. Birthday Party" style="width:100%;margin-top:.3rem"></div>
+        <div><label style="font-size:.85rem;font-weight:600">Target Date & Time</label><input type="datetime-local" id="eventDate" style="width:100%;margin-top:.3rem"></div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button onclick="startCountdown()">▶️ Start Countdown</button>
+        <button onclick="saveCountdown()" style="background:var(--card);color:var(--text)">💾 Save</button>
+        <button onclick="shareCountdown()" style="background:var(--card);color:var(--text)">🔗 Share</button>
+      </div>
+      <div id="activeCountdown" style="display:none">
+        <h2 id="activeTitle" style="text-align:center;margin-top:1.5rem"></h2>
+        <div class="countdown-display">
+          <div class="unit"><div class="num" id="days">0</div><div class="label">Days</div></div>
+          <div class="unit"><div class="num" id="hours">0</div><div class="label">Hours</div></div>
+          <div class="unit"><div class="num" id="minutes">0</div><div class="label">Minutes</div></div>
+          <div class="unit"><div class="num" id="seconds">0</div><div class="label">Seconds</div></div>
+        </div>
+      </div>
+      <div id="savedList" style="margin-top:1.5rem"></div>
+    </div>
+    <div style="min-height:90px">
+<h2>About This Tool</h2>
+<p>The Event Countdown Timer lets you track time remaining until important events. Whether it's a birthday, exam, product launch, or holiday — set up a countdown and watch it tick down in real time. Save multiple countdowns locally and share them with friends via a simple URL.</p>
+<h2>How to Use</h2>
+<ol style="margin-left:1.5rem;line-height:2">
+<li>Enter your event name and select the target date and time</li>
+<li>Click "Start Countdown" to see the live timer</li>
+<li>Click "Save" to store it in your browser for later</li>
+<li>Click "Share" to copy a shareable URL with the event details</li>
+</ol>
+<h2>Benefits of Using This Tool</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
+<li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
+<li><strong>Complete Privacy</strong> — All processing happens in your browser. Your data is never uploaded</li>
+<li><strong>Save Multiple Countdowns</strong> — Track several events at once using localStorage</li>
+<li><strong>Shareable</strong> — Generate a URL to share your countdown with anyone</li>
+<li><strong>Celebration Animation</strong> — Enjoy confetti when your countdown reaches zero</li>
+<li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
+</ul>
+<h2>Frequently Asked Questions</h2>
+<details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits.</p></details>
+<details><summary>Is my data safe?</summary><p>Absolutely. All countdowns are stored in your browser's localStorage. Nothing is sent to any server.</p></details>
+<details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, laptop, tablet, and mobile phone.</p></details>
+<details><summary>What happens when the countdown reaches zero?</summary><p>A celebration animation with confetti appears on screen to mark the event!</p></details>
+<details><summary>Can I share a countdown with someone?</summary><p>Yes! Click the Share button to copy a URL. When opened, it automatically loads the event name and date.</p></details>
+</div>
+  </div>
+  <footer>
+    <div style="max-width:900px;margin:0 auto;padding:1.5rem 1rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.8rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <strong>FreeToolHubs</strong>
+      </div>
+      <p style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.8rem">Free online tools that respect your privacy. 100% browser-based.</p>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text2)">© 2026 FreeToolHubs. All rights reserved. All processing happens in your browser.</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+let timer=null;
+function startCountdown(){
+  const name=document.getElementById('eventName').value.trim();
+  const date=document.getElementById('eventDate').value;
+  if(!name||!date){alert('Please enter event name and date');return}
+  runCountdown(name,new Date(date).getTime());
+}
+function runCountdown(name,target){
+  clearInterval(timer);
+  document.getElementById('activeCountdown').style.display='block';
+  document.getElementById('activeTitle').textContent=name;
+  function tick(){
+    const now=Date.now();
+    const diff=target-now;
+    if(diff<=0){
+      document.getElementById('days').textContent='0';
+      document.getElementById('hours').textContent='0';
+      document.getElementById('minutes').textContent='0';
+      document.getElementById('seconds').textContent='0';
+      clearInterval(timer);
+      celebrate();
+      return;
+    }
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor((diff%86400000)/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    document.getElementById('days').textContent=d;
+    document.getElementById('hours').textContent=h;
+    document.getElementById('minutes').textContent=m;
+    document.getElementById('seconds').textContent=s;
+  }
+  tick();
+  timer=setInterval(tick,1000);
+}
+function saveCountdown(){
+  const name=document.getElementById('eventName').value.trim();
+  const date=document.getElementById('eventDate').value;
+  if(!name||!date){alert('Please enter event name and date');return}
+  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
+  saved.push({name,date});
+  localStorage.setItem('countdowns',JSON.stringify(saved));
+  renderSaved();
+}
+function deleteCountdown(i){
+  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
+  saved.splice(i,1);
+  localStorage.setItem('countdowns',JSON.stringify(saved));
+  renderSaved();
+}
+function loadCountdown(i){
+  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
+  const c=saved[i];
+  document.getElementById('eventName').value=c.name;
+  document.getElementById('eventDate').value=c.date;
+  runCountdown(c.name,new Date(c.date).getTime());
+}
+function renderSaved(){
+  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
+  const el=document.getElementById('savedList');
+  if(!saved.length){el.innerHTML='';return}
+  el.innerHTML='<h3>💾 Saved Countdowns</h3>'+saved.map((c,i)=>'<div class="saved-item"><div><div class="name">'+c.name+'</div><div class="meta">'+new Date(c.date).toLocaleString()+'</div></div><div style="display:flex;gap:.3rem"><button onclick="loadCountdown('+i+')" style="padding:.3rem .6rem;font-size:.8rem">▶️</button><button onclick="deleteCountdown('+i+')" style="padding:.3rem .6rem;font-size:.8rem;background:var(--card);color:var(--text)">🗑️</button></div></div>').join('');
+}
+function shareCountdown(){
+  const name=document.getElementById('eventName').value.trim();
+  const date=document.getElementById('eventDate').value;
+  if(!name||!date){alert('Please enter event name and date');return}
+  const url=window.location.origin+window.location.pathname+'?name='+encodeURIComponent(name)+'&date='+encodeURIComponent(date);
+  navigator.clipboard.writeText(url).then(()=>alert('Link copied to clipboard!')).catch(()=>{prompt('Copy this link:',url)});
+}
+function celebrate(){
+  const container=document.createElement('div');
+  container.className='celebration';
+  document.body.appendChild(container);
+  const colors=['#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd'];
+  for(let i=0;i<80;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*100+'%';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay=Math.random()*2+'s';
+    c.style.width=(Math.random()*8+5)+'px';
+    c.style.height=(Math.random()*8+5)+'px';
+    container.appendChild(c);
+  }
+  setTimeout(()=>container.remove(),4000);
+}
+// Load from URL params
+const params=new URLSearchParams(window.location.search);
+if(params.get('name')&&params.get('date')){
+  document.getElementById('eventName').value=params.get('name');
+  document.getElementById('eventDate').value=params.get('date');
+  runCountdown(params.get('name'),new Date(params.get('date')).getTime());
+}
+renderSaved();
+  </script>
+</body>
+</html>
