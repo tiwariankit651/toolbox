@@ -17,11 +17,44 @@
     <div class="breadcrumb"><a href="../">Home</a> → 📈 Graph Plotter</div>
     <div class="tool-section">
       <h1>📈 Graph Plotter</h1>
-      <p class="info">Enter equations using x. Examples: x*x, Math.sin(x), 2*x+3</p>
-      <div class="row"><input type="text" id="eq1" value="x*x" placeholder="y = ..." oninput="plot()" style="flex:2"><input type="color" id="col1" value="#4f8cff" oninput="plot()" style="width:40px;height:35px;border:none"></div>
-      <div class="row"><input type="text" id="eq2" value="2*x+1" placeholder="y = ... (optional)" oninput="plot()" style="flex:2"><input type="color" id="col2" value="#f44336" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+      <p class="info">Enter equations using x (or t for polar/parametric). Examples: x*x, Math.sin(x), 2*x+3</p>
+      <!-- Mode selector -->
+      <div class="row" style="gap:8px;margin-bottom:.5rem">
+        <label><input type="radio" name="mode" value="cartesian" checked onchange="switchMode()"> Cartesian y=f(x)</label>
+        <label><input type="radio" name="mode" value="polar" onchange="switchMode()"> Polar r=f(θ)</label>
+        <label><input type="radio" name="mode" value="parametric" onchange="switchMode()"> Parametric</label>
+      </div>
+      <!-- Cartesian inputs -->
+      <div id="cartesianInputs">
+        <div class="row"><input type="text" id="eq1" value="x*x" placeholder="y = ..." oninput="plot()" style="flex:2"><input type="color" id="col1" value="#4f8cff" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+        <div class="row"><input type="text" id="eq2" value="2*x+1" placeholder="y = ... (optional)" oninput="plot()" style="flex:2"><input type="color" id="col2" value="#f44336" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+      </div>
+      <!-- Polar input -->
+      <div id="polarInputs" style="display:none">
+        <div class="row"><label>r(θ) =</label><input type="text" id="polarEq" value="Math.sin(3*t)" placeholder="r = f(t) where t=θ" oninput="plot()" style="flex:2"><input type="color" id="colPolar" value="#4f8cff" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+      </div>
+      <!-- Parametric inputs -->
+      <div id="parametricInputs" style="display:none">
+        <div class="row"><label>x(t) =</label><input type="text" id="paramX" value="Math.cos(t)*t" placeholder="x(t)" oninput="plot()" style="flex:2"></div>
+        <div class="row"><label>y(t) =</label><input type="text" id="paramY" value="Math.sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" value="#9c27b0" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+        <div class="row"><label>t range:</label><input type="number" id="tmin" value="0" style="width:60px" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:60px" oninput="plot()"></div>
+      </div>
+      <!-- Range and controls -->
       <div class="row"><label>X range:</label><input type="number" id="xmin" value="-10" style="width:60px" oninput="plot()"> to <input type="number" id="xmax" value="10" style="width:60px" oninput="plot()"></div>
-      <canvas id="graph" width="700" height="450" style="width:100%;background:#fff;border-radius:8px;border:1px solid var(--border);margin-top:.5rem"></canvas>
+      <div class="row"><label>Y range:</label><input type="number" id="ymin" value="-10" style="width:60px" oninput="plot()"> to <input type="number" id="ymax" value="10" style="width:60px" oninput="plot()"></div>
+      <div class="row" style="gap:6px">
+        <button class="btn btn-outline" onclick="zoom(0.5)">🔍+ Zoom In</button>
+        <button class="btn btn-outline" onclick="zoom(2)">🔍− Zoom Out</button>
+        <button class="btn btn-outline" onclick="pan(-2,0)">⬅ Pan</button>
+        <button class="btn btn-outline" onclick="pan(2,0)">➡ Pan</button>
+        <button class="btn btn-outline" onclick="pan(0,2)">⬆ Pan</button>
+        <button class="btn btn-outline" onclick="pan(0,-2)">⬇ Pan</button>
+        <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="gridToggle" checked onchange="plot()"> Grid</label>
+      </div>
+      <div style="position:relative">
+        <canvas id="graph" width="700" height="450" style="width:100%;background:#fff;border-radius:8px;border:1px solid var(--border);margin-top:.5rem"></canvas>
+        <div id="coordDisplay" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.9);padding:2px 8px;border-radius:4px;font-size:12px;font-family:monospace;pointer-events:none;display:none"></div>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:.8rem">
         <button class="btn btn-outline" onclick="setEq('Math.sin(x)','Math.cos(x)')">sin & cos</button>
         <button class="btn btn-outline" onclick="setEq('x*x','x*x*x')">x² & x³</button>
@@ -66,29 +99,89 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function setEq(a,b){document.getElementById("eq1").value=a;document.getElementById("eq2").value=b;plot()}
+function getMode(){return document.querySelector('input[name="mode"]:checked').value}
+function switchMode(){
+  var m=getMode();
+  document.getElementById("cartesianInputs").style.display=m==="cartesian"?"":"none";
+  document.getElementById("polarInputs").style.display=m==="polar"?"":"none";
+  document.getElementById("parametricInputs").style.display=m==="parametric"?"":"none";
+  plot();
+}
+function setEq(a,b){document.getElementById("eq1").value=a;document.getElementById("eq2").value=b;document.querySelector('input[name="mode"][value="cartesian"]').checked=true;switchMode()}
+function zoom(factor){
+  var fields=["xmin","xmax","ymin","ymax"];
+  fields.forEach(function(id){document.getElementById(id).value=Math.round(+document.getElementById(id).value*factor)});
+  plot();
+}
+function pan(dx,dy){
+  document.getElementById("xmin").value=+document.getElementById("xmin").value+dx;
+  document.getElementById("xmax").value=+document.getElementById("xmax").value+dx;
+  document.getElementById("ymin").value=+document.getElementById("ymin").value+dy;
+  document.getElementById("ymax").value=+document.getElementById("ymax").value+dy;
+  plot();
+}
 function plot(){
   var c=document.getElementById("graph"),ctx=c.getContext("2d"),W=c.width,H=c.height;
   var xmin=+document.getElementById("xmin").value||(-10),xmax=+document.getElementById("xmax").value||10;
+  var ymin=+document.getElementById("ymin").value||(-10),ymax=+document.getElementById("ymax").value||10;
   ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
-  var sx=W/(xmax-xmin),yRange=20,sy=H/yRange,ox=-xmin*sx,oy=H/2;
+  var sx=W/(xmax-xmin),sy=H/(ymax-ymin);
+  var ox=-xmin*sx,oy=H+ymin*sy;
+  var showGrid=document.getElementById("gridToggle").checked;
   // Grid
-  ctx.strokeStyle="#e0e0e0";ctx.lineWidth=0.5;
-  for(var gx=Math.ceil(xmin);gx<=xmax;gx++){var px=ox+gx*sx;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.fillStyle="#999";ctx.font="11px Arial";ctx.fillText(gx,px+2,oy+14)}
-  for(var gy=-10;gy<=10;gy++){var py=oy-gy*sy;if(py>0&&py<H){ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();if(gy!==0){ctx.fillStyle="#999";ctx.fillText(gy,ox+4,py-2)}}}
+  if(showGrid){
+    ctx.strokeStyle="#e0e0e0";ctx.lineWidth=0.5;ctx.font="11px Arial";ctx.fillStyle="#999";
+    for(var gx=Math.ceil(xmin);gx<=xmax;gx++){var px=ox+gx*sx;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.fillText(gx,px+2,oy+14)}
+    for(var gy=Math.ceil(ymin);gy<=ymax;gy++){var py=oy-gy*sy;if(py>0&&py<H){ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();if(gy!==0){ctx.fillStyle="#999";ctx.fillText(gy,ox+4,py-2)}}}
+  }
   // Axes
-  ctx.strokeStyle="#333";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();
-  // Plot equations
-  [["eq1","col1"],["eq2","col2"]].forEach(function(pair){
-    var expr=document.getElementById(pair[0]).value.trim();if(!expr)return;
-    ctx.strokeStyle=document.getElementById(pair[1]).value;ctx.lineWidth=2;ctx.beginPath();var started=false;
-    for(var px=0;px<W;px++){
-      var x=xmin+px/sx;
-      try{var y=eval(expr);if(isFinite(y)){var py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else if(py>-100&&py<H+100){ctx.lineTo(px,py)}}}catch(e){}
+  ctx.strokeStyle="#333";ctx.lineWidth=1.5;
+  if(oy>=0&&oy<=H){ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke()}
+  if(ox>=0&&ox<=W){ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke()}
+  var mode=getMode();
+  if(mode==="cartesian"){
+    [["eq1","col1"],["eq2","col2"]].forEach(function(pair){
+      var expr=document.getElementById(pair[0]).value.trim();if(!expr)return;
+      ctx.strokeStyle=document.getElementById(pair[1]).value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+      for(var px=0;px<W;px++){
+        var x=xmin+px/sx;
+        try{var y=eval(expr);if(isFinite(y)){var py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else if(py>-100&&py<H+100){ctx.lineTo(px,py)}else{started=false}}}catch(e){}
+      }
+      ctx.stroke();
+    });
+  }else if(mode==="polar"){
+    var expr=document.getElementById("polarEq").value.trim();if(!expr)return;
+    ctx.strokeStyle=document.getElementById("colPolar").value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+    for(var i=0;i<=1000;i++){
+      var t=i/1000*2*Math.PI*4;
+      try{var r=eval(expr);if(isFinite(r)){var x=r*Math.cos(t),y=r*Math.sin(t);var px=ox+x*sx,py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else{ctx.lineTo(px,py)}}}catch(e){}
     }
     ctx.stroke();
-  });
+  }else if(mode==="parametric"){
+    var exprX=document.getElementById("paramX").value.trim(),exprY=document.getElementById("paramY").value.trim();
+    if(!exprX||!exprY)return;
+    var tmin=+document.getElementById("tmin").value||0,tmax=+document.getElementById("tmax").value||20;
+    ctx.strokeStyle=document.getElementById("colParam").value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+    for(var i=0;i<=1000;i++){
+      var t=tmin+(tmax-tmin)*i/1000;
+      try{var x=eval(exprX),y=eval(exprY);if(isFinite(x)&&isFinite(y)){var px=ox+x*sx,py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else{ctx.lineTo(px,py)}}}catch(e){}
+    }
+    ctx.stroke();
+  }
 }
+// Hover coordinates
+(function(){
+  var c=document.getElementById("graph"),disp=document.getElementById("coordDisplay");
+  c.addEventListener("mousemove",function(e){
+    var rect=c.getBoundingClientRect();
+    var mx=(e.clientX-rect.left)*(c.width/rect.width),my=(e.clientY-rect.top)*(c.height/rect.height);
+    var xmin=+document.getElementById("xmin").value||(-10),xmax=+document.getElementById("xmax").value||10;
+    var ymin=+document.getElementById("ymin").value||(-10),ymax=+document.getElementById("ymax").value||10;
+    var x=xmin+mx/(c.width/(xmax-xmin)),y=ymax-my/(c.height/(ymax-ymin));
+    disp.style.display="block";disp.textContent="x: "+x.toFixed(2)+"  y: "+y.toFixed(2);
+  });
+  c.addEventListener("mouseleave",function(){disp.style.display="none"});
+})();
 plot();
   </script>
 </body>

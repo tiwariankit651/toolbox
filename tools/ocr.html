@@ -36,14 +36,15 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>📷 Image to Text (OCR)</h1>
-      <p class="info">Upload an image with text — handwritten notes, screenshots, documents — and extract editable text.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here or click to browse<input type="file" id="inp" accept="image/*"></div>
+      <p class="info">Upload one or more images with text — handwritten notes, screenshots, documents — and extract editable text.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here or click to browse<input type="file" id="inp" accept="image/*" multiple></div>
       <div class="row">
         <label>Language:</label>
         <select id="lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="spa">Spanish</option><option value="fra">French</option><option value="deu">German</option></select>
       </div>
       <button class="btn" onclick="doOCR()" id="goBtn" disabled>Extract Text</button>
       <div id="preview" class="preview-area"></div>
+      <div id="progress" style="display:none"><div style="background:var(--bg2);border-radius:8px;overflow:hidden;height:22px;margin:.5rem 0"><div id="progBar" style="height:100%;background:linear-gradient(90deg,#4f8cff,#a855f7);width:0%;transition:width .3s;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff"></div></div><p class="info" id="progText"></p></div>
       <div id="result"></div>
     </div>
     <div style="min-height:90px">
@@ -83,21 +84,69 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-let file;
+let files=[];
 setupDrop("drop","inp",f=>{
-  file=f[0];document.getElementById("goBtn").disabled=false;
-  document.getElementById("preview").innerHTML="<img src='"+URL.createObjectURL(file)+"'>";
+  files=Array.from(f);document.getElementById("goBtn").disabled=false;
+  document.getElementById("preview").innerHTML=files.map(f=>"<img src='"+URL.createObjectURL(f)+"' style='max-height:120px;margin:.25rem'>").join("");
 });
+function detectTable(text){
+  const lines=text.split("\n").filter(l=>l.trim());
+  const tabular=lines.filter(l=>/\t/.test(l)||/ {2,}/.test(l));
+  if(tabular.length<2)return null;
+  const rows=tabular.map(l=>l.split(/\t| {2,}/).map(c=>c.trim()).filter(Boolean));
+  if(rows.length<2||rows[0].length<2)return null;
+  const cols=rows[0].length;
+  const consistent=rows.filter(r=>r.length===cols);
+  if(consistent.length<2)return null;
+  const widths=Array.from({length:cols},(_,i)=>Math.max(...consistent.map(r=>(r[i]||"").length)));
+  const sep=widths.map(w=>"-".repeat(w+2)).join("+");
+  return consistent.map((r,ri)=>{
+    const row="| "+r.map((c,ci)=>c.padEnd(widths[ci])).join(" | ")+" |";
+    return ri===0?row+"\n+"+sep+"+":row;
+  }).join("\n");
+}
 async function doOCR(){
-  if(!file)return;
-  document.getElementById("goBtn").disabled=true;
-  document.getElementById("result").innerHTML="<p class='info'>⏳ Extracting text... This may take 10-30 seconds.</p>";
+  if(!files.length)return;
+  const goBtn=document.getElementById("goBtn");
+  const progDiv=document.getElementById("progress");
+  const progBar=document.getElementById("progBar");
+  const progText=document.getElementById("progText");
+  const resultDiv=document.getElementById("result");
+  goBtn.disabled=true;
+  progDiv.style.display="block";
+  resultDiv.innerHTML="";
   const lang=document.getElementById("lang").value;
-  const worker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text')document.getElementById("result").innerHTML="<p class='info'>⏳ "+Math.round(m.progress*100)+"% done...</p>"}});
-  const{data}=await worker.recognize(file);
+  const total=files.length;
+  let combined="";
+  const worker=await Tesseract.createWorker(lang,1,{logger:m=>{
+    if(m.status==='recognizing text'){
+      const pageProgress=m.progress;
+      const overall=((currentPage+pageProgress)/total)*100;
+      progBar.style.width=overall+"%";
+      progBar.textContent=Math.round(overall)+"%";
+    }
+  }});
+  let currentPage=0;
+  for(let i=0;i<total;i++){
+    currentPage=i;
+    progText.textContent="⏳ Processing image "+(i+1)+" of "+total+"...";
+    const{data}=await worker.recognize(files[i]);
+    combined+=(i>0?"\n\n--- Page "+(i+1)+" ---\n\n":"")+data.text;
+  }
   await worker.terminate();
-  document.getElementById("result").innerHTML="<p class='info'>✅ Text extracted ("+data.text.split(/\s+/).length+" words)</p><textarea style='min-height:250px'>"+data.text+"</textarea><div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.querySelector(\"#result textarea\").value)'>📋 Copy</button><button class='btn' onclick='download(new Blob([document.querySelector(\"#result textarea\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
-  document.getElementById("goBtn").disabled=false;
+  progDiv.style.display="none";
+  const table=detectTable(combined);
+  let tableHtml=table?"<details style='margin-top:.5rem'><summary>📊 Detected Table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";
+  const words=combined.split(/\s+/).filter(Boolean).length;
+  resultDiv.innerHTML="<p class='info'>✅ Text extracted ("+words+" words, "+total+" image"+(total>1?"s":"")+")</p><textarea style='min-height:250px'>"+combined.replace(/</g,"&lt;")+"</textarea>"+tableHtml+"<div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.querySelector(\"#result textarea\").value)'>📋 Copy</button><button class='btn btn-outline' onclick='copyFormatted()'>📝 Copy Formatted</button><button class='btn' onclick='download(new Blob([document.querySelector(\"#result textarea\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
+  goBtn.disabled=false;
+}
+function copyFormatted(){
+  const text=document.querySelector("#result textarea").value;
+  const html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>");
+  const blob=new Blob([html],{type:"text/html"});
+  const plain=new Blob([text],{type:"text/plain"});
+  navigator.clipboard.write([new ClipboardItem({"text/html":blob,"text/plain":plain})]);
 }
   </script>
 </body>
