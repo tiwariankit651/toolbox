@@ -35,16 +35,47 @@
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🖼️ Compress Images Online</div>
     <div style="min-height:90px"></div>
-    <div class="tool-section"><h1>🖼️ Compress Images Online</h1><p class="info">Reduce image file size up to 90%. Adjust quality slider for best results.</p>
+    <div class="tool-section"><h1>🖼️ Compress & Resize Images Online</h1><p class="info">Reduce image file size, resize for exams/government forms, and enhance quality. All in one tool.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
+
+      <h3 style="margin:1rem 0 .5rem">📐 Exam & Government Presets</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem">
+        <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">SSC Photo (3.5x4.5cm)</button>
+        <button class="btn btn-outline" onclick="setPreset(150,200,50)" style="font-size:.8rem">SSC Signature (150x200, &lt;50KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">UPSC Photo (200x230)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,30)" style="font-size:.8rem">UPSC Signature (140x60)</button>
+        <button class="btn btn-outline" onclick="setPreset(200,230,50)" style="font-size:.8rem">IBPS Photo (200x230)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,20)" style="font-size:.8rem">IBPS Signature (140x60)</button>
+        <button class="btn btn-outline" onclick="setPreset(600,800,100)" style="font-size:.8rem">Passport Photo (600x800)</button>
+        <button class="btn btn-outline" onclick="setPreset(400,400,200)" style="font-size:.8rem">Aadhar Photo (400x400)</button>
+        <button class="btn btn-outline" onclick="setPreset(0,0,100)" style="font-size:.8rem">Under 100KB</button>
+        <button class="btn btn-outline" onclick="setPreset(0,0,50)" style="font-size:.8rem">Under 50KB</button>
+        <button class="btn btn-outline" onclick="setPreset(0,0,20)" style="font-size:.8rem">Under 20KB</button>
+      </div>
+
+      <div id="presetInfo" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin-bottom:.8rem">
+        <p class="info" id="presetText"></p>
+      </div>
+
+      <h3 style="margin:.5rem 0 .3rem">⚙️ Manual Controls</h3>
       <div class="row"><label>Quality: <strong id="qv">70</strong>%</label><input type="range" id="qual" min="5" max="100" value="70" oninput="document.getElementById('qv').textContent=this.value;updateEstimate()" style="flex:3"><span id="estimate" class="info" style="min-width:100px;text-align:right"></span></div>
-      <div class="row"><label>Output:</label><select id="outFmt"><option value="image/jpeg">JPG (smaller)</option><option value="image/png">PNG (lossless)</option><option value="image/webp">WebP (best)</option></select></div>
-      <button class="btn" onclick="compressAll()" id="goBtn" disabled style="width:100%">Compress All Images</button>
+      <div class="row" style="flex-wrap:wrap;gap:.5rem">
+        <div><label>Output:</label><select id="outFmt"><option value="image/jpeg">JPG (smaller)</option><option value="image/png">PNG (lossless)</option><option value="image/webp">WebP (best)</option></select></div>
+        <div><label>Max Width (px):</label><input type="number" id="maxW" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
+        <div><label>Max Height (px):</label><input type="number" id="maxH" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
+        <div><label>Target Size (KB):</label><input type="number" id="targetKB" value="0" min="0" placeholder="0 = no limit" style="width:90px"></div>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <label><input type="checkbox" id="enhance"> ✨ Enhance Quality (sharpen + contrast boost)</label>
+      </div>
+      <button class="btn" onclick="compressAll()" id="goBtn" disabled style="width:100%;margin-top:.5rem">Compress All Images</button>
       <div id="result" class="preview-area"></div>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How much can images be compressed?</summary><p>Typically 50-90% size reduction depending on the quality setting. A quality of 70% gives great results for most images.</p></details>
-        <details><summary>Does it reduce image quality?</summary><p>Slightly, but at 70-80% quality the difference is invisible to the human eye.</p></details>
+        <details><summary>Does it reduce image quality?</summary><p>Slightly, but at 70-80% quality the difference is invisible to the human eye. Enable "Enhance Quality" to sharpen before compressing.</p></details>
         <details><summary>What formats are supported?</summary><p>JPG, PNG, WebP, BMP, GIF — any image your browser can display.</p></details>
+        <details><summary>How to compress for SSC/UPSC/IBPS?</summary><p>Click the preset button for your exam. It auto-sets the correct dimensions and target file size as per official requirements.</p></details>
+        <details><summary>What does Enhance Quality do?</summary><p>It applies sharpening and slight contrast boost to make blurry/low-quality photos look clearer before compressing. Great for old scanned photos.</p></details>
       </div></div>
     <div style="min-height:90px">
 <h2>Frequently Asked Questions</h2>
@@ -79,16 +110,84 @@
   <script src="../js/common.js"></script>
   <script>let files=[],compressedBlobs=[];
 function updateEstimate(){var q=+document.getElementById("qual").value;var est=q<30?"~90% smaller":q<50?"~70% smaller":q<70?"~50% smaller":q<85?"~30% smaller":"~10% smaller";document.getElementById("estimate").textContent=est}
+function setPreset(w,h,maxKB){
+  document.getElementById("maxW").value=w||0;
+  document.getElementById("maxH").value=h||0;
+  document.getElementById("targetKB").value=maxKB||0;
+  document.getElementById("outFmt").value="image/jpeg";
+  var info="";
+  if(w&&h)info="Resize to "+w+"x"+h+"px";
+  if(maxKB)info+=(info?" | ":"")+"Target: under "+maxKB+"KB";
+  document.getElementById("presetInfo").style.display="block";
+  document.getElementById("presetText").textContent="✅ Preset applied: "+info;
+}
 setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(f=>f.name+" ("+formatSize(f.size)+")").join(", ")+"</p>";updateEstimate()});
-async function compressAll(){if(!files.length)return;var qual=document.getElementById("qual").value/100;var fmt=document.getElementById("outFmt").value;var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":"jpg";var html="";var totalOrig=0,totalComp=0;compressedBlobs=[];
-for(var i=0;i<files.length;i++){var file=files[i];var img=await loadImage(file);var c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);
-var blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,qual)});
-var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
-var outName='compressed_'+file.name.replace(/\.[^.]+$/,"."+ext);
-compressedBlobs.push({blob:blob,name:outName});
-window["_cb"+i]=blob;
-var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
-html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><div style="display:flex;gap:.3rem;align-items:center"><img src="'+origUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c" title="Original"><span style="font-size:.7rem">→</span><img src="'+compUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60" title="Compressed"></div><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller)</span></div><button class="btn" onclick="download(window._cb'+i+',\''+outName+'\')">💾</button></div>';}
+
+function enhanceImage(ctx,w,h){
+  // Sharpen using unsharp mask
+  var imageData=ctx.getImageData(0,0,w,h);var d=imageData.data;
+  var c2=document.createElement("canvas");c2.width=w;c2.height=h;
+  var ctx2=c2.getContext("2d");ctx2.filter="blur(1px)";ctx2.drawImage(ctx.canvas,0,0);
+  var blurred=ctx2.getImageData(0,0,w,h).data;
+  var amt=0.8;
+  for(var i=0;i<d.length;i+=4){
+    d[i]=Math.min(255,Math.max(0,d[i]+amt*(d[i]-blurred[i])));
+    d[i+1]=Math.min(255,Math.max(0,d[i+1]+amt*(d[i+1]-blurred[i+1])));
+    d[i+2]=Math.min(255,Math.max(0,d[i+2]+amt*(d[i+2]-blurred[i+2])));
+  }
+  // Slight contrast boost
+  var factor=1.1;
+  for(var i=0;i<d.length;i+=4){
+    d[i]=Math.min(255,Math.max(0,factor*(d[i]-128)+128));
+    d[i+1]=Math.min(255,Math.max(0,factor*(d[i+1]-128)+128));
+    d[i+2]=Math.min(255,Math.max(0,factor*(d[i+2]-128)+128));
+  }
+  ctx.putImageData(imageData,0,0);
+}
+
+async function compressAll(){if(!files.length)return;
+var qual=document.getElementById("qual").value/100;
+var fmt=document.getElementById("outFmt").value;
+var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":"jpg";
+var maxW=+document.getElementById("maxW").value;
+var maxH=+document.getElementById("maxH").value;
+var targetKB=+document.getElementById("targetKB").value;
+var doEnhance=document.getElementById("enhance").checked;
+var html="";var totalOrig=0,totalComp=0;compressedBlobs=[];
+
+for(var i=0;i<files.length;i++){
+  var file=files[i];var img=await loadImage(file);
+  var w=img.width,h=img.height;
+  // Resize if needed
+  if(maxW>0&&maxH>0){w=maxW;h=maxH}
+  else if(maxW>0&&img.width>maxW){h=Math.round(img.height*(maxW/img.width));w=maxW}
+  else if(maxH>0&&img.height>maxH){w=Math.round(img.width*(maxH/img.height));h=maxH}
+  var c=document.createElement("canvas");c.width=w;c.height=h;
+  var ctx=c.getContext("2d");
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  ctx.drawImage(img,0,0,w,h);
+  // Enhance if checked
+  if(doEnhance)enhanceImage(ctx,w,h);
+  // Compress - if target size set, iteratively reduce quality
+  var blob;
+  if(targetKB>0){
+    var q=0.92;
+    for(var attempt=0;attempt<10;attempt++){
+      blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,q)});
+      if(blob.size<=targetKB*1024||q<=0.1)break;
+      q-=0.1;
+    }
+  }else{
+    blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,qual)});
+  }
+  var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
+  var outName='compressed_'+file.name.replace(/\.[^.]+$/,"."+ext);
+  compressedBlobs.push({blob:blob,name:outName});
+  window["_cb"+i]=blob;
+  var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
+  var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"✅":"⚠️ Could not reach target"):"";
+  html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><div style="display:flex;gap:.3rem;align-items:center"><img src="'+origUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c" title="Original"><span style="font-size:.7rem">→</span><img src="'+compUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60" title="Compressed"></div><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller) '+w+'x'+h+'px</span>'+(sizeOk?'<br><span style="font-size:.8rem">'+sizeOk+'</span>':'')+'</div><button class="btn" onclick="download(window._cb'+i+',\''+outName+'\')">💾</button></div>';
+}
 var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
 html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center"><strong>Total: '+formatSize(totalOrig)+' → '+formatSize(totalComp)+' ('+totalSaved+'% saved)</strong>'+(compressedBlobs.length>1?'<br><button class="btn" style="margin-top:.5rem" onclick="downloadZip()">📦 Download All as ZIP</button>':'')+'</div>'+html;
 document.getElementById("result").innerHTML=html}
