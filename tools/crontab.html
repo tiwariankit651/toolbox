@@ -16,6 +16,9 @@
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → Crontab Generator</div>
     <div class="tool-section"><h1>⏰ Crontab Generator</h1><p class="info">Build cron expressions visually. See human-readable description.</p>
+<h3>Natural Language Input</h3>
+<div class="row"><input type="text" id="nlInput" placeholder="e.g. every 5 minutes, daily at 3pm, hourly, weekly monday" style="flex:1"><button class="btn" onclick="parseNL()">Convert to Cron</button></div>
+<h3 style="margin-top:1rem">Cron Fields</h3>
 <div class="row" style="flex-wrap:wrap">
 <div><label>Minute (0-59)</label><input type="text" id="min" value="0" style="width:80px" oninput="gen()"></div>
 <div><label>Hour (0-23)</label><input type="text" id="hr" value="12" style="width:80px" oninput="gen()"></div>
@@ -25,17 +28,22 @@
 </div>
 <div id="expr" style="background:var(--card);padding:1rem;border-radius:10px;margin:1rem 0;font-family:monospace;font-size:1.3rem;text-align:center"></div>
 <div id="desc" style="text-align:center;margin-bottom:1rem" class="info"></div>
-<h3>Quick Presets</h3>
+<h3>Common Presets</h3>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0">
-<button class="btn btn-outline" onclick="set('0','*','*','*','*')">Every hour</button>
+<button class="btn btn-outline" onclick="set('*','*','*','*','*')">Every minute</button>
+<button class="btn btn-outline" onclick="set('*/5','*','*','*','*')">Every 5 min</button>
+<button class="btn btn-outline" onclick="set('0','*','*','*','*')">Hourly</button>
 <button class="btn btn-outline" onclick="set('0','0','*','*','*')">Daily midnight</button>
 <button class="btn btn-outline" onclick="set('0','9','*','*','1-5')">Weekdays 9 AM</button>
-<button class="btn btn-outline" onclick="set('*/5','*','*','*','*')">Every 5 min</button>
-<button class="btn btn-outline" onclick="set('*/15','*','*','*','*')">Every 15 min</button>
+<button class="btn btn-outline" onclick="set('0','0','*','*','1')">Weekly Monday</button>
 <button class="btn btn-outline" onclick="set('0','0','1','*','*')">Monthly 1st</button>
+<button class="btn btn-outline" onclick="set('*/15','*','*','*','*')">Every 15 min</button>
 <button class="btn btn-outline" onclick="set('0','0','*','*','0')">Every Sunday</button>
 <button class="btn btn-outline" onclick="set('0','0','1','1','*')">Yearly Jan 1</button>
 </div>
+<h3 style="margin-top:1rem">📅 Next 5 Execution Times</h3>
+<div id="schedule" style="background:var(--card);padding:1rem;border-radius:8px;font-family:monospace;font-size:.9rem"></div>
+<p class="info" style="margin-top:.5rem;font-size:.8rem">⚠️ Times shown are in your local timezone (<span id="tzName"></span>). Cron jobs on servers typically run in the server's configured timezone (often UTC).</p>
 <div class="row" style="margin-top:.5rem"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('expr').textContent)">📋 Copy Expression</button></div></div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Build cron expressions visually without memorizing the complex syntax. Set minute, hour, day of month, month, and day of week fields using simple inputs. See the generated cron expression and a human-readable description of when it will run. Includes 8 quick presets for common schedules (every hour, daily midnight, weekdays 9 AM, every 5 minutes, etc.). Essential for system administrators, DevOps engineers, and backend developers who need to schedule automated tasks on Linux servers.</p>
 <h2>Benefits of Using This Tool</h2>
@@ -70,8 +78,12 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function set(mi,hr,dom,mon,dow){document.getElementById("min").value=mi;document.getElementById("hr").value=hr;document.getElementById("dom").value=dom;document.getElementById("mon").value=mon;document.getElementById("dow").value=dow;gen()}
-function gen(){var mi=document.getElementById("min").value,hr=document.getElementById("hr").value,dom=document.getElementById("dom").value,mon=document.getElementById("mon").value,dow=document.getElementById("dow").value;var expr=mi+" "+hr+" "+dom+" "+mon+" "+dow;document.getElementById("expr").textContent=expr;var desc="Runs ";if(mi.indexOf("/")>-1)desc+="every "+mi.split("/")[1]+" minutes";else if(mi==="*")desc+="every minute";else desc+="at minute "+mi;if(hr!=="*")desc+=", at hour "+hr;if(dom!=="*")desc+=", on day "+dom;if(mon!=="*")desc+=", in month "+mon;if(dow!=="*"){var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];desc+=dow.indexOf("-")>-1?", "+dow.replace(/0/g,"Sun").replace(/1/g,"Mon").replace(/2/g,"Tue").replace(/3/g,"Wed").replace(/4/g,"Thu").replace(/5/g,"Fri").replace(/6/g,"Sat"):", on "+days[+dow]}document.getElementById("desc").textContent=desc}
+  <script>document.getElementById("tzName").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone;
+function set(mi,hr,dom,mon,dow){document.getElementById("min").value=mi;document.getElementById("hr").value=hr;document.getElementById("dom").value=dom;document.getElementById("mon").value=mon;document.getElementById("dow").value=dow;gen()}
+function gen(){var mi=document.getElementById("min").value,hr=document.getElementById("hr").value,dom=document.getElementById("dom").value,mon=document.getElementById("mon").value,dow=document.getElementById("dow").value;var expr=mi+" "+hr+" "+dom+" "+mon+" "+dow;document.getElementById("expr").textContent=expr;var desc="Runs ";if(mi.indexOf("/")>-1)desc+="every "+mi.split("/")[1]+" minutes";else if(mi==="*")desc+="every minute";else desc+="at minute "+mi;if(hr!=="*")desc+=", at hour "+hr;if(dom!=="*")desc+=", on day "+dom;if(mon!=="*")desc+=", in month "+mon;if(dow!=="*"){var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];desc+=dow.indexOf("-")>-1?", "+dow.replace(/0/g,"Sun").replace(/1/g,"Mon").replace(/2/g,"Tue").replace(/3/g,"Wed").replace(/4/g,"Thu").replace(/5/g,"Fri").replace(/6/g,"Sat"):", on "+days[+dow]}document.getElementById("desc").textContent=desc;showNext5()}
+function showNext5(){var mi=document.getElementById("min").value,hr=document.getElementById("hr").value,dom=document.getElementById("dom").value,mon=document.getElementById("mon").value,dow=document.getElementById("dow").value;var times=[],d=new Date();d.setSeconds(0);d.setMilliseconds(0);d.setMinutes(d.getMinutes()+1);for(var i=0;i<1000&&times.length<5;i++){if(matchField(d.getMinutes(),mi)&&matchField(d.getHours(),hr)&&matchField(d.getDate(),dom)&&matchField(d.getMonth()+1,mon)&&matchField(d.getDay(),dow)){times.push(new Date(d))}d.setMinutes(d.getMinutes()+1)}document.getElementById("schedule").innerHTML=times.length?times.map(function(t){return"<div>▸ "+t.toLocaleString()+"</div>"}).join(""):"<div>Could not compute next runs</div>"}
+function matchField(val,field){if(field==="*")return true;if(field.indexOf("/")>-1){var step=parseInt(field.split("/")[1]);return val%step===0}if(field.indexOf("-")>-1){var parts=field.split("-");return val>=parseInt(parts[0])&&val<=parseInt(parts[1])}if(field.indexOf(",")>-1){return field.split(",").map(Number).indexOf(val)>-1}return parseInt(field)===val}
+function parseNL(){var input=document.getElementById("nlInput").value.toLowerCase().trim();if(!input)return;var m;if(m=input.match(/every (\d+) min/)){set("*/"+m[1],"*","*","*","*")}else if(m=input.match(/every minute/)){set("*","*","*","*","*")}else if(m=input.match(/every (\d+) hour/)){set("0","*/"+m[1],"*","*","*")}else if(m=input.match(/hourly/)){set("0","*","*","*","*")}else if(m=input.match(/daily at (\d+)(am|pm)?/)){var h=parseInt(m[1]);if(m[2]==="pm"&&h<12)h+=12;if(m[2]==="am"&&h===12)h=0;set("0",String(h),"*","*","*")}else if(m=input.match(/daily/)){set("0","0","*","*","*")}else if(m=input.match(/weekly (sun|mon|tue|wed|thu|fri|sat)/)){var dayMap={sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};set("0","0","*","*",String(dayMap[m[1]]))}else if(m=input.match(/weekly monday/)){set("0","0","*","*","1")}else if(m=input.match(/weekly/)){set("0","0","*","*","0")}else if(m=input.match(/monthly/)){set("0","0","1","*","*")}else if(m=input.match(/yearly|annually/)){set("0","0","1","1","*")}else if(m=input.match(/midnight/)){set("0","0","*","*","*")}else if(m=input.match(/noon/)){set("0","12","*","*","*")}else{document.getElementById("desc").textContent="Could not parse. Try: every 5 minutes, daily at 3pm, hourly, weekly monday"}}
 gen()</script>
 </body>
 </html>

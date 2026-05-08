@@ -15,11 +15,73 @@
   <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → Caption Spacer</div>
-    <div class="tool-section"><h1>📱 Instagram Caption Spacer</h1><p class="info">Type your caption with line breaks. Copy the formatted text and paste in Instagram.</p>
-<textarea id="input" rows="8" placeholder="Line 1&#10;&#10;Line 2&#10;&#10;Line 3&#10;&#10;(Empty lines will become clean breaks)"></textarea>
-<div class="row" style="margin:.5rem 0"><button class="btn" onclick="format()" style="flex:1">✨ Format Caption</button></div>
-<textarea id="output" rows="8" placeholder="Formatted caption will appear here..." readonly></textarea>
-<div class="row"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('output').value);this.textContent='Copied!';setTimeout(()=>this.textContent='📋 Copy',1000)">📋 Copy</button><span id="charCount" class="info"></span></div></div>
+    <div class="tool-section"><h1>📱 Instagram Caption Spacer & Toolkit</h1><p class="info">Format captions, generate hashtags, format bios, and preview your posts.</p>
+
+<style>
+.tabs{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem}.tab-btn{padding:.5rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--bg2);cursor:pointer;font-size:.85rem}.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}.tab-content{display:none}.tab-content.active{display:block}.char-limits{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.5rem;margin:1rem 0}.char-limit-card{padding:.6rem;border-radius:8px;background:var(--bg2);border:1px solid var(--border);text-align:center;font-size:.8rem}.char-limit-card strong{display:block;font-size:1.1rem;margin-bottom:.2rem}.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;margin:.5rem 0;max-height:160px;overflow-y:auto}.emoji-grid button{font-size:1.3rem;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);cursor:pointer}.emoji-grid button:hover{background:var(--accent);transform:scale(1.2)}.preview-frame{border:1px solid var(--border);border-radius:12px;max-width:400px;margin:1rem auto;overflow:hidden;background:#fff;color:#000;font-family:-apple-system,BlinkMacSystemFont,sans-serif}.preview-header{display:flex;align-items:center;gap:.5rem;padding:10px 12px;border-bottom:1px solid #eee}.preview-avatar{width:32px;height:32px;border-radius:50%;background:#ddd}.preview-body{padding:10px 12px;font-size:14px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto}.hashtag-list{display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0}.hashtag-list span{background:var(--bg2);border:1px solid var(--border);padding:2px 8px;border-radius:12px;font-size:.82rem;cursor:pointer}.hashtag-list span:hover{background:var(--accent);color:#fff}.sep-options label{margin-right:1rem;font-size:.85rem;cursor:pointer}
+</style>
+
+<!-- Platform Character Limits -->
+<div class="char-limits">
+<div class="char-limit-card"><strong>150</strong>Instagram Bio</div>
+<div class="char-limit-card"><strong>2,200</strong>Instagram Caption</div>
+<div class="char-limit-card"><strong>280</strong>Twitter/X</div>
+<div class="char-limit-card"><strong>3,000</strong>LinkedIn Post</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+<button class="tab-btn active" onclick="switchTab('spacer')">✨ Caption Spacer</button>
+<button class="tab-btn" onclick="switchTab('bio')">👤 Bio Formatter</button>
+<button class="tab-btn" onclick="switchTab('hashtags')">🏷️ Hashtags</button>
+<button class="tab-btn" onclick="switchTab('preview')">👁️ Preview</button>
+</div>
+
+<!-- Caption Spacer Tab -->
+<div id="tab-spacer" class="tab-content active">
+<textarea id="input" rows="6" placeholder="Line 1&#10;&#10;Line 2&#10;&#10;Line 3&#10;&#10;(Empty lines will become clean breaks)"></textarea>
+<div class="sep-options" style="margin:.5rem 0">
+<strong>Separator style:</strong>
+<label><input type="radio" name="sep" value="invis" checked> Invisible</label>
+<label><input type="radio" name="sep" value="dot"> Dot (·)</label>
+<label><input type="radio" name="sep" value="dash"> Dash (—)</label>
+<label><input type="radio" name="sep" value="emoji"> Emoji (⠀✦⠀)</label>
+</div>
+<div class="row" style="margin:.5rem 0"><button class="btn" onclick="formatCaption()" style="flex:1">✨ Format Caption</button></div>
+<textarea id="output" rows="6" placeholder="Formatted caption will appear here..." readonly></textarea>
+<div class="row"><button class="btn" onclick="copyFormatted()">📋 Copy with Formatting</button><span id="charCount" class="info"></span></div>
+</div>
+
+<!-- Bio Formatter Tab -->
+<div id="tab-bio" class="tab-content">
+<textarea id="bioInput" rows="4" maxlength="150" placeholder="Write your Instagram bio here..."></textarea>
+<div class="row" style="justify-content:space-between;margin:.3rem 0"><span id="bioCount" class="info">0/150 characters</span><button class="btn" onclick="copyBio()">📋 Copy Bio</button></div>
+<textarea id="bioOutput" rows="4" placeholder="Formatted bio appears here..." readonly></textarea>
+</div>
+
+<!-- Hashtag Generator Tab -->
+<div id="tab-hashtags" class="tab-content">
+<div class="row" style="gap:.5rem;margin-bottom:.5rem"><input id="hashTopic" type="text" placeholder="Enter topic (e.g. travel, food, fitness)" style="flex:1"><button class="btn" onclick="generateHashtags()">Generate</button></div>
+<div id="hashResults" class="hashtag-list"></div>
+<textarea id="hashOutput" rows="3" placeholder="Click hashtags to add them here..." readonly></textarea>
+<div class="row"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('hashOutput').value);this.textContent='Copied!';setTimeout(()=>this.textContent='📋 Copy Hashtags',1000)">📋 Copy Hashtags</button><span id="hashCount" class="info">0/30 hashtags</span></div>
+</div>
+
+<!-- Preview Tab -->
+<div id="tab-preview" class="tab-content">
+<p class="info">Preview how your caption looks in an Instagram post frame:</p>
+<div class="preview-frame">
+<div class="preview-header"><div class="preview-avatar"></div><strong style="font-size:13px">your_username</strong></div>
+<div style="background:#f0f0f0;height:200px;display:flex;align-items:center;justify-content:center;color:#999">Your Image</div>
+<div class="preview-body" id="previewBody">Your formatted caption will appear here...</div>
+</div>
+</div>
+
+<!-- Emoji Inserter -->
+<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:bold">😀 Emoji Inserter (click to expand)</summary>
+<div class="emoji-grid" id="emojiGrid"></div>
+</details>
+</div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Format Instagram captions with clean line breaks that actually work. Instagram normally removes extra blank lines from captions, making your carefully formatted text look messy. This tool adds invisible Unicode characters between lines that Instagram cannot remove, preserving your formatting. Also shows character count (Instagram limit: 2200 for posts, 150 for bio). Perfect for influencers, businesses, and anyone who wants professional-looking Instagram captions with proper spacing.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -53,6 +115,28 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function format(){var text=document.getElementById("input").value;var lines=text.split("\n");var result=lines.map(function(l){return l||"\u200b"}).join("\n");document.getElementById("output").value=result;document.getElementById("charCount").textContent=result.length+"/2200 characters"}</script>
+  <script>
+// Tabs
+function switchTab(id){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active')}
+
+// Caption Spacer
+function formatCaption(){var text=document.getElementById("input").value;var sep=document.querySelector('input[name="sep"]:checked').value;var sepChar={invis:"\u200b",dot:"·",dash:"—",emoji:"✦"}[sep];var lines=text.split("\n");var result=lines.map(l=>l||sepChar).join("\n");document.getElementById("output").value=result;document.getElementById("charCount").textContent=result.length+"/2200 characters";document.getElementById("previewBody").textContent=result}
+function copyFormatted(){var o=document.getElementById('output');navigator.clipboard.writeText(o.value);event.target.textContent='Copied!';setTimeout(()=>event.target.textContent='📋 Copy with Formatting',1000)}
+
+// Bio Formatter
+var bioInput=document.getElementById('bioInput');
+bioInput.addEventListener('input',function(){var len=this.value.length;document.getElementById('bioCount').textContent=len+'/150 characters';document.getElementById('bioCount').style.color=len>150?'red':'';var lines=this.value.split("\n");document.getElementById('bioOutput').value=lines.map(l=>l||"\u200b").join("\n")});
+function copyBio(){navigator.clipboard.writeText(document.getElementById('bioOutput').value)}
+
+// Hashtag Generator
+var hashDB={travel:['travel','wanderlust','travelgram','instatravel','travelphotography','adventure','explore','vacation','tourism','travelblogger','roadtrip','backpacking','traveler','globetrotter','traveltheworld','beautifuldestinations','travelholic','passport','trip','journey','getaway','bucketlist','seetheworld','traveladdict','worldtravel','aroundtheworld','travellife','travelpics','doyoutravel','lovetotravel'],food:['food','foodie','foodporn','instafood','foodphotography','yummy','delicious','foodstagram','homemade','foodblogger','healthyfood','cooking','recipe','dinner','lunch','breakfast','tasty','chef','eat','restaurant','foodlover','baking','vegan','organic','brunch','dessert','pizza','sushi','pasta','streetfood'],fitness:['fitness','gym','workout','fit','motivation','bodybuilding','training','health','fitnessmotivation','exercise','muscle','fitfam','lifestyle','healthy','strong','personaltrainer','cardio','crossfit','yoga','gains','weightloss','running','nutrition','abs','strength','fitnessjourney','gymlife','sport','athlete','wellness'],fashion:['fashion','style','ootd','fashionblogger','love','instagood','fashionista','streetstyle','outfit','beauty','model','shopping','dress','shoes','design','fashionstyle','instafashion','stylish','trend','accessories','lookoftheday','fashionable','clothing','wear','chic','elegant','vintage','luxury','brand','designer'],photography:['photography','photo','photooftheday','nature','instagood','art','photographer','picoftheday','beautiful','landscape','portrait','travel','love','naturephotography','instagram','sunset','canon','nikon','camera','photoshoot','like','streetphotography','wildlife','sky','follow','color','light','composition','creative','explore'],beauty:['beauty','makeup','skincare','beautiful','fashion','love','cosmetics','style','skin','makeupartist','selfcare','hair','model','instagood','glam','lipstick','eyes','lashes','glow','mua','natural','nails','beautyblogger','foundation','eyeshadow','beautytips','skincareroutine','lips','look','tutorial'],music:['music','musician','singer','song','hiphop','rap','dj','artist','producer','guitar','beats','love','newmusic','songwriter','rock','piano','live','concert','band','soundcloud','pop','studio','singing','rapper','musicproducer','musicislife','indie','jazz','electronic','playlist'],nature:['nature','photography','naturephotography','landscape','travel','beautiful','sunset','sky','flowers','mountains','love','photooftheday','wildlife','forest','ocean','earth','green','trees','animals','outdoors','clouds','river','hiking','garden','spring','summer','beach','lake','sunrise','macro'],business:['business','entrepreneur','marketing','success','motivation','money','startup','digitalmarketing','branding','smallbusiness','socialmedia','hustle','goals','inspiration','leadership','mindset','growth','finance','ceo','work','investment','strategy','networking','innovation','ecommerce','sales','productivity','wealth','founder','businessowner'],art:['art','artist','drawing','painting','illustration','artwork','sketch','design','creative','digitalart','contemporaryart','artistsoninstagram','instaart','abstract','watercolor','gallery','canvas','sculpture','artoftheday','fineart','modernart','acrylic','portrait','color','handmade','artistic','pencil','ink','streetart','creativity']};
+var selectedHash=[];
+function generateHashtags(){var topic=document.getElementById('hashTopic').value.toLowerCase().trim();var results=document.getElementById('hashResults');results.innerHTML='';selectedHash=[];document.getElementById('hashOutput').value='';document.getElementById('hashCount').textContent='0/30 hashtags';var tags=hashDB[topic];if(!tags){var all=Object.values(hashDB).flat();tags=[...new Set(all.filter(t=>t.includes(topic)))].slice(0,30);if(!tags.length){results.innerHTML='<p class="info">No hashtags found. Try: travel, food, fitness, fashion, photography, beauty, music, nature, business, art</p>';return}}tags.forEach(t=>{var s=document.createElement('span');s.textContent='#'+t;s.onclick=function(){if(selectedHash.length>=30)return;if(selectedHash.includes(t))return;selectedHash.push(t);document.getElementById('hashOutput').value=selectedHash.map(h=>'#'+h).join(' ');document.getElementById('hashCount').textContent=selectedHash.length+'/30 hashtags';this.style.opacity='.5'};results.appendChild(s)})}
+
+// Emoji Inserter
+var emojis=['😀','😂','🥰','😍','🤩','😎','🥳','😇','🤔','🙌','👏','💪','🔥','❤️','💯','✨','🌟','⭐','🎉','🎊','👑','💎','🌈','☀️','🌙','🍕','🍔','☕','🎵','📸','✈️','🏖️','🌍','💻','📱','🎨','🏋️','🧘','🌸','🌺','🦋','🐶','🐱','💐','🍀','🌿','💫','🙏','👋','🤝'];
+var grid=document.getElementById('emojiGrid');
+emojis.forEach(e=>{var b=document.createElement('button');b.textContent=e;b.type='button';b.onclick=function(){var targets=['input','bioInput','hashTopic'];var active=document.activeElement;if(targets.includes(active.id)){var start=active.selectionStart;active.value=active.value.slice(0,start)+e+active.value.slice(start);active.selectionStart=active.selectionEnd=start+e.length;active.focus();active.dispatchEvent(new Event('input'))}else{var inp=document.getElementById('input');inp.value+=e;inp.focus()}};grid.appendChild(b)});
+</script>
 </body>
 </html>
