@@ -8,13 +8,15 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
 window.addEventListener('offline',function(){if(!document.getElementById('offlineBanner')){var b=document.createElement('div');b.id='offlineBanner';b.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff9800;color:#fff;text-align:center;padding:8px;font-size:.85rem;font-weight:600;z-index:9999';b.textContent='📴 You are offline — this tool still works! Your files stay on your device.';document.body.appendChild(b)}});
-// Show offline tip once
+// Show offline tip once (lazy loaded)
+setTimeout(function(){
 if(!localStorage.getItem('offlineTipShown')&&document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){setTimeout(function(){var tip=document.createElement('div');tip.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--accent);padding:1rem;border-radius:12px;max-width:280px;z-index:9998;box-shadow:0 4px 20px rgba(0,0,0,.3)';tip.innerHTML='<div style="font-weight:600;margin-bottom:.3rem">💡 Did you know?</div><div style="font-size:.85rem;color:var(--muted)">This tool works offline! Bookmark it for use without internet.</div><button onclick="this.parentElement.remove();localStorage.setItem(\'offlineTipShown\',\'1\')" style="margin-top:.5rem;padding:.3rem .8rem;border:none;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem">Got it!</button>';document.body.appendChild(tip)},3000)}
+},2000);
 
 // Track recently used tools
 if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){var path=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');if(path&&path!==''){var rec=JSON.parse(localStorage.getItem('recentTools')||'[]');rec=rec.filter(function(r){return r!==path});rec.unshift(path);rec=rec.slice(0,8);localStorage.setItem('recentTools',JSON.stringify(rec))}}
@@ -37,6 +39,20 @@ if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-g
     var title=document.title;
     shareDiv.innerHTML='<button onclick="if(navigator.share)navigator.share({title:document.title,url:location.href});else{navigator.clipboard.writeText(location.href);this.textContent=\'Copied!\'}" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:.8rem">📤 Share Tool</button><a href="https://wa.me/?text='+encodeURIComponent(title+' '+url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid #25d366;border-radius:6px;color:#25d366;font-size:.8rem;text-decoration:none">💬 WhatsApp</a><a href="https://twitter.com/intent/tweet?text='+encodeURIComponent(title)+' '+encodeURIComponent(url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid #1da1f2;border-radius:6px;color:#1da1f2;font-size:.8rem;text-decoration:none">🐦 Twitter</a><a href="https://freetoolhubs.com/tools/whatsapp-direct.html" style="padding:.4rem .8rem;border:1px solid #25d366;border-radius:6px;color:#25d366;font-size:.8rem;text-decoration:none">💬 Send via WhatsApp Direct</a>';
     h1.parentNode.insertBefore(shareDiv,badge.nextSibling);
+
+    // Related Tools section
+    var relatedMap={image:['image-compressor','image-resizer','image-converter','image-cropper','png-to-jpg','jpg-to-png','webp-converter','image-watermark'],text:['word-counter','text-formatter','case-converter','lorem-generator','text-diff','markdown-editor','slug-generator','text-to-speech'],dev:['json-formatter','base64','color-picker','regex-tester','html-minifier','css-minifier','js-minifier','code-beautifier'],file:['pdf-merge','pdf-compress','file-converter','csv-to-json','zip-extractor','file-hash','qr-generator','barcode-generator'],media:['video-compressor','audio-trimmer','gif-maker','screen-recorder','video-to-gif','audio-converter','mp3-cutter','video-resizer'],seo:['meta-generator','sitemap-generator','robots-txt','og-image','keyword-density','seo-analyzer','schema-generator','redirect-checker'],calc:['percentage-calculator','age-calculator','bmi-calculator','unit-converter','tip-calculator','loan-calculator','date-calculator','time-zone-converter'],social:['whatsapp-direct','instagram-downloader','youtube-thumbnail','twitter-card','hashtag-generator','social-image-resizer','bio-generator','link-shortener']};
+    var curPath=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');
+    var relatedTools=[];
+    Object.keys(relatedMap).forEach(function(cat){if(relatedMap[cat].indexOf(curPath)>-1){relatedTools=relatedMap[cat].filter(function(t){return t!==curPath}).slice(0,4)}});
+    if(!relatedTools.length){var allTools=[];Object.keys(relatedMap).forEach(function(cat){allTools=allTools.concat(relatedMap[cat])});relatedTools=allTools.filter(function(t){return t!==curPath}).sort(function(){return .5-Math.random()}).slice(0,4)}
+    if(relatedTools.length){var relDiv=document.createElement('div');relDiv.style.cssText='margin-top:1.5rem;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px';relDiv.innerHTML='<div style="font-weight:600;margin-bottom:.5rem;font-size:.9rem">🔗 Related Tools</div><div style="display:flex;flex-wrap:wrap;gap:8px">'+relatedTools.map(function(t){return'<a href="/tools/'+t+'.html" style="padding:.4rem .8rem;background:rgba(79,140,255,.1);color:var(--accent);border-radius:6px;font-size:.8rem;text-decoration:none">'+t.replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()})+'</a>'}).join('')+'</div>';shareDiv.parentNode.insertBefore(relDiv,shareDiv.nextSibling);
+
+      // Feedback button
+      var fbDiv=document.createElement('div');fbDiv.style.cssText='margin-top:.8rem;display:flex;align-items:center;gap:10px;font-size:.85rem';var fbKey='feedback_'+curPath;var stored=JSON.parse(localStorage.getItem(fbKey)||'{"up":0,"down":0}');fbDiv.innerHTML='<span>Was this helpful?</span><button id="fbUp" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👍</button><span id="fbUpC">'+stored.up+'</span><button id="fbDown" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👎</button><span id="fbDownC">'+stored.down+'</span>';relDiv.parentNode.insertBefore(fbDiv,relDiv.nextSibling);
+      document.getElementById('fbUp').onclick=function(){stored.up++;localStorage.setItem(fbKey,JSON.stringify(stored));document.getElementById('fbUpC').textContent=stored.up};
+      document.getElementById('fbDown').onclick=function(){stored.down++;localStorage.setItem(fbKey,JSON.stringify(stored));document.getElementById('fbDownC').textContent=stored.down};
+    }
   }
 }
 
@@ -54,15 +70,20 @@ setInterval(function(){var mem=performance&&performance.memory?performance.memor
 window.addEventListener('error',function(e){console.error('Tool error:',e.message);var result=document.getElementById('result');if(result&&!result.innerHTML.includes('error')){result.innerHTML+='<p style="color:#f44336;margin-top:.5rem">❌ Error: '+e.message+'. Try a different file or refresh the page.</p>'}});
 window.addEventListener('unhandledrejection',function(e){console.error('Async error:',e.reason);var result=document.getElementById('result');if(result){result.innerHTML='<p style="color:#f44336">❌ Processing failed. The file may be corrupted or too large. Try a smaller file.</p>'}});
 
-// Cookie Consent Banner
+// Cookie Consent Banner (lazy loaded)
+setTimeout(function(){
 if(!localStorage.getItem('cookieConsent')){const d=document.createElement('div');d.id='cookieConsent';d.innerHTML='<p>We use cookies and third-party services (Google Analytics, AdSense) to improve your experience and show relevant ads. By continuing, you agree to our <a href="/privacy.html" style="color:#4fc3f7">Privacy Policy</a>.</p><button id="acceptCookies">Accept</button><button id="rejectCookies" style="background:transparent;color:#fff;border:1px solid #fff;margin-left:8px">Reject</button>';d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;padding:16px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;font-size:14px';d.querySelector('#acceptCookies').style.cssText='background:#4fc3f7;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:bold';document.body.appendChild(d);d.querySelector('#acceptCookies').onclick=()=>{localStorage.setItem('cookieConsent','accepted');d.remove()};d.querySelector('#rejectCookies').onclick=()=>{localStorage.setItem('cookieConsent','rejected');d.remove()}}
+},2000);
 
-// Favorites feature
+// Favorites feature (lazy loaded)
+setTimeout(function(){
 function toggleFav(toolName){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var idx=favs.indexOf(toolName);if(idx>-1)favs.splice(idx,1);else favs.push(toolName);localStorage.setItem('favTools',JSON.stringify(favs));updateAllHearts();refreshFavSection()}
 function updateAllHearts(){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');document.querySelectorAll('[data-fav]').forEach(function(btn){btn.textContent=favs.indexOf(btn.getAttribute('data-fav'))>-1?'❤️':'🤍'})}
 function refreshFavSection(){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var sec=document.getElementById('favSection');var grid=document.getElementById('favGrid');if(!sec||!grid)return;if(!favs.length){sec.style.display='none';return}sec.style.display='block';grid.innerHTML='';document.querySelectorAll('.tool-card[href]').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');if(favs.indexOf(name)>-1){var clone=card.cloneNode(true);var heart=clone.querySelector('[data-fav]');if(heart)heart.remove();grid.appendChild(clone)}})}
+window.toggleFav=toggleFav;window.updateAllHearts=updateAllHearts;window.refreshFavSection=refreshFavSection;
 // Add heart buttons
 if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('.tool-card').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var btn=document.createElement('span');btn.setAttribute('data-fav',name);btn.textContent=favs.indexOf(name)>-1?'❤️':'🤍';btn.style.cssText='position:absolute;top:4px;right:4px;cursor:pointer;font-size:.8rem;z-index:2';btn.onclick=function(e){e.preventDefault();e.stopPropagation();toggleFav(name)};card.style.position='relative';card.appendChild(btn)})}
+},2000);
 
 // Ctrl+K search shortcut
 document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();var s=document.getElementById('searchTools');if(s){s.focus();s.scrollIntoView({behavior:'smooth'})}}});
