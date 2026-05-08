@@ -24,20 +24,76 @@
     <div class="breadcrumb"><a href="../">Home</a> → 📋 Syllabus Tracker</div>
     <div class="tool-section">
       <h1>📋 Syllabus Progress Tracker</h1>
-      <p class="info">Select an exam or create custom syllabus. Check off completed topics. Auto-saves to browser.</p>
-      <div class="row" style="margin-bottom:1rem"><label>Exam:</label>
-        <select id="examSelect" onchange="loadExam()"><option value="">-- Select Exam --</option><option value="upsc_prelims">UPSC Prelims (GS)</option><option value="ssc_cgl">SSC CGL</option><option value="banking">Banking (IBPS PO)</option><option value="custom">Custom Syllabus</option></select>
+      <p class="info">Select an exam or create custom syllabus. Track topics, log study hours, schedule revisions, and add notes. Auto-saves to browser.</p>
+      <style>
+        .st-row{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+        .st-section{background:var(--card);border-radius:10px;margin:.5rem 0;overflow:hidden;border:1px solid var(--border)}
+        .st-section-head{padding:.8rem 1rem;cursor:pointer;display:flex;align-items:center;gap:.6rem;font-weight:600}
+        .st-section-head:hover{background:rgba(79,140,255,.05)}
+        .st-topic{padding:.5rem 1rem .5rem 2.5rem;display:flex;align-items:center;gap:.6rem;cursor:pointer;border-top:1px solid var(--border)}
+        .st-topic:hover{background:rgba(79,140,255,.05)}
+        .st-topic.done{opacity:.6;text-decoration:line-through}
+        .st-circ{width:60px;height:60px;position:relative;display:inline-flex;align-items:center;justify-content:center}
+        .st-circ svg{transform:rotate(-90deg);width:60px;height:60px;position:absolute}
+        .st-circ span{font-size:.7rem;font-weight:700;z-index:1}
+        .st-circles{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0}
+        .st-circ-wrap{text-align:center}
+        .st-circ-wrap small{display:block;max-width:70px;font-size:.65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .st-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:999;display:none}
+        .st-modal.show{display:flex}
+        .st-modal-box{background:var(--card);border-radius:12px;padding:1.5rem;max-width:400px;width:90%}
+        .st-hours{font-size:.75rem;color:var(--text2);margin-left:auto;white-space:nowrap}
+        .st-rev-badge{font-size:.65rem;background:#ff9800;color:#fff;padding:1px 6px;border-radius:8px;margin-left:.4rem}
+        .st-note-badge{font-size:.8rem;margin-left:.3rem;cursor:pointer}
+        .st-chart{display:flex;align-items:flex-end;gap:4px;height:100px;margin:1rem 0;padding:.5rem;background:var(--card);border-radius:8px;border:1px solid var(--border)}
+        .st-chart-bar{background:linear-gradient(180deg,#4f8cff,#4caf50);border-radius:3px 3px 0 0;min-width:20px;position:relative}
+        .st-chart-bar span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.6rem;white-space:nowrap}
+        .st-tabs{display:flex;gap:.5rem;margin:1rem 0;flex-wrap:wrap}
+        .st-tab{padding:.4rem .8rem;border-radius:6px;cursor:pointer;font-size:.8rem;background:var(--border)}
+        .st-tab.active{background:#4f8cff;color:#fff}
+      </style>
+      <div class="st-row">
+        <label>Exam:</label>
+        <select id="examSelect" onchange="loadExam()">
+          <option value="">-- Select Exam --</option>
+          <option value="upsc">UPSC</option>
+          <option value="ssc_cgl">SSC CGL</option>
+          <option value="ibps_po">IBPS PO</option>
+          <option value="gate">GATE (CS)</option>
+          <option value="cat">CAT</option>
+          <option value="custom">Custom Syllabus</option>
+        </select>
       </div>
       <div id="customInput" style="display:none;margin-bottom:1rem">
-        <textarea id="customTopics" rows="4" placeholder="Enter topics, one per line:&#10;Ancient History&#10;Medieval History&#10;Modern History"></textarea>
+        <textarea id="customTopics" rows="4" placeholder="Enter topics (use > for sub-topics):&#10;History&#10;History > Ancient&#10;History > Medieval&#10;Math&#10;Math > Algebra"></textarea>
         <button class="btn" onclick="loadCustom()">Load Custom Syllabus</button>
-        <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="exportProgress()">📤 Export</button><button class="btn btn-outline" onclick="document.getElementById('impProg').click()">📥 Import</button><button class="btn btn-outline" onclick="window.print()">🖨️ Print</button><input type="file" id="impProg" accept=".json" style="display:none" onchange="importProgress(event)"></div>
+      </div>
+      <div class="st-row">
+        <button class="btn btn-outline" onclick="exportReport()">📤 Export Report</button>
+        <button class="btn btn-outline" onclick="showRevisionDue()">🔁 Revision Due</button>
+        <button class="btn btn-outline" onclick="showChart()">📊 Progress Chart</button>
       </div>
       <div id="progressBar" style="display:none;margin-bottom:1rem">
         <div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span id="pctText" style="font-weight:700"></span><span id="countText" class="info"></span></div>
         <div style="height:12px;background:var(--border);border-radius:6px;overflow:hidden"><div id="pctBar" style="height:100%;background:linear-gradient(90deg,#4f8cff,#4caf50);border-radius:6px;transition:width .3s"></div></div>
+        <div style="margin-top:.3rem;font-size:.85rem" id="totalHours"></div>
       </div>
+      <div id="circProgress" class="st-circles"></div>
       <div id="topicList"></div>
+      <div id="chartArea" style="display:none"><h3>📊 Weekly Progress</h3><div id="weekChart" class="st-chart"></div></div>
+      <div id="revArea" style="display:none"><h3>🔁 Revision Due</h3><div id="revList"></div></div>
+      <!-- Modal for notes/hours -->
+      <div id="topicModal" class="st-modal" onclick="if(event.target===this)closeModal()">
+        <div class="st-modal-box">
+          <h3 id="modalTitle"></h3>
+          <label>Study Hours:</label>
+          <input type="number" id="modalHours" min="0" step="0.5" style="width:80px;margin-bottom:.8rem">
+          <br><label>Notes:</label>
+          <textarea id="modalNotes" rows="3" style="width:100%;margin-bottom:.8rem"></textarea>
+          <br><label><input type="checkbox" id="modalRevision"> Mark for Revision</label>
+          <div style="margin-top:1rem;text-align:right"><button class="btn" onclick="saveModal()">Save</button> <button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>
+        </div>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Track your exam syllabus completion with visual progress. Pre-built checklists for UPSC Prelims (25 topics), SSC CGL (19 topics), and Banking IBPS PO (20 topics). Create custom syllabi for any exam. Check off topics as you complete them — see progress bar fill up with percentage. Export your progress as JSON backup (survives browser cache clear). Import progress from backup. Print your tracker for wall display. All data saves automatically in your browser. Essential for organized exam preparation.</p>
 <h2>Benefits of Using This Tool</h2>
@@ -78,42 +134,227 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var syllabi={upsc_prelims:["Ancient Indian History","Medieval Indian History","Modern Indian History","Indian Freedom Movement","Indian Constitution","Indian Polity & Governance","Panchayati Raj","Public Policy","Rights Issues","Indian Economy","Planning & Budgeting","Agriculture","Science & Technology","Environmental Ecology","Biodiversity","Climate Change","General Science","Indian Geography","Physical Geography","World Geography","Current Affairs - National","Current Affairs - International","Art & Culture","Indian Society","Disaster Management"],ssc_cgl:["English - Reading Comprehension","English - Grammar","English - Vocabulary","Quantitative Aptitude - Number System","Quantitative Aptitude - Algebra","Quantitative Aptitude - Geometry","Quantitative Aptitude - Trigonometry","Quantitative Aptitude - Data Interpretation","General Intelligence - Analogies","General Intelligence - Series","General Intelligence - Coding-Decoding","General Intelligence - Puzzles","General Awareness - History","General Awareness - Geography","General Awareness - Polity","General Awareness - Economy","General Awareness - Science","General Awareness - Current Affairs","General Awareness - Computer Knowledge"],banking:["English - Reading Comprehension","English - Cloze Test","English - Error Spotting","Quantitative Aptitude - Simplification","Quantitative Aptitude - Number Series","Quantitative Aptitude - Data Interpretation","Quantitative Aptitude - Percentage & Ratio","Reasoning - Syllogism","Reasoning - Inequality","Reasoning - Coding-Decoding","Reasoning - Seating Arrangement","Reasoning - Puzzle","Reasoning - Blood Relations","General Awareness - Banking Terms","General Awareness - RBI & Monetary Policy","General Awareness - Financial Institutions","General Awareness - Current Affairs","Computer Knowledge - Basics","Computer Knowledge - MS Office","Computer Knowledge - Internet & Networking"]};
-var currentExam="",topics=[],checked={};
+var syllabi={
+  upsc:[
+    {name:"History",sub:["Ancient Indian History","Medieval Indian History","Modern Indian History","Indian Freedom Movement"]},
+    {name:"Polity",sub:["Indian Constitution","Indian Polity & Governance","Panchayati Raj","Public Policy","Rights Issues"]},
+    {name:"Economy",sub:["Indian Economy","Planning & Budgeting","Agriculture"]},
+    {name:"Science & Tech",sub:["Science & Technology","General Science","Environmental Ecology","Biodiversity","Climate Change"]},
+    {name:"Geography",sub:["Indian Geography","Physical Geography","World Geography"]},
+    {name:"General",sub:["Current Affairs - National","Current Affairs - International","Art & Culture","Indian Society","Disaster Management"]}
+  ],
+  ssc_cgl:[
+    {name:"English",sub:["Reading Comprehension","Grammar","Vocabulary"]},
+    {name:"Quantitative Aptitude",sub:["Number System","Algebra","Geometry","Trigonometry","Data Interpretation"]},
+    {name:"General Intelligence",sub:["Analogies","Series","Coding-Decoding","Puzzles"]},
+    {name:"General Awareness",sub:["History","Geography","Polity","Economy","Science","Current Affairs","Computer Knowledge"]}
+  ],
+  ibps_po:[
+    {name:"English",sub:["Reading Comprehension","Cloze Test","Error Spotting"]},
+    {name:"Quantitative Aptitude",sub:["Simplification","Number Series","Data Interpretation","Percentage & Ratio"]},
+    {name:"Reasoning",sub:["Syllogism","Inequality","Coding-Decoding","Seating Arrangement","Puzzle","Blood Relations"]},
+    {name:"General Awareness",sub:["Banking Terms","RBI & Monetary Policy","Financial Institutions","Current Affairs"]},
+    {name:"Computer Knowledge",sub:["Basics","MS Office","Internet & Networking"]}
+  ],
+  gate:[
+    {name:"Engineering Mathematics",sub:["Linear Algebra","Calculus","Probability","Numerical Methods","Discrete Mathematics"]},
+    {name:"Digital Logic",sub:["Boolean Algebra","Combinational Circuits","Sequential Circuits"]},
+    {name:"Computer Organization",sub:["Machine Instructions","ALU","Pipelining","Memory Hierarchy","I/O Interface"]},
+    {name:"Programming & DS",sub:["C Programming","Recursion","Arrays & Linked Lists","Trees","Graphs","Hashing"]},
+    {name:"Algorithms",sub:["Searching & Sorting","Graph Algorithms","Greedy","Dynamic Programming","Complexity"]},
+    {name:"Theory of Computation",sub:["Regular Languages","Context-Free Languages","Turing Machines","Undecidability"]},
+    {name:"Compiler Design",sub:["Lexical Analysis","Parsing","Syntax Directed Translation","Code Optimization"]},
+    {name:"Operating Systems",sub:["Processes & Threads","Scheduling","Synchronization","Memory Management","File Systems"]},
+    {name:"Databases",sub:["ER Model","Relational Algebra","SQL","Normalization","Transactions","Indexing"]},
+    {name:"Computer Networks",sub:["OSI & TCP/IP","Data Link Layer","Network Layer","Transport Layer","Application Layer"]}
+  ],
+  cat:[
+    {name:"Quantitative Ability",sub:["Number Systems","Arithmetic","Algebra","Geometry & Mensuration","Combinatorics","Probability"]},
+    {name:"Verbal Ability",sub:["Reading Comprehension","Para Jumbles","Sentence Correction","Vocabulary","Critical Reasoning"]},
+    {name:"Data Interpretation",sub:["Tables","Bar Graphs","Line Charts","Pie Charts","Caselets"]},
+    {name:"Logical Reasoning",sub:["Arrangements","Puzzles","Syllogisms","Binary Logic","Venn Diagrams","Cubes & Dice"]}
+  ]
+};
+
+var currentExam="",structure=[],data={};
+// data shape: {checked:{key:timestamp},hours:{key:num},notes:{key:str},revision:{key:timestamp}}
+
+function getKey(sec,topic){return sec+"|"+topic}
+function allTopics(){var t=[];structure.forEach(function(s){s.sub.forEach(function(st){t.push(getKey(s.name,st))})});return t}
+function loadData(){data=JSON.parse(localStorage.getItem("syl2_"+currentExam)||'{"checked":{},"hours":{},"notes":{},"revision":{}}');if(!data.checked)data={checked:{},hours:{},notes:{},revision:{}};}
+function saveData(){localStorage.setItem("syl2_"+currentExam,JSON.stringify(data))}
+
 function loadExam(){
   var exam=document.getElementById("examSelect").value;
-  document.getElementById("customInput").style.display=exam==="custom"?"":"none";
-  if(exam==="custom"||!exam){document.getElementById("topicList").innerHTML="";document.getElementById("progressBar").style.display="none";return}
-  currentExam=exam;topics=syllabi[exam]||[];
-  checked=JSON.parse(localStorage.getItem("syl_"+exam)||"{}");
-  render();
+  document.getElementById("customInput").style.display=exam==="custom"?"block":"none";
+  document.getElementById("chartArea").style.display="none";
+  document.getElementById("revArea").style.display="none";
+  if(!exam||exam==="custom"){document.getElementById("topicList").innerHTML="";document.getElementById("progressBar").style.display="none";document.getElementById("circProgress").innerHTML="";return}
+  currentExam=exam;structure=syllabi[exam]||[];
+  loadData();render();
 }
 function loadCustom(){
   var text=document.getElementById("customTopics").value.trim();
   if(!text)return alert("Enter topics");
-  currentExam="custom";topics=text.split("\n").map(function(t){return t.trim()}).filter(function(t){return t});
-  checked=JSON.parse(localStorage.getItem("syl_custom")||"{}");
-  render();
+  currentExam="custom";
+  var sections={};
+  text.split("\n").forEach(function(line){
+    line=line.trim();if(!line)return;
+    if(line.indexOf(">")>-1){var p=line.split(">");sections[p[0].trim()]=sections[p[0].trim()]||[];sections[p[0].trim()].push(p.slice(1).join(">").trim())}
+    else{sections[line]=sections[line]||[]}
+  });
+  structure=Object.keys(sections).map(function(k){return{name:k,sub:sections[k].length?sections[k]:[k]}});
+  loadData();render();
 }
-function toggle(i){
-  if(checked[i])delete checked[i];else checked[i]=true;
-  localStorage.setItem("syl_"+currentExam,JSON.stringify(checked));
-  render();
+
+function toggle(key){
+  if(data.checked[key]){delete data.checked[key];delete data.revision[key]}
+  else{data.checked[key]=Date.now();if(data.revision[key])data.revision[key]=Date.now()}
+  saveData();render();
 }
+
 function render(){
   document.getElementById("progressBar").style.display="block";
-  var done=Object.keys(checked).length;
-  var pct=topics.length?Math.round(done/topics.length*100):0;
+  var all=allTopics(),done=all.filter(function(k){return data.checked[k]}).length;
+  var pct=all.length?Math.round(done/all.length*100):0;
   document.getElementById("pctText").textContent=pct+"% Complete";
-  document.getElementById("countText").textContent=done+"/"+topics.length+" topics";
+  document.getElementById("countText").textContent=done+"/"+all.length+" topics";
   document.getElementById("pctBar").style.width=pct+"%";
-  document.getElementById("topicList").innerHTML=topics.map(function(t,i){
-    var isDone=checked[i];
-    return '<div style="background:var(--card);padding:.7rem 1rem;border-radius:8px;margin:.3rem 0;display:flex;align-items:center;gap:.8rem;cursor:pointer;'+(isDone?"opacity:.6":"")+'" onclick="toggle('+i+')"><span style="font-size:1.3rem">'+(isDone?"✅":"⬜")+'</span><span style="'+(isDone?"text-decoration:line-through":"")+'">'+t+'</span></div>';
+  var totalH=Object.values(data.hours||{}).reduce(function(a,b){return a+b},0);
+  document.getElementById("totalHours").textContent="⏱️ Total Study Time: "+totalH+" hrs";
+
+  // Circular progress per section
+  var circHtml="";
+  structure.forEach(function(sec){
+    var total=sec.sub.length,sDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
+    var sp=total?Math.round(sDone/total*100):0;
+    var r=24,c=2*Math.PI*r,offset=c-(sp/100)*c;
+    circHtml+='<div class="st-circ-wrap"><div class="st-circ"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="5"/><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="#4f8cff" stroke-width="5" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" stroke-linecap="round"/></svg><span>'+sp+'%</span></div><small title="'+sec.name+'">'+sec.name+'</small></div>';
+  });
+  document.getElementById("circProgress").innerHTML=circHtml;
+
+  // Topic list with expandable sections
+  var html="";
+  structure.forEach(function(sec,si){
+    var secDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
+    html+='<div class="st-section"><div class="st-section-head"><span>▶</span><span>'+sec.name+'</span><span style="margin-left:auto;font-size:.8rem;color:var(--text2)">'+secDone+'/'+sec.sub.length+'</span></div><div class="st-section-body" style="display:none">';
+    sec.sub.forEach(function(t){
+      var key=getKey(sec.name,t),isDone=data.checked[key],hrs=data.hours[key]||0,hasNote=data.notes[key],isRev=data.revision[key],revDue=isRevDue(key);
+      html+='<div class="st-topic'+(isDone?" done":"")+'" onclick="toggle(\''+key.replace(/'/g,"\\'")+'\')">';
+      html+='<span style="font-size:1.1rem">'+(isDone?"✅":"⬜")+'</span><span>'+t+'</span>';
+      if(revDue)html+='<span class="st-rev-badge">Revise!</span>';
+      if(hasNote)html+='<span class="st-note-badge" title="Has notes">📝</span>';
+      if(hrs)html+='<span class="st-hours">'+hrs+'h</span>';
+      html+='<span style="margin-left:auto;font-size:.9rem;cursor:pointer" onclick="event.stopPropagation();openModal(\''+key.replace(/'/g,"\\'")+'\')" title="Edit notes/hours">⚙️</span>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  document.getElementById("topicList").innerHTML=html;
+  // Add CSS for open state
+  document.querySelectorAll('.st-section.open .st-section-body').forEach(function(el){el.style.display='block'});
+  document.querySelectorAll('.st-section:not(.open) .st-section-body').forEach(function(el){el.style.display='none'});
+  document.querySelectorAll('.st-section.open .st-section-head span:first-child').forEach(function(el){el.textContent='▼'});
+}
+
+// Expand/collapse fix via event delegation
+document.addEventListener('click',function(e){
+  var head=e.target.closest&&e.target.closest('.st-section-head');
+  if(head){
+    var sec=head.parentElement;
+    var body=sec.querySelector('.st-section-body');
+    var arrow=head.querySelector('span:first-child');
+    if(body.style.display==='none'){body.style.display='block';arrow.textContent='▼';sec.classList.add('open')}
+    else{body.style.display='none';arrow.textContent='▶';sec.classList.remove('open')}
+  }
+});
+
+// Modal
+var modalKey="";
+function openModal(key){
+  modalKey=key;
+  document.getElementById("modalTitle").textContent=key.split("|")[1];
+  document.getElementById("modalHours").value=data.hours[key]||0;
+  document.getElementById("modalNotes").value=data.notes[key]||"";
+  document.getElementById("modalRevision").checked=!!data.revision[key];
+  document.getElementById("topicModal").classList.add("show");
+}
+function closeModal(){document.getElementById("topicModal").classList.remove("show")}
+function saveModal(){
+  var h=parseFloat(document.getElementById("modalHours").value)||0;
+  var n=document.getElementById("modalNotes").value.trim();
+  var r=document.getElementById("modalRevision").checked;
+  if(h)data.hours[modalKey]=h;else delete data.hours[modalKey];
+  if(n)data.notes[modalKey]=n;else delete data.notes[modalKey];
+  if(r){if(!data.revision[modalKey])data.revision[modalKey]=data.checked[modalKey]||Date.now()}else delete data.revision[modalKey];
+  saveData();closeModal();render();
+}
+
+// Revision scheduler - spaced: 1,3,7,14 days
+function isRevDue(key){
+  if(!data.revision[key]||!data.checked[key])return false;
+  var elapsed=(Date.now()-data.checked[key])/86400000;
+  return elapsed>=1&&elapsed<2||elapsed>=3&&elapsed<4||elapsed>=7&&elapsed<8||elapsed>=14&&elapsed<15;
+}
+function showRevisionDue(){
+  if(!currentExam)return alert("Select an exam first");
+  var area=document.getElementById("revArea");
+  area.style.display=area.style.display==="none"?"block":"none";
+  var all=allTopics(),due=[];
+  all.forEach(function(key){
+    if(!data.revision[key]||!data.checked[key])return;
+    var days=Math.floor((Date.now()-data.checked[key])/86400000);
+    var next=days<1?1:days<3?3:days<7?7:days<14?14:null;
+    if(next!==null)due.push({key:key,days:days,next:next});
+  });
+  if(!due.length){document.getElementById("revList").innerHTML="<p class='info'>No topics due for revision right now.</p>";return}
+  document.getElementById("revList").innerHTML=due.map(function(d){
+    return '<div style="padding:.4rem .8rem;border-bottom:1px solid var(--border)"><strong>'+d.key.split("|")[1]+'</strong> <span class="info">('+d.key.split("|")[0]+') — completed '+d.days+' day(s) ago, next revision at day '+d.next+'</span></div>';
   }).join("");
 }
-function exportProgress(){if(!currentExam)return alert("Select an exam first");var data={exam:currentExam,topics:topics,checked:checked};download(new Blob([JSON.stringify(data)],{type:"application/json"}),"syllabus_progress.json")}
-function importProgress(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);currentExam=d.exam||"custom";topics=d.topics||[];checked=d.checked||{};localStorage.setItem("syl_"+currentExam,JSON.stringify(checked));render();alert("Progress imported!")}catch(err){alert("Invalid file")}};r.readAsText(f)}
+
+// Weekly progress chart
+function showChart(){
+  if(!currentExam)return alert("Select an exam first");
+  var area=document.getElementById("chartArea");
+  area.style.display=area.style.display==="none"?"block":"none";
+  var weeks={},now=Date.now();
+  Object.keys(data.checked).forEach(function(k){
+    var ts=data.checked[k],weeksAgo=Math.floor((now-ts)/604800000);
+    if(weeksAgo>7)return;
+    var label=weeksAgo===0?"This week":weeksAgo+"w ago";
+    weeks[label]=(weeks[label]||0)+1;
+  });
+  var labels=[];for(var i=7;i>=0;i--)labels.push(i===0?"This week":i+"w ago");
+  var max=Math.max.apply(null,labels.map(function(l){return weeks[l]||0}).concat([1]));
+  document.getElementById("weekChart").innerHTML=labels.map(function(l){
+    var v=weeks[l]||0,h=Math.max(v/max*80,2);
+    return '<div class="st-chart-bar" style="height:'+h+'px;flex:1"><span>'+v+'</span></div>';
+  }).join("")+'<div style="position:absolute;bottom:-18px;left:0;right:0;display:flex;justify-content:space-between;font-size:.55rem;color:var(--text2);padding:0 2px">'+labels.map(function(l){return'<span>'+l.replace(" ago","")+'</span>'}).join("")+'</div>';
+  document.getElementById("weekChart").style.position="relative";
+}
+
+// Export as text report
+function exportReport(){
+  if(!currentExam)return alert("Select an exam first");
+  var all=allTopics(),done=all.filter(function(k){return data.checked[k]}).length;
+  var lines=["SYLLABUS PROGRESS REPORT","Exam: "+currentExam,"Date: "+new Date().toLocaleDateString(),"Overall: "+done+"/"+all.length+" ("+Math.round(done/all.length*100)+"%)\n"];
+  var totalH=Object.values(data.hours||{}).reduce(function(a,b){return a+b},0);
+  lines.push("Total Study Hours: "+totalH+"\n");
+  structure.forEach(function(sec){
+    var secDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
+    lines.push("\n"+sec.name+" ("+secDone+"/"+sec.sub.length+")");
+    sec.sub.forEach(function(t){
+      var key=getKey(sec.name,t),mark=data.checked[key]?"✓":"✗",hrs=data.hours[key],note=data.notes[key];
+      var line="  ["+mark+"] "+t;
+      if(hrs)line+=" ("+hrs+"h)";
+      if(note)line+=" — "+note;
+      lines.push(line);
+    });
+  });
+  var blob=new Blob([lines.join("\n")],{type:"text/plain"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="syllabus_report_"+currentExam+".txt";a.click();
+}
   </script>
 </body>
 </html>
