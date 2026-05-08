@@ -40,8 +40,26 @@
       <div class="row"><label>Loan Amount (₹):</label><input type="number" id="amt" value="500000" min="1000"></div>
       <div class="row"><label>Interest Rate (% per year):</label><input type="number" id="rate" value="8.5" min="0.1" step="0.1"></div>
       <div class="row"><label>Loan Tenure (months):</label><input type="number" id="tenure" value="36" min="1"></div>
-      <button class="btn" onclick="calc()">Calculate EMI</button>
+
+      <h3 style="margin-top:1.5rem">Prepayment</h3>
+      <div class="row"><label>Extra Monthly Payment (₹):</label><input type="number" id="prepay" value="0" min="0"></div>
+
+      <h3 style="margin-top:1.5rem">Compare with Loan 2</h3>
+      <div class="row"><label>Loan 2 Amount (₹):</label><input type="number" id="amt2" value="" min="1000" placeholder="Leave empty to skip"></div>
+      <div class="row"><label>Loan 2 Rate (%):</label><input type="number" id="rate2" value="" min="0.1" step="0.1" placeholder="Annual rate"></div>
+      <div class="row"><label>Loan 2 Tenure (months):</label><input type="number" id="tenure2" value="" min="1" placeholder="Months"></div>
+
+      <button class="btn" onclick="calc()" style="margin-top:1rem">Calculate EMI</button>
       <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div id="prepayResult" style="margin:1rem 0"></div>
+      <div id="compareResult" style="margin:1rem 0"></div>
+
+      <div style="margin:1.5rem 0;text-align:center"><canvas id="pieChart" width="260" height="260"></canvas></div>
+
+      <details id="amortWrap" style="margin-top:1.5rem;display:none">
+        <summary style="cursor:pointer;font-weight:600">📋 Amortization Schedule</summary>
+        <div style="overflow-x:auto;margin-top:.5rem"><table id="amortTable" style="width:100%;border-collapse:collapse;font-size:.85rem"></table></div>
+      </details>
     </div>
     <div style="min-height:90px">
 <h2>Frequently Asked Questions</h2>
@@ -72,16 +90,82 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+function calcEMI(p,r,n){return p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
+const fmt=v=>"₹"+Math.round(v).toLocaleString("en-IN");
+const card=(l,v,color)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.4rem;font-weight:700;background:"+(color||"var(--gradient)")+";-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+
 function calc(){
   const p=+document.getElementById("amt").value;
   const r=+document.getElementById("rate").value/12/100;
   const n=+document.getElementById("tenure").value;
-  const emi=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  const extra=+document.getElementById("prepay").value||0;
+  const emi=calcEMI(p,r,n);
   const total=emi*n;
   const interest=total-p;
-  const fmt=v=>"₹"+Math.round(v).toLocaleString("en-IN");
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+
   document.getElementById("result").innerHTML=card("Monthly EMI",fmt(emi))+card("Total Interest",fmt(interest))+card("Total Payment",fmt(total))+card("Principal",fmt(p));
+
+  // Prepayment
+  let prepayHTML="";
+  if(extra>0){
+    let bal=p,totInt=0,months=0;
+    while(bal>0){
+      const intPart=bal*r;
+      let prinPart=emi-intPart+extra;
+      if(prinPart>bal){prinPart=bal;totInt+=bal*r;months++;break;}
+      bal-=prinPart;totInt+=intPart;months++;
+    }
+    const saved=interest-totInt;
+    const reduced=n-months;
+    prepayHTML="<div style='background:var(--card);padding:1rem;border-radius:12px;margin-top:.5rem'><strong>Prepayment Savings:</strong> Interest saved: <b>"+fmt(saved)+"</b> | Months reduced: <b>"+reduced+"</b> | New tenure: <b>"+months+" months</b></div>";
+  }
+  document.getElementById("prepayResult").innerHTML=prepayHTML;
+
+  // Comparison
+  const p2=+document.getElementById("amt2").value;
+  const r2=+document.getElementById("rate2").value/12/100;
+  const n2=+document.getElementById("tenure2").value;
+  let cmpHTML="";
+  if(p2&&r2&&n2){
+    const emi2=calcEMI(p2,r2,n2);
+    const total2=emi2*n2;const int2=total2-p2;
+    cmpHTML="<h3>Loan Comparison</h3><div style='display:grid;grid-template-columns:1fr 1fr;gap:1rem'><div style='background:var(--card);padding:1rem;border-radius:12px'><strong>Loan 1</strong><br>EMI: "+fmt(emi)+"<br>Interest: "+fmt(interest)+"<br>Total: "+fmt(total)+"</div><div style='background:var(--card);padding:1rem;border-radius:12px'><strong>Loan 2</strong><br>EMI: "+fmt(emi2)+"<br>Interest: "+fmt(int2)+"<br>Total: "+fmt(total2)+"</div></div>";
+  }
+  document.getElementById("compareResult").innerHTML=cmpHTML;
+
+  // Pie chart
+  drawPie(p,interest);
+
+  // Amortization
+  buildAmort(p,r,n,emi);
+}
+
+function drawPie(principal,interest){
+  const canvas=document.getElementById("pieChart");
+  const ctx=canvas.getContext("2d");
+  const total=principal+interest;
+  const pAngle=(principal/total)*2*Math.PI;
+  const cx=130,cy=130,rad=110;
+  ctx.clearRect(0,0,260,260);
+  // Principal slice
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rad,0,pAngle);ctx.closePath();ctx.fillStyle="#4f8cff";ctx.fill();
+  // Interest slice
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rad,pAngle,2*Math.PI);ctx.closePath();ctx.fillStyle="#f59e0b";ctx.fill();
+  // Legend
+  ctx.font="12px sans-serif";ctx.fillStyle="#4f8cff";ctx.fillRect(10,240,12,12);ctx.fillStyle="var(--text1)";ctx.fillText("Principal ("+Math.round(principal/total*100)+"%)",26,251);
+  ctx.fillStyle="#f59e0b";ctx.fillRect(150,240,12,12);ctx.fillStyle="var(--text1)";ctx.fillText("Interest ("+Math.round(interest/total*100)+"%)",166,251);
+}
+
+function buildAmort(p,r,n,emi){
+  let bal=p,html="<tr style='background:var(--card)'><th style='padding:.4rem .6rem'>Month</th><th style='padding:.4rem .6rem'>EMI</th><th style='padding:.4rem .6rem'>Principal</th><th style='padding:.4rem .6rem'>Interest</th><th style='padding:.4rem .6rem'>Balance</th></tr>";
+  for(let i=1;i<=n;i++){
+    const intPart=bal*r;
+    const prinPart=emi-intPart;
+    bal-=prinPart;if(bal<0)bal=0;
+    html+="<tr style='border-bottom:1px solid var(--border)'><td style='padding:.3rem .6rem'>"+i+"</td><td style='padding:.3rem .6rem'>"+fmt(emi)+"</td><td style='padding:.3rem .6rem'>"+fmt(prinPart)+"</td><td style='padding:.3rem .6rem'>"+fmt(intPart)+"</td><td style='padding:.3rem .6rem'>"+fmt(bal)+"</td></tr>";
+  }
+  document.getElementById("amortTable").innerHTML=html;
+  document.getElementById("amortWrap").style.display="block";
 }
   </script>
 </body>

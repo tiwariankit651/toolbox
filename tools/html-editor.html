@@ -16,7 +16,15 @@
     <div class="breadcrumb"><a href="../">Home</a> → 💻 HTML Editor</div>
     <div class="tool-section">
       <h1>💻 HTML Live Editor</h1>
-      <p class="info">Write HTML, CSS, JS and see live preview. Auto-updates as you type.</p>
+      <p class="info">Write HTML, CSS, JS and see live preview. Auto-updates as you type. Auto-saves to browser.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.5rem">
+        <span style="font-size:.8rem;font-weight:600;margin-right:4px">Templates:</span>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('blank')">Blank</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('landing')">Landing Page</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('contact')">Contact Form</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('card')">Card Component</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('grid')">Responsive Grid</button>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
         <div>
           <div style="display:flex;gap:4px;margin-bottom:4px">
@@ -24,15 +32,28 @@
             <button onclick="showTab('css')" id="tabCss" class="btn btn-outline" style="padding:.2rem .6rem;font-size:.8rem">CSS</button>
             <button onclick="showTab('js')" id="tabJs" class="btn btn-outline" style="padding:.2rem .6rem;font-size:.8rem">JS</button>
           </div>
-          <textarea id="htmlCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%" oninput="run()" placeholder="HTML here...">&lt;h1 style="color:#4f8cff"&gt;Hello World!&lt;/h1&gt;
+          <div style="position:relative">
+            <div id="highlight" aria-hidden="true" style="position:absolute;top:0;left:0;width:100%;height:100%;font-family:monospace;font-size:.85rem;padding:8px;box-sizing:border-box;white-space:pre-wrap;word-wrap:break-word;overflow:auto;pointer-events:none;border:1px solid transparent;border-radius:4px;line-height:1.4"></div>
+            <textarea id="htmlCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;position:relative;background:transparent;color:transparent;caret-color:var(--text);line-height:1.4;z-index:1" oninput="onEdit()" placeholder="HTML here...">&lt;h1 style="color:#4f8cff"&gt;Hello World!&lt;/h1&gt;
 &lt;p&gt;Edit code in tabs and see live preview →&lt;/p&gt;
 &lt;button id="btn"&gt;Click Me&lt;/button&gt;</textarea>
-          <textarea id="cssCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none" oninput="run()" placeholder="CSS here...">body { font-family: Arial; padding: 20px; }
+          </div>
+          <textarea id="cssCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" placeholder="CSS here...">body { font-family: Arial; padding: 20px; }
 button { padding: 10px 20px; background: #4f8cff; color: white; border: none; border-radius: 8px; cursor: pointer; }
 button:hover { background: #3a7be0; }</textarea>
-          <textarea id="jsCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none" oninput="run()" placeholder="JavaScript here...">document.getElementById('btn').onclick = function() { alert('It works!'); }</textarea>
+          <textarea id="jsCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" placeholder="JavaScript here...">document.getElementById('btn').onclick = function() { alert('It works!'); }</textarea>
         </div>
-        <div><label>Preview</label><iframe id="preview" style="width:100%;height:340px;border:1px solid var(--border);border-radius:8px;background:#fff"></iframe></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
+            <label style="margin:0">Preview</label>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem;margin-left:auto" onclick="setPreview('100%')">Desktop</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('768px')">Tablet</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('375px')">Mobile</button>
+          </div>
+          <div style="display:flex;justify-content:center;border:1px solid var(--border);border-radius:8px;background:#fff;height:340px;overflow:auto">
+            <iframe id="preview" style="width:100%;height:100%;border:none;transition:width .3s"></iframe>
+          </div>
+        </div>
       </div>
       <div class="row"><button class="btn btn-outline" onclick="copyAll()">📋 Copy All</button><button class="btn btn-outline" onclick="dlAll()">💾 Download HTML</button></div>
     </div>
@@ -60,11 +81,51 @@ button:hover { background: #3a7be0; }</textarea>
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function showTab(t){document.getElementById("htmlCode").style.display=t==="html"?"":"none";document.getElementById("cssCode").style.display=t==="css"?"":"none";document.getElementById("jsCode").style.display=t==="js"?"":"none";document.getElementById("tabHtml").className=t==="html"?"btn":"btn btn-outline";document.getElementById("tabCss").className=t==="css"?"btn":"btn btn-outline";document.getElementById("tabJs").className=t==="js"?"btn":"btn btn-outline"}
+const templates={
+blank:{html:"",css:"",js:""},
+landing:{html:'<header style="text-align:center;padding:60px 20px">\n  <h1>Welcome to My Site</h1>\n  <p>A simple landing page template</p>\n  <a href="#" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#4f8cff;color:#fff;text-decoration:none;border-radius:8px">Get Started</a>\n</header>\n<section style="padding:40px 20px;max-width:800px;margin:0 auto">\n  <h2>Features</h2>\n  <p>Build something amazing with this starter template.</p>\n</section>',css:"body{font-family:Arial,sans-serif;margin:0;color:#333}\nheader{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}",js:""},
+contact:{html:'<div style="max-width:500px;margin:40px auto;padding:0 20px">\n  <h1>Contact Us</h1>\n  <form id="form">\n    <label>Name</label><input type="text" placeholder="Your name" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px">\n    <label>Email</label><input type="email" placeholder="you@email.com" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px">\n    <label>Message</label><textarea rows="4" placeholder="Your message" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px"></textarea>\n    <button type="submit" style="padding:10px 24px;background:#4f8cff;color:#fff;border:none;border-radius:6px;cursor:pointer">Send</button>\n  </form>\n</div>',css:"body{font-family:Arial,sans-serif}\nlabel{font-weight:bold;font-size:.9rem}",js:'document.getElementById("form").onsubmit=function(e){e.preventDefault();alert("Message sent!")}'},
+card:{html:'<div class="card">\n  <div class="card-img">🖼️</div>\n  <div class="card-body">\n    <h3>Card Title</h3>\n    <p>Some quick example text for the card component.</p>\n    <button>Learn More</button>\n  </div>\n</div>',css:"body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f5f5f5}\n.card{width:300px;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);background:#fff}\n.card-img{height:160px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:3rem}\n.card-body{padding:20px}\n.card-body button{padding:8px 16px;background:#4f8cff;color:#fff;border:none;border-radius:6px;cursor:pointer}",js:""},
+grid:{html:'<div class="grid">\n  <div class="item">1</div>\n  <div class="item">2</div>\n  <div class="item">3</div>\n  <div class="item">4</div>\n  <div class="item">5</div>\n  <div class="item">6</div>\n</div>',css:"body{font-family:Arial,sans-serif;padding:20px;margin:0}\n.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}\n.item{background:#4f8cff;color:#fff;padding:40px;text-align:center;border-radius:8px;font-size:1.5rem;font-weight:bold}",js:""}
+};
+function showTab(t){
+  const wrap=document.getElementById("htmlCode").parentElement;
+  document.getElementById("htmlCode").style.display=t==="html"?"":"none";
+  document.getElementById("highlight").style.display=t==="html"?"":"none";
+  wrap.style.display=t==="html"?"":"none";
+  document.getElementById("cssCode").style.display=t==="css"?"":"none";
+  document.getElementById("jsCode").style.display=t==="js"?"":"none";
+  document.getElementById("tabHtml").className=t==="html"?"btn":"btn btn-outline";
+  document.getElementById("tabCss").className=t==="css"?"btn":"btn btn-outline";
+  document.getElementById("tabJs").className=t==="js"?"btn":"btn btn-outline";
+  if(t==="html")updateHighlight();
+}
+function highlightHTML(code){
+  let escaped=code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  escaped=escaped.replace(/(&lt;\/?)([\w-]+)/g,'$1<span style="color:#e06c75">$2</span>');
+  escaped=escaped.replace(/([\w-]+)(=)/g,'<span style="color:#d19a66">$1</span>$2');
+  escaped=escaped.replace(/(&quot;|")(.*?)(\1)/g,'<span style="color:#98c379">"$2"</span>');
+  escaped=escaped.replace(/(&#39;|')(.*?)(\1)/g,"<span style=\"color:#98c379\">'$2'</span>");
+  return escaped;
+}
+function updateHighlight(){
+  const hl=document.getElementById("highlight");
+  const ta=document.getElementById("htmlCode");
+  hl.innerHTML=highlightHTML(ta.value)+"\n";
+  hl.scrollTop=ta.scrollTop;
+}
+document.getElementById("htmlCode").addEventListener("scroll",function(){document.getElementById("highlight").scrollTop=this.scrollTop;document.getElementById("highlight").scrollLeft=this.scrollLeft});
 function getFullCode(){return document.getElementById("htmlCode").value+"<style>"+document.getElementById("cssCode").value+"</style><script>"+document.getElementById("jsCode").value+"<\/script>"}
 function run(){document.getElementById("preview").srcdoc=getFullCode()}
+let saveTimer;
+function onEdit(){run();updateHighlight();clearTimeout(saveTimer);saveTimer=setTimeout(saveToStorage,500)}
+function saveToStorage(){localStorage.setItem("htmlEditor",JSON.stringify({html:document.getElementById("htmlCode").value,css:document.getElementById("cssCode").value,js:document.getElementById("jsCode").value}))}
+function loadFromStorage(){const d=localStorage.getItem("htmlEditor");if(d){const p=JSON.parse(d);document.getElementById("htmlCode").value=p.html||"";document.getElementById("cssCode").value=p.css||"";document.getElementById("jsCode").value=p.js||""}}
+loadFromStorage();
+function setPreview(w){document.getElementById("preview").style.width=w}
+function loadTemplate(name){const t=templates[name];document.getElementById("htmlCode").value=t.html;document.getElementById("cssCode").value=t.css;document.getElementById("jsCode").value=t.js;run();updateHighlight();saveToStorage()}
 function copyAll(){navigator.clipboard.writeText(getFullCode())}
-function dlAll(){download(new Blob([getFullCode()],{type:"text/html"}),"page.html")}
-run();
+function dlAll(){const b=new Blob([getFullCode()],{type:"text/html"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="page.html";a.click();URL.revokeObjectURL(a.href)}
+run();updateHighlight();
   </script>
 </body></html>

@@ -35,11 +35,22 @@
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🔐 Base64 Encode / Decode</div>
     <div style="min-height:90px"></div>
-    <div class="tool-section"><h1>🔐 Base64 Encode / Decode</h1><textarea id="inp" placeholder="Enter text to encode or Base64 string to decode..."></textarea>
+    <div class="tool-section"><h1>🔐 Base64 Encode / Decode</h1>
+      <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="urlSafe"> URL-safe Base64 (replace +/ with -_)</label>
+      <textarea id="inp" placeholder="Paste text or Base64 string — auto-detects input type..."></textarea>
+      <div id="autoDetect" style="font-size:.8rem;color:var(--accent);margin:.3rem 0"></div>
       <div class="row"><button class="btn" onclick="go('e')">Encode</button><button class="btn btn-outline" onclick="go('d')">Decode</button></div>
-      <h3 style="margin:1rem 0 .5rem">File to Base64</h3>
-      <div class="drop-zone" onclick="document.getElementById('fi').click()">Drop file here<input type="file" id="fi"></div>
-      <div class="result-box" id="result" style="max-height:200px;overflow:auto"></div></div>
+      <div class="result-box" id="result" style="max-height:200px;overflow:auto"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">File → Base64</h3>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">Drop file here or click to browse<input type="file" id="fi"></div>
+      <div class="result-box" id="fileResult" style="max-height:200px;overflow:auto"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Base64 → File</h3>
+      <textarea id="b64Input" placeholder="Paste Base64 data URI or raw Base64 string..." rows="4"></textarea>
+      <div class="row"><button class="btn" onclick="b64ToFile()">Download as File</button></div>
+      <div id="preview"></div>
+    </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -75,6 +86,81 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function go(m){const i=document.getElementById("inp").value;try{const r=m==="e"?btoa(unescape(encodeURIComponent(i))):decodeURIComponent(escape(atob(i)));document.getElementById("result").innerHTML=r+"<button class=\"copy-btn\" onclick=\"navigator.clipboard.writeText(this.previousSibling.textContent)\">Copy</button>"}catch(e){document.getElementById("result").textContent="❌ "+e.message}}
-document.getElementById("fi")?.addEventListener("change",function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const b=r.result;document.getElementById("result").innerHTML=b.slice(0,500)+(b.length>500?"...":"")+"<button class=\"copy-btn\" onclick=\"navigator.clipboard.writeText(window._b64)\">Copy</button>";window._b64=b};r.readAsDataURL(f)})</script>
+  <script>
+const urlSafe=()=>document.getElementById('urlSafe').checked;
+function toUrlSafe(s){return s.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function fromUrlSafe(s){return s.replace(/-/g,'+').replace(/_/g,'/')+'=='.slice(0,(4-s.length%4)%4)}
+
+function go(m){
+  const i=document.getElementById('inp').value;
+  try{
+    let r;
+    if(m==='e'){r=btoa(unescape(encodeURIComponent(i)));if(urlSafe())r=toUrlSafe(r)}
+    else{let d=urlSafe()?fromUrlSafe(i):i;r=decodeURIComponent(escape(atob(d)))}
+    document.getElementById('result').innerHTML='<span>'+r+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
+  }catch(e){document.getElementById('result').textContent='❌ '+e.message}
+}
+
+// Auto-detect input type
+document.getElementById('inp').addEventListener('input',function(){
+  const v=this.value.trim(),el=document.getElementById('autoDetect');
+  if(!v){el.textContent='';return}
+  const b64Re=/^[A-Za-z0-9+/\-_]+=*$/;
+  if(b64Re.test(v)&&v.length>3&&v.length%4<3){
+    try{atob(v.replace(/-/g,'+').replace(/_/g,'/'));el.textContent='⚡ Detected: Base64 string';return}catch(e){}
+  }
+  el.textContent='⚡ Detected: Plain text';
+});
+
+// File to Base64
+setupDrop('dropZone','fi',function(files){
+  const f=files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let b=r.result;
+    if(urlSafe()){const parts=b.split(',');b=parts[0]+','+toUrlSafe(parts[1])}
+    window._b64=b;
+    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+b.slice(0,500)+(b.length>500?'...':'')+'</span><button class="copy-btn" onclick="copyText(window._b64,this)">Copy</button>';
+  };
+  r.readAsDataURL(f);
+});
+
+// Base64 to File
+function b64ToFile(){
+  const raw=document.getElementById('b64Input').value.trim();
+  if(!raw)return;
+  let mime='application/octet-stream',data=raw;
+  const m=raw.match(/^data:([^;]+);base64,(.+)$/);
+  if(m){mime=m[1];data=m[2]}
+  else{data=urlSafe()?fromUrlSafe(raw):raw}
+  try{
+    const bin=atob(data),arr=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    // Auto-detect MIME from magic bytes if not from data URI
+    if(!m){
+      const h=arr.slice(0,4).join(' ');
+      if(h.startsWith('137 80 78 71'))mime='image/png';
+      else if(h.startsWith('255 216 255'))mime='image/jpeg';
+      else if(h.startsWith('71 73 70'))mime='image/gif';
+      else if(h.startsWith('37 80 68 70'))mime='application/pdf';
+      else if(arr[0]===80&&arr[1]===75)mime='application/zip';
+      else if(h.startsWith('82 73 70 70'))mime='audio/wav';
+    }
+    const ext=mime.split('/')[1].replace('jpeg','jpg').replace('octet-stream','bin');
+    download(new Blob([arr],{type:mime}),'file.'+ext);
+    // Image preview
+    const prev=document.getElementById('preview');
+    if(mime.startsWith('image/')){prev.innerHTML='<img src="data:'+mime+';base64,'+data+'" style="max-width:100%;max-height:300px;margin-top:.5rem;border-radius:8px">';}
+    else{prev.innerHTML=''}
+  }catch(e){document.getElementById('preview').innerHTML='<p style="color:#f44336">❌ '+e.message+'</p>'}
+}
+
+// Show image preview on paste in b64Input
+document.getElementById('b64Input').addEventListener('input',function(){
+  const raw=this.value.trim(),prev=document.getElementById('preview');
+  const m=raw.match(/^data:(image\/[^;]+);base64,/);
+  if(m)prev.innerHTML='<img src="'+raw.slice(0,raw.length)+'" style="max-width:100%;max-height:300px;margin-top:.5rem;border-radius:8px">';
+  else prev.innerHTML='';
+});
+</script>
 </body></html>

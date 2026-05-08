@@ -18,6 +18,13 @@
     <div class="tool-section">
       <h1>🔒 EXIF Metadata Remover</h1>
       <p class="info">Remove location, camera info, and personal data from your photos before sharing online. Supports multiple files.</p>
+      <div style="margin:1rem 0;padding:1rem;background:var(--card);border-radius:10px">
+        <strong>Selective Removal:</strong>
+        <label style="margin-left:1rem;cursor:pointer"><input type="checkbox" id="rmAll" checked onchange="document.querySelectorAll('.rm-opt').forEach(c=>c.checked=this.checked)"> All Metadata</label>
+        <label style="margin-left:1rem;cursor:pointer"><input type="checkbox" class="rm-opt" checked> GPS</label>
+        <label style="margin-left:1rem;cursor:pointer"><input type="checkbox" class="rm-opt" checked> Camera Info</label>
+        <label style="margin-left:1rem;cursor:pointer"><input type="checkbox" class="rm-opt" checked> Date</label>
+      </div>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="result"></div>
     </div>
@@ -58,23 +65,104 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+function parseEXIF(buf){
+  var view=new DataView(buf);
+  var exif={};
+  if(view.getUint16(0)!==0xFFD8)return exif;
+  var offset=2;
+  while(offset<view.byteLength){
+    if(view.getUint16(offset)===0xFFE1){
+      var len=view.getUint16(offset+2);
+      var tiffOff=offset+10;
+      var le=view.getUint16(tiffOff)===0x4949;
+      var ifdOff=tiffOff+view.getUint32(tiffOff+4,le);
+      var entries=view.getUint16(ifdOff,le);
+      for(var i=0;i<entries;i++){
+        var eOff=ifdOff+2+i*12;
+        if(eOff+12>view.byteLength)break;
+        var tag=view.getUint16(eOff,le);
+        if(tag===0x010F)exif.make=readStr(view,tiffOff,eOff,le);
+        if(tag===0x0110)exif.model=readStr(view,tiffOff,eOff,le);
+        if(tag===0x0132)exif.date=readStr(view,tiffOff,eOff,le);
+        if(tag===0x8825){
+          var gpsOff=tiffOff+view.getUint32(eOff+8,le);
+          exif.gps=parseGPS(view,gpsOff,tiffOff,le);
+        }
+      }
+      break;
+    }
+    offset+=2+view.getUint16(offset+2);
+  }
+  return exif;
+}
+function readStr(view,tiffOff,eOff,le){
+  var cnt=view.getUint32(eOff+4,le);
+  var valOff=cnt<=4?eOff+8:tiffOff+view.getUint32(eOff+8,le);
+  var s="";for(var i=0;i<cnt-1&&valOff+i<view.byteLength;i++)s+=String.fromCharCode(view.getUint8(valOff+i));
+  return s;
+}
+function parseGPS(view,gpsOff,tiffOff,le){
+  if(gpsOff+2>view.byteLength)return null;
+  var cnt=view.getUint16(gpsOff,le);
+  var lat=null,lon=null,latRef="N",lonRef="E";
+  for(var i=0;i<cnt;i++){
+    var eOff=gpsOff+2+i*12;
+    if(eOff+12>view.byteLength)break;
+    var tag=view.getUint16(eOff,le);
+    if(tag===1)latRef=String.fromCharCode(view.getUint8(eOff+8));
+    if(tag===3)lonRef=String.fromCharCode(view.getUint8(eOff+8));
+    if(tag===2)lat=readDeg(view,tiffOff+view.getUint32(eOff+8,le),le);
+    if(tag===4)lon=readDeg(view,tiffOff+view.getUint32(eOff+8,le),le);
+  }
+  if(lat!==null&&lon!==null)return{lat:(latRef==="S"?-1:1)*lat,lon:(lonRef==="W"?-1:1)*lon};
+  return null;
+}
+function readDeg(view,off,le){
+  if(off+24>view.byteLength)return null;
+  var d=view.getUint32(off,le)/view.getUint32(off+4,le);
+  var m=view.getUint32(off+8,le)/view.getUint32(off+12,le);
+  var s=view.getUint32(off+16,le)/view.getUint32(off+20,le);
+  return d+m/60+s/3600;
+}
+
 setupDrop("drop","inp",function(files){
   var result=document.getElementById("result");result.innerHTML="";
   Array.from(files).forEach(function(file,i){
     var reader=new FileReader();
     reader.onload=function(){
+      var arrBuf=reader.result;
+      var exif=parseEXIF(arrBuf);
       var img=new Image();
       img.onload=function(){
         var c=document.createElement("canvas");c.width=img.width;c.height=img.height;
         c.getContext("2d").drawImage(img,0,0);
         c.toBlob(function(blob){
-          result.innerHTML+='<div style="background:var(--card);padding:1rem;border-radius:10px;margin:.5rem 0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><img src="'+URL.createObjectURL(blob)+'" style="width:60px;height:60px;object-fit:cover;border-radius:8px"><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+img.width+'x'+img.height+' | Original: '+formatSize(file.size)+' → Clean: '+formatSize(blob.size)+'</span><br><span class="info">Type: '+file.type+' | Last modified: '+new Date(file.lastModified).toLocaleDateString("en-IN")+'</span><br><span style="color:#4caf50;font-size:.8rem">✅ All metadata removed (GPS, camera, date, software)</span></div><button class="btn" onclick="download(window[\'_exif'+i+'\'],\'clean_'+file.name.replace(/'/g,"")+'\')" style="white-space:nowrap">💾 Download</button></div>';
+          var meta='<div style="font-size:.85rem;margin:.5rem 0">';
+          meta+='<strong>📋 EXIF Data Found:</strong><br>';
+          meta+='• Dimensions: '+img.width+'×'+img.height+'<br>';
+          meta+='• File size: '+formatSize(file.size)+'<br>';
+          if(exif.make||exif.model)meta+='• Camera: '+(exif.make||"")+' '+(exif.model||"")+'<br>';
+          if(exif.date)meta+='• Date: '+exif.date+'<br>';
+          if(exif.gps)meta+='• GPS: '+exif.gps.lat.toFixed(6)+', '+exif.gps.lon.toFixed(6)+'<br>';
+          if(!exif.make&&!exif.model&&!exif.date&&!exif.gps)meta+='• <em>No readable EXIF tags detected</em><br>';
+          meta+='</div>';
+          if(exif.gps)meta+='<div style="background:rgba(255,152,0,.12);color:#ff9800;padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin:.5rem 0">⚠️ <strong>Privacy Warning:</strong> This image contains GPS coordinates that reveal the exact location where it was taken.</div>';
+
+          var removed=[];
+          var opts=document.querySelectorAll('.rm-opt');
+          if(opts[0].checked&&exif.gps)removed.push('GPS coordinates');
+          if(opts[1].checked&&(exif.make||exif.model))removed.push('Camera info');
+          if(opts[2].checked&&exif.date)removed.push('Date/time');
+          removed.push('All other embedded metadata');
+          var comparison='<div style="font-size:.8rem;color:#4caf50;margin-top:.3rem">✅ <strong>Removed:</strong> '+removed.join(', ')+'</div>';
+
+          result.innerHTML+='<div style="background:var(--card);padding:1rem;border-radius:10px;margin:.5rem 0"><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><img src="'+URL.createObjectURL(blob)+'" style="width:60px;height:60px;object-fit:cover;border-radius:8px"><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">Original: '+formatSize(file.size)+' → Clean: '+formatSize(blob.size)+'</span></div><button class="btn" onclick="download(window[\'_exif'+i+'\'],\'clean_'+file.name.replace(/'/g,"")+'\')" style="white-space:nowrap">💾 Download</button></div>'+meta+comparison+'</div>';
           window["_exif"+i]=blob;
         },"image/png");
       };
-      img.src=reader.result;
+      img.src=URL.createObjectURL(new Blob([arrBuf]));
     };
-    reader.readAsDataURL(file);
+    reader.readAsArrayBuffer(file);
   });
 });
   </script>
