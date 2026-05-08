@@ -44,6 +44,18 @@
 .color-opts{display:flex;gap:.3rem;margin-top:.3rem}
 .color-opts span{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent}
 .color-opts span.sel{border-color:var(--text)}
+.subtask-list{list-style:none;padding:0;margin:.3rem 0 0;font-size:.78rem}
+.subtask-list li{display:flex;align-items:center;gap:.3rem;padding:.1rem 0}
+.subtask-list li.done{text-decoration:line-through;opacity:.6}
+.subtask-list li button{border:none;background:none;cursor:pointer;font-size:.7rem;opacity:.6;padding:0}
+.subtask-list li button:hover{opacity:1}
+.subtask-add{display:flex;gap:.3rem;margin-top:.3rem}
+.subtask-add input{flex:1;font-size:.78rem;padding:.2rem .4rem;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+.subtask-add button{font-size:.75rem;padding:.2rem .4rem;border-radius:4px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+.card-progress{font-size:.72rem;color:var(--text2);margin-top:.2rem}
+.time-track{font-size:.72rem;color:var(--text2);margin-top:.2rem;display:flex;align-items:center;gap:.3rem}
+.time-track button{font-size:.7rem;padding:.1rem .3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer}
+.time-track button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -147,9 +159,21 @@ var STORAGE='kanban_data';
 var data=JSON.parse(localStorage.getItem(STORAGE)||'null');
 if(!data)data={boards:[{name:'My Board',columns:[{name:'To Do',cards:[]},{name:'In Progress',cards:[]},{name:'Done',cards:[]}]}],active:0};
 var editingCard=null,editingCol=null,selectedColor='';
+var timerInterval=null;
 
 function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
 function board(){return data.boards[data.active]}
+
+function formatTime(ms){
+  var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);s=s%60;
+  return (h?h+'h ':'')+(m?m+'m ':'')+(s+'s');
+}
+
+function getCardTime(c){
+  var t=c.timeSpent||0;
+  if(c.timerStart)t+=Date.now()-c.timerStart;
+  return t;
+}
 
 function renderBoardSelect(){
   var s=document.getElementById('boardSelect');
@@ -202,14 +226,58 @@ function renderBoard(){
       '<div class="kanban-col-header"><input value="'+col.name+'" onchange="renameColumn('+ci+',this)"><span style="display:flex;gap:.2rem"><button onclick="openModal('+ci+')" style="border:none;background:none;cursor:pointer;font-size:1rem" title="Add card">+</button><button onclick="deleteColumn('+ci+')" style="border:none;background:none;cursor:pointer;font-size:.8rem" title="Delete column">🗑️</button></span></div>'+
       '<div class="kanban-cards">'+cards.map(function(c,cdi){
         var realIdx=col.cards.indexOf(c);
+        var subs=c.subtasks||[];
+        var done=subs.filter(function(s){return s.done}).length;
+        var progressHtml=subs.length?'<div class="card-progress">✓ '+done+'/'+subs.length+' subtasks</div>':'';
+        var timeHtml='<div class="time-track"><button class="'+(c.timerStart?'active':'')+'" onclick="toggleTimer('+ci+','+realIdx+')">'+(c.timerStart?'⏹ Stop':'▶ Start')+'</button><span>⏱ '+formatTime(getCardTime(c))+'</span></div>';
+        var subtaskHtml='<ul class="subtask-list">'+subs.map(function(s,si){
+          return '<li class="'+(s.done?'done':'')+'"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSubtask('+ci+','+realIdx+','+si+')"><span>'+s.text+'</span><button onclick="deleteSubtask('+ci+','+realIdx+','+si+')">✕</button></li>';
+        }).join('')+'</ul><div class="subtask-add"><input type="text" placeholder="Add subtask..." onkeydown="if(event.key===\'Enter\')addSubtask('+ci+','+realIdx+',this)"><button onclick="addSubtask('+ci+','+realIdx+',this.previousElementSibling)">+</button></div>';
         return '<div class="kanban-card priority-'+c.priority.toLowerCase()+'" draggable="true" ondragstart="dragStart(event,'+ci+','+realIdx+')" style="border-left-color:'+(c.color||'var(--border)')+'">'+
           '<div class="card-actions"><button onclick="openEditModal('+ci+','+realIdx+')" title="Edit">✏️</button><button onclick="deleteCard('+ci+','+realIdx+')" title="Delete">✕</button></div>'+
           '<div class="card-title">'+c.title+'</div>'+
           (c.desc?'<div class="card-desc">'+c.desc+'</div>':'')+
-          '<div class="card-meta"><span>'+c.priority+'</span>'+(c.due?'<span>📅 '+c.due+'</span>':'')+'</div></div>';
+          '<div class="card-meta"><span>'+c.priority+'</span>'+(c.due?'<span>📅 '+c.due+'</span>':'')+'</div>'+
+          progressHtml+timeHtml+subtaskHtml+'</div>';
       }).join('')+'</div></div>';
   }).join('');
   renderBoardSelect();
+  startTimerUpdate();
+}
+
+function startTimerUpdate(){
+  if(timerInterval)clearInterval(timerInterval);
+  var hasActive=false;
+  board().columns.forEach(function(col){col.cards.forEach(function(c){if(c.timerStart)hasActive=true})});
+  if(hasActive){timerInterval=setInterval(function(){
+    document.querySelectorAll('.time-track span').forEach(function(el){});renderBoard();
+  },60000)}
+}
+
+function toggleTimer(ci,cdi){
+  var c=board().columns[ci].cards[cdi];
+  if(c.timerStart){c.timeSpent=(c.timeSpent||0)+(Date.now()-c.timerStart);c.timerStart=null}
+  else{c.timerStart=Date.now()}
+  save();renderBoard();
+}
+
+function addSubtask(ci,cdi,input){
+  var text=input.value.trim();if(!text)return;
+  var c=board().columns[ci].cards[cdi];
+  if(!c.subtasks)c.subtasks=[];
+  c.subtasks.push({text:text,done:false});
+  input.value='';save();renderBoard();
+}
+
+function toggleSubtask(ci,cdi,si){
+  var c=board().columns[ci].cards[cdi];
+  c.subtasks[si].done=!c.subtasks[si].done;
+  save();renderBoard();
+}
+
+function deleteSubtask(ci,cdi,si){
+  board().columns[ci].cards[cdi].subtasks.splice(si,1);
+  save();renderBoard();
 }
 
 function openModal(ci){editingCol=ci;editingCard=null;selectedColor='';document.getElementById('modalTitle').textContent='Add Card';document.getElementById('cardTitleInput').value='';document.getElementById('cardDescInput').value='';document.getElementById('cardPriorityInput').value='Med';document.getElementById('cardDueInput').value='';document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});document.getElementById('cardModal').classList.add('active')}
@@ -236,7 +304,7 @@ function saveCard(){
   var title=document.getElementById('cardTitleInput').value.trim();
   if(!title){alert('Title is required');return}
   var card={title:title,desc:document.getElementById('cardDescInput').value.trim(),priority:document.getElementById('cardPriorityInput').value,due:document.getElementById('cardDueInput').value,color:selectedColor};
-  if(editingCard!==null){board().columns[editingCol].cards[editingCard]=card}else{board().columns[editingCol].cards.push(card)}
+  if(editingCard!==null){var old=board().columns[editingCol].cards[editingCard];card.subtasks=old.subtasks||[];card.timeSpent=old.timeSpent||0;card.timerStart=old.timerStart||null;board().columns[editingCol].cards[editingCard]=card}else{card.subtasks=[];card.timeSpent=0;card.timerStart=null;board().columns[editingCol].cards.push(card)}
   save();closeModal();renderBoard();
 }
 

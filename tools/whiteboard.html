@@ -42,6 +42,8 @@
         <select id="lineStyle" style="padding:.3rem;border-radius:4px;border:1px solid var(--border)"><option value="solid">Solid</option><option value="dashed">Dashed</option><option value="dotted">Dotted</option></select>
         <button class="btn btn-outline" onclick="toggleGrid()" id="btnGrid">⊞ Grid</button>
         <button class="btn btn-outline" onclick="undo()">↩ Undo</button>
+        <button class="btn btn-outline" onclick="sendToBack()">⬇ Back</button>
+        <button class="btn btn-outline" onclick="bringToFront()">⬆ Front</button>
         <button class="btn btn-outline" onclick="clearBoard()">🗑️ Clear</button>
       </div>
       <div class="row" style="margin-bottom:.5rem">
@@ -94,39 +96,88 @@
   <script src="../js/common.js"></script>
   <script>
 var c=document.getElementById("board"),ctx=c.getContext("2d"),drawing=false,tool="pen",strokes=[],current=[],bgColor="#ffffff",showGrid=false;
+var panX=0,panY=0,isPanning=false,panStart={x:0,y:0};
 ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);
-function getPos(e){var r=c.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)}}
+
+function getPos(e){var r=c.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width)-panX,y:(t.clientY-r.top)*(c.height/r.height)-panY}}
 function applyLineStyle(){var ls=document.getElementById("lineStyle").value;if(ls==="dashed")ctx.setLineDash([12,6]);else if(ls==="dotted")ctx.setLineDash([3,5]);else ctx.setLineDash([])}
-function drawGrid(){if(!showGrid)return;ctx.save();ctx.strokeStyle="rgba(180,180,180,0.3)";ctx.lineWidth=0.5;ctx.setLineDash([]);for(var x=0;x<c.width;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}for(var y=0;y<c.height;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}ctx.restore()}
+function drawGrid(){if(!showGrid)return;ctx.save();ctx.strokeStyle="rgba(180,180,180,0.3)";ctx.lineWidth=0.5;ctx.setLineDash([]);var startX=panX%30,startY=panY%30;for(var x=startX;x<c.width;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}for(var y=startY;y<c.height;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}ctx.restore()}
 function toggleGrid(){showGrid=!showGrid;var btn=document.getElementById("btnGrid");btn.style.background=showGrid?"var(--accent)":"";btn.className=showGrid?"btn":"btn btn-outline";redraw()}
+
+// Pan with middle mouse or two-finger drag
+c.addEventListener("mousedown",function(e){
+  if(e.button===1){e.preventDefault();isPanning=true;panStart={x:e.clientX-panX,y:e.clientY-panY};return}
+  startDraw(e);
+});
+c.addEventListener("mousemove",function(e){
+  if(isPanning){panX=e.clientX-panStart.x;panY=e.clientY-panStart.y;redraw();return}
+  draw(e);
+});
+c.addEventListener("mouseup",function(e){if(isPanning){isPanning=false;return}stopDraw(e)});
+c.addEventListener("mouseleave",function(e){if(isPanning){isPanning=false;return}stopDraw(e)});
+c.addEventListener("contextmenu",function(e){e.preventDefault()});
+
+var touchCount=0;
+c.addEventListener("touchstart",function(e){
+  touchCount=e.touches.length;
+  if(touchCount>=2){isPanning=true;panStart={x:e.touches[0].clientX-panX,y:e.touches[0].clientY-panY};e.preventDefault();return}
+  startDraw(e);
+});
+c.addEventListener("touchmove",function(e){
+  if(isPanning&&e.touches.length>=2){panX=e.touches[0].clientX-panStart.x;panY=e.touches[0].clientY-panStart.y;redraw();e.preventDefault();return}
+  draw(e);
+});
+c.addEventListener("touchend",function(e){if(isPanning){isPanning=false;touchCount=0;return}stopDraw(e)});
+
 var shapeStart=null;
 function startDraw(e){e.preventDefault();var p=getPos(e);
-  if(tool==="text"){var txt=prompt("Enter text:");if(txt){ctx.globalAlpha=+document.getElementById("penOpacity").value;ctx.fillStyle=document.getElementById("penColor").value;ctx.font=(+document.getElementById("penSize").value*5)+"px Arial";ctx.fillText(txt,p.x,p.y);ctx.globalAlpha=1}return}
-  if(tool==="sticky"){var note=document.createElement("div");note.contentEditable=true;note.style.cssText="position:absolute;background:#fffde7;border:1px solid #e6d600;padding:8px;min-width:80px;min-height:50px;font-size:14px;box-shadow:2px 2px 6px rgba(0,0,0,.2);z-index:10;outline:none;";var r2=c.getBoundingClientRect();note.style.left=(r2.left+p.x*(r2.width/c.width))+"px";note.style.top=(r2.top+p.y*(r2.height/c.height)+window.scrollY)+"px";document.body.appendChild(note);note.focus();return}
+  if(tool==="text"){var txt=prompt("Enter text:");if(txt){ctx.save();ctx.translate(panX,panY);ctx.globalAlpha=+document.getElementById("penOpacity").value;ctx.fillStyle=document.getElementById("penColor").value;ctx.font=(+document.getElementById("penSize").value*5)+"px Arial";ctx.fillText(txt,p.x,p.y);ctx.globalAlpha=1;ctx.restore()}return}
+  if(tool==="sticky"){var note=document.createElement("div");note.contentEditable=true;note.style.cssText="position:absolute;background:#fffde7;border:1px solid #e6d600;padding:8px;min-width:80px;min-height:50px;font-size:14px;box-shadow:2px 2px 6px rgba(0,0,0,.2);z-index:10;outline:none;";var r2=c.getBoundingClientRect();note.style.left=(r2.left+(p.x+panX)*(r2.width/c.width))+"px";note.style.top=(r2.top+(p.y+panY)*(r2.height/c.height)+window.scrollY)+"px";document.body.appendChild(note);note.focus();return}
   if(tool==="rect"||tool==="circle"||tool==="line"||tool==="arrow"||tool==="diamond"||tool==="star"){shapeStart=p;drawing=true;return}
   drawing=true;current=[{x:p.x,y:p.y,color:tool==="eraser"?bgColor:document.getElementById("penColor").value,size:+document.getElementById("penSize").value*(tool==="eraser"?3:1),opacity:+document.getElementById("penOpacity").value}]}
-function draw(e){if(!drawing)return;e.preventDefault();if(shapeStart)return;var p=getPos(e);current.push({x:p.x,y:p.y,color:current[0].color,size:current[0].size,opacity:current[0].opacity});drawStroke(current)}
+function draw(e){if(!drawing)return;e.preventDefault();if(shapeStart)return;var p=getPos(e);current.push({x:p.x,y:p.y,color:current[0].color,size:current[0].size,opacity:current[0].opacity});drawStroke(current,true)}
 function stopDraw(e){if(!drawing)return;drawing=false;
-  if(shapeStart){var r=c.getBoundingClientRect();var p;try{var ev=e.changedTouches?e.changedTouches[0]:e;p={x:(ev.clientX-r.left)*(c.width/r.width),y:(ev.clientY-r.top)*(c.height/r.height)}}catch(err){p=shapeStart}
+  if(shapeStart){var r=c.getBoundingClientRect();var p;try{var ev=e.changedTouches?e.changedTouches[0]:e;p={x:(ev.clientX-r.left)*(c.width/r.width)-panX,y:(ev.clientY-r.top)*(c.height/r.height)-panY}}catch(err){p=shapeStart}
     var col=document.getElementById("penColor").value;var sz=+document.getElementById("penSize").value;var op=+document.getElementById("penOpacity").value;
-    ctx.save();ctx.globalAlpha=op;ctx.strokeStyle=col;ctx.lineWidth=sz;applyLineStyle();ctx.beginPath();
-    if(tool==="rect"){ctx.rect(shapeStart.x,shapeStart.y,p.x-shapeStart.x,p.y-shapeStart.y)}
-    else if(tool==="circle"){var rx=Math.abs(p.x-shapeStart.x)/2,ry=Math.abs(p.y-shapeStart.y)/2;ctx.ellipse(shapeStart.x+(p.x-shapeStart.x)/2,shapeStart.y+(p.y-shapeStart.y)/2,rx,ry,0,0,Math.PI*2)}
-    else if(tool==="diamond"){var cx=(shapeStart.x+p.x)/2,cy=(shapeStart.y+p.y)/2,hw=Math.abs(p.x-shapeStart.x)/2,hh=Math.abs(p.y-shapeStart.y)/2;ctx.moveTo(cx,cy-hh);ctx.lineTo(cx+hw,cy);ctx.lineTo(cx,cy+hh);ctx.lineTo(cx-hw,cy);ctx.closePath()}
-    else if(tool==="star"){var cx2=(shapeStart.x+p.x)/2,cy2=(shapeStart.y+p.y)/2,or2=Math.max(Math.abs(p.x-shapeStart.x),Math.abs(p.y-shapeStart.y))/2,ir=or2*0.4;for(var i=0;i<10;i++){var a=Math.PI/2+i*Math.PI/5,rad=i%2===0?or2:ir;var sx=cx2+rad*Math.cos(a),sy=cy2-rad*Math.sin(a);i===0?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy)}ctx.closePath()}
-    else if(tool==="arrow"){ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(p.x,p.y);ctx.stroke();var angle=Math.atan2(p.y-shapeStart.y,p.x-shapeStart.x),hl=sz*4;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle-Math.PI/6),p.y-hl*Math.sin(angle-Math.PI/6));ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle+Math.PI/6),p.y-hl*Math.sin(angle+Math.PI/6))}
-    else{ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(p.x,p.y)}
-    ctx.stroke();ctx.restore();shapeStart=null;return}
-  if(current.length>1)strokes.push(current.slice());current=[]}
-function drawStroke(s){if(s.length<2)return;ctx.save();ctx.globalAlpha=s[0].opacity||1;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";ctx.moveTo(s[0].x,s[0].y);for(var i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke();ctx.restore()}
-function redraw(){ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);drawGrid();strokes.forEach(function(s){drawStroke(s)})}
+    strokes.push({type:"shape",tool:tool,start:shapeStart,end:p,color:col,size:sz,opacity:op,lineStyle:document.getElementById("lineStyle").value});
+    shapeStart=null;redraw();return}
+  if(current.length>1)strokes.push({type:"stroke",points:current.slice()});current=[];redraw()}
+
+function drawStroke(s,live){
+  if(s.length<2)return;ctx.save();if(live)ctx.translate(panX,panY);
+  ctx.globalAlpha=s[0].opacity||1;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.moveTo(s[0].x,s[0].y);for(var i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke();ctx.restore()}
+
+function drawShape(item){
+  ctx.save();ctx.translate(panX,panY);ctx.globalAlpha=item.opacity;ctx.strokeStyle=item.color;ctx.lineWidth=item.size;
+  if(item.lineStyle==="dashed")ctx.setLineDash([12,6]);else if(item.lineStyle==="dotted")ctx.setLineDash([3,5]);else ctx.setLineDash([]);
+  ctx.beginPath();var s=item.start,p=item.end;
+  if(item.tool==="rect"){ctx.rect(s.x,s.y,p.x-s.x,p.y-s.y)}
+  else if(item.tool==="circle"){var rx=Math.abs(p.x-s.x)/2,ry=Math.abs(p.y-s.y)/2;ctx.ellipse(s.x+(p.x-s.x)/2,s.y+(p.y-s.y)/2,rx,ry,0,0,Math.PI*2)}
+  else if(item.tool==="diamond"){var cx2=(s.x+p.x)/2,cy2=(s.y+p.y)/2,hw=Math.abs(p.x-s.x)/2,hh=Math.abs(p.y-s.y)/2;ctx.moveTo(cx2,cy2-hh);ctx.lineTo(cx2+hw,cy2);ctx.lineTo(cx2,cy2+hh);ctx.lineTo(cx2-hw,cy2);ctx.closePath()}
+  else if(item.tool==="star"){var cx3=(s.x+p.x)/2,cy3=(s.y+p.y)/2,or2=Math.max(Math.abs(p.x-s.x),Math.abs(p.y-s.y))/2,ir=or2*0.4;for(var i=0;i<10;i++){var a=Math.PI/2+i*Math.PI/5,rad=i%2===0?or2:ir;var sx2=cx3+rad*Math.cos(a),sy2=cy3-rad*Math.sin(a);i===0?ctx.moveTo(sx2,sy2):ctx.lineTo(sx2,sy2)}ctx.closePath()}
+  else if(item.tool==="arrow"){ctx.moveTo(s.x,s.y);ctx.lineTo(p.x,p.y);ctx.stroke();var angle=Math.atan2(p.y-s.y,p.x-s.x),hl=item.size*4;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle-Math.PI/6),p.y-hl*Math.sin(angle-Math.PI/6));ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-hl*Math.cos(angle+Math.PI/6),p.y-hl*Math.sin(angle+Math.PI/6))}
+  else{ctx.moveTo(s.x,s.y);ctx.lineTo(p.x,p.y)}
+  ctx.stroke();ctx.restore();
+}
+
+function redraw(){
+  ctx.fillStyle=bgColor;ctx.fillRect(0,0,c.width,c.height);drawGrid();
+  strokes.forEach(function(item){
+    if(item.type==="stroke"){ctx.save();ctx.translate(panX,panY);drawStroke(item.points,false);ctx.restore()}
+    else if(item.type==="shape")drawShape(item);
+  });
+}
+
 function setTool(t){tool=t;["btnPen","btnEraser","btnText","btnRect","btnCircle","btnLine","btnArrow","btnDiamond","btnStar","btnSticky"].forEach(function(id){var el=document.getElementById(id);if(el){el.className="btn btn-outline";el.style.background=""}});var btn=document.getElementById("btn"+t.charAt(0).toUpperCase()+t.slice(1));if(btn){btn.className="btn";btn.style.background="var(--accent)"}}
 function undo(){strokes.pop();redraw()}
 function clearBoard(){strokes=[];redraw()}
 function setBg(color){bgColor=color;c.style.background=color;redraw()}
-function exportBoard(){c.toBlob(function(b){download(b,"whiteboard.png")})}
-c.addEventListener("mousedown",startDraw);c.addEventListener("mousemove",draw);c.addEventListener("mouseup",stopDraw);c.addEventListener("mouseleave",stopDraw);
-c.addEventListener("touchstart",startDraw);c.addEventListener("touchmove",draw);c.addEventListener("touchend",stopDraw);
+
+function sendToBack(){if(strokes.length<2)return;var item=strokes.pop();strokes.unshift(item);redraw()}
+function bringToFront(){if(strokes.length<2)return;var item=strokes.shift();strokes.push(item);redraw()}
+
+function exportBoard(){c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="whiteboard.png";a.click()})}
   </script>
 </body>
 </html>

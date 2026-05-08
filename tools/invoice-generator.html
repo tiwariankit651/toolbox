@@ -37,13 +37,20 @@
     <div class="tool-section">
       <h1>🧾 Invoice Generator</h1>
       <p class="info">Create professional invoices. Fill the form and download as PDF.</p>
-      <div class="row"><input type="text" id="bName" placeholder="Your Business Name"><input type="text" id="invNo" placeholder="Invoice # (e.g. INV-001)"></div>
+      <div class="row"><input type="text" id="bName" placeholder="Your Business Name"><input type="text" id="invNo" placeholder="Invoice #" readonly></div>
       <div class="row"><input type="date" id="invDate"><input type="text" id="currency" value="₹" placeholder="Currency" style="max-width:60px"></div>
       <div class="row" style="margin-top:.5rem"><label>Company Logo:</label><input type="file" id="logoFile" accept="image/png,image/jpeg" onchange="previewLogo(this)"></div>
       <div id="logoPreview" style="margin:.5rem 0"></div>
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
       <h2>Bill To:</h2>
+      <div class="row"><select id="clientSelect" onchange="loadClient()"><option value="">-- Select Saved Client --</option></select></div>
       <div class="row"><input type="text" id="cName" placeholder="Client Name"><input type="text" id="cEmail" placeholder="Client Email"></div>
+      <div class="row"><input type="text" id="cAddress" placeholder="Client Address" style="flex:1"></div>
+      <button class="btn btn-outline" onclick="saveClient()" style="margin-top:.5rem">💾 Save Client</button>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
+      <h2>Recurring Invoice:</h2>
+      <div class="row" style="align-items:center"><label><input type="checkbox" id="recurringChk" onchange="toggleRecurring()"> Recurring</label><select id="recurFreq" style="max-width:150px" disabled onchange="calcNextDue()"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+      <div id="nextDueDisplay" style="margin-top:.5rem;display:none" class="info"></div>
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
       <h2>Items:</h2>
       <div id="items"></div>
@@ -95,6 +102,61 @@
   <script src="../js/common.js"></script>
   <script>
 let itemCount=0,logoDataUrl=null;
+
+// Invoice auto-increment
+function getNextInvNo(){
+  let n=+(localStorage.getItem('invAutoNum')||0)+1;
+  localStorage.setItem('invAutoNum',n);
+  return 'INV-'+String(n).padStart(4,'0');
+}
+document.getElementById('invNo').value=getNextInvNo();
+
+// Client database
+function getClients(){return JSON.parse(localStorage.getItem('invClients')||'{}');}
+function populateClientDropdown(){
+  const sel=document.getElementById('clientSelect');
+  sel.innerHTML='<option value="">-- Select Saved Client --</option>';
+  Object.keys(getClients()).forEach(name=>{
+    const o=document.createElement('option');o.value=name;o.textContent=name;sel.appendChild(o);
+  });
+}
+function saveClient(){
+  const name=document.getElementById('cName').value.trim();
+  if(!name){alert('Enter client name first');return;}
+  const clients=getClients();
+  clients[name]={name,email:document.getElementById('cEmail').value,address:document.getElementById('cAddress').value};
+  localStorage.setItem('invClients',JSON.stringify(clients));
+  populateClientDropdown();
+  document.getElementById('clientSelect').value=name;
+}
+function loadClient(){
+  const sel=document.getElementById('clientSelect').value;
+  if(!sel)return;
+  const c=getClients()[sel];if(!c)return;
+  document.getElementById('cName').value=c.name||'';
+  document.getElementById('cEmail').value=c.email||'';
+  document.getElementById('cAddress').value=c.address||'';
+}
+populateClientDropdown();
+
+// Recurring invoice
+function toggleRecurring(){
+  const on=document.getElementById('recurringChk').checked;
+  document.getElementById('recurFreq').disabled=!on;
+  document.getElementById('nextDueDisplay').style.display=on?'block':'none';
+  if(on)calcNextDue();
+}
+function calcNextDue(){
+  const base=document.getElementById('invDate').value?new Date(document.getElementById('invDate').value):new Date();
+  const freq=document.getElementById('recurFreq').value;
+  const next=new Date(base);
+  if(freq==='monthly')next.setMonth(next.getMonth()+1);
+  else if(freq==='quarterly')next.setMonth(next.getMonth()+3);
+  else next.setFullYear(next.getFullYear()+1);
+  document.getElementById('nextDueDisplay').textContent='Next due: '+next.toLocaleDateString();
+}
+document.getElementById('invDate').addEventListener('change',()=>{if(document.getElementById('recurringChk').checked)calcNextDue();});
+
 function addItem(){
   itemCount++;
   const d=document.createElement('div');d.className='row';d.id='item'+itemCount;
@@ -130,7 +192,6 @@ async function genInvoice(){
   let y=790;
   const txt=(t,x,yy,f,s)=>page.drawText(t,{x,y:yy,font:f||font,size:s||11,color:PDFLib.rgb(0.1,0.1,0.15)});
 
-  // Logo
   if(logoDataUrl){
     try{
       const isPng=logoDataUrl.includes('image/png');
@@ -143,13 +204,20 @@ async function genInvoice(){
   }else{txt(document.getElementById('bName').value||'Your Business',50,y,bold,20);}
 
   txt('INVOICE',430,y,bold,20);y-=30;
-  txt('Invoice #: '+(document.getElementById('invNo').value||'INV-001'),430,y);y-=15;
-  txt('Date: '+(document.getElementById('invDate').value||new Date().toLocaleDateString()),430,y);y-=40;
+  txt('Invoice #: '+(document.getElementById('invNo').value||'INV-0001'),430,y);y-=15;
+  txt('Date: '+(document.getElementById('invDate').value||new Date().toLocaleDateString()),430,y);y-=15;
+  if(document.getElementById('recurringChk').checked){
+    txt('Recurring: '+document.getElementById('recurFreq').value,430,y);y-=15;
+    txt(document.getElementById('nextDueDisplay').textContent,430,y);y-=15;
+  }
+  y-=25;
   txt('Bill To:',50,y,bold,13);y-=18;
   txt(document.getElementById('cName').value||'Client Name',50,y);y-=15;
-  txt(document.getElementById('cEmail').value||'',50,y);y-=35;
+  txt(document.getElementById('cEmail').value||'',50,y);y-=15;
+  const addr=document.getElementById('cAddress').value;
+  if(addr){txt(addr,50,y);y-=15;}
+  y-=20;
 
-  // Table header
   page.drawRectangle({x:45,y:y-5,width:505,height:22,color:PDFLib.rgb(0.31,0.55,1)});
   const white={color:PDFLib.rgb(1,1,1)};
   page.drawText('Description',{x:55,y,font:bold,size:10,...white});
@@ -166,7 +234,6 @@ async function genInvoice(){
   page.drawLine({start:{x:350,y:y+5},end:{x:550,y:y+5},thickness:1,color:PDFLib.rgb(.8,.8,.8)});
   y-=15;txt('Subtotal:',400,y);txt(cur+subtotal.toFixed(2),475,y,bold);y-=18;
 
-  // GST breakdown
   if(gstPct>0){
     if(isInter){
       txt('IGST ('+gstPct+'%):',400,y);txt(cur+totalTax.toFixed(2),475,y);y-=18;
@@ -185,6 +252,9 @@ async function genInvoice(){
   const blob=new Blob([await doc.save()],{type:'application/pdf'});
   download(blob,'invoice.pdf');
   document.getElementById('result').innerHTML="<p class='info'>✅ Invoice downloaded!</p>";
+
+  // Auto-increment for next invoice
+  document.getElementById('invNo').value=getNextInvNo();
 }
   </script>
 </body>

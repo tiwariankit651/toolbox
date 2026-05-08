@@ -13,9 +13,14 @@
   <style>
     #canvas-wrap{position:relative;width:100%;height:500px;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
     #map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+    #map-svg line{pointer-events:stroke;cursor:pointer;stroke-width:8}
     .node{position:absolute;padding:8px 16px;border-radius:20px;background:#4f8cff;color:#fff;cursor:grab;user-select:none;font-size:.9rem;font-weight:500;white-space:nowrap;min-width:60px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:box-shadow .2s}
     .node:hover{box-shadow:0 4px 16px rgba(0,0,0,.25)}
     .node.selected{outline:3px solid #ff9800}
+    .node.shape-rect{border-radius:4px}
+    .node.shape-diamond{border-radius:4px;transform-origin:center;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);padding:16px 24px}
+    .node.shape-rounded-rect{border-radius:10px}
+    .conn-label{position:absolute;font-size:.7rem;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1px 5px;cursor:pointer;white-space:nowrap}
     .controls{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0}
     .controls button,.controls select{font-size:.85rem}
     #node-editor{display:none;background:var(--card);padding:1rem;border-radius:10px;margin:.8rem 0;border:1px solid var(--border)}
@@ -34,6 +39,7 @@
 
       <div class="controls">
         <button class="btn" onclick="addChild()">➕ Add Child</button>
+        <button class="btn btn-outline" onclick="autoLayout()">🌳 Auto Layout</button>
         <button class="btn btn-outline" onclick="zoomIn()">🔍+</button>
         <button class="btn btn-outline" onclick="zoomOut()">🔍−</button>
         <button class="btn btn-outline" onclick="exportPNG()">📥 Export PNG</button>
@@ -50,6 +56,13 @@
       <div id="node-editor">
         <label>Node Text</label>
         <input type="text" id="edit-text" oninput="updateNodeText(this.value)">
+        <label>Shape</label>
+        <select id="edit-shape" onchange="updateNodeShape(this.value)" style="padding:.3rem .5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+          <option value="circle">Circle</option>
+          <option value="rect">Rectangle</option>
+          <option value="diamond">Diamond</option>
+          <option value="rounded-rect">Rounded Rect</option>
+        </select>
         <label>Color</label>
         <input type="color" id="edit-color" value="#4f8cff" onchange="updateNodeColor(this.value)">
         <button class="btn btn-outline" onclick="deleteNode()" style="margin-left:1rem;font-size:.8rem;color:#f44336">🗑 Delete</button>
@@ -115,32 +128,42 @@
   <script>
 var nodes=[],selectedId=null,scale=1,dragId=null,dragOff={x:0,y:0};
 var wrap=document.getElementById("canvas-wrap"),svg=document.getElementById("map-svg");
-var idCounter=1;
+var idCounter=1,connLabels={};
 
-function createNode(text,x,y,parentId,color){
-  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff"};
+function createNode(text,x,y,parentId,color,shape){
+  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff",shape:shape||"circle"};
   nodes.push(n);renderAll();return n;
 }
 
 function renderAll(){
-  // Clear
-  wrap.querySelectorAll(".node").forEach(function(el){el.remove()});
+  wrap.querySelectorAll(".node,.conn-label").forEach(function(el){el.remove()});
   svg.innerHTML="";
   nodes.forEach(function(n){
-    // Draw line to parent
     if(n.parentId!==null){
       var p=nodes.find(function(nd){return nd.id===n.parentId});
       if(p){
         var line=document.createElementNS("http://www.w3.org/2000/svg","line");
         line.setAttribute("x1",(p.x+50)*scale);line.setAttribute("y1",(p.y+18)*scale);
         line.setAttribute("x2",(n.x+50)*scale);line.setAttribute("y2",(n.y+18)*scale);
-        line.setAttribute("stroke",n.color);line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.6");
+        line.setAttribute("stroke",n.color);line.setAttribute("stroke-opacity","0.6");
+        line.setAttribute("data-child",n.id);
+        line.addEventListener("click",function(e){e.stopPropagation();editConnLabel(n.id)});
         svg.appendChild(line);
+        // render label
+        var key=p.id+"-"+n.id;
+        if(connLabels[key]){
+          var lbl=document.createElement("div");lbl.className="conn-label";
+          lbl.textContent=connLabels[key];
+          lbl.style.left=((p.x+n.x)/2+50)*scale+"px";
+          lbl.style.top=((p.y+n.y)/2+18)*scale-10+"px";
+          lbl.onclick=function(){editConnLabel(n.id)};
+          wrap.appendChild(lbl);
+        }
       }
     }
-    // Draw node
     var div=document.createElement("div");
-    div.className="node"+(n.id===selectedId?" selected":"");
+    var shapeClass=n.shape&&n.shape!=="circle"?" shape-"+n.shape:"";
+    div.className="node"+shapeClass+(n.id===selectedId?" selected":"");
     div.textContent=n.text;
     div.style.left=(n.x*scale)+"px";div.style.top=(n.y*scale)+"px";
     div.style.background=n.color;
@@ -148,9 +171,18 @@ function renderAll(){
     div.dataset.id=n.id;
     div.onmousedown=function(e){startDrag(e,n.id)};
     div.ontouchstart=function(e){startDrag(e.touches[0],n.id);e.preventDefault()};
-    div.onclick=function(e){if(!moved)selectNode(n.id)};
+    div.onclick=function(){if(!moved)selectNode(n.id)};
     wrap.appendChild(div);
   });
+}
+
+function editConnLabel(childId){
+  var n=nodes.find(function(nd){return nd.id===childId});
+  if(!n||n.parentId===null)return;
+  var key=n.parentId+"-"+childId;
+  var cur=connLabels[key]||"";
+  var txt=prompt("Connection label:",cur);
+  if(txt!==null){if(txt)connLabels[key]=txt;else delete connLabels[key];renderAll()}
 }
 
 var moved=false;
@@ -161,7 +193,6 @@ function startDrag(e,id){
   dragOff.x=e.clientX-rect.left-n.x*scale;
   dragOff.y=e.clientY-rect.top-n.y*scale;
 }
-
 document.addEventListener("mousemove",onDrag);
 document.addEventListener("touchmove",function(e){if(dragId)onDrag(e.touches[0])});
 function onDrag(e){
@@ -181,37 +212,55 @@ function selectNode(id){
   document.getElementById("node-editor").style.display="block";
   document.getElementById("edit-text").value=n.text;
   document.getElementById("edit-color").value=n.color;
+  document.getElementById("edit-shape").value=n.shape||"circle";
   renderAll();
 }
 
-function updateNodeText(v){
-  var n=nodes.find(function(nd){return nd.id===selectedId});
-  if(n){n.text=v;renderAll()}
-}
-function updateNodeColor(v){
-  var n=nodes.find(function(nd){return nd.id===selectedId});
-  if(n){n.color=v;renderAll()}
-}
+function updateNodeText(v){var n=nodes.find(function(nd){return nd.id===selectedId});if(n){n.text=v;renderAll()}}
+function updateNodeColor(v){var n=nodes.find(function(nd){return nd.id===selectedId});if(n){n.color=v;renderAll()}}
+function updateNodeShape(v){var n=nodes.find(function(nd){return nd.id===selectedId});if(n){n.shape=v;renderAll()}}
 
 function addChild(){
   var parent=nodes.find(function(nd){return nd.id===selectedId})||nodes[0];
   if(!parent)return;
-  var angle=Math.random()*Math.PI*2;
-  var dist=120+Math.random()*40;
-  createNode("New Idea",parent.x+Math.cos(angle)*dist,parent.y+Math.sin(angle)*dist,parent.id,parent.color);
+  var angle=Math.random()*Math.PI*2,dist=120+Math.random()*40;
+  createNode("New Idea",parent.x+Math.cos(angle)*dist,parent.y+Math.sin(angle)*dist,parent.id,parent.color,parent.shape);
 }
 
 function deleteNode(){
   if(!selectedId||nodes.length<=1)return;
-  // Remove node and its children recursively
   var toRemove=[selectedId];
-  function findChildren(pid){
-    nodes.forEach(function(n){if(n.parentId===pid){toRemove.push(n.id);findChildren(n.id)}});
-  }
+  function findChildren(pid){nodes.forEach(function(n){if(n.parentId===pid){toRemove.push(n.id);findChildren(n.id)}})}
   findChildren(selectedId);
   nodes=nodes.filter(function(n){return toRemove.indexOf(n.id)===-1});
-  selectedId=null;
-  document.getElementById("node-editor").style.display="none";
+  selectedId=null;document.getElementById("node-editor").style.display="none";renderAll();
+}
+
+function autoLayout(){
+  if(!nodes.length)return;
+  var root=nodes.find(function(n){return n.parentId===null});
+  if(!root)return;
+  var cx=wrap.clientWidth/2-50,cy=30;
+  // Build tree
+  function getChildren(pid){return nodes.filter(function(n){return n.parentId===pid})}
+  function countLeaves(id){var ch=getChildren(id);if(!ch.length)return 1;var s=0;ch.forEach(function(c){s+=countLeaves(c.id)});return s}
+  var hGap=130,vGap=90;
+  function layoutTree(id,x,y,width){
+    var n=nodes.find(function(nd){return nd.id===id});
+    n.x=x+width/2-50;n.y=y;
+    var ch=getChildren(id);if(!ch.length)return;
+    var totalLeaves=0;ch.forEach(function(c){totalLeaves+=countLeaves(c.id)});
+    var curX=x;
+    ch.forEach(function(c){
+      var leaves=countLeaves(c.id);
+      var childWidth=width*(leaves/totalLeaves);
+      layoutTree(c.id,curX,y+vGap,childWidth);
+      curX+=childWidth;
+    });
+  }
+  var totalLeaves=countLeaves(root.id);
+  var totalWidth=Math.max(totalLeaves*hGap,wrap.clientWidth);
+  layoutTree(root.id,(wrap.clientWidth-totalWidth)/2,cy,totalWidth);
   renderAll();
 }
 
@@ -228,7 +277,6 @@ function exportPNG(){
   var pad=60;c.width=bounds.maxX-bounds.minX+pad*2;c.height=bounds.maxY-bounds.minY+pad*2;
   var ctx=c.getContext("2d");
   ctx.fillStyle="#1a1a2e";ctx.fillRect(0,0,c.width,c.height);
-  // Lines
   nodes.forEach(function(n){
     if(n.parentId!==null){
       var p=nodes.find(function(nd){return nd.id===n.parentId});
@@ -236,29 +284,37 @@ function exportPNG(){
         ctx.beginPath();ctx.moveTo(p.x-bounds.minX+pad+50,p.y-bounds.minY+pad+15);
         ctx.lineTo(n.x-bounds.minX+pad+50,n.y-bounds.minY+pad+15);
         ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.globalAlpha=0.6;ctx.stroke();ctx.globalAlpha=1;
+        var key=p.id+"-"+n.id;
+        if(connLabels[key]){
+          ctx.fillStyle="#fff";ctx.font="11px sans-serif";ctx.textAlign="center";
+          ctx.fillText(connLabels[key],(p.x+n.x)/2-bounds.minX+pad+50,(p.y+n.y)/2-bounds.minY+pad+15-5);
+        }
       }
     }
   });
-  // Nodes
   nodes.forEach(function(n){
     var nx=n.x-bounds.minX+pad,ny=n.y-bounds.minY+pad;
-    ctx.fillStyle=n.color;
-    ctx.beginPath();ctx.roundRect(nx,ny,100,30,15);ctx.fill();
+    ctx.fillStyle=n.color;ctx.beginPath();
+    if(n.shape==="rect")ctx.rect(nx,ny,100,30);
+    else if(n.shape==="diamond"){ctx.moveTo(nx+50,ny);ctx.lineTo(nx+100,ny+15);ctx.lineTo(nx+50,ny+30);ctx.lineTo(nx,ny+15);ctx.closePath()}
+    else if(n.shape==="rounded-rect")ctx.roundRect(nx,ny,100,30,8);
+    else ctx.roundRect(nx,ny,100,30,15);
+    ctx.fill();
     ctx.fillStyle="#fff";ctx.font="bold 13px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
     ctx.fillText(n.text,nx+50,ny+15);
   });
   c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mindmap.png";a.click()});
 }
 
-function saveMap(){localStorage.setItem("mindmap",JSON.stringify({nodes:nodes,idCounter:idCounter}));alert("Mind map saved!")}
+function saveMap(){localStorage.setItem("mindmap",JSON.stringify({nodes:nodes,idCounter:idCounter,connLabels:connLabels}));alert("Mind map saved!")}
 function loadMap(){
   var d=localStorage.getItem("mindmap");
-  if(d){var obj=JSON.parse(d);nodes=obj.nodes;idCounter=obj.idCounter;selectedId=null;renderAll();alert("Mind map loaded!")}
+  if(d){var obj=JSON.parse(d);nodes=obj.nodes;idCounter=obj.idCounter;connLabels=obj.connLabels||{};selectedId=null;renderAll();alert("Mind map loaded!")}
   else alert("No saved mind map found.");
 }
 
 function loadTemplate(t){
-  if(!t)return;nodes=[];idCounter=1;selectedId=null;
+  if(!t)return;nodes=[];idCounter=1;selectedId=null;connLabels={};
   var cx=wrap.clientWidth/2-50,cy=200;
   if(t==="project"){
     createNode("Project",cx,cy,null,"#4f8cff");
@@ -290,7 +346,6 @@ function loadTemplate(t){
   renderAll();
 }
 
-// Init with central node
 createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
 selectNode(1);
   </script>
