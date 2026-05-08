@@ -16,18 +16,26 @@
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 📅 Date on Photo</div>
     <div class="tool-section">
       <h1>📅 Add Date on Photo</h1>
-      <p class="info">Add date text on your photo — required for many government exam forms.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop photo here<input type="file" id="inp" accept="image/*"></div>
+      <p class="info">Add date/text on your photos — supports batch processing, custom positions, and styling.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop photo(s) here<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="editor" style="display:none">
+        <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
           <div><label>Date:</label><input type="date" id="dateVal" oninput="render()"></div>
           <div><label>Format:</label><select id="dateFmt" onchange="render()"><option value="dd/mm/yyyy">DD/MM/YYYY</option><option value="dd-mm-yyyy">DD-MM-YYYY</option><option value="yyyy-mm-dd">YYYY-MM-DD</option><option value="dd mon yyyy">DD Mon YYYY</option></select></div>
           <div><label>Custom text:</label><input type="text" id="customTxt" placeholder="Optional extra text" oninput="render()" style="max-width:150px"></div>
-          <div><label>Position:</label><select id="pos" onchange="render()"><option value="bottom">Bottom Strip</option><option value="top">Top Strip</option><option value="corner">Bottom-Right Corner</option></select></div>
-          <div><label>Text Color:</label><input type="color" id="txtCol" value="#000000" oninput="render()" style="height:35px;width:40px;border:none"></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Position:</label><select id="pos" onchange="render()"><option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option><option value="middle-left">Middle-Left</option><option value="middle-center">Center</option><option value="middle-right">Middle-Right</option><option value="bottom-left">Bottom-Left</option><option value="bottom-center" selected>Bottom-Center</option><option value="bottom-right">Bottom-Right</option></select></div>
+          <div><label>Font Size:</label><input type="range" id="fontSize" min="10" max="60" value="16" oninput="render()"><span id="fsVal">16</span>px</div>
+          <div><label>Color:</label><input type="color" id="txtCol" value="#000000" oninput="render()" style="height:35px;width:40px;border:none"></div>
+          <div><label>Opacity:</label><input type="range" id="opacity" min="10" max="100" value="100" oninput="render()"><span id="opVal">100</span>%</div>
         </div>
         <canvas id="canvas" style="max-width:100%;border-radius:8px;margin:.5rem 0"></canvas>
-        <div class="row"><button class="btn" onclick="document.getElementById('canvas').toBlob(function(b){download(b,'photo_dated.jpg')},'image/jpeg',0.95)">💾 Download</button></div>
+        <div class="row">
+          <button class="btn" onclick="downloadCurrent()">💾 Download</button>
+          <button class="btn btn-outline" id="batchBtn" style="display:none" onclick="downloadAll()">📦 Download All</button>
+        </div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Add the date of photograph on your images — required by many government exam forms in India. Supports 4 date formats (DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD Mon YYYY) and custom text. Choose position: bottom strip, top strip, or corner overlay. Select text color to match your photo. Essential for SSC, UPSC, Banking, Railway, and state PSC exam applications that mandate the date on photographs. Your photos are processed locally — never uploaded to any server.</p>
@@ -64,30 +72,52 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var img=null;
+var images=[],curIdx=0;
 document.getElementById("dateVal").valueAsDate=new Date();
-setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";render()})});
-function render(){
-  if(!img)return;var c=document.getElementById("canvas"),ctx=c.getContext("2d");
-  var pos=document.getElementById("pos").value;var stripH=40;
-  c.width=img.width;c.height=img.height+(pos!=="corner"?stripH:0);
-  if(pos==="top"){ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,stripH);ctx.drawImage(img,0,stripH)}
-  else if(pos==="bottom"){ctx.drawImage(img,0,0);ctx.fillStyle="#fff";ctx.fillRect(0,img.height,c.width,stripH)}
-  else{c.height=img.height;ctx.drawImage(img,0,0)}
-  var date=document.getElementById("dateVal").value;
-  var fmt=document.getElementById("dateFmt").value;
-  var custom=document.getElementById("customTxt").value;
+setupDrop("drop","inp",function(f){
+  images=[];curIdx=0;
+  var loaded=0;
+  Array.from(f).forEach(function(file,i){
+    loadImage(file).then(function(img){images[i]=img;loaded++;if(loaded===f.length){document.getElementById("editor").style.display="block";if(f.length>1){document.getElementById("batchNav").style.display="flex";document.getElementById("batchBtn").style.display="inline-block"}else{document.getElementById("batchNav").style.display="none";document.getElementById("batchBtn").style.display="none"}render()}});
+  });
+});
+function navImg(dir){curIdx=Math.max(0,Math.min(images.length-1,curIdx+dir));render()}
+function getDateText(){
+  var date=document.getElementById("dateVal").value;var fmt=document.getElementById("dateFmt").value;var custom=document.getElementById("customTxt").value;
   if(date){var d=new Date(date);var dd=String(d.getDate()).padStart(2,"0");var mm=String(d.getMonth()+1).padStart(2,"0");var yyyy=d.getFullYear();var mon=d.toLocaleDateString("en",{month:"short"});
-    if(fmt==="dd/mm/yyyy")date=dd+"/"+mm+"/"+yyyy;
-    else if(fmt==="dd-mm-yyyy")date=dd+"-"+mm+"-"+yyyy;
-    else if(fmt==="yyyy-mm-dd")date=yyyy+"-"+mm+"-"+dd;
-    else date=dd+" "+mon+" "+yyyy;
-  }
+    if(fmt==="dd/mm/yyyy")date=dd+"/"+mm+"/"+yyyy;else if(fmt==="dd-mm-yyyy")date=dd+"-"+mm+"-"+yyyy;else if(fmt==="yyyy-mm-dd")date=yyyy+"-"+mm+"-"+dd;else date=dd+" "+mon+" "+yyyy;}
   if(custom)date=(date?date+" — ":"")+custom;
-  ctx.fillStyle=document.getElementById("txtCol").value;ctx.font="bold 16px Arial";ctx.textAlign="center";
-  if(pos==="top")ctx.fillText(date,c.width/2,stripH/2+6);
-  else if(pos==="bottom")ctx.fillText(date,c.width/2,img.height+stripH/2+6);
-  else{ctx.textAlign="right";ctx.fillStyle="rgba(255,255,255,0.8)";ctx.fillRect(c.width-130,c.height-30,130,30);ctx.fillStyle=document.getElementById("txtCol").value;ctx.fillText(date,c.width-10,c.height-10)}
+  return date;
+}
+function render(){
+  if(!images.length)return;
+  var img=images[curIdx];var c=document.getElementById("canvas"),ctx=c.getContext("2d");
+  c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);
+  document.getElementById("fsVal").textContent=document.getElementById("fontSize").value;
+  document.getElementById("opVal").textContent=document.getElementById("opacity").value;
+  if(images.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+"/"+images.length;
+  var text=getDateText();if(!text)return;
+  var pos=document.getElementById("pos").value;
+  var fs=+document.getElementById("fontSize").value;
+  var opacity=+document.getElementById("opacity").value/100;
+  var col=document.getElementById("txtCol").value;
+  ctx.globalAlpha=opacity;ctx.font="bold "+fs+"px Arial";ctx.fillStyle=col;
+  var parts=pos.split("-");var vp=parts[0],hp=parts[1];
+  var x,y;
+  if(hp==="left"){ctx.textAlign="left";x=10}else if(hp==="right"){ctx.textAlign="right";x=c.width-10}else{ctx.textAlign="center";x=c.width/2}
+  if(vp==="top")y=fs+10;else if(vp==="bottom")y=c.height-10;else y=c.height/2+fs/3;
+  ctx.strokeStyle="rgba(255,255,255,0.7)";ctx.lineWidth=3;ctx.strokeText(text,x,y);
+  ctx.fillText(text,x,y);ctx.globalAlpha=1;
+}
+function downloadCurrent(){document.getElementById("canvas").toBlob(function(b){download(b,"photo_dated_"+(curIdx+1)+".jpg")},"image/jpeg",0.95)}
+function downloadAll(){
+  var origIdx=curIdx;
+  function next(i){
+    if(i>=images.length){curIdx=origIdx;render();return}
+    curIdx=i;render();
+    document.getElementById("canvas").toBlob(function(b){download(b,"photo_dated_"+(i+1)+".jpg");setTimeout(function(){next(i+1)},300)},"image/jpeg",0.95);
+  }
+  next(0);
 }
   </script>
 </body></html>

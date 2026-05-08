@@ -55,7 +55,7 @@
       <h2 style="margin-top:1.5rem">Percentage Change</h2>
       <div class="row">
         <input type="number" id="old" placeholder="Old value"><span>→</span><input type="number" id="new2" placeholder="New value">
-        <button class="btn" onclick="const o=+document.getElementById('old').value,n=+document.getElementById('new2').value;document.getElementById('r3').textContent=(((n-o)/o)*100).toFixed(2)+'%'">Calculate</button>
+        <button class="btn" onclick="const o=+document.getElementById('old').value,n=+document.getElementById('new2').value;var ch=(((n-o)/Math.abs(o))*100).toFixed(2);document.getElementById('r3').textContent=(ch>0?'+':'')+ch+'%'">Calculate</button>
         <strong id="r3" style="font-size:1.2rem;color:var(--accent)">—</strong>
       </div>
 
@@ -65,6 +65,27 @@
         <button class="btn" onclick="const v=+document.getElementById('v4').value,p=+document.getElementById('p4').value;document.getElementById('r4').textContent='↑ '+(v+v*p/100).toFixed(2)+' | ↓ '+(v-v*p/100).toFixed(2)">Calculate</button>
         <strong id="r4" style="font-size:1rem;color:var(--accent)">—</strong>
       </div>
+
+      <h2 style="margin-top:1.5rem">💼 Markup vs Margin</h2>
+      <div class="row">
+        <input type="number" id="cost" placeholder="Cost"><input type="number" id="sell" placeholder="Selling Price">
+        <button class="btn" onclick="var c=+document.getElementById('cost').value,s=+document.getElementById('sell').value;var markup=((s-c)/c*100).toFixed(2),margin=((s-c)/s*100).toFixed(2);document.getElementById('r5').textContent='Markup: '+markup+'% | Margin: '+margin+'%'">Calculate</button>
+      </div>
+      <strong id="r5" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
+
+      <h2 style="margin-top:1.5rem">🍽️ Tip Calculator</h2>
+      <div class="row">
+        <input type="number" id="bill" placeholder="Bill amount"><input type="number" id="tipPct" placeholder="Tip %" value="15"><input type="number" id="split" placeholder="Split between" value="1" min="1">
+        <button class="btn" onclick="var b=+document.getElementById('bill').value,t=+document.getElementById('tipPct').value,sp=+document.getElementById('split').value||1;var tip=b*t/100;var total=b+tip;document.getElementById('r6').textContent='Tip: '+tip.toFixed(2)+' | Total: '+total.toFixed(2)+' | Per person: '+(total/sp).toFixed(2)">Calculate</button>
+      </div>
+      <strong id="r6" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
+
+      <h2 style="margin-top:1.5rem">🏷️ Discount Calculator</h2>
+      <div class="row">
+        <input type="number" id="origPrice" placeholder="Original Price"><input type="number" id="discPct" placeholder="Discount %">
+        <button class="btn" onclick="var p=+document.getElementById('origPrice').value,d=+document.getElementById('discPct').value;var savings=p*d/100;document.getElementById('r7').textContent='Final: '+(p-savings).toFixed(2)+' | You save: '+savings.toFixed(2)">Calculate</button>
+      </div>
+      <strong id="r7" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>

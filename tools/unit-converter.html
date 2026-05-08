@@ -35,8 +35,11 @@
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → ⚖️ Unit Converter</div>
     <div style="min-height:90px"></div>
-    <div class="tool-section"><h1>⚖️ Unit Converter</h1><div class="row"><select id="cat" onchange="load()"><option value="length">📏 Length</option><option value="weight">⚖️ Weight</option><option value="temp">🌡️ Temperature</option><option value="data">💾 Data</option><option value="speed">🏎️ Speed</option><option value="area">📐 Area</option><option value="volume">🧪 Volume</option><option value="time">⏱️ Time</option><option value="fuel">⛽ Fuel Economy</option></select></div>
-      <div class="row"><div><input type="number" id="fv" oninput="conv()" placeholder="Enter value"><select id="fs" onchange="conv()"></select></div><div style="text-align:center;font-size:1.5rem;flex:0">=</div><div><input type="number" id="tv" readonly><select id="ts" onchange="conv()"></select></div></div></div>
+    <div class="tool-section"><h1>⚖️ Unit Converter</h1><div class="row"><select id="cat" onchange="load()"><option value="length">📏 Length</option><option value="weight">⚖️ Weight</option><option value="temp">🌡️ Temperature</option><option value="data">💾 Data</option><option value="speed">🏎️ Speed</option><option value="cooking">🍳 Cooking</option><option value="area">📐 Area</option><option value="volume">🧪 Volume</option><option value="time">⏱️ Time</option><option value="fuel">⛽ Fuel Economy</option></select></div>
+      <div class="row"><div style="flex:1"><input type="number" id="fv" oninput="conv()" placeholder="Enter value" style="width:100%"><select id="fs" onchange="conv()" style="width:100%;margin-top:.3rem"></select></div><div style="text-align:center;flex:0;display:flex;flex-direction:column;align-items:center;gap:.3rem"><span style="font-size:1.5rem">=</span><button class="btn btn-outline" onclick="swap()" style="padding:.3rem .6rem;font-size:.8rem" title="Swap">⇄</button></div><div style="flex:1"><input type="number" id="tv" readonly style="width:100%"><select id="ts" onchange="conv()" style="width:100%;margin-top:.3rem"></select></div></div>
+      <div id="formula" class="info" style="margin-top:.5rem"></div>
+      <div style="margin-top:.8rem"><h3>⭐ Favorites</h3><div id="favList" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem"></div><button class="btn btn-outline" onclick="addFav()" style="margin-top:.5rem;font-size:.8rem">+ Save Current</button></div>
+    </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -72,8 +75,20 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>const U={length:{mm:.001,cm:.01,m:1,km:1000,inch:.0254,foot:.3048,yard:.9144,mile:1609.34},weight:{mg:.001,g:1,kg:1000,oz:28.3495,lb:453.592,ton:1e6},temp:{celsius:"C",fahrenheit:"F",kelvin:"K"},data:{B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776},speed:{"km/h":1,mph:1.60934,"m/s":3.6,knot:1.852},area:{"sq mm":1e-6,"sq cm":1e-4,"sq m":1,"sq km":1e6,"sq ft":.0929,"sq yard":.8361,acre:4046.86,hectare:1e4},volume:{ml:.001,liter:1,"cu m":1000,gallon:3.785,"fl oz":.02957,cup:.2366,pint:.4732,quart:.9464},time:{second:1,minute:60,hour:3600,day:86400,week:604800,month:2592000,year:31536000},fuel:{"km/l":1,"l/100km":"inv",mpg:0.425144}};
+  <script>const U={length:{mm:.001,cm:.01,m:1,km:1000,inch:.0254,foot:.3048,yard:.9144,mile:1609.34},weight:{mg:.001,g:1,kg:1000,oz:28.3495,lb:453.592,ton:1e6},temp:{celsius:"C",fahrenheit:"F",kelvin:"K"},data:{B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776},speed:{"km/h":1,mph:1.60934,"m/s":3.6,knot:1.852},cooking:{ml:1,tsp:4.929,tbsp:14.787,cup:236.588,"fl oz":29.574,liter:1000},area:{"sq mm":1e-6,"sq cm":1e-4,"sq m":1,"sq km":1e6,"sq ft":.0929,"sq yard":.8361,acre:4046.86,hectare:1e4},volume:{ml:.001,liter:1,"cu m":1000,gallon:3.785,"fl oz":.02957,cup:.2366,pint:.4732,quart:.9464},time:{second:1,minute:60,hour:3600,day:86400,week:604800,month:2592000,year:31536000},fuel:{"km/l":1,"l/100km":"inv",mpg:0.425144}};
+var favs=JSON.parse(localStorage.getItem("uc_favs")||"[]");
 function load(){const c=document.getElementById("cat").value;const k=Object.keys(U[c]);const o=k.map(x=>"<option>"+x+"</option>").join("");document.getElementById("fs").innerHTML=o;document.getElementById("ts").innerHTML=o;if(k.length>1)document.getElementById("ts").selectedIndex=1;conv()}
-function conv(){const c=document.getElementById("cat").value,v=+document.getElementById("fv").value,f=document.getElementById("fs").value,t=document.getElementById("ts").value;if(c==="temp"){let cel;if(f==="celsius")cel=v;else if(f==="fahrenheit")cel=(v-32)*5/9;else cel=v-273.15;let r;if(t==="celsius")r=cel;else if(t==="fahrenheit")r=cel*9/5+32;else r=cel+273.15;document.getElementById("tv").value=+r.toFixed(4)}else{document.getElementById("tv").value=+(v*U[c][f]/U[c][t]).toFixed(6)}}
-load()</script>
+function conv(){const c=document.getElementById("cat").value,v=+document.getElementById("fv").value,f=document.getElementById("fs").value,t=document.getElementById("ts").value;var r;
+  if(c==="temp"){let cel;if(f==="celsius")cel=v;else if(f==="fahrenheit")cel=(v-32)*5/9;else cel=v-273.15;if(t==="celsius")r=cel;else if(t==="fahrenheit")r=cel*9/5+32;else r=cel+273.15;document.getElementById("tv").value=+r.toFixed(4);showFormula(c,f,t,v,r)}
+  else{r=v*U[c][f]/U[c][t];document.getElementById("tv").value=+r.toFixed(6);showFormula(c,f,t,v,r)}}
+function showFormula(c,f,t,v,r){
+  var el=document.getElementById("formula");if(!v){el.textContent="";return}
+  if(c==="temp"){var formulas={celsius_fahrenheit:"(°C × 9/5) + 32",fahrenheit_celsius:"(°F - 32) × 5/9",celsius_kelvin:"°C + 273.15",kelvin_celsius:"K - 273.15",fahrenheit_kelvin:"(°F - 32) × 5/9 + 273.15",kelvin_fahrenheit:"(K - 273.15) × 9/5 + 32"};el.textContent="Formula: "+(formulas[f+"_"+t]||f+" → "+t)+" = "+r.toFixed(4)}
+  else{var factor=(U[c][f]/U[c][t]);el.textContent="Formula: 1 "+f+" = "+factor.toFixed(6)+" "+t+" | "+v+" "+f+" = "+r.toFixed(6)+" "+t}}
+function swap(){var fs=document.getElementById("fs"),ts=document.getElementById("ts");var tmp=fs.value;fs.value=ts.value;ts.value=tmp;conv()}
+function addFav(){var c=document.getElementById("cat").value,f=document.getElementById("fs").value,t=document.getElementById("ts").value;var key=c+"|"+f+"|"+t;if(!favs.includes(key)){favs.push(key);localStorage.setItem("uc_favs",JSON.stringify(favs));renderFavs()}}
+function removeFav(i){favs.splice(i,1);localStorage.setItem("uc_favs",JSON.stringify(favs));renderFavs()}
+function useFav(key){var p=key.split("|");document.getElementById("cat").value=p[0];load();document.getElementById("fs").value=p[1];document.getElementById("ts").value=p[2];conv()}
+function renderFavs(){var el=document.getElementById("favList");el.innerHTML="";favs.forEach(function(key,i){var p=key.split("|");el.innerHTML+='<span style="background:var(--card);padding:.3rem .6rem;border-radius:6px;font-size:.8rem;cursor:pointer" onclick="useFav(\''+key+'\')">'+p[1]+'→'+p[2]+' <span onclick="event.stopPropagation();removeFav('+i+')" style="color:red;cursor:pointer">✕</span></span>'})}
+load();renderFavs()</script>
 </body></html>

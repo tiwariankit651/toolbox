@@ -36,8 +36,30 @@
         <div id="percentage" style="font-size:3rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
         <div id="message" style="font-size:1.2rem;margin:.5rem 0"></div>
         <div id="bar" style="height:20px;border-radius:10px;background:var(--border);margin:1rem auto;max-width:300px;overflow:hidden"><div id="barFill" style="height:100%;border-radius:10px;background:linear-gradient(90deg,#ff6b6b,#ff1493);transition:width 1s"></div></div>
-        <button class="btn btn-outline" onclick="shareResult()" style="margin-top:.5rem">📤 Share Result</button>
+        <div id="funFact" style="font-size:.95rem;color:var(--muted);margin:.5rem 0;font-style:italic"></div>
+        <div class="row" style="justify-content:center;gap:.5rem;margin-top:.5rem">
+          <button class="btn btn-outline" onclick="shareResult()">📤 Share Result</button>
+          <button class="btn btn-outline" onclick="generateCard()">🖼️ Download Card</button>
+        </div>
       </div>
+
+      <hr style="margin:2rem 0;border-color:var(--border)">
+      <h2>♈ Zodiac Compatibility</h2>
+      <div style="max-width:400px;margin:0 auto">
+        <div class="row" style="gap:.5rem">
+          <select id="zodiac1"><option value="">Your Sign</option><option>Aries</option><option>Taurus</option><option>Gemini</option><option>Cancer</option><option>Leo</option><option>Virgo</option><option>Libra</option><option>Scorpio</option><option>Sagittarius</option><option>Capricorn</option><option>Aquarius</option><option>Pisces</option></select>
+          <select id="zodiac2"><option value="">Their Sign</option><option>Aries</option><option>Taurus</option><option>Gemini</option><option>Cancer</option><option>Leo</option><option>Virgo</option><option>Libra</option><option>Scorpio</option><option>Sagittarius</option><option>Capricorn</option><option>Aquarius</option><option>Pisces</option></select>
+        </div>
+        <button class="btn btn-outline" onclick="zodiacCheck()" style="width:100%;margin-top:.5rem">♈ Check Zodiac Match</button>
+        <div id="zodiacResult" style="margin-top:1rem;display:none;padding:1rem;background:var(--card);border-radius:10px"></div>
+      </div>
+
+      <hr style="margin:2rem 0;border-color:var(--border)">
+      <h2>💬 Compatibility Quiz</h2>
+      <p style="font-size:.9rem;color:var(--muted)">Answer 10 fun questions together to check compatibility!</p>
+      <button class="btn btn-outline" onclick="startQuiz()" id="quizStartBtn">🎯 Start Quiz</button>
+      <div id="quizArea" style="display:none;max-width:500px;margin:1rem auto;text-align:left"></div>
+      <div id="quizResult" style="display:none;margin-top:1rem;font-size:1.2rem;font-weight:700"></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A fun love compatibility calculator for entertainment. Enter two names and get a love percentage with a fun message. The result is generated using a consistent algorithm based on name characters — same names always give the same result. Features animated heart, percentage bar, and shareable results (copy to clipboard or share via Web Share API). Perfect for fun with friends, social media engagement, and lighthearted entertainment. Disclaimer: This is purely for fun — real relationships are built on trust and communication!</p>
 <h2>Benefits of Using This Tool</h2>
@@ -74,6 +96,24 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+var funFacts=[
+  "Couples who laugh together stay together! 😂",
+  "Holding hands reduces stress and pain. Try it! 🤝",
+  "The average person falls in love 7 times before marriage 💫",
+  "Cuddling releases oxytocin, the 'love hormone' 🤗",
+  "Couples who travel together have healthier relationships ✈️",
+  "It takes only 4 minutes to decide if you like someone ⚡",
+  "Looking into each other's eyes can make strangers fall in love 👀",
+  "A strong friendship is the best foundation for love 🏗️",
+  "Expressing gratitude daily strengthens relationships 🙏",
+  "Couples with similar humor have stronger bonds 😄"
+];
+var funTips={
+  low:["Focus on building a genuine friendship first","Shared activities can create unexpected bonds","Give it time — great things take patience"],
+  mid:["Communication is key — talk about your feelings","Plan fun activities together to strengthen your bond","Small gestures matter more than grand ones"],
+  high:["You have great potential — nurture it with trust","Keep surprising each other to keep the spark alive","Support each other's dreams and goals"]
+};
+
 function calculate(){
   var n1=document.getElementById("name1").value.trim().toLowerCase();
   var n2=document.getElementById("name2").value.trim().toLowerCase();
@@ -88,7 +128,11 @@ function calculate(){
   document.getElementById("percentage").textContent=pct+"%";
   document.getElementById("message").textContent=msgs[msgIdx];
   document.getElementById("barFill").style.width=pct+"%";
+  var tipCat=pct<65?"low":pct<80?"mid":"high";
+  var tips=funTips[tipCat];
+  document.getElementById("funFact").textContent="💡 "+tips[Math.floor(Math.random()*tips.length)]+" | "+funFacts[Math.floor(Math.random()*funFacts.length)];
 }
+
 function shareResult(){
   var n1=document.getElementById("name1").value;
   var n2=document.getElementById("name2").value;
@@ -96,6 +140,100 @@ function shareResult(){
   var text=n1+" + "+n2+" = "+pct+" love! 💕 Check yours: https://freetoolhubs.com/tools/love-calculator";
   if(navigator.share){navigator.share({title:"Love Calculator Result",text:text})}
   else{navigator.clipboard.writeText(text);alert("Copied to clipboard! Share it with friends 💕")}
+}
+
+function generateCard(){
+  var n1=document.getElementById("name1").value||"You";
+  var n2=document.getElementById("name2").value||"Them";
+  var pct=document.getElementById("percentage").textContent;
+  var c=document.createElement("canvas");c.width=600;c.height=400;
+  var ctx=c.getContext("2d");
+  var grd=ctx.createLinearGradient(0,0,600,400);
+  grd.addColorStop(0,"#ff6b6b");grd.addColorStop(1,"#ff1493");
+  ctx.fillStyle=grd;ctx.fillRect(0,0,600,400);
+  ctx.fillStyle="#fff";ctx.font="bold 28px sans-serif";ctx.textAlign="center";
+  ctx.fillText(n1+" ❤️ "+n2,300,120);
+  ctx.font="bold 80px sans-serif";ctx.fillText(pct,300,240);
+  ctx.font="20px sans-serif";ctx.fillText("Love Compatibility",300,300);
+  ctx.font="14px sans-serif";ctx.fillText("freetoolhubs.com/tools/love-calculator",300,370);
+  var a=document.createElement("a");a.download="love-result.png";a.href=c.toDataURL();a.click();
+}
+
+// Zodiac compatibility
+var zodiacCompat={
+  "Aries":{"Aries":70,"Taurus":55,"Gemini":78,"Cancer":42,"Leo":90,"Virgo":48,"Libra":72,"Scorpio":50,"Sagittarius":93,"Capricorn":47,"Aquarius":78,"Pisces":60},
+  "Taurus":{"Aries":55,"Taurus":75,"Gemini":45,"Cancer":88,"Leo":60,"Virgo":90,"Libra":62,"Scorpio":85,"Sagittarius":40,"Capricorn":92,"Aquarius":42,"Pisces":82},
+  "Gemini":{"Aries":78,"Taurus":45,"Gemini":70,"Cancer":50,"Leo":80,"Virgo":55,"Libra":88,"Scorpio":40,"Sagittarius":75,"Capricorn":45,"Aquarius":90,"Pisces":48},
+  "Cancer":{"Aries":42,"Taurus":88,"Gemini":50,"Cancer":72,"Leo":55,"Virgo":78,"Libra":45,"Scorpio":92,"Sagittarius":38,"Capricorn":60,"Aquarius":40,"Pisces":95},
+  "Leo":{"Aries":90,"Taurus":60,"Gemini":80,"Cancer":55,"Leo":75,"Virgo":50,"Libra":82,"Scorpio":58,"Sagittarius":88,"Capricorn":48,"Aquarius":65,"Pisces":45},
+  "Virgo":{"Aries":48,"Taurus":90,"Gemini":55,"Cancer":78,"Leo":50,"Virgo":70,"Libra":55,"Scorpio":82,"Sagittarius":42,"Capricorn":88,"Aquarius":45,"Pisces":72},
+  "Libra":{"Aries":72,"Taurus":62,"Gemini":88,"Cancer":45,"Leo":82,"Virgo":55,"Libra":70,"Scorpio":60,"Sagittarius":78,"Capricorn":50,"Aquarius":85,"Pisces":52},
+  "Scorpio":{"Aries":50,"Taurus":85,"Gemini":40,"Cancer":92,"Leo":58,"Virgo":82,"Libra":60,"Scorpio":72,"Sagittarius":48,"Capricorn":78,"Aquarius":42,"Pisces":90},
+  "Sagittarius":{"Aries":93,"Taurus":40,"Gemini":75,"Cancer":38,"Leo":88,"Virgo":42,"Libra":78,"Scorpio":48,"Sagittarius":72,"Capricorn":45,"Aquarius":82,"Pisces":50},
+  "Capricorn":{"Aries":47,"Taurus":92,"Gemini":45,"Cancer":60,"Leo":48,"Virgo":88,"Libra":50,"Scorpio":78,"Sagittarius":45,"Capricorn":72,"Aquarius":55,"Pisces":65},
+  "Aquarius":{"Aries":78,"Taurus":42,"Gemini":90,"Cancer":40,"Leo":65,"Virgo":45,"Libra":85,"Scorpio":42,"Sagittarius":82,"Capricorn":55,"Aquarius":70,"Pisces":48},
+  "Pisces":{"Aries":60,"Taurus":82,"Gemini":48,"Cancer":95,"Leo":45,"Virgo":72,"Libra":52,"Scorpio":90,"Sagittarius":50,"Capricorn":65,"Aquarius":48,"Pisces":75}
+};
+
+function zodiacCheck(){
+  var z1=document.getElementById("zodiac1").value;
+  var z2=document.getElementById("zodiac2").value;
+  if(!z1||!z2)return alert("Select both zodiac signs!");
+  var pct=zodiacCompat[z1][z2];
+  var msg=pct>=80?"Excellent match! The stars align for you two! ⭐":pct>=60?"Good compatibility — with effort, this can shine! 🌟":pct>=45?"Challenging but possible — opposites can attract! 🌙":"Tough match astrologically — but love conquers all! 💪";
+  document.getElementById("zodiacResult").style.display="block";
+  document.getElementById("zodiacResult").innerHTML='<div style="font-size:2rem">'+z1+' ♥ '+z2+'</div><div style="font-size:2.5rem;font-weight:700;margin:.5rem 0">'+pct+'%</div><div>'+msg+'</div>';
+}
+
+// Compatibility Quiz
+var quizQuestions=[
+  {q:"Ideal date night?",a:["Movie at home","Fancy dinner","Adventure outdoors","Game night"]},
+  {q:"How do you handle arguments?",a:["Talk it out immediately","Need space first","Avoid conflict","Write feelings down"]},
+  {q:"Love language?",a:["Words of affirmation","Physical touch","Acts of service","Gifts"]},
+  {q:"Morning person or night owl?",a:["Early bird","Night owl","Depends on mood","Afternoon person"]},
+  {q:"Ideal vacation?",a:["Beach resort","Mountain trek","City exploration","Staycation"]},
+  {q:"How do you show love?",a:["Cooking for them","Surprise gifts","Quality time","Compliments"]},
+  {q:"Pet preference?",a:["Dogs","Cats","Both","No pets"]},
+  {q:"Music taste?",a:["Pop/Bollywood","Rock/Metal","Classical/Jazz","Hip-hop/EDM"]},
+  {q:"Weekend plans?",a:["Social gatherings","Quiet reading","Sports/fitness","Binge-watching"]},
+  {q:"Most important in a partner?",a:["Humor","Intelligence","Kindness","Ambition"]}
+];
+var quizAnswers={p1:[],p2:[]};
+var quizStep=0;var quizPerson=1;
+
+function startQuiz(){
+  quizAnswers={p1:[],p2:[]};quizStep=0;quizPerson=1;
+  document.getElementById("quizStartBtn").style.display="none";
+  document.getElementById("quizResult").style.display="none";
+  document.getElementById("quizArea").style.display="block";
+  showQuestion();
+}
+
+function showQuestion(){
+  var area=document.getElementById("quizArea");
+  if(quizStep>=quizQuestions.length){
+    if(quizPerson===1){quizPerson=2;quizStep=0;area.innerHTML='<h3>Now Partner 2 answers!</h3><button class="btn" onclick="showQuestion()">Continue</button>';return;}
+    finishQuiz();return;
+  }
+  var q=quizQuestions[quizStep];
+  var html='<p style="color:var(--muted);font-size:.85rem">Partner '+quizPerson+' — Question '+(quizStep+1)+'/10</p><h3>'+q.q+'</h3>';
+  q.a.forEach(function(a,i){html+='<button class="btn btn-outline" style="display:block;width:100%;margin:.3rem 0;text-align:left" onclick="answerQuiz('+i+')">'+a+'</button>'});
+  area.innerHTML=html;
+}
+
+function answerQuiz(i){
+  if(quizPerson===1)quizAnswers.p1.push(i);else quizAnswers.p2.push(i);
+  quizStep++;showQuestion();
+}
+
+function finishQuiz(){
+  var matches=0;
+  for(var i=0;i<10;i++){if(quizAnswers.p1[i]===quizAnswers.p2[i])matches++;}
+  var pct=matches*10+Math.floor(Math.random()*10);
+  document.getElementById("quizArea").style.display="none";
+  document.getElementById("quizResult").style.display="block";
+  document.getElementById("quizResult").innerHTML='Quiz Compatibility: '+pct+'%<br><span style="font-size:.9rem;font-weight:400">You matched on '+matches+'/10 questions! '+(matches>=7?"Amazing sync! 🎉":matches>=4?"Good balance of similarities and differences! ✨":"Opposites attract! Your differences make it interesting 🌈")+'</span>';
+  document.getElementById("quizStartBtn").style.display="inline-block";
 }
   </script>
 </body>

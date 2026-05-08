@@ -44,6 +44,7 @@
           <button class="btn btn-outline" onclick="resetCoin()">Reset Stats</button>
         </div>
         <div id="coinStats" style="margin-top:.8rem" class="info"></div>
+        <div id="coinPct" style="font-size:.8rem;color:var(--muted)"></div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1rem">
@@ -59,6 +60,29 @@
         <div id="diceTotal" style="font-size:1.3rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
         <button class="btn" onclick="rollDice()" style="margin-top:.8rem">🎲 Roll Dice</button>
         <div id="diceHistory" style="margin-top:.8rem"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1rem">
+      <h1>🔢 Random Number Generator</h1>
+      <div style="text-align:center">
+        <div class="row" style="justify-content:center;margin-bottom:.8rem">
+          <label>Min:</label><input type="number" id="rngMin" value="1" style="width:80px">
+          <label>Max:</label><input type="number" id="rngMax" value="100" style="width:80px">
+        </div>
+        <div id="rngResult" style="font-size:3rem;font-weight:700;padding:1rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+        <button class="btn" onclick="genRng()">🎯 Generate</button>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1rem">
+      <h1>🎡 Spin Wheel</h1>
+      <div style="text-align:center">
+        <textarea id="wheelEntries" rows="3" placeholder="Enter options, one per line (e.g. Pizza, Burger, Sushi)" style="margin-bottom:.5rem">Pizza
+Burger
+Sushi
+Tacos</textarea>
+        <canvas id="wheelCanvas" width="300" height="300" style="margin:0 auto;display:block"></canvas>
+        <div id="wheelResult" style="font-size:1.5rem;font-weight:700;margin:.5rem 0;min-height:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+        <button class="btn" onclick="spinWheel()">🎡 Spin!</button>
       </div>
     </div>
     <div style="min-height:90px"></div>
@@ -107,10 +131,12 @@ function flipCoin(){
     el.style.transform='';
     if(r===0){heads++;el.textContent='🪙';document.getElementById('coinResult').textContent='HEADS!'}
     else{tails++;el.textContent='🪙';document.getElementById('coinResult').textContent='TAILS!'}
-    document.getElementById('coinStats').textContent='Heads: '+heads+' | Tails: '+tails+' | Total: '+(heads+tails);
+    var total=heads+tails;
+    document.getElementById('coinStats').textContent='Heads: '+heads+' | Tails: '+tails+' | Total: '+total;
+    document.getElementById('coinPct').textContent='Heads: '+(total?(heads/total*100).toFixed(1):0)+'% | Tails: '+(total?(tails/total*100).toFixed(1):0)+'%';
   },500);
 }
-function resetCoin(){heads=0;tails=0;document.getElementById('coinResult').textContent='';document.getElementById('coinStats').textContent='';document.getElementById('coin').textContent='🪙'}
+function resetCoin(){heads=0;tails=0;document.getElementById('coinResult').textContent='';document.getElementById('coinStats').textContent='';document.getElementById('coinPct').textContent='';document.getElementById('coin').textContent='🪙'}
 function rollDice(){
   const n=+document.getElementById('diceCount').value;
   const sides=+document.getElementById('diceSides').value;
@@ -123,6 +149,39 @@ function rollDice(){
   diceHist.unshift(results.join(', ')+(n>1?' = '+total:''));
   document.getElementById('diceHistory').innerHTML=diceHist.slice(0,8).map(h=>'<div style="padding:.2rem .5rem;color:var(--muted);font-size:.85rem">'+h+'</div>').join('');
 }
+function genRng(){
+  var min=+document.getElementById('rngMin').value,max=+document.getElementById('rngMax').value;
+  if(min>max){var t=min;min=max;max=t}
+  var range=max-min+1;
+  var r=crypto.getRandomValues(new Uint32Array(1))[0]%range+min;
+  document.getElementById('rngResult').textContent=r;
+}
+var spinning=false;
+function spinWheel(){
+  if(spinning)return;
+  var entries=document.getElementById('wheelEntries').value.trim().split('\n').filter(e=>e.trim());
+  if(entries.length<2)return alert('Add at least 2 entries');
+  spinning=true;
+  var canvas=document.getElementById('wheelCanvas');var ctx=canvas.getContext('2d');
+  var colors=['#4f8cff','#a855f7','#f59e0b','#10b981','#ef4444','#ec4899','#06b6d4','#84cc16'];
+  var arc=2*Math.PI/entries.length;
+  var angle=0,speed=Math.random()*20+20,decel=0.97;
+  function draw(){
+    ctx.clearRect(0,0,300,300);
+    for(var i=0;i<entries.length;i++){
+      ctx.beginPath();ctx.moveTo(150,150);ctx.arc(150,150,140,angle+i*arc,angle+(i+1)*arc);ctx.fillStyle=colors[i%colors.length];ctx.fill();ctx.stroke();
+      ctx.save();ctx.translate(150,150);ctx.rotate(angle+(i+0.5)*arc);ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(entries[i].substring(0,12),40,4);ctx.restore();
+    }
+    ctx.beginPath();ctx.moveTo(150,5);ctx.lineTo(145,20);ctx.lineTo(155,20);ctx.fillStyle='#e74c3c';ctx.fill();
+  }
+  function animate(){
+    angle+=speed*0.01;speed*=decel;draw();
+    if(speed>0.5){requestAnimationFrame(animate)}
+    else{spinning=false;var idx=Math.floor(((2*Math.PI-(angle%(2*Math.PI)))%(2*Math.PI))/arc)%entries.length;document.getElementById('wheelResult').textContent='🎉 '+entries[idx]}
+  }
+  animate();
+}
+(function(){var c=document.getElementById('wheelCanvas').getContext('2d');c.fillStyle='var(--card)';c.fillRect(0,0,300,300);c.fillStyle='#888';c.font='14px sans-serif';c.textAlign='center';c.fillText('Click Spin to start',150,155)})();
   </script>
 </body>
 </html>

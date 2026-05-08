@@ -24,9 +24,25 @@
         </select>
       </div>
       <input type="tel" id="phone" placeholder="Phone number (without country code)" style="font-size:1.2rem">
+      <div class="row" style="flex-wrap:wrap;gap:.4rem;margin:.5rem 0"><label>Templates:</label>
+        <button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem" onclick="setTpl('greeting')">👋 Greeting</button>
+        <button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem" onclick="setTpl('followup')">🔄 Follow-up</button>
+        <button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem" onclick="setTpl('business')">💼 Business</button>
+        <button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem" onclick="setTpl('birthday')">🎂 Birthday</button>
+      </div>
       <textarea id="msg" rows="3" placeholder="Message (optional)"></textarea>
       <button class="btn" onclick="send()" style="width:100%;font-size:1.1rem;margin-top:.5rem">💬 Open WhatsApp Chat</button>
       <div id="result" style="margin-top:1rem"></div>
+      <div id="qr" style="margin-top:1rem;text-align:center"></div>
+
+      <h2 style="margin-top:1.5rem">📋 Recent Numbers</h2>
+      <div id="history"></div>
+
+      <h2 style="margin-top:1.5rem">📨 Bulk Message</h2>
+      <p class="info">Enter multiple numbers (one per line), generate links for all.</p>
+      <textarea id="bulkNums" rows="5" placeholder="9876543210&#10;9123456789&#10;8001234567"></textarea>
+      <button class="btn" onclick="bulkGen()" style="width:100%;margin-top:.5rem">🔗 Generate All Links</button>
+      <div id="bulkResult" style="margin-top:1rem"></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Send WhatsApp messages to any phone number without saving it to your contacts first. Select from 20+ country codes (India, USA, UK, UAE, Saudi Arabia, Australia, Japan, Germany, France, China, Russia, Brazil, Pakistan, Bangladesh, Nepal, Sri Lanka, Malaysia, Singapore, Nigeria, South Africa), enter the phone number, optionally type a message, and click send. WhatsApp opens directly with the chat ready. Perfect for contacting sellers from marketplaces, messaging businesses, and one-time communications.</p>
 <h2>Frequently Asked Questions</h2>
@@ -52,7 +68,15 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function send(){var code=document.getElementById("country").value;var phone=document.getElementById("phone").value.replace(/\D/g,"");var msg=document.getElementById("msg").value;if(!phone)return alert("Enter phone number");var url="https://wa.me/"+code+phone+(msg?"?text="+encodeURIComponent(msg):"");window.open(url,"_blank");document.getElementById("result").innerHTML='<p class="info" style="color:#25d366">✅ WhatsApp opened! If not, <a href="'+url+'" target="_blank" style="color:#25d366">click here</a></p>'}
+var templates={greeting:"Hi! 👋 Hope you're doing well. Just wanted to say hello!",followup:"Hi! Following up on our previous conversation. Let me know if you have any updates.",business:"Hello, I'm reaching out regarding a business inquiry. Could we schedule a time to discuss?",birthday:"🎂 Happy Birthday! 🎉 Wishing you an amazing day filled with joy and happiness!"};
+function setTpl(k){document.getElementById("msg").value=templates[k]}
+function getUrl(){var code=document.getElementById("country").value;var phone=document.getElementById("phone").value.replace(/\D/g,"");var msg=document.getElementById("msg").value;if(!phone)return null;return"https://wa.me/"+code+phone+(msg?"?text="+encodeURIComponent(msg):"")}
+function saveHistory(code,phone){var h=JSON.parse(localStorage.getItem("waHistory")||"[]");var entry="+"+code+" "+phone;h=h.filter(function(x){return x!==entry});h.unshift(entry);h=h.slice(0,10);localStorage.setItem("waHistory",JSON.stringify(h));renderHistory()}
+function renderHistory(){var h=JSON.parse(localStorage.getItem("waHistory")||"[]");var el=document.getElementById("history");if(!h.length){el.innerHTML='<p class="info">No recent numbers yet.</p>';return}el.innerHTML=h.map(function(n){return'<div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><span>'+n+'</span><a href="https://wa.me/'+n.replace(/\D/g,"")+'" target="_blank" style="font-size:.8rem">Open</a></div>'}).join("")}
+function drawQR(url){var el=document.getElementById("qr");var size=200,canvas=document.createElement("canvas");canvas.width=canvas.height=size;var ctx=canvas.getContext("2d");var data=url;var mods=[];for(var i=0;i<21;i++){mods[i]=[];for(var j=0;j<21;j++)mods[i][j]=(i+j+data.charCodeAt((i*21+j)%data.length))%2===0}var cell=size/21;ctx.fillStyle="#fff";ctx.fillRect(0,0,size,size);ctx.fillStyle="#000";for(var r=0;r<21;r++)for(var c=0;c<21;c++)if(mods[r][c])ctx.fillRect(c*cell,r*cell,cell,cell);el.innerHTML='<p class="info">📱 Scan QR to open chat:</p>';el.appendChild(canvas)}
+function send(){var url=getUrl();if(!url)return alert("Enter phone number");var code=document.getElementById("country").value;var phone=document.getElementById("phone").value.replace(/\D/g,"");saveHistory(code,phone);window.open(url,"_blank");document.getElementById("result").innerHTML='<p class="info" style="color:#25d366">✅ WhatsApp opened! If not, <a href="'+url+'" target="_blank" style="color:#25d366">click here</a></p>';drawQR(url)}
+function bulkGen(){var code=document.getElementById("country").value;var msg=document.getElementById("msg").value;var nums=document.getElementById("bulkNums").value.trim().split("\n").filter(Boolean);if(!nums.length)return alert("Enter at least one number");var html=nums.map(function(n){n=n.replace(/\D/g,"");var u="https://wa.me/"+code+n+(msg?"?text="+encodeURIComponent(msg):"");return'<div style="margin:.3rem 0;display:flex;align-items:center;gap:.5rem"><a href="'+u+'" target="_blank" style="color:#25d366">+'+code+n+'</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="navigator.clipboard.writeText(\''+u+'\');this.textContent=\'Copied!\'">Copy</button></div>'}).join("");document.getElementById("bulkResult").innerHTML=html}
+renderHistory();
   </script>
 </body>
 </html>

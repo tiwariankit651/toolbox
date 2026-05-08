@@ -25,19 +25,26 @@
     <div class="tool-section">
       <h1>📖 Speed Reader</h1>
       <p class="info">Paste text below, set speed, and read word-by-word. Train your brain to read faster!</p>
-      <textarea id="text" rows="5" placeholder="Paste your text here... (article, notes, current affairs)"></textarea>
+      <textarea id="text" rows="5" placeholder="Paste your text here... (article, notes, current affairs)" oninput="updateStats()"></textarea>
+      <div id="textStats" style="font-size:.85rem;color:var(--muted);margin:.3rem 0"></div>
       <div class="row" style="margin:.8rem 0;flex-wrap:wrap">
         <label>Speed: <span id="wpmLabel">250</span> WPM</label>
-        <input type="range" id="wpm" min="100" max="800" value="250" step="25" oninput="document.getElementById('wpmLabel').textContent=this.value" style="flex:2">
+        <input type="range" id="wpm" min="100" max="800" value="250" step="25" oninput="document.getElementById('wpmLabel').textContent=this.value;updateStats()" style="flex:2">
         <label>Chunk:</label>
         <select id="chunk"><option value="1">1 word</option><option value="2">2 words</option><option value="3" selected>3 words</option><option value="5">5 words</option></select>
         <label>Font size:</label>
         <input type="range" id="fsize" min="24" max="72" value="40" oninput="document.getElementById('display').style.fontSize=this.value+'px'" style="flex:1">
       </div>
-      <div style="text-align:center;padding:3rem 1rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:120px">
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem">
+        <button class="btn btn-outline" onclick="toggleReadMode()" id="modeBtn">🌙 Dark Mode</button>
+        <button class="btn btn-outline" onclick="saveBookmark()">🔖 Save Bookmark</button>
+        <button class="btn btn-outline" onclick="loadBookmark()">📂 Resume Bookmark</button>
+      </div>
+      <div id="readBox" style="text-align:center;padding:3rem 1rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:120px">
         <div id="display" style="font-size:40px;font-weight:700">Press Play to start</div>
         <div id="progress" style="margin-top:1rem;font-size:.85rem;color:var(--muted)"></div>
       </div>
+      <div id="wpmResult" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:.5rem"></div>
       <div class="row" style="justify-content:center">
         <button class="btn" onclick="startReading()" id="playBtn">▶ Play</button>
         <button class="btn btn-outline" onclick="pauseReading()">⏸ Pause</button>
@@ -78,21 +85,26 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var words=[],idx=0,interval=null,playing=false;
+var words=[],idx=0,interval=null,playing=false,startTime=0,wordsRead=0,darkRead=false;
+function updateStats(){var t=document.getElementById("text").value.trim();var wc=t?t.split(/\s+/).length:0;var wpm=+document.getElementById("wpm").value;var mins=wpm?Math.ceil(wc/wpm):0;document.getElementById("textStats").textContent=wc?wc+" words · ~"+mins+" min at "+wpm+" WPM":""}
 function startReading(){
-  if(playing){return}
-  if(!words.length){var text=document.getElementById("text").value.trim();if(!text)return alert("Paste some text first!");words=text.split(/\s+/);idx=0}
+  if(playing)return;
+  if(!words.length){var text=document.getElementById("text").value.trim();if(!text)return alert("Paste some text first!");words=text.split(/\s+/);idx=0;wordsRead=0;startTime=Date.now()}
   playing=true;document.getElementById("playBtn").textContent="▶ Playing...";
   var wpm=+document.getElementById("wpm").value;var chunk=+document.getElementById("chunk").value;var delay=60000/wpm*chunk;
   interval=setInterval(function(){
-    if(idx>=words.length){pauseReading();document.getElementById("display").textContent="Done!";document.getElementById("progress").textContent="Finished reading "+words.length+" words";return}
+    if(idx>=words.length){pauseReading();document.getElementById("display").textContent="Done!";showActualWPM();document.getElementById("progress").textContent="Finished reading "+words.length+" words";return}
     document.getElementById("display").textContent=words.slice(idx,idx+chunk).join(" ");
     document.getElementById("progress").textContent="Word "+(idx+1)+"/"+words.length+" ("+Math.round((idx+1)/words.length*100)+"%)";
-    idx+=chunk;
+    wordsRead=idx+chunk;idx+=chunk;
   },delay);
 }
-function pauseReading(){playing=false;clearInterval(interval);document.getElementById("playBtn").textContent="▶ Resume"}
-function resetReading(){pauseReading();words=[];idx=0;document.getElementById("display").textContent="Press Play to start";document.getElementById("progress").textContent="";document.getElementById("playBtn").textContent="▶ Play"}
+function showActualWPM(){var elapsed=(Date.now()-startTime)/60000;var actual=elapsed>0?Math.round(wordsRead/elapsed):0;document.getElementById("wpmResult").textContent="Actual speed: "+actual+" WPM ("+wordsRead+" words in "+elapsed.toFixed(1)+" min)"}
+function pauseReading(){playing=false;clearInterval(interval);document.getElementById("playBtn").textContent="▶ Resume";if(wordsRead>0)showActualWPM()}
+function resetReading(){pauseReading();words=[];idx=0;wordsRead=0;startTime=0;document.getElementById("display").textContent="Press Play to start";document.getElementById("progress").textContent="";document.getElementById("wpmResult").textContent="";document.getElementById("playBtn").textContent="▶ Play"}
+function saveBookmark(){if(!words.length)return alert("Nothing to bookmark");localStorage.setItem("sr_bookmark",JSON.stringify({text:document.getElementById("text").value,idx:idx}));alert("Bookmark saved at word "+idx)}
+function loadBookmark(){var b=localStorage.getItem("sr_bookmark");if(!b)return alert("No bookmark found");var d=JSON.parse(b);document.getElementById("text").value=d.text;words=d.text.trim().split(/\s+/);idx=d.idx;updateStats();document.getElementById("display").textContent="Resumed at word "+idx;document.getElementById("playBtn").textContent="▶ Resume"}
+function toggleReadMode(){darkRead=!darkRead;var box=document.getElementById("readBox");if(darkRead){box.style.background="#1a1a2e";box.style.color="#e0e0e0";document.getElementById("display").style.color="#e0e0e0";document.getElementById("modeBtn").textContent="☀️ Light Mode"}else{box.style.background="var(--card)";box.style.color="";document.getElementById("display").style.color="";document.getElementById("modeBtn").textContent="🌙 Dark Mode"}}
   </script>
 </body>
 </html>

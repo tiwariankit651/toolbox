@@ -15,10 +15,33 @@
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 🎲 Topic Picker</div><div class="tool-section" style="text-align:center">
       <h1>🎲 Random Study Topic Picker</h1>
       <p class="info">Confused about what to study? Click the button and get a random topic!</p>
-      <div class="row" style="justify-content:center;margin:1rem 0"><label>Subject:</label><select id="subject"><option value="all">All Subjects</option><option value="history">History</option><option value="polity">Polity</option><option value="geography">Geography</option><option value="economy">Economy</option><option value="science">Science</option><option value="essay">Essay Topics</option></select></div>
+      <div class="row" style="justify-content:center;margin:1rem 0;flex-wrap:wrap;gap:.5rem">
+        <label>Subject:</label><select id="subject"><option value="all">All Subjects</option><option value="history">History</option><option value="polity">Polity</option><option value="geography">Geography</option><option value="economy">Economy</option><option value="science">Science</option><option value="essay">Essay Topics</option></select>
+        <label>Mode:</label><select id="mode"><option value="normal">Normal</option><option value="elimination">Elimination (remove picked)</option></select>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:center;align-items:center;margin:.5rem 0;flex-wrap:wrap">
+        <label>Timer:</label><input type="number" id="timer" min="1" max="120" placeholder="min" style="width:70px">
+        <span style="font-size:.85rem;color:var(--muted)">minutes per topic</span>
+      </div>
       <button class="btn" onclick="pick()" style="font-size:1.2rem;padding:1rem 2rem;margin:1rem 0">🎲 Pick a Topic!</button>
+      <div id="timerDisplay" style="display:none;font-size:1.5rem;font-weight:700;color:var(--accent);margin:.5rem 0"></div>
       <div id="result" style="font-size:1.5rem;font-weight:700;padding:1.5rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:60px;display:flex;align-items:center;justify-content:center"></div>
+      <div id="poolInfo" style="font-size:.85rem;color:var(--muted);margin:.5rem 0"></div>
       <div id="history" style="margin-top:1rem"></div>
+
+      <hr style="margin:2rem 0;border-color:var(--border)">
+      <h2>📂 Custom Topic Lists & Categories</h2>
+      <div style="text-align:left;max-width:500px;margin:0 auto">
+        <div class="row" style="gap:.5rem;margin:.5rem 0"><input type="text" id="catName" placeholder="Category name (e.g. Math)"><button class="btn btn-outline" onclick="addCategory()">+ Category</button></div>
+        <div class="row" style="gap:.5rem;margin:.5rem 0">
+          <select id="catSelect"><option value="">Select category</option></select>
+          <input type="text" id="newTopic" placeholder="Topic name">
+          <input type="number" id="topicWeight" min="1" max="5" value="3" style="width:60px" title="Priority 1-5">
+          <button class="btn btn-outline" onclick="addTopic()">+ Add</button>
+        </div>
+        <div id="customList" style="margin-top:1rem"></div>
+        <div class="row" style="gap:.5rem;margin-top:1rem"><button class="btn btn-outline" onclick="saveCustom()">💾 Save List</button><button class="btn btn-outline" onclick="loadCustom()">📂 Load List</button><button class="btn btn-outline" onclick="clearCustom()">🗑️ Clear</button></div>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Cannot decide what to study today? Get a random topic from 90+ options across 6 subjects: History (Ancient, Medieval, Modern), Polity (Constitution, Parliament, Governance), Geography (Physical, Indian, World), Economy (Macro, Micro, Indian), Science (Physics, Chemistry, Biology), and Essay Topics (social, political, environmental). Click the button and get a random topic instantly. Keeps a history of previous picks. Perfect for breaking study monotony, ensuring you cover all subjects, and making revision more interesting.</p></div>
 <h2>Benefits of Using This Tool</h2>
@@ -52,7 +75,126 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>var topics={history:["Indus Valley Civilization","Vedic Period","Maurya Empire","Gupta Dynasty","Delhi Sultanate","Mughal Empire","Maratha Empire","1857 Revolt","Indian National Congress","Gandhian Movements","Partition of India","Ancient Indian Art","Buddhist Architecture","Bhakti Movement","Social Reform Movements"],polity:["Fundamental Rights","Directive Principles","Parliament Structure","Supreme Court","Election Commission","Panchayati Raj","Constitutional Amendments","Emergency Provisions","Centre-State Relations","Citizenship","Governor Powers","CAG","UPSC","Finance Commission","Anti-Defection Law"],geography:["Indian Monsoon","Himalayan Rivers","Peninsular Rivers","Indian Soil Types","Natural Vegetation","Indian Climate","Mineral Resources","Agriculture in India","Indian Ocean Currents","Earthquake Zones","Western Ghats","Thar Desert","Coastal Plains","Island Groups","Major Dams"],economy:["Five Year Plans","NITI Aayog","GST","RBI Functions","Fiscal Policy","Monetary Policy","Inflation Types","Banking System","Foreign Trade","Budget Process","Poverty Measures","Green Revolution","MSME Sector","Digital Economy","Financial Inclusion"],science:["Cell Biology","Human Digestive System","Nervous System","Genetics Basics","Newton Laws","Electromagnetic Spectrum","Periodic Table Groups","Acids and Bases","Carbon Compounds","Space Technology ISRO","Nuclear Energy","Biotechnology","Environmental Pollution","Biodiversity","Climate Change"],essay:["Role of Youth in Nation Building","Digital India: Achievements and Challenges","Women Empowerment in Modern India","Climate Change and India","Education System Reform","Rural Development","Corruption: Causes and Solutions","Social Media Impact on Society","Artificial Intelligence and Employment","Water Crisis in India","Farmer Issues in India","Healthcare System in India","Urbanization Challenges","Cultural Diversity of India","India in 2047"]};
+  <script>
+var topics={history:["Indus Valley Civilization","Vedic Period","Maurya Empire","Gupta Dynasty","Delhi Sultanate","Mughal Empire","Maratha Empire","1857 Revolt","Indian National Congress","Gandhian Movements","Partition of India","Ancient Indian Art","Buddhist Architecture","Bhakti Movement","Social Reform Movements"],polity:["Fundamental Rights","Directive Principles","Parliament Structure","Supreme Court","Election Commission","Panchayati Raj","Constitutional Amendments","Emergency Provisions","Centre-State Relations","Citizenship","Governor Powers","CAG","UPSC","Finance Commission","Anti-Defection Law"],geography:["Indian Monsoon","Himalayan Rivers","Peninsular Rivers","Indian Soil Types","Natural Vegetation","Indian Climate","Mineral Resources","Agriculture in India","Indian Ocean Currents","Earthquake Zones","Western Ghats","Thar Desert","Coastal Plains","Island Groups","Major Dams"],economy:["Five Year Plans","NITI Aayog","GST","RBI Functions","Fiscal Policy","Monetary Policy","Inflation Types","Banking System","Foreign Trade","Budget Process","Poverty Measures","Green Revolution","MSME Sector","Digital Economy","Financial Inclusion"],science:["Cell Biology","Human Digestive System","Nervous System","Genetics Basics","Newton Laws","Electromagnetic Spectrum","Periodic Table Groups","Acids and Bases","Carbon Compounds","Space Technology ISRO","Nuclear Energy","Biotechnology","Environmental Pollution","Biodiversity","Climate Change"],essay:["Role of Youth in Nation Building","Digital India: Achievements and Challenges","Women Empowerment in Modern India","Climate Change and India","Education System Reform","Rural Development","Corruption: Causes and Solutions","Social Media Impact on Society","Artificial Intelligence and Employment","Water Crisis in India","Farmer Issues in India","Healthcare System in India","Urbanization Challenges","Cultural Diversity of India","India in 2047"]};
 var hist=[];
-function pick(){var sub=document.getElementById("subject").value;var pool=sub==="all"?Object.values(topics).flat():topics[sub]||[];var topic=pool[Math.floor(Math.random()*pool.length)];document.getElementById("result").textContent=topic;hist.unshift(topic);document.getElementById("history").innerHTML="<h3>Previous Picks</h3>"+hist.slice(0,8).map(function(t,i){return '<div style="padding:.3rem .5rem;color:var(--muted);font-size:.85rem">'+(i+1)+". "+t+"</div>"}).join("")}</script>
+var eliminated=[];
+var customTopics=[];// [{name,category,weight}]
+var timerInterval=null;
+
+function getPool(){
+  var sub=document.getElementById("subject").value;
+  var pool;
+  if(sub==="custom"){
+    pool=[];
+    customTopics.forEach(function(t){for(var i=0;i<t.weight;i++)pool.push(t.name)});
+  } else {
+    pool=sub==="all"?Object.values(topics).flat():topics[sub]||[];
+  }
+  if(document.getElementById("mode").value==="elimination"){
+    pool=pool.filter(function(t){return eliminated.indexOf(t)===-1});
+  }
+  return pool;
+}
+
+function pick(){
+  var pool=getPool();
+  if(!pool.length)return alert("No topics left! Reset elimination or switch mode.");
+  var topic=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById("result").textContent=topic;
+  hist.unshift(topic);
+  if(document.getElementById("mode").value==="elimination") eliminated.push(topic);
+  document.getElementById("poolInfo").textContent="Remaining in pool: "+getPool().length;
+  document.getElementById("history").innerHTML="<h3>Previous Picks</h3>"+hist.slice(0,8).map(function(t,i){return '<div style="padding:.3rem .5rem;color:var(--muted);font-size:.85rem">'+(i+1)+". "+t+"</div>"}).join("");
+  startTimer();
+}
+
+function startTimer(){
+  var mins=parseInt(document.getElementById("timer").value);
+  if(!mins)return document.getElementById("timerDisplay").style.display="none";
+  clearInterval(timerInterval);
+  var secs=mins*60;
+  var el=document.getElementById("timerDisplay");
+  el.style.display="block";
+  function tick(){
+    var m=Math.floor(secs/60),s=secs%60;
+    el.textContent="⏱️ "+m+":"+(s<10?"0":"")+s;
+    if(secs<=0){clearInterval(timerInterval);el.textContent="⏱️ Time's up!";return}
+    secs--;
+  }
+  tick();timerInterval=setInterval(tick,1000);
+}
+
+// Custom topics & categories
+function addCategory(){
+  var name=document.getElementById("catName").value.trim();
+  if(!name)return;
+  var sel=document.getElementById("catSelect");
+  var opt=document.createElement("option");opt.value=name;opt.textContent=name;
+  sel.appendChild(opt);
+  // Also add to subject dropdown
+  var subSel=document.getElementById("subject");
+  if(!subSel.querySelector('option[value="custom"]')){
+    var co=document.createElement("option");co.value="custom";co.textContent="⭐ Custom Topics";
+    subSel.appendChild(co);
+  }
+  document.getElementById("catName").value="";
+  renderCustom();
+}
+
+function addTopic(){
+  var cat=document.getElementById("catSelect").value;
+  var name=document.getElementById("newTopic").value.trim();
+  var weight=parseInt(document.getElementById("topicWeight").value)||3;
+  if(!name)return alert("Enter topic name");
+  if(!cat)return alert("Select a category first");
+  customTopics.push({name:name,category:cat,weight:Math.min(5,Math.max(1,weight))});
+  document.getElementById("newTopic").value="";
+  renderCustom();
+}
+
+function removeTopic(i){customTopics.splice(i,1);renderCustom();}
+
+function renderCustom(){
+  var cats={};
+  customTopics.forEach(function(t,i){if(!cats[t.category])cats[t.category]=[];cats[t.category].push({t:t,i:i})});
+  var html="";
+  for(var c in cats){
+    html+='<div style="margin:.5rem 0"><strong>'+c+'</strong>';
+    cats[c].forEach(function(item){
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:.2rem .5rem;font-size:.85rem"><span>'+item.t.name+' <span style="color:var(--muted)">(⭐'+item.t.weight+')</span></span><button onclick="removeTopic('+item.i+')" style="border:none;background:none;cursor:pointer;color:red">✕</button></div>';
+    });
+    html+='</div>';
+  }
+  document.getElementById("customList").innerHTML=html;
+}
+
+function saveCustom(){
+  localStorage.setItem("tp_custom",JSON.stringify(customTopics));
+  var cats=[];document.getElementById("catSelect").querySelectorAll("option").forEach(function(o){if(o.value)cats.push(o.value)});
+  localStorage.setItem("tp_cats",JSON.stringify(cats));
+  alert("Saved!");
+}
+
+function loadCustom(){
+  var d=localStorage.getItem("tp_custom");
+  var c=localStorage.getItem("tp_cats");
+  if(!d)return alert("No saved list found");
+  customTopics=JSON.parse(d);
+  var cats=JSON.parse(c||"[]");
+  var sel=document.getElementById("catSelect");
+  sel.innerHTML='<option value="">Select category</option>';
+  cats.forEach(function(name){var o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o)});
+  var subSel=document.getElementById("subject");
+  if(!subSel.querySelector('option[value="custom"]')){
+    var co=document.createElement("option");co.value="custom";co.textContent="⭐ Custom Topics";
+    subSel.appendChild(co);
+  }
+  renderCustom();
+}
+
+function clearCustom(){customTopics=[];document.getElementById("customList").innerHTML="";eliminated=[];document.getElementById("poolInfo").textContent="";}
+// Auto-load on page load
+(function(){var d=localStorage.getItem("tp_custom");if(d){loadCustom();}})();
+</script>
 </body></html>

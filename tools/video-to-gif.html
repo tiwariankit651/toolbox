@@ -28,8 +28,15 @@
           <div><label>Speed</label><select id="speed"><option value="0.5">0.5x Slow</option><option value="1" selected>1x Normal</option><option value="1.5">1.5x Fast</option><option value="2">2x Fast</option></select></div>
           <div><label>Width (px)</label><input type="number" id="gifW" value="320" min="100" max="800" style="width:70px"></div>
         </div>
-        <button class="btn" onclick="convert()" style="width:100%;margin-top:.8rem" id="convertBtn">🎬 Convert to GIF</button>
-      <p class="info" style="font-size:.75rem;margin-top:.3rem">⚠️ Supported: MP4, WebM, MOV. Large videos may take time. Keep clips under 10 seconds for best results.</p>
+        <div class="row" style="flex-wrap:wrap;margin-top:.5rem">
+          <div><label><input type="checkbox" id="reverseGif"> Reverse GIF</label></div>
+          <div><label>Text Overlay</label><input type="text" id="overlayText" placeholder="Optional text" style="width:120px"></div>
+          <div><label>Text Position</label><select id="overlayPos"><option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option><option value="center">Center</option><option value="bottom-left">Bottom-Left</option><option value="bottom-center" selected>Bottom-Center</option><option value="bottom-right">Bottom-Right</option></select></div>
+        </div>
+        <button class="btn btn-outline" onclick="preview()" style="width:100%;margin-top:.8rem">👁️ Preview Frames</button>
+        <div id="previewArea" style="display:flex;gap:4px;overflow-x:auto;margin:.5rem 0"></div>
+        <button class="btn" onclick="convert()" style="width:100%;margin-top:.4rem" id="convertBtn">🎬 Convert to GIF</button>
+        <p class="info" style="font-size:.75rem;margin-top:.3rem">⚠️ Supported: MP4, WebM, MOV. Large videos may take time. Keep clips under 10 seconds for best results.</p>
         <div id="progress" style="margin-top:.5rem"></div>
         <div id="result"></div>
       </div>
@@ -66,6 +73,38 @@ setupDrop("drop","inp",function(f){
   vid.onloadedmetadata=function(){document.getElementById("endT").value=Math.min(3,vid.duration).toFixed(1);document.getElementById("endT").max=vid.duration};
   document.getElementById("editor").style.display="block";
 });
+function drawOverlay(ctx,w,h){
+  var text=document.getElementById("overlayText").value;if(!text)return;
+  var pos=document.getElementById("overlayPos").value;
+  ctx.font="bold "+Math.max(12,Math.round(h/15))+"px Arial";ctx.fillStyle="#fff";ctx.strokeStyle="#000";ctx.lineWidth=2;
+  var x,y;var p=pos.split("-");
+  if(p[0]==="top")y=h*0.1;else if(p[0]==="bottom"||p[0]==="bottom")y=h*0.92;else y=h/2;
+  if(pos==="center"){x=w/2;y=h/2}
+  if(p[1]==="left"||p[0]==="top"&&!p[1]){ctx.textAlign="left";x=10}
+  else if(p[1]==="right"){ctx.textAlign="right";x=w-10}
+  else{ctx.textAlign="center";x=w/2}
+  if(p[0]==="top")y=h*0.1;else if(p[0]==="bottom")y=h*0.92;else y=h/2;
+  ctx.strokeText(text,x,y);ctx.fillText(text,x,y);
+}
+function preview(){
+  var vid=document.getElementById("vid");
+  var startT=+document.getElementById("startT").value;
+  var endT=+document.getElementById("endT").value;
+  var count=Math.min(8,Math.ceil((endT-startT)*2));
+  var area=document.getElementById("previewArea");area.innerHTML="";
+  var idx=0;
+  function grab(){
+    if(idx>=count)return;
+    vid.currentTime=startT+idx*((endT-startT)/(count-1||1));
+    vid.onseeked=function(){
+      var c=document.createElement("canvas");c.width=80;c.height=60;
+      c.style.cssText="border-radius:4px;flex-shrink:0";
+      c.getContext("2d").drawImage(vid,0,0,80,60);
+      area.appendChild(c);idx++;grab();
+    };
+  }
+  grab();
+}
 function convert(){
   var vid=document.getElementById("vid");
   var startT=+document.getElementById("startT").value;
@@ -77,24 +116,28 @@ function convert(){
   var duration=endT-startT;
   var totalFrames=Math.ceil(duration*fps);
   var delay=1000/fps/(+document.getElementById("speed").value||1);
+  var reverse=document.getElementById("reverseGif").checked;
   document.getElementById("convertBtn").disabled=true;
   document.getElementById("progress").innerHTML='<div style="text-align:center;padding:1rem"><div style="display:inline-block;width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p class="info">Capturing frames... 0/'+totalFrames+'</p></div>';
   if(!document.getElementById("spinCSS")){var s=document.createElement("style");s.id="spinCSS";s.textContent="@keyframes spin{to{transform:rotate(360deg)}}";document.head.appendChild(s)}
   var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
   var ctx=canvas.getContext("2d");
-  var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
-  var frameIdx=0;
+  var frames=[];var frameIdx=0;
   vid.currentTime=startT;
   vid.onseeked=function(){
     ctx.drawImage(vid,0,0,gifW,gifH);
-    gif.addFrame(ctx,{copy:true,delay:delay});
+    drawOverlay(ctx,gifW,gifH);
+    frames.push(ctx.getImageData(0,0,gifW,gifH));
     frameIdx++;
     document.getElementById("progress").querySelector("p").textContent="Capturing frames... "+frameIdx+"/"+totalFrames;
     if(frameIdx<totalFrames){vid.currentTime=startT+(frameIdx/fps)}
     else{
+      if(reverse)frames.reverse();
+      var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
+      frames.forEach(function(f){ctx.putImageData(f,0,0);gif.addFrame(ctx,{copy:true,delay:delay})});
       document.getElementById("progress").querySelector("p").textContent="Encoding GIF...";
       gif.on("finished",function(blob){
-        document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+(blob.size/1024).toFixed(1)+' KB | '+gifW+'x'+gifH+' | '+fps+' FPS</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
+        document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+(blob.size/1024).toFixed(1)+' KB | '+gifW+'x'+gifH+' | '+fps+' FPS'+(reverse?' | Reversed':'')+'</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
         window._gifBlob=blob;
         document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done!</p>';
         document.getElementById("convertBtn").disabled=false;

@@ -35,9 +35,11 @@
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🔄 Convert Image Format</div>
     <div style="min-height:90px"></div>
-    <div class="tool-section"><h1>🔄 Convert Image Format</h1><p class="info">Convert images between PNG, JPG, and WebP instantly.</p>
+    <div class="tool-section"><h1>🔄 Convert Image Format</h1><p class="info">Convert images between PNG, JPG, and WebP instantly. Supports batch conversion.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple<input type="file" id="inp" accept="image/*" multiple></div>
       <div class="row"><label>Convert to:</label><select id="fmt"><option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WebP</option></select></div>
+      <div class="row" id="qualityRow"><label>Quality:</label><input type="range" id="quality" min="10" max="100" value="92" style="flex:1"><span id="qualityVal">92%</span></div>
+      <div class="row"><label>Max Width (px):</label><input type="number" id="maxWidth" placeholder="Leave empty for original" style="width:150px"></div>
       <button class="btn" onclick="go()" id="goBtn" disabled>Convert & Download</button>
       <p class="info" style="font-size:.75rem;margin-top:.3rem">⚠️ Supported input: JPG, PNG, WebP, BMP, GIF. Select output format and click convert.</p>
       <div id="result" class="preview-area"></div></div>
@@ -76,7 +78,9 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>let file;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false});
-async function go(){if(!file)return;const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);const fmt=document.getElementById("fmt").value;const ext=fmt.split("/")[1];c.toBlob(b=>{document.getElementById("result").innerHTML="<p class=\"info\">Converted to "+ext.toUpperCase()+" ("+formatSize(b.size)+")</p><button class=\"btn\" onclick=\"download(window._b,'converted."+ext+"')\">Download</button>";window._b=b},fmt,.92)}</script>
+  <script>let files=[];
+setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("drop").textContent=files.length+" file(s) selected"});
+document.getElementById("quality").addEventListener("input",function(){document.getElementById("qualityVal").textContent=this.value+"%"});
+document.getElementById("fmt").addEventListener("change",function(){document.getElementById("qualityRow").style.display=this.value==="image/png"?"none":"flex"});
+async function go(){if(!files.length)return;var fmt=document.getElementById("fmt").value;var ext=fmt.split("/")[1];var quality=+document.getElementById("quality").value/100;var maxW=+document.getElementById("maxWidth").value||0;var res=document.getElementById("result");res.innerHTML="";for(var i=0;i<files.length;i++){var f=files[i];var img=await loadImage(f);var w=img.width,h=img.height;if(maxW&&w>maxW){h=Math.round(h*(maxW/w));w=maxW}var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);var blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,quality)});var card=document.createElement("div");card.style.cssText="background:var(--card);padding:.8rem;border-radius:10px;margin-bottom:.5rem";card.innerHTML='<strong>'+f.name+'</strong><br><span style="font-size:.85rem">Original: '+formatSize(f.size)+' → Converted: '+formatSize(blob.size)+' ('+ext.toUpperCase()+')</span><br><span style="font-size:.8rem;color:var(--accent)">'+(blob.size<f.size?"↓ Saved "+formatSize(f.size-blob.size):"↑ Increased "+formatSize(blob.size-f.size))+'</span><br><button class="btn" style="margin-top:.4rem;font-size:.8rem" data-idx="'+i+'">Download</button>';res.appendChild(card);(function(b,name){card.querySelector("button").onclick=function(){download(b,name.replace(/\.[^.]+$/,"")+"."+ext)}})(blob,f.name)}}</script>
 </body></html>

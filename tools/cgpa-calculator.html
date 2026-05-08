@@ -37,21 +37,28 @@
     <div class="tool-section">
       <h1>🎓 CGPA / SGPA Calculator</h1>
       <p class="info">Add your subjects with grade points and credits to calculate SGPA/CGPA.</p>
-      <div class="row">
-        <label>Grading Scale:</label>
-        <select id="scale"><option value="10">10-Point</option><option value="4">4-Point (US)</option></select>
+      <div class="row" style="flex-wrap:wrap">
+        <div><label>Grading System:</label><select id="scale" onchange="updateGradeOpts()"><option value="10">10-Point (India)</option><option value="4">4-Point (US)</option><option value="pct">Percentage-Based</option></select></div>
       </div>
-      <div id="subjects"></div>
-      <div class="row" style="margin-top:1rem">
-        <button class="btn btn-outline" onclick="addRow()">+ Add Subject</button>
-        <button class="btn" onclick="calc()">Calculate CGPA</button>
+      <h3 style="margin-top:1rem">Semesters</h3>
+      <div id="semesters"></div>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn btn-outline" onclick="addSemester()">+ Add Semester</button>
+        <button class="btn" onclick="calcAll()">Calculate CGPA</button>
       </div>
       <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div id="semResults"></div>
+      <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
+        <h3>🎯 Target CGPA Calculator</h3>
+        <div class="row" style="flex-wrap:wrap"><input type="number" id="targetCgpa" placeholder="Target CGPA" step="0.1" style="width:100px"><input type="number" id="targetCredits" placeholder="Next sem credits" style="width:120px"><button class="btn btn-outline" onclick="calcTarget()">Calculate</button></div>
+        <div id="targetResult" class="info" style="margin-top:.3rem"></div>
+      </div>
       <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
         <h3>Quick GPA ↔ Percentage Converter</h3>
         <div class="row"><input type="number" id="qGpa" placeholder="Enter CGPA" step="0.1" style="flex:1"><select id="qScale"><option value="10">10-point</option><option value="4">4-point</option></select><button class="btn btn-outline" onclick="quickConvert()">Convert</button></div>
         <div id="qResult" class="info" style="margin-top:.3rem"></div>
       </div>
+      <div style="margin-top:1rem"><button class="btn btn-outline" onclick="exportTranscript()">📄 Export as Transcript</button></div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -89,30 +96,73 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-let count=0;
-function addRow(){
-  count++;
-  const d=document.createElement('div');
-  d.className='row';d.id='sub'+count;
-  d.innerHTML='<input type="text" placeholder="Subject '+count+'" style="flex:2"><input type="number" placeholder="Grade Point" min="0" max="10" step="0.1"><input type="number" placeholder="Credits" min="1" max="10" value="3"><button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.5rem .8rem">✕</button>';
-  document.getElementById('subjects').appendChild(d);
+let semCount=0;
+function getMaxGrade(){var s=document.getElementById("scale").value;return s==="10"?10:s==="4"?4:100}
+function updateGradeOpts(){document.querySelectorAll(".gp-input").forEach(function(el){el.max=getMaxGrade();el.placeholder="Grade (max "+getMaxGrade()+")"})}
+function addRow(container){
+  var d=document.createElement("div");d.className="row";
+  d.innerHTML='<input type="text" placeholder="Subject" style="flex:2"><input type="number" class="gp-input" placeholder="Grade (max '+getMaxGrade()+')" min="0" max="'+getMaxGrade()+'" step="0.1"><input type="number" placeholder="Credits" min="1" max="10" value="3"><button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.5rem .8rem">✕</button>';
+  container.appendChild(d);
 }
-for(let i=0;i<5;i++)addRow();
+function addSemester(){
+  semCount++;
+  var div=document.createElement("div");div.className="semester-block";div.id="sem"+semCount;
+  div.style.cssText="background:var(--card);padding:.8rem;border-radius:10px;margin:.5rem 0";
+  div.innerHTML='<div class="row"><strong>Semester '+semCount+'</strong><button class="btn btn-outline" onclick="this.closest(\'.semester-block\').remove()" style="flex:0;padding:.3rem .6rem;font-size:.75rem">Remove</button></div><div class="sem-subjects"></div><button class="btn btn-outline" onclick="addRow(this.previousElementSibling)" style="margin-top:.3rem;font-size:.8rem">+ Add Subject</button>';
+  document.getElementById("semesters").appendChild(div);
+  for(var i=0;i<4;i++)addRow(div.querySelector(".sem-subjects"));
+}
+addSemester();
 
-function calc(){
-  const rows=document.querySelectorAll('#subjects .row');
-  let totalCredits=0,totalPoints=0,subjects=0;
-  rows.forEach(r=>{
-    const inputs=r.querySelectorAll('input[type=number]');
-    const gp=parseFloat(inputs[0].value),cr=parseFloat(inputs[1].value);
-    if(!isNaN(gp)&&!isNaN(cr)){totalPoints+=gp*cr;totalCredits+=cr;subjects++}
+function calcSemester(block){
+  var rows=block.querySelectorAll(".sem-subjects .row");
+  var tc=0,tp=0,cnt=0;
+  rows.forEach(function(r){var inp=r.querySelectorAll("input[type=number]");var gp=parseFloat(inp[0].value),cr=parseFloat(inp[1].value);if(!isNaN(gp)&&!isNaN(cr)){tp+=gp*cr;tc+=cr;cnt++}});
+  return{points:tp,credits:tc,subjects:cnt,sgpa:tc?tp/tc:0};
+}
+function calcAll(){
+  var blocks=document.querySelectorAll(".semester-block");
+  var totalP=0,totalC=0,totalS=0;var semResults=[];
+  blocks.forEach(function(b,i){var r=calcSemester(b);totalP+=r.points;totalC+=r.credits;totalS+=r.subjects;semResults.push(r)});
+  if(!totalC)return alert("Enter at least one subject");
+  var cgpa=(totalP/totalC).toFixed(2);
+  var scale=document.getElementById("scale").value;
+  var pct=scale==="10"?(cgpa*9.5).toFixed(1):scale==="4"?(cgpa/4*100).toFixed(1):(totalP/totalC).toFixed(1);
+  var card=function(l,v){return"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>"};
+  var maxG=scale==="10"?"10":scale==="4"?"4":"100";
+  document.getElementById("result").innerHTML=card("CGPA",cgpa+"/"+maxG)+card("Percentage",pct+"%")+card("Subjects",totalS)+card("Total Credits",totalC);
+  var html="";semResults.forEach(function(r,i){if(r.credits)html+="<p class='info'>Semester "+(i+1)+": SGPA "+r.sgpa.toFixed(2)+" | "+r.credits+" credits</p>"});
+  document.getElementById("semResults").innerHTML=html;
+  window._calcData={semesters:semResults,cgpa:cgpa,pct:pct,totalC:totalC,totalP:totalP,scale:scale};
+}
+function calcTarget(){
+  if(!window._calcData)return alert("Calculate CGPA first");
+  var target=+document.getElementById("targetCgpa").value;
+  var nextCr=+document.getElementById("targetCredits").value;
+  if(!target||!nextCr)return alert("Enter target CGPA and next semester credits");
+  var d=window._calcData;
+  var needed=((target*(d.totalC+nextCr))-d.totalP)/nextCr;
+  var max=getMaxGrade();
+  var el=document.getElementById("targetResult");
+  if(needed>max)el.textContent="❌ Not achievable. You'd need "+needed.toFixed(2)+"/"+max+" per credit.";
+  else if(needed<0)el.textContent="✅ You've already exceeded your target!";
+  else el.textContent="📌 You need an average grade of "+needed.toFixed(2)+"/"+max+" in next semester.";
+}
+function exportTranscript(){
+  if(!window._calcData)return alert("Calculate CGPA first");
+  var d=window._calcData;var lines=["=== ACADEMIC TRANSCRIPT ===","Grading System: "+document.getElementById("scale").value+"-point",""];
+  document.querySelectorAll(".semester-block").forEach(function(b,i){
+    lines.push("--- Semester "+(i+1)+" ---");
+    b.querySelectorAll(".sem-subjects .row").forEach(function(r){
+      var name=r.querySelector("input[type=text]").value||"Subject";
+      var inp=r.querySelectorAll("input[type=number]");
+      var gp=inp[0].value,cr=inp[1].value;
+      if(gp&&cr)lines.push("  "+name+": Grade "+gp+" | Credits "+cr);
+    });
+    var sr=d.semesters[i];if(sr&&sr.credits)lines.push("  SGPA: "+sr.sgpa.toFixed(2));lines.push("");
   });
-  if(!subjects)return alert('Enter at least one subject');
-  const cgpa=(totalPoints/totalCredits).toFixed(2);
-  const scale=+document.getElementById('scale').value;
-  const pct=scale===10?(cgpa*9.5).toFixed(1):(cgpa/4*100).toFixed(1);
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  document.getElementById('result').innerHTML=card('CGPA',cgpa+'/'+scale)+card('Percentage',pct+'%')+card('Subjects',subjects)+card('Total Credits',totalCredits);
+  lines.push("=== CUMULATIVE ===","CGPA: "+d.cgpa,"Percentage: "+d.pct+"%","Total Credits: "+d.totalC);
+  var blob=new Blob([lines.join("\n")],{type:"text/plain"});download(blob,"transcript.txt");
 }
 function quickConvert(){var gpa=+document.getElementById("qGpa").value;var scale=+document.getElementById("qScale").value;if(!gpa)return;var pct=scale===10?(gpa*9.5).toFixed(1):(gpa*25).toFixed(1);document.getElementById("qResult").textContent="CGPA "+gpa+" ("+scale+"-point) = "+pct+"% | Grade: "+(pct>=90?"A+":pct>=80?"A":pct>=70?"B+":pct>=60?"B":pct>=50?"C":"D")}
   </script>

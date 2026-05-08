@@ -15,9 +15,10 @@
   <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → Thumbnail Preview</div>
-    <div class="tool-section"><h1>🖼️ YouTube Thumbnail Previewer</h1><p class="info">Upload your thumbnail and see how it looks on YouTube — desktop and mobile views.</p>
+    <div class="tool-section"><h1>🖼️ YouTube Thumbnail Previewer</h1><p class="info">Upload your thumbnail and see how it looks on YouTube — desktop, mobile, and TV views.</p>
 <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop thumbnail image here (1280x720 recommended)<input type="file" id="inp" accept="image/*"></div>
-<input type="text" id="vidTitle" placeholder="Video title..." value="My Amazing Video Title" oninput="render()" style="margin-top:.5rem">
+<input type="text" id="vidTitle" placeholder="Video title..." value="My Amazing Video Title" oninput="render();charCount()" style="margin-top:.5rem">
+<div id="charCounter" style="font-size:.8rem;color:var(--muted);margin:.2rem 0">0/60 characters (YouTube recommends &lt;60)</div>
 <input type="text" id="channel" placeholder="Channel name..." value="FreeToolHubs" oninput="render()" style="margin-top:.3rem">
 <div id="previews" style="display:none;margin-top:1rem">
 <h3>Desktop View</h3>
@@ -28,13 +29,36 @@
 <div style="max-width:360px;background:var(--card);padding:.5rem;border-radius:10px">
 <img id="mobThumb" style="width:100%;border-radius:8px">
 <div style="display:flex;gap:.5rem;padding:.5rem"><div style="width:36px;height:36px;border-radius:50%;background:var(--accent);flex-shrink:0"></div><div><div id="mobTitle" style="font-weight:600;font-size:.85rem"></div><div id="mobChannel" style="color:var(--muted);font-size:.75rem"></div></div></div></div>
+<h3 style="margin-top:1rem">TV View</h3>
+<div style="max-width:640px;background:#111;padding:1.5rem;border-radius:12px">
+<img id="tvThumb" style="width:100%;border-radius:6px">
+<div style="color:#fff;font-weight:600;font-size:1.1rem;margin-top:.5rem" id="tvTitle"></div>
+<div style="color:#aaa;font-size:.85rem" id="tvChannel"></div></div>
 <h3 style="margin-top:1rem">Twitter/X Preview</h3>
 <div style="max-width:500px;background:var(--card);padding:1rem;border-radius:12px;border:1px solid var(--border)">
 <div style="display:flex;gap:.5rem;margin-bottom:.5rem"><div style="width:40px;height:40px;border-radius:50%;background:var(--accent)"></div><div><strong id="twChannel">FreeToolHubs</strong><br><span style="color:var(--muted);font-size:.8rem">@freetoolhubs</span></div></div>
 <div id="twTitle" style="margin-bottom:.5rem"></div>
 <img id="twThumb" style="width:100%;border-radius:12px">
 </div>
-</div></div>
+</div>
+<h3 style="margin-top:1.5rem">A/B Comparison</h3>
+<p class="info">Upload two thumbnails to compare side by side.</p>
+<div class="row" style="gap:1rem;flex-wrap:wrap">
+<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail A:</label><input type="file" id="abA" accept="image/*" onchange="loadAB('A')"><img id="abImgA" style="width:100%;border-radius:8px;margin-top:.3rem;display:none"></div>
+<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail B:</label><input type="file" id="abB" accept="image/*" onchange="loadAB('B')"><img id="abImgB" style="width:100%;border-radius:8px;margin-top:.3rem;display:none"></div>
+</div>
+<div class="tool-section" style="margin-top:1.5rem;background:var(--card);padding:1rem;border-radius:10px">
+<h3>💡 CTR Tips — What Makes Good Thumbnails</h3>
+<ul style="margin-left:1.2rem;line-height:1.9;font-size:.9rem">
+<li><strong>Use faces with emotion</strong> — Thumbnails with expressive faces get 30%+ more clicks</li>
+<li><strong>Bold, readable text</strong> — Max 3-4 words, large enough to read on mobile</li>
+<li><strong>High contrast colors</strong> — Stand out in the feed; avoid YouTube's red/white/black</li>
+<li><strong>Rule of thirds</strong> — Place key elements at intersection points</li>
+<li><strong>Curiosity gap</strong> — Show enough to intrigue but not enough to satisfy</li>
+<li><strong>Consistent branding</strong> — Recognizable style builds channel identity</li>
+</ul>
+</div>
+</div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Preview how your YouTube thumbnail will look before publishing. Upload your thumbnail image (recommended 1280x720), enter video title and channel name, and see realistic previews for YouTube Desktop (search results view), YouTube Mobile (feed view), and Twitter/X (shared link view). Helps you check if text is readable at small sizes, if the image is eye-catching, and if it looks good across platforms. Essential for YouTubers, content creators, and social media managers.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -68,7 +92,10 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){document.getElementById("deskThumb").src=reader.result;document.getElementById("mobThumb").src=reader.result;document.getElementById("previews").style.display="block";render()};reader.readAsDataURL(f[0])});
-function render(){var t=document.getElementById("vidTitle").value;var c=document.getElementById("channel").value;document.getElementById("deskTitle").textContent=t;document.getElementById("deskChannel").textContent=c;document.getElementById("mobTitle").textContent=t;document.getElementById("mobChannel").textContent=c+" · 123K views · 2h";document.getElementById("twTitle").textContent=t;document.getElementById("twChannel").textContent=c;if(document.getElementById("deskThumb").src){document.getElementById("twThumb").src=document.getElementById("deskThumb").src}}</script>
+  <script>setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){document.getElementById("deskThumb").src=reader.result;document.getElementById("mobThumb").src=reader.result;document.getElementById("tvThumb").src=reader.result;document.getElementById("previews").style.display="block";render()};reader.readAsDataURL(f[0])});
+function render(){var t=document.getElementById("vidTitle").value;var c=document.getElementById("channel").value;document.getElementById("deskTitle").textContent=t;document.getElementById("deskChannel").textContent=c;document.getElementById("mobTitle").textContent=t;document.getElementById("mobChannel").textContent=c+" · 123K views · 2h";document.getElementById("tvTitle").textContent=t;document.getElementById("tvChannel").textContent=c+" · 123K views";document.getElementById("twTitle").textContent=t;document.getElementById("twChannel").textContent=c;if(document.getElementById("deskThumb").src){document.getElementById("twThumb").src=document.getElementById("deskThumb").src}}
+function charCount(){var len=document.getElementById("vidTitle").value.length;var el=document.getElementById("charCounter");el.textContent=len+"/60 characters"+(len>60?" ⚠️ Too long!":len>50?" (getting close)":" (YouTube recommends <60)");el.style.color=len>60?"#e74c3c":"var(--muted)"}
+charCount();
+function loadAB(side){var inp=document.getElementById("ab"+side);var img=document.getElementById("abImg"+side);if(inp.files[0]){var r=new FileReader();r.onload=function(){img.src=r.result;img.style.display="block"};r.readAsDataURL(inp.files[0])}}</script>
 </body>
 </html>

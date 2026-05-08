@@ -15,11 +15,26 @@
   <nav><a href="../" class="logo">🧰 ToolBox</a><div class="tagline">Free tools. No signup. No uploads.</div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → YT Timestamp</div>
-    <div class="tool-section"><h1>🔗 YouTube Timestamp Link Generator</h1><p class="info">Paste a YouTube URL and time to create a shareable timestamp link.</p>
+    <div class="tool-section"><h1>🔗 YouTube Timestamp Link Generator</h1><p class="info">Paste a YouTube URL and time to create a shareable timestamp link. Also create chapter markers!</p>
 <input type="text" id="url" placeholder="YouTube URL (e.g. https://youtube.com/watch?v=abc123)">
 <div class="row"><div><label>Hours</label><input type="number" id="h" value="0" min="0" style="width:60px"></div><div><label>Minutes</label><input type="number" id="m" value="1" min="0" max="59" style="width:60px"></div><div><label>Seconds</label><input type="number" id="s" value="30" min="0" max="59" style="width:60px"></div></div>
 <button class="btn" onclick="gen()" style="width:100%;margin-top:.5rem">🔗 Generate Link</button>
-<div id="result" style="margin-top:1rem"></div></div>
+<div id="result" style="margin-top:1rem"></div>
+
+<h2 style="margin-top:1.5rem">📑 Chapter Maker</h2>
+<p class="info">Add multiple timestamps with labels to create YouTube chapters.</p>
+<div id="chapters"></div>
+<button class="btn btn-outline" onclick="addRow()" style="margin-top:.5rem">+ Add Timestamp</button>
+<div class="row" style="margin-top:.5rem">
+<button class="btn" onclick="exportChapters()">📋 Export as Description</button>
+<button class="btn btn-outline" onclick="document.getElementById('importBox').style.display=document.getElementById('importBox').style.display==='none'?'block':'none'">📥 Import Timestamps</button>
+</div>
+<div id="importBox" style="display:none;margin-top:.5rem">
+<textarea id="importText" rows="4" placeholder="Paste timestamps like:&#10;00:00 Intro&#10;01:30 Topic 1&#10;05:00 Conclusion"></textarea>
+<button class="btn" onclick="importChapters()" style="margin-top:.3rem">Import</button>
+</div>
+<div id="preview" style="margin-top:1rem"></div>
+</div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Generate shareable YouTube links that start at a specific timestamp. Paste any YouTube URL (youtube.com or youtu.be format), set hours, minutes, and seconds, and get a direct link that jumps to that exact moment. Copy the link or open it directly. Perfect for sharing the best part of a long video, referencing specific points in lectures, creating chapter links for your own videos, and sharing funny moments with friends. Supports all standard YouTube URL formats.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -53,6 +68,15 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function gen(){var url=document.getElementById("url").value.trim();if(!url)return alert("Enter YouTube URL");var h=+document.getElementById("h").value,m=+document.getElementById("m").value,s=+document.getElementById("s").value;var total=h*3600+m*60+s;var vid="";var match=url.match(/[?&]v=([^&]+)/)||url.match(/youtu\.be\/([^?]+)/);if(match)vid=match[1];else return alert("Invalid YouTube URL");var link="https://youtube.com/watch?v="+vid+"&t="+total+"s";var display=h>0?h+"h "+m+"m "+s+"s":m+"m "+s+"s";document.getElementById("result").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><p class="info">Timestamp: '+display+'</p><input type="text" value="'+link+'" readonly style="width:100%;margin:.5rem 0" onclick="this.select()"><div class="row"><button class="btn" onclick="navigator.clipboard.writeText(\''+link+'\');this.textContent=\'Copied!\'">📋 Copy Link</button><a href="'+link+'" target="_blank" class="btn btn-outline" style="text-decoration:none">▶ Open</a></div></div>'}</script>
+  <script>function gen(){var url=document.getElementById("url").value.trim();if(!url)return alert("Enter YouTube URL");var h=+document.getElementById("h").value,m=+document.getElementById("m").value,s=+document.getElementById("s").value;var total=h*3600+m*60+s;var vid="";var match=url.match(/[?&]v=([^&]+)/)||url.match(/youtu\.be\/([^?]+)/);if(match)vid=match[1];else return alert("Invalid YouTube URL");var link="https://youtube.com/watch?v="+vid+"&t="+total+"s";var display=h>0?h+"h "+m+"m "+s+"s":m+"m "+s+"s";document.getElementById("result").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><p class="info">Timestamp: '+display+'</p><input type="text" value="'+link+'" readonly style="width:100%;margin:.5rem 0" onclick="this.select()"><div class="row"><button class="btn" onclick="navigator.clipboard.writeText(\''+link+'\');this.textContent=\'Copied!\'">📋 Copy Link</button><a href="'+link+'" target="_blank" class="btn btn-outline" style="text-decoration:none">▶ Open</a></div></div>'}
+function pad(n){return n<10?"0"+n:""+n}
+function secToTime(t){var h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return h>0?pad(h)+":"+pad(m)+":"+pad(s):pad(m)+":"+pad(s)}
+function addRow(time,label){var div=document.getElementById("chapters");var row=document.createElement("div");row.className="row";row.style.marginTop=".3rem";row.innerHTML='<input type="text" class="ch-time" placeholder="00:00" value="'+(time||"")+'" style="width:80px"><input type="text" class="ch-label" placeholder="Label" value="'+(label||"")+'" style="flex:1"><button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .5rem" onclick="this.parentElement.remove();renderPreview()">✕</button>';div.appendChild(row);row.querySelectorAll("input").forEach(function(i){i.addEventListener("input",renderPreview)})}
+function getChapterText(){var rows=document.querySelectorAll("#chapters .row");var lines=[];rows.forEach(function(r){var t=r.querySelector(".ch-time").value.trim();var l=r.querySelector(".ch-label").value.trim();if(t&&l)lines.push(t+" "+l)});return lines.join("\n")}
+function renderPreview(){var text=getChapterText();var el=document.getElementById("preview");if(!text){el.innerHTML="";return}el.innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>Preview:</strong><pre style="white-space:pre-wrap;margin-top:.5rem;font-size:.85rem">'+text+"</pre></div>"}
+function exportChapters(){var text=getChapterText();if(!text)return alert("Add at least one timestamp");navigator.clipboard.writeText(text);document.getElementById("preview").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><p class="info" style="color:#4caf50">✅ Copied to clipboard!</p><pre style="white-space:pre-wrap;margin-top:.5rem;font-size:.85rem">'+text+"</pre></div>"}
+function importChapters(){var text=document.getElementById("importText").value.trim();if(!text)return;document.getElementById("chapters").innerHTML="";text.split("\n").forEach(function(line){var match=line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)/);if(match)addRow(match[1],match[2])});document.getElementById("importBox").style.display="none";renderPreview()}
+addRow("00:00","Intro");
+</script>
 </body>
 </html>
