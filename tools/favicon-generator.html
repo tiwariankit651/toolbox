@@ -17,14 +17,35 @@
     <div class="breadcrumb"><a href="../">Home</a> → 🌐 Favicon Generator</div>
     <div class="tool-section">
       <h1>🌐 Favicon Generator</h1>
-      <p class="info">Create a favicon from text, emoji, or initials. Download as PNG.</p>
-      <div class="row"><input type="text" id="text" value="AT" placeholder="Text or emoji..." maxlength="3" oninput="gen()" style="text-align:center;font-size:1.3rem;max-width:100px"></div>
-      <div class="row" style="flex-wrap:wrap">
-        <div><label>Background</label><input type="color" id="bg" value="#4f8cff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
-        <div><label>Text Color</label><input type="color" id="fg" value="#ffffff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
-        <div><label>Font Size</label><input type="range" id="fsize" min="20" max="80" value="48" oninput="gen()" style="max-width:120px"></div>
-        <div><label>Shape</label><select id="shape" onchange="gen()"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select></div>
+      <p class="info">Create favicons from text, emoji, or image. Download multiple sizes or all as ZIP.</p>
+
+      <h3>Mode</h3>
+      <div class="row" style="gap:.5rem;flex-wrap:wrap">
+        <button class="btn" onclick="setMode('text')" id="mText">✏️ Text/Initials</button>
+        <button class="btn" onclick="setMode('emoji')" id="mEmoji">😀 Emoji</button>
+        <button class="btn" onclick="setMode('image')" id="mImage">🖼️ Image Upload</button>
       </div>
+
+      <div id="textPanel">
+        <div class="row"><input type="text" id="text" value="AT" placeholder="Text or emoji..." maxlength="3" oninput="gen()" style="text-align:center;font-size:1.3rem;max-width:100px"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Background</label><input type="color" id="bg" value="#4f8cff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+          <div><label>Text Color</label><input type="color" id="fg" value="#ffffff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+          <div><label>Font Size</label><input type="range" id="fsize" min="20" max="80" value="48" oninput="gen()" style="max-width:120px"></div>
+          <div><label>Shape</label><select id="shape" onchange="gen()"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select></div>
+        </div>
+      </div>
+
+      <div id="emojiPanel" style="display:none">
+        <div class="row" style="flex-wrap:wrap;gap:.3rem" id="emojiGrid"></div>
+        <div class="row"><input type="text" id="emojiCustom" placeholder="Or paste any emoji..." maxlength="2" oninput="selEmoji(this.value)" style="text-align:center;font-size:1.5rem;max-width:80px"></div>
+      </div>
+
+      <div id="imagePanel" style="display:none">
+        <div class="row"><input type="file" id="imgFile" accept="image/*" onchange="loadImg(this)"></div>
+        <p class="info">Image will be cropped to center square.</p>
+      </div>
+
       <div style="text-align:center;margin:1.5rem 0">
         <canvas id="preview" width="128" height="128" style="border:1px solid var(--border);border-radius:8px"></canvas>
         <div style="margin-top:.5rem">
@@ -32,11 +53,18 @@
           <canvas id="medium" width="64" height="64" style="border:1px solid var(--border);border-radius:4px;margin:0 4px"></canvas>
         </div>
       </div>
-      <div class="row" style="justify-content:center">
-        <button class="btn" onclick="dl(32)">💾 32x32</button>
-        <button class="btn" onclick="dl(64)">💾 64x64</button>
-        <button class="btn" onclick="dl(128)">💾 128x128</button>
-        <button class="btn" onclick="dl(256)">💾 256x256</button>
+      <div class="row" style="justify-content:center;flex-wrap:wrap">
+        <button class="btn" onclick="dl(16)">16x16</button>
+        <button class="btn" onclick="dl(32)">32x32</button>
+        <button class="btn" onclick="dl(48)">48x48</button>
+        <button class="btn" onclick="dl(180)">180 (Apple)</button>
+        <button class="btn" onclick="dl(192)">192x192</button>
+        <button class="btn" onclick="dl(512)">512x512</button>
+        <button class="btn" onclick="dlZip()">📦 Download ZIP</button>
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn" onclick="showManifest()">📋 Generate manifest.json</button>
+        <pre id="manifestOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Create favicons for your website from text, initials, or emoji. Customize background color, text color, font size, and shape (square, rounded corners, or circle). Preview in multiple sizes and download in 32x32, 64x64, 128x128, or 256x256 pixels. Perfect for website owners, bloggers, and developers who need a quick favicon without design software. The generated PNG can be used directly as a website icon or converted to ICO format using any online converter.</p>
@@ -72,12 +100,48 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
+var mode="text",uploadedImg=null,selectedEmoji="😀";
+const emojis=["😀","🚀","⚡","🔥","💎","🎯","🌟","💡","🎨","🏠","📱","💻","🎵","📚","🌍","❤️","✅","🔒"];
+
+function setMode(m){
+  mode=m;
+  document.getElementById("textPanel").style.display=m==="text"?"":"none";
+  document.getElementById("emojiPanel").style.display=m==="emoji"?"":"none";
+  document.getElementById("imagePanel").style.display=m==="image"?"":"none";
+  gen();
+}
+function initEmojis(){
+  document.getElementById("emojiGrid").innerHTML=emojis.map(e=>"<button style='font-size:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;cursor:pointer' onclick=\"selEmoji('"+e+"')\">"+e+"</button>").join("");
+}
+function selEmoji(e){selectedEmoji=e;gen()}
+function loadImg(input){
+  if(!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();img.onload=function(){uploadedImg=img;gen()};img.src=e.target.result;
+  };r.readAsDataURL(input.files[0]);
+}
+
 function draw(canvas,size){
-  var ctx=canvas.getContext("2d");var bg=document.getElementById("bg").value;var fg=document.getElementById("fg").value;
-  var text=document.getElementById("text").value||"A";var shape=document.getElementById("shape").value;
+  var ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,size,size);
+  if(mode==="image"&&uploadedImg){
+    var s=Math.min(uploadedImg.width,uploadedImg.height);
+    var sx=(uploadedImg.width-s)/2,sy=(uploadedImg.height-s)/2;
+    ctx.drawImage(uploadedImg,sx,sy,s,s,0,0,size,size);
+    return;
+  }
+  if(mode==="emoji"){
+    ctx.font=size*0.75+"px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(selectedEmoji,size/2,size/2+size*0.05);
+    return;
+  }
+  var bg=document.getElementById("bg").value,fg=document.getElementById("fg").value;
+  var text=document.getElementById("text").value||"A",shape=document.getElementById("shape").value;
   var fsize=+document.getElementById("fsize").value*(size/128);
-  ctx.clearRect(0,0,size,size);ctx.fillStyle=bg;
+  ctx.fillStyle=bg;
   if(shape==="circle"){ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.fill()}
   else if(shape==="rounded"){var r=size*0.2;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.fill()}
   else{ctx.fillRect(0,0,size,size)}
@@ -85,7 +149,22 @@ function draw(canvas,size){
 }
 function gen(){draw(document.getElementById("preview"),128);draw(document.getElementById("small"),32);draw(document.getElementById("medium"),64)}
 function dl(size){var c=document.createElement("canvas");c.width=size;c.height=size;draw(c,size);c.toBlob(function(b){download(b,"favicon-"+size+"x"+size+".png")})}
-gen();
+function dlZip(){
+  var zip=new JSZip();var sizes=[16,32,48,180,192,512];var done=0;
+  sizes.forEach(function(size){
+    var c=document.createElement("canvas");c.width=size;c.height=size;draw(c,size);
+    c.toBlob(function(b){
+      zip.file("favicon-"+size+"x"+size+".png",b);
+      if(++done===sizes.length)zip.generateAsync({type:"blob"}).then(function(z){download(z,"favicons.zip")});
+    });
+  });
+}
+function showManifest(){
+  var el=document.getElementById("manifestOut");
+  el.style.display="block";
+  el.textContent=JSON.stringify({name:"My App",short_name:"App",icons:[{src:"/favicon-192x192.png",sizes:"192x192",type:"image/png"},{src:"/favicon-512x512.png",sizes:"512x512",type:"image/png"}],theme_color:"#4f8cff",background_color:"#ffffff",display:"standalone"},null,2);
+}
+initEmojis();gen();
   </script>
 </body>
 </html>

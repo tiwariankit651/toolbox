@@ -37,18 +37,32 @@
     <div class="tool-section">
       <h1>🗣️ Text to Speech</h1>
       <p class="info">Enter text below and click Speak. Uses your browser's built-in speech engine.</p>
+      <div id="textDisplay" style="display:none;padding:.8rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;line-height:1.8;min-height:80px;max-height:200px;overflow-y:auto;font-size:1rem"></div>
       <textarea id="text" rows="6" placeholder="Type or paste text here..."></textarea>
       <div class="row" style="flex-wrap:wrap">
         <div style="flex:2;min-width:200px"><label>Voice:</label><select id="voice" style="width:100%"></select></div>
-        <div style="flex:1;min-width:120px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=this.value"></div>
+        <div style="flex:1;min-width:120px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=this.value;updateEstimate()"></div>
         <div style="flex:1;min-width:120px"><label>Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=this.value"></div>
       </div>
-      <div class="row" style="margin-top:.8rem">
+      <div id="estimate" class="info" style="margin-top:.5rem;font-size:.85rem"></div>
+      <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
         <button class="btn" onclick="speak()" id="speakBtn" style="flex:1">🔊 Speak</button>
         <button class="btn btn-outline" onclick="pauseResume()" id="pauseBtn" style="flex:1">⏸ Pause</button>
         <button class="btn btn-outline" onclick="stopSpeak()" style="flex:1">⏹ Stop</button>
       </div>
+      <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem"><input type="checkbox" id="batchMode"> Batch mode (pause between paragraphs)</label>
+        <button class="btn btn-outline" onclick="downloadAudio()" style="flex:1">💾 Download Audio</button>
+      </div>
       <div id="status" class="info" style="margin-top:.5rem"></div>
+
+      <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="margin:0 0 .5rem">📌 Pronunciation Bookmarks</h3>
+        <div class="row" style="flex-wrap:wrap;gap:.4rem">
+          <button class="btn btn-outline" onclick="saveBookmark()" style="font-size:.85rem">+ Save Current</button>
+        </div>
+        <div id="bookmarks" style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem"></div>
+      </div>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert any text to speech using your browser's built-in speech synthesis engine. Supports multiple voices and languages (depends on your operating system). Adjust speaking speed (0.5x to 2x) and pitch. Features play, pause, resume, and stop controls. Perfect for proofreading (hear your text read aloud to catch errors), language learning (hear correct pronunciation), accessibility (for visually impaired users), and listening to articles or study notes while doing other tasks. No external API — works offline.</p>
@@ -87,28 +101,172 @@
   <script>
 const synth=window.speechSynthesis;
 let voices=[];
+let batchTimeout=null;
+
 function loadVoices(){voices=synth.getVoices();const sel=document.getElementById('voice');sel.innerHTML='';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)})}
 loadVoices();
 synth.onvoiceschanged=loadVoices;
+
+function getSettings(){return{voiceIdx:document.getElementById('voice').value,rate:+document.getElementById('speed').value,pitch:+document.getElementById('pitch').value}}
+
+function updateEstimate(){
+  const text=document.getElementById('text').value.trim();
+  if(!text){document.getElementById('estimate').textContent='';return}
+  const words=text.split(/\s+/).length;
+  const rate=+document.getElementById('speed').value;
+  const wpm=150*rate;
+  const secs=Math.ceil((words/wpm)*60);
+  const m=Math.floor(secs/60),s=secs%60;
+  document.getElementById('estimate').textContent='⏱ Estimated duration: '+(m?m+'m ':'')+(s+'s')+' (~'+words+' words at '+rate+'x)';
+}
+document.getElementById('text').addEventListener('input',updateEstimate);
+
+function makeUtterance(text){
+  const u=new SpeechSynthesisUtterance(text);
+  const s=getSettings();
+  if(voices[s.voiceIdx])u.voice=voices[s.voiceIdx];
+  u.rate=s.rate;u.pitch=s.pitch;
+  return u;
+}
+
+function setupHighlight(text){
+  const display=document.getElementById('textDisplay');
+  display.style.display='block';
+  display.innerHTML=text.replace(/\n/g,'<br>');
+}
+
+function highlightWord(charIndex,charLen,text){
+  const display=document.getElementById('textDisplay');
+  const before=text.substring(0,charIndex);
+  const word=text.substring(charIndex,charIndex+charLen);
+  const after=text.substring(charIndex+charLen);
+  display.innerHTML=before.replace(/\n/g,'<br>')+'<span style="background:#4f8cff;color:#fff;border-radius:3px;padding:0 2px">'+word+'</span>'+after.replace(/\n/g,'<br>');
+}
+
 function speak(){
   const text=document.getElementById('text').value.trim();
   if(!text)return alert('Enter some text first');
   synth.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  const vi=document.getElementById('voice').value;
-  if(voices[vi])u.voice=voices[vi];
-  u.rate=+document.getElementById('speed').value;
-  u.pitch=+document.getElementById('pitch').value;
+  if(batchTimeout){clearTimeout(batchTimeout);batchTimeout=null}
+  if(document.getElementById('batchMode').checked){
+    speakBatch(text);
+  }else{
+    speakSingle(text);
+  }
+}
+
+function speakSingle(text){
+  setupHighlight(text);
+  const u=makeUtterance(text);
+  u.onboundary=e=>{if(e.name==='word')highlightWord(e.charIndex,e.charLength||1,text)};
   u.onstart=()=>document.getElementById('status').textContent='🔊 Speaking...';
-  u.onend=()=>document.getElementById('status').textContent='✅ Done';
-  u.onerror=()=>document.getElementById('status').textContent='❌ Error occurred';
+  u.onend=()=>{document.getElementById('status').textContent='✅ Done';document.getElementById('textDisplay').style.display='none'};
+  u.onerror=()=>{document.getElementById('status').textContent='❌ Error occurred';document.getElementById('textDisplay').style.display='none'};
   synth.speak(u);
 }
+
+function speakBatch(text){
+  const paragraphs=text.split(/\n\s*\n/).filter(p=>p.trim());
+  let idx=0;
+  setupHighlight(text);
+  function next(){
+    if(idx>=paragraphs.length){
+      document.getElementById('status').textContent='✅ Done (all paragraphs)';
+      document.getElementById('textDisplay').style.display='none';
+      return;
+    }
+    const p=paragraphs[idx];
+    const offset=text.indexOf(p);
+    const u=makeUtterance(p);
+    u.onboundary=e=>{if(e.name==='word')highlightWord(offset+e.charIndex,e.charLength||1,text)};
+    u.onstart=()=>document.getElementById('status').textContent='🔊 Paragraph '+(idx+1)+'/'+paragraphs.length;
+    u.onend=()=>{idx++;batchTimeout=setTimeout(next,800)};
+    u.onerror=()=>{document.getElementById('status').textContent='❌ Error';document.getElementById('textDisplay').style.display='none'};
+    synth.speak(u);
+  }
+  next();
+}
+
 function pauseResume(){
   if(synth.paused){synth.resume();document.getElementById('pauseBtn').textContent='⏸ Pause'}
   else if(synth.speaking){synth.pause();document.getElementById('pauseBtn').textContent='▶ Resume'}
 }
-function stopSpeak(){synth.cancel();document.getElementById('status').textContent='⏹ Stopped'}
+
+function stopSpeak(){
+  synth.cancel();
+  if(batchTimeout){clearTimeout(batchTimeout);batchTimeout=null}
+  document.getElementById('status').textContent='⏹ Stopped';
+  document.getElementById('textDisplay').style.display='none';
+}
+
+// Download audio using MediaRecorder + AudioContext + SpeechSynthesis
+function downloadAudio(){
+  const text=document.getElementById('text').value.trim();
+  if(!text)return alert('Enter some text first');
+  document.getElementById('status').textContent='🎙 Recording audio...';
+  const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const dest=audioCtx.createMediaStreamDestination();
+  const mediaRecorder=new MediaRecorder(dest.stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/ogg'});
+  const chunks=[];
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+  mediaRecorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:mediaRecorder.mimeType});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='speech.'+( mediaRecorder.mimeType.includes('webm')?'webm':'ogg');
+    a.click();URL.revokeObjectURL(url);
+    document.getElementById('status').textContent='✅ Audio downloaded';
+    audioCtx.close();
+  };
+  // Create oscillator as carrier, modulate with speech via analyser
+  // Alternative: use the destination directly with a silent source to keep stream alive
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  gain.gain.value=0;
+  osc.connect(gain);gain.connect(dest);
+  osc.start();
+
+  const u=makeUtterance(text);
+  mediaRecorder.start();
+  u.onend=()=>{osc.stop();mediaRecorder.stop()};
+  u.onerror=()=>{osc.stop();mediaRecorder.stop();document.getElementById('status').textContent='❌ Recording failed'};
+  synth.speak(u);
+}
+
+// Bookmarks
+function getBookmarks(){return JSON.parse(localStorage.getItem('tts_bookmarks')||'[]')}
+function saveBookmarks(bm){localStorage.setItem('tts_bookmarks',JSON.stringify(bm))}
+
+function saveBookmark(){
+  const text=document.getElementById('text').value.trim();
+  if(!text)return alert('Enter text to bookmark');
+  const phrase=text.length>50?text.substring(0,50)+'...':text;
+  const bm=getBookmarks();
+  bm.push({phrase:text,label:phrase,voiceIdx:document.getElementById('voice').value,rate:+document.getElementById('speed').value,pitch:+document.getElementById('pitch').value});
+  saveBookmarks(bm);
+  renderBookmarks();
+}
+
+function loadBookmark(i){
+  const bm=getBookmarks();
+  const b=bm[i];if(!b)return;
+  document.getElementById('text').value=b.phrase;
+  document.getElementById('voice').value=b.voiceIdx;
+  document.getElementById('speed').value=b.rate;document.getElementById('speedVal').textContent=b.rate;
+  document.getElementById('pitch').value=b.pitch;document.getElementById('pitchVal').textContent=b.pitch;
+  updateEstimate();
+}
+
+function deleteBookmark(i){
+  const bm=getBookmarks();bm.splice(i,1);saveBookmarks(bm);renderBookmarks();
+}
+
+function renderBookmarks(){
+  const bm=getBookmarks();
+  const el=document.getElementById('bookmarks');
+  el.innerHTML=bm.map((b,i)=>'<div style="display:inline-flex;align-items:center;gap:.3rem;background:var(--bg2,#f0f0f0);border-radius:6px;padding:.3rem .6rem;font-size:.8rem"><span style="cursor:pointer" onclick="loadBookmark('+i+')" title="'+b.phrase.replace(/"/g,'&quot;')+'">📌 '+b.label+'</span><span style="cursor:pointer;opacity:.6" onclick="deleteBookmark('+i+')">✕</span></div>').join('');
+}
+renderBookmarks();
   </script>
 </body>
 </html>

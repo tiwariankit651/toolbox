@@ -36,13 +36,19 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>🎂 Age Calculator</h1>
-      <p class="info">Enter your date of birth to calculate exact age.</p>
+      <p class="info">Enter your date of birth to calculate exact age, zodiac signs, and more.</p>
       <div class="row">
         <label>Date of Birth:</label>
         <input type="date" id="dob" style="flex:2">
         <button class="btn" onclick="calc()">Calculate</button>
       </div>
+      <div class="row">
+        <label>Age on specific date:</label>
+        <input type="date" id="targetDate" style="flex:2" placeholder="Optional">
+        <button class="btn" onclick="calcAt()">Calculate At Date</button>
+      </div>
       <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div id="resultAt" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -80,22 +86,61 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+
+function getZodiac(m,d){
+  const signs=[["Capricorn",20],["Aquarius",19],["Pisces",20],["Aries",20],["Taurus",21],["Gemini",21],["Cancer",22],["Leo",23],["Virgo",23],["Libra",23],["Scorpio",22],["Sagittarius",22],["Capricorn",32]];
+  return d>signs[m][1]?signs[m+1][0]:signs[m][0];
+}
+function getChinese(y){
+  return["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"][y%12];
+}
+function ageBetween(dob,target){
+  let y=target.getFullYear()-dob.getFullYear(),m=target.getMonth()-dob.getMonth(),d=target.getDate()-dob.getDate();
+  if(d<0){m--;d+=new Date(target.getFullYear(),target.getMonth(),0).getDate()}
+  if(m<0){y--;m+=12}
+  return{y,m,d};
+}
+
 function calc(){
   const dob=new Date(document.getElementById("dob").value);
   if(isNaN(dob))return alert("Select a valid date");
   const now=new Date();
   if(dob>now)return alert("Date of birth cannot be in the future!");
-  let y=now.getFullYear()-dob.getFullYear(),m=now.getMonth()-dob.getMonth(),d=now.getDate()-dob.getDate();
-  if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}
-  if(m<0){y--;m+=12}
+  const{y,m,d}=ageBetween(dob,now);
   const totalDays=Math.floor((now-dob)/864e5);
   const totalMonths=y*12+m;
-  const hours=totalDays*24;
+  const totalWeeks=Math.floor(totalDays/7);
+  const totalHours=totalDays*24;
+  const totalMinutes=totalHours*60;
   const nextBday=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
   if(nextBday<=now)nextBday.setFullYear(nextBday.getFullYear()+1);
   const daysToB=Math.ceil((nextBday-now)/864e5);
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  document.getElementById("result").innerHTML=card("Years",y)+card("Months",m)+card("Days",d)+card("Total Days",totalDays.toLocaleString())+card("Total Months",totalMonths)+card("Total Hours",hours.toLocaleString())+card("Next Birthday",daysToB+" days");
+  const dayName=dob.toLocaleDateString("en-US",{weekday:"long"});
+  const western=getZodiac(dob.getMonth(),dob.getDate());
+  const chinese=getChinese(dob.getFullYear());
+
+  document.getElementById("result").innerHTML=
+    card("Years",y)+card("Months",m)+card("Days",d)+
+    card("Next Birthday",daysToB+" days")+
+    card("Total Months",totalMonths.toLocaleString())+card("Total Weeks",totalWeeks.toLocaleString())+
+    card("Total Days",totalDays.toLocaleString())+card("Total Hours",totalHours.toLocaleString())+
+    card("Total Minutes",totalMinutes.toLocaleString())+
+    card("Western Zodiac",western)+card("Chinese Zodiac",chinese)+
+    card("Born On",dayName);
+  document.getElementById("resultAt").innerHTML="";
+}
+
+function calcAt(){
+  const dob=new Date(document.getElementById("dob").value);
+  const target=new Date(document.getElementById("targetDate").value);
+  if(isNaN(dob))return alert("Select a date of birth first");
+  if(isNaN(target))return alert("Select a target date");
+  if(target<dob)return alert("Target date must be after date of birth");
+  const{y,m,d}=ageBetween(dob,target);
+  const totalDays=Math.floor((target-dob)/864e5);
+  document.getElementById("resultAt").innerHTML="<h3 style='grid-column:1/-1;margin:0'>Age on "+target.toLocaleDateString()+"</h3>"+
+    card("Years",y)+card("Months",m)+card("Days",d)+card("Total Days",totalDays.toLocaleString());
 }
   </script>
 </body>

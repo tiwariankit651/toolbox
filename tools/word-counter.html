@@ -39,6 +39,9 @@
       <p class="info">Paste or type text to get word count, character count, reading time and readability score.</p>
       <textarea id="txt" placeholder="Type or paste your text here..." oninput="analyze()" style="min-height:200px"></textarea>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0" id="stats"></div>
+      <div id="keywords" style="margin-top:1rem"></div>
+      <div id="sentenceAnalysis" style="margin-top:1rem"></div>
+      <button id="exportBtn" onclick="exportReport()" style="display:none;margin-top:1rem;padding:.6rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">📥 Export Report</button>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -76,21 +79,69 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+const stopWords=new Set(["the","be","to","of","and","a","in","that","have","i","it","for","not","on","with","he","as","you","do","at","this","but","his","by","from","they","we","her","she","or","an","will","my","one","all","would","there","their","what","so","up","out","if","about","who","get","which","go","me","when","make","can","like","time","no","just","him","know","take","people","into","year","your","good","some","could","them","see","other","than","then","now","look","only","come","its","over","think","also","back","after","use","two","how","our","work","first","well","way","even","new","want","because","any","these","give","day","most","us","is","was","are","been","has","had","were","did","does","being","am","more","very","much","many","such","own","same","should","still","may","here","where","while","each","too","those","through","down","between","both","few","before","since","must","under","during","without","again","off","once","another","never","always","already","often","yet","around","every","until","upon","however","although","though","whether","else","within","along","among","across","toward","above","below","against","behind","beyond","near","next","last","might","shall","let","got","seem","keep","need","say","tell","ask","try","call","find","put","run","set","turn","show","play","move","live","feel","hold","bring","happen","write","provide","sit","stand","lose","pay","meet","include","continue","learn","change","lead","begin","help","talk","stop","read","spend","grow","open","walk","win","teach","offer","remember","love","consider","appear","buy","wait","serve","die","send","expect","build","stay","fall","cut","reach","remain","suggest","raise","pass","sell","require","report","decide","pull"]);
+var reportData={};
 function analyze(){
   const t=document.getElementById("txt").value;
   const words=t.trim()?t.trim().split(/\s+/).length:0;
   const chars=t.length;
   const charsNoSpace=t.replace(/\s/g,'').length;
-  const sentences=(t.match(/[.!?]+/g)||[]).length||0;
+  const sentenceList=t.match(/[^.!?]+[.!?]+/g)||[];
+  const sentences=sentenceList.length||(t.trim()?1:0);
   const paragraphs=t.trim()?t.trim().split(/\n\s*\n/).length:0;
   const readMin=Math.ceil(words/200);
-  const syllables=t.trim().split(/\s+/).reduce((a,w)=>{const m=w.toLowerCase().replace(/[^a-z]/g,'').match(/[aeiouy]+/g);return a+(m?m.length:1)},0);
+  const speakMin=Math.ceil(words/130);
+  const syllables=t.trim()?t.trim().split(/\s+/).reduce((a,w)=>{const m=w.toLowerCase().replace(/[^a-z]/g,'').match(/[aeiouy]+/g);return a+(m?m.length:1)},0):0;
   const flesch=words>0?Math.round(206.835-1.015*(words/(sentences||1))-84.6*(syllables/words)):0;
+  const avgParaLen=paragraphs>0?Math.round(words/paragraphs):0;
   const s=document.getElementById("stats");
   const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  s.innerHTML=card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Read Time",readMin+" min")+card("Readability",flesch>60?"Easy ("+flesch+")":flesch>30?"Medium ("+flesch+")":"Hard ("+flesch+")");
+  s.innerHTML=card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Avg Para Length",avgParaLen+" words")+card("Read Time",readMin+" min")+card("Speak Time",speakMin+" min")+card("Readability",flesch>60?"Easy ("+flesch+")":flesch>30?"Medium ("+flesch+")":"Hard ("+flesch+")");
+
   // Keyword density
-  if(words>5){var freq={};t.toLowerCase().replace(/[^a-zA-Z\s]/g,"").split(/\s+/).forEach(function(w){if(w.length>3)freq[w]=(freq[w]||0)+1});var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,10);var kd='<div style="margin-top:1rem"><h3>Top Keywords</h3>';sorted.forEach(function(k){var pct=(k[1]/words*100).toFixed(1);kd+='<div style="display:flex;align-items:center;gap:.5rem;margin:.2rem 0"><span style="min-width:100px;font-weight:600">'+k[0]+'</span><div style="flex:1;height:8px;background:var(--border);border-radius:4px"><div style="height:100%;width:'+Math.min(pct*10,100)+'%;background:var(--accent);border-radius:4px"></div></div><span class="info">'+k[1]+' ('+pct+'%)</span></div>'});kd+='</div>';s.innerHTML+=kd}
+  var kwHtml='';
+  var topKeywords=[];
+  if(words>5){
+    var freq={};
+    t.toLowerCase().replace(/[^a-z\s]/g,"").split(/\s+/).forEach(function(w){if(w.length>2&&!stopWords.has(w))freq[w]=(freq[w]||0)+1});
+    topKeywords=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+    if(topKeywords.length){
+      kwHtml='<h3>🔑 Top Keywords</h3>';
+      topKeywords.forEach(function(k){var pct=(k[1]/words*100).toFixed(1);kwHtml+='<div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><span style="min-width:100px;font-weight:600">'+k[0]+'</span><div style="flex:1;height:8px;background:var(--border);border-radius:4px"><div style="height:100%;width:'+Math.min(pct*10,100)+'%;background:var(--accent);border-radius:4px"></div></div><span class="info">'+k[1]+' ('+pct+'%)</span></div>'});
+    }
+  }
+  document.getElementById("keywords").innerHTML=kwHtml;
+
+  // Sentence analysis
+  var saHtml='';
+  var avgSentLen=0,longestSent='';
+  if(sentenceList.length>0){
+    var longest={len:0,text:''};
+    var totalWords=0;
+    sentenceList.forEach(function(s){var wc=s.trim().split(/\s+/).length;totalWords+=wc;if(wc>longest.len){longest.len=wc;longest.text=s.trim()}});
+    avgSentLen=Math.round(totalWords/sentenceList.length);
+    longestSent=longest.text;
+    saHtml='<h3>📝 Sentence Analysis</h3><p><strong>Average sentence length:</strong> '+avgSentLen+' words</p><p><strong>Longest sentence ('+longest.len+' words):</strong></p><p style="background:var(--card);padding:.8rem;border-radius:8px;border-left:3px solid var(--accent)">'+longest.text+'</p>';
+  }
+  document.getElementById("sentenceAnalysis").innerHTML=saHtml;
+
+  // Export button visibility
+  document.getElementById("exportBtn").style.display=words>0?'inline-block':'none';
+
+  // Store report data
+  reportData={words,chars,charsNoSpace,sentences,paragraphs,avgParaLen,readMin,speakMin,flesch,topKeywords,avgSentLen,longestSent};
+}
+function exportReport(){
+  var r=reportData;
+  var txt="=== Word Counter Report ===\n\n";
+  txt+="Words: "+r.words+"\nCharacters: "+r.chars+"\nCharacters (no spaces): "+r.charsNoSpace+"\n";
+  txt+="Sentences: "+r.sentences+"\nParagraphs: "+r.paragraphs+"\nAvg Paragraph Length: "+r.avgParaLen+" words\n";
+  txt+="Reading Time: "+r.readMin+" min\nSpeaking Time: "+r.speakMin+" min\n";
+  txt+="Readability (Flesch): "+r.flesch+"\n\n";
+  if(r.topKeywords.length){txt+="--- Top Keywords ---\n";r.topKeywords.forEach(function(k){txt+=k[0]+": "+k[1]+" ("+(k[1]/r.words*100).toFixed(1)+"%)\n"});txt+="\n";}
+  if(r.avgSentLen){txt+="--- Sentence Analysis ---\nAvg Sentence Length: "+r.avgSentLen+" words\nLongest Sentence: "+r.longestSent+"\n";}
+  var blob=new Blob([txt],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='word-counter-report.txt';a.click();
 }
 analyze();
   </script>
