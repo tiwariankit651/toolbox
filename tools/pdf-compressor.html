@@ -133,7 +133,10 @@ async function compressPDF(){
     document.getElementById("result").innerHTML="<p class='info'>⏳ Compressing page "+i+"/"+totalPages+"...</p>";
     
     var page=await pdf.getPage(i);
-    var vp=page.getViewport({scale:scale});
+    var origVp=page.getViewport({scale:1});
+    // Use scale=1 for rendering, only increase if DPI > 72 AND quality is high
+    var renderScale=Math.min(scale,1.5);
+    var vp=page.getViewport({scale:renderScale});
     
     var canvas=document.createElement("canvas");
     canvas.width=vp.width;
@@ -146,13 +149,36 @@ async function compressPDF(){
     var imgBytes=Uint8Array.from(atob(imgData.split(",")[1]),function(c){return c.charCodeAt(0)});
     var img=await newDoc.embedJpg(imgBytes);
     
-    var origVp=page.getViewport({scale:1});
     var newPage=newDoc.addPage([origVp.width,origVp.height]);
     newPage.drawImage(img,{x:0,y:0,width:origVp.width,height:origVp.height});
   }
   
   var outBytes=await newDoc.save();
   var blob=new Blob([outBytes],{type:"application/pdf"});
+  
+  // If compressed is bigger, try again with lower quality
+  if(blob.size>=file.size&&quality>0.3){
+    var newDoc2=await PDFLib.PDFDocument.create();
+    var lowerQuality=Math.max(0.2,quality-0.3);
+    for(var i=1;i<=totalPages;i++){
+      var page=await pdf.getPage(i);
+      var origVp=page.getViewport({scale:1});
+      var vp=page.getViewport({scale:1});
+      var canvas=document.createElement("canvas");
+      canvas.width=vp.width;canvas.height=vp.height;
+      var ctx=canvas.getContext("2d");
+      await page.render({canvasContext:ctx,viewport:vp}).promise;
+      var imgData=canvas.toDataURL("image/jpeg",lowerQuality);
+      var imgBytes=Uint8Array.from(atob(imgData.split(",")[1]),function(c){return c.charCodeAt(0)});
+      var img=await newDoc2.embedJpg(imgBytes);
+      var newPage=newDoc2.addPage([origVp.width,origVp.height]);
+      newPage.drawImage(img,{x:0,y:0,width:origVp.width,height:origVp.height});
+    }
+    var outBytes2=await newDoc2.save();
+    var blob2=new Blob([outBytes2],{type:"application/pdf"});
+    if(blob2.size<blob.size)blob=blob2;
+  }
+  
   var saved=((1-blob.size/file.size)*100).toFixed(1);
   var bigger=blob.size>=file.size;
   
