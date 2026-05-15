@@ -43,7 +43,17 @@
         <select id="unit" onchange="convertUnit()"><option value="px">Pixels (px)</option><option value="cm">Centimeters (cm)</option><option value="mm">Millimeters (mm)</option><option value="inch">Inches</option></select>
         <label>DPI:</label><input type="number" id="dpi" value="300" style="width:70px">
       </div>
-      <div class="row"><div><label>Width <span id="unitW">px</span></label><input type="number" id="w" placeholder="Width" step="any"></div><div><label>Height <span id="unitH">px</span></label><input type="number" id="h" placeholder="Height" step="any"></div></div>
+      <div class="row"><div><label>Width <span id="unitW">px</span></label><div style="display:flex;gap:.3rem;align-items:center"><button onclick="adjustSize('w',-10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">−</button><input type="number" id="w" placeholder="Width" step="any" style="width:90px"><button onclick="adjustSize('w',10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">+</button></div></div><div><label>Height <span id="unitH">px</span></label><div style="display:flex;gap:.3rem;align-items:center"><button onclick="adjustSize('h',-10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">−</button><input type="number" id="h" placeholder="Height" step="any" style="width:90px"><button onclick="adjustSize('h',10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">+</button></div></div></div>
+      <div class="row" style="margin:.5rem 0;gap:.3rem;flex-wrap:wrap"><label>Adjust by:</label>
+        <button class="btn btn-outline" onclick="stepSize=1" style="font-size:.75rem;padding:.2rem .5rem">±1px</button>
+        <button class="btn btn-outline" onclick="stepSize=10" style="font-size:.75rem;padding:.2rem .5rem;background:var(--accent);color:#fff">±10px</button>
+        <button class="btn btn-outline" onclick="stepSize=50" style="font-size:.75rem;padding:.2rem .5rem">±50px</button>
+        <button class="btn btn-outline" onclick="stepSize=100" style="font-size:.75rem;padding:.2rem .5rem">±100px</button>
+        <button class="btn btn-outline" onclick="scaleBy(0.5)" style="font-size:.75rem;padding:.2rem .5rem">50%</button>
+        <button class="btn btn-outline" onclick="scaleBy(0.75)" style="font-size:.75rem;padding:.2rem .5rem">75%</button>
+        <button class="btn btn-outline" onclick="scaleBy(1.5)" style="font-size:.75rem;padding:.2rem .5rem">150%</button>
+        <button class="btn btn-outline" onclick="scaleBy(2)" style="font-size:.75rem;padding:.2rem .5rem">200%</button>
+      </div>
       <label><input type="checkbox" id="lock" checked> Keep aspect ratio</label>
       <div class="row" style="margin-top:.5rem"><label>Output format:</label>
         <select id="fmt"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WebP</option></select>
@@ -120,7 +130,9 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>let file,ratio,origW,origH;
+  <script>let file,ratio,origW,origH,stepSize=10;
+function adjustSize(dim,dir){var el=document.getElementById(dim);var v=parseFloat(el.value)||0;el.value=Math.max(1,v+dir*stepSize);if(document.getElementById("lock").checked){if(dim==="w")document.getElementById("h").value=Math.round(el.value/ratio);else document.getElementById("w").value=Math.round(el.value*ratio)}}
+function scaleBy(factor){var w=document.getElementById("w"),h=document.getElementById("h");w.value=Math.round((parseFloat(w.value)||origW)*factor);h.value=Math.round((parseFloat(h.value)||origH)*factor)}
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;loadImage(file).then(img=>{origW=img.width;origH=img.height;document.getElementById("unit").value="px";document.getElementById("w").value=img.width;document.getElementById("h").value=img.height;ratio=img.width/img.height;document.getElementById("w").oninput=function(){if(document.getElementById("lock").checked)document.getElementById("h").value=Math.round(this.value/ratio)};document.getElementById("h").oninput=function(){if(document.getElementById("lock").checked)document.getElementById("w").value=Math.round(this.value*ratio)}})});
 function toPx(val,unit){var dpi=+document.getElementById("dpi").value||300;if(unit==="cm")return Math.round(val*dpi/2.54);if(unit==="mm")return Math.round(val*dpi/25.4);if(unit==="inch")return Math.round(val*dpi);return Math.round(val)}
 function convertUnit(){var u=document.getElementById("unit").value;document.getElementById("unitW").textContent=u;document.getElementById("unitH").textContent=u}
