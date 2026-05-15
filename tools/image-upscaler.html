@@ -20,6 +20,7 @@
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
       <p class="info">Enlarge low-resolution images with smoothing. Best for small images up to 500px.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div id="uploadPreview" style="display:none;margin:.8rem 0;text-align:center;background:var(--card);padding:.8rem;border-radius:10px"><img id="uploadImg" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"><p class="info" id="uploadInfo" style="margin-top:.5rem"></p></div>
       <div id="editor" style="display:none">
         <div id="origInfo" class="info" style="margin:.5rem 0"></div>
         <div class="row" style="flex-wrap:wrap">
@@ -93,7 +94,7 @@
   <script src="../js/common.js"></script>
   <script>
 var img=null,scale=3;
-setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";document.getElementById("origInfo").textContent="Original: "+i.width+" x "+i.height+" px"})});
+setupDrop("drop","inp",function(f){var file=f[0];document.getElementById("uploadPreview").style.display="block";document.getElementById("uploadImg").src=URL.createObjectURL(file);document.getElementById("uploadInfo").textContent="✅ "+file.name+" ("+formatSize(file.size)+")";loadImage(file).then(function(i){img=i;document.getElementById("editor").style.display="block";document.getElementById("origInfo").textContent="Original: "+i.width+" x "+i.height+" px"})});
 function setScale(s){scale=s;document.getElementById("s2").className=s===2?"btn":"btn btn-outline";document.getElementById("s3").className=s===3?"btn":"btn btn-outline";document.getElementById("s4").className=s===4?"btn":"btn btn-outline";if(s===2)document.getElementById("s2").style.background="var(--accent)";else document.getElementById("s2").style.background="";if(s===3)document.getElementById("s3").style.background="var(--accent)";else document.getElementById("s3").style.background="";if(s===4)document.getElementById("s4").style.background="var(--accent)";else document.getElementById("s4").style.background=""}
 function upscale(){
   if(!img)return;showProcessing("result");
