@@ -69,33 +69,69 @@
 
     <!-- Category Filter Tabs -->
     <div id="categoryTabs" style="position:sticky;top:60px;z-index:50;background:var(--bg);padding:.8rem 0;margin-bottom:1rem;display:flex;gap:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <button class="cat-tab active" onclick="filterCat('all')">🧰 All</button>
-      <button class="cat-tab" onclick="filterCat('doc')">📄 PDF</button>
-      <button class="cat-tab" onclick="filterCat('img')">🖼️ Image</button>
-      <button class="cat-tab" onclick="filterCat('dev')">🛠️ Developer</button>
-      <button class="cat-tab" onclick="filterCat('student')">🎓 Student</button>
-      <button class="cat-tab" onclick="filterCat('pro')">💼 Professional</button>
-      <button class="cat-tab" onclick="filterCat('util')">⚡ Utility</button>
-      <button class="cat-tab" onclick="filterCat('finance')">💰 Finance</button>
+      <button class="cat-tab active" onclick="filterCat('all',this)">🧰 All</button>
+      <button class="cat-tab" onclick="filterCat('doc',this)">📄 PDF</button>
+      <button class="cat-tab" onclick="filterCat('img',this)">🖼️ Image</button>
+      <button class="cat-tab" onclick="filterCat('dev',this)">🛠️ Developer</button>
+      <button class="cat-tab" onclick="filterCat('student',this)">🎓 Student</button>
+      <button class="cat-tab" onclick="filterCat('pro',this)">💼 Professional</button>
+      <button class="cat-tab" onclick="filterCat('util',this)">⚡ Utility</button>
+      <button class="cat-tab" onclick="filterCat('finance',this)">💰 Finance</button>
     </div>
 
     <script>
 // Category filter tabs
-function filterCat(cat){
+function filterCat(cat,btn){
   document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  var sections=document.querySelectorAll('.tools-grid');
-  var headers=document.querySelectorAll('.section-header');
-  if(cat==='all'){sections.forEach(s=>s.style.display='');headers.forEach(h=>h.style.display='');document.getElementById('examCorner')&&(document.getElementById('examCorner').style.display='');return}
-  var map={doc:0,img:1,dev:2,util:3,student:4,pro:5};
+  btn.classList.add('active');
+  // Get all section headers and their grids
+  var allHeaders=document.querySelectorAll('.section-header');
+  var allGrids=document.querySelectorAll('.tools-grid');
   var examCorner=document.getElementById('examCorner');
-  sections.forEach((s,i)=>s.style.display='none');
-  headers.forEach(h=>h.style.display='none');
-  if(examCorner)examCorner.style.display='none';
-  if(cat==='finance'){sections.forEach(s=>s.style.display='');headers.forEach(h=>h.style.display='');document.querySelectorAll('.tool-card').forEach(c=>{var t=c.textContent.toLowerCase();c.style.display=(t.includes('calculator')||t.includes('budget')||t.includes('emi')||t.includes('sip')||t.includes('tax')||t.includes('loan')||t.includes('salary'))?'':'none'});return}
-  if(cat==='student'&&examCorner)examCorner.style.display='';
-  if(map[cat]!==undefined&&sections[map[cat]]){sections[map[cat]].style.display='';if(headers[map[cat]])headers[map[cat]].style.display=''}
-  if(cat==='student'&&sections[4]){sections[4].style.display='';if(headers[4])headers[4].style.display=''}
+  var featuredTool=document.getElementById('featuredTool');
+  var toolOfDay=document.getElementById('toolOfDay');
+  var favSection=document.getElementById('favSection');
+  var recentSection=document.getElementById('recentSection');
+  // Show all first
+  allHeaders.forEach(h=>h.style.display='');
+  allGrids.forEach(g=>g.style.display='');
+  if(examCorner)examCorner.style.display='';
+  if(featuredTool)featuredTool.style.display='';
+  if(toolOfDay)toolOfDay.style.display='';
+  document.querySelectorAll('.tool-card').forEach(c=>c.style.display='');
+  if(cat==='all')return;
+  // Hide featured/toolOfDay when filtering
+  if(featuredTool)featuredTool.style.display='none';
+  if(toolOfDay)toolOfDay.style.display='none';
+  if(favSection)favSection.style.display='none';
+  if(recentSection)recentSection.style.display='none';
+  // Category keywords mapping
+  var catKeywords={
+    doc:['pdf','merger','splitter','compressor','editor','add text','image to pdf','pdf to'],
+    img:['image','photo','background','watermark','collage','sketch','exif','cleanup','color extract','date on','upscaler','converter'],
+    dev:['json','base64','regex','sql','html editor','gradient','color pick','favicon','aspect','crontab','contrast','number convert','diff','code'],
+    student:['typing','flashcard','quiz','speed reader','vocab','formula','periodic','exam','syllabus','topic','essay','upsc','handwriting','summariz','plagiarism','ats','ocr','translator','grammar','humanizer','paraphras'],
+    pro:['resume','invoice','certificate','business card','cover letter','email draft','signature','timetable','mind map','screen record','whiteboard','kanban','presentation','markdown'],
+    util:['qr','url short','password','whatsapp','fancy font','caption','thumbnail','yt ','instagram','calculator','stopwatch','pomodoro','countdown','todo','habit','notes','name picker','coin','ambient','quote','word count','text tool','love','age','bmi','unit convert','budget','meme'],
+    finance:['calculator','budget','emi','sip','tax','loan','salary','percentage']
+  };
+  var keywords=catKeywords[cat]||[];
+  // Hide exam corner for non-student tabs
+  if(examCorner)examCorner.style.display=(cat==='student')?'':'none';
+  // Filter tools
+  document.querySelectorAll('.tool-card').forEach(function(c){
+    var text=(c.textContent+' '+(c.getAttribute('href')||'')).toLowerCase();
+    var show=keywords.some(function(kw){return text.indexOf(kw)>-1});
+    c.style.display=show?'':'none';
+  });
+  // Hide empty sections
+  allGrids.forEach(function(g){
+    var hasVisible=false;
+    g.querySelectorAll('.tool-card').forEach(function(c){if(c.style.display!=='none')hasVisible=true});
+    g.style.display=hasVisible?'':'none';
+    var prev=g.previousElementSibling;
+    if(prev&&prev.classList.contains('section-header'))prev.style.display=hasVisible?'':'none';
+  });
 }
 
 // Spotlight search
