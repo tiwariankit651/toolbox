@@ -59,14 +59,68 @@
         <a href="#doc-tools" class="btn btn-outline" style="text-decoration:none">📄 PDF Tools</a>
       </div>
     </div>
-    <input type="text" id="searchTools" placeholder="🔍 Search tools... (Ctrl+K)" style="width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:.5rem">
+    <input type="text" id="searchTools" placeholder="🔍 Search tools... (Ctrl+K)" style="width:100%;padding:1rem 1.2rem;font-size:1rem;border-radius:14px;border:1px solid rgba(79,140,255,.2);background:var(--card);color:var(--text);margin-bottom:.8rem;box-shadow:0 4px 15px rgba(0,0,0,.1)">
+    <div id="searchResults" style="display:none;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:.8rem;margin-bottom:1rem;max-height:300px;overflow-y:auto;box-shadow:0 8px 30px rgba(79,140,255,.15)"></div>
     <div style="display:flex;justify-content:center;gap:2rem;margin:1rem 0;flex-wrap:wrap">
       <div style="text-align:center"><strong style="font-size:1.5rem;color:var(--accent)">115+</strong><br><span style="font-size:.8rem;color:var(--text2)">Free Tools</span></div>
       <div style="text-align:center"><strong style="font-size:1.5rem;color:#4caf50">100%</strong><br><span style="font-size:.8rem;color:var(--text2)">Browser-Based</span></div>
       <div style="text-align:center"><strong style="font-size:1.5rem;color:#a855f7">0</strong><br><span style="font-size:.8rem;color:var(--text2)">Files Uploaded to Server</span></div>
     </div>
-    <script>var searchAliases={"loan":"emi","photo":"image resizer background","resume":"cover letter","scan":"ocr","crop":"resizer","convert":"converter","download":"video gif","edit":"editor","write":"handwriting notes","study":"flashcards pomodoro syllabus","exam":"quiz flashcards syllabus calendar","money":"budget emi sip tax","code":"json html regex sql","draw":"whiteboard signature","music":"audio","record":"screen recorder","font":"fancy fonts","private":"exif remover","ai":"humanizer","grammar":"checker","merge":"merger image-to-pdf","combine":"merger","join":"merger","compress":"compressor pdf-compressor","reduce":"compressor","size":"resizer compressor","passport":"resizer date-on-photo","form":"resizer date-on-photo handwriting"};
-document.getElementById("searchTools").addEventListener("input",function(){var q=this.value.toLowerCase().trim();if(!q){document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=""});document.querySelectorAll(".tools-grid,.section-header").forEach(function(s){s.style.display=""});return}var expanded=q;for(var k in searchAliases){if(q.indexOf(k)>-1)expanded+=" "+searchAliases[k]}document.querySelectorAll(".tool-card").forEach(function(c){var t=c.textContent.toLowerCase();var href=(c.getAttribute("href")||"").toLowerCase();var full=t+" "+href;var m=full.indexOf(q)>-1;if(!m){var w=expanded.split(/\s+/);m=w.some(function(x){return full.indexOf(x)>-1})}c.style.display=m?"":"none"});document.querySelectorAll(".tools-grid").forEach(function(s){var v=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")v=true});s.style.display=v?"":"none";var p=s.previousElementSibling;if(p)p.style.display=v?"":"none"})});</script>
+
+    <!-- Category Filter Tabs -->
+    <div id="categoryTabs" style="position:sticky;top:60px;z-index:50;background:var(--bg);padding:.8rem 0;margin-bottom:1rem;display:flex;gap:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+      <button class="cat-tab active" onclick="filterCat('all')">🧰 All</button>
+      <button class="cat-tab" onclick="filterCat('doc')">📄 PDF</button>
+      <button class="cat-tab" onclick="filterCat('img')">🖼️ Image</button>
+      <button class="cat-tab" onclick="filterCat('dev')">🛠️ Developer</button>
+      <button class="cat-tab" onclick="filterCat('student')">🎓 Student</button>
+      <button class="cat-tab" onclick="filterCat('pro')">💼 Professional</button>
+      <button class="cat-tab" onclick="filterCat('util')">⚡ Utility</button>
+      <button class="cat-tab" onclick="filterCat('finance')">💰 Finance</button>
+    </div>
+
+    <script>
+// Category filter tabs
+function filterCat(cat){
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  var sections=document.querySelectorAll('.tools-grid');
+  var headers=document.querySelectorAll('.section-header');
+  if(cat==='all'){sections.forEach(s=>s.style.display='');headers.forEach(h=>h.style.display='');document.getElementById('examCorner')&&(document.getElementById('examCorner').style.display='');return}
+  var map={doc:0,img:1,dev:2,util:3,student:4,pro:5};
+  var examCorner=document.getElementById('examCorner');
+  sections.forEach((s,i)=>s.style.display='none');
+  headers.forEach(h=>h.style.display='none');
+  if(examCorner)examCorner.style.display='none';
+  if(cat==='finance'){sections.forEach(s=>s.style.display='');headers.forEach(h=>h.style.display='');document.querySelectorAll('.tool-card').forEach(c=>{var t=c.textContent.toLowerCase();c.style.display=(t.includes('calculator')||t.includes('budget')||t.includes('emi')||t.includes('sip')||t.includes('tax')||t.includes('loan')||t.includes('salary'))?'':'none'});return}
+  if(cat==='student'&&examCorner)examCorner.style.display='';
+  if(map[cat]!==undefined&&sections[map[cat]]){sections[map[cat]].style.display='';if(headers[map[cat]])headers[map[cat]].style.display=''}
+  if(cat==='student'&&sections[4]){sections[4].style.display='';if(headers[4])headers[4].style.display=''}
+}
+
+// Spotlight search
+var searchAliases={"loan":"emi","photo":"image resizer background","resume":"cover letter","scan":"ocr","crop":"resizer","convert":"converter","download":"video gif","edit":"editor","write":"handwriting notes","study":"flashcards pomodoro syllabus","exam":"quiz flashcards syllabus calendar","money":"budget emi sip tax","code":"json html regex sql","draw":"whiteboard signature","music":"audio","record":"screen recorder","font":"fancy fonts","private":"exif remover","ai":"humanizer","grammar":"checker","merge":"merger image-to-pdf","combine":"merger","join":"merger","compress":"compressor pdf-compressor","reduce":"compressor","size":"resizer compressor","passport":"resizer date-on-photo","form":"resizer date-on-photo handwriting"};
+document.getElementById("searchTools").addEventListener("input",function(){
+  var q=this.value.toLowerCase().trim();
+  var resultsDiv=document.getElementById("searchResults");
+  if(!q){resultsDiv.style.display="none";document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=""});document.querySelectorAll(".tools-grid,.section-header").forEach(function(s){s.style.display=""});return}
+  var expanded=q;for(var k in searchAliases){if(q.indexOf(k)>-1)expanded+=" "+searchAliases[k]}
+  var matches=[];
+  document.querySelectorAll(".tool-card").forEach(function(c){
+    var t=c.textContent.toLowerCase();var href=(c.getAttribute("href")||"").toLowerCase();var full=t+" "+href;
+    var m=full.indexOf(q)>-1;if(!m){var w=expanded.split(/\s+/);m=w.some(function(x){return full.indexOf(x)>-1})}
+    c.style.display=m?"":"none";
+    if(m&&matches.length<6)matches.push({name:c.textContent.replace(/\n/g,' ').trim().substring(0,40),href:c.getAttribute("href")});
+  });
+  document.querySelectorAll(".tools-grid").forEach(function(s){var v=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")v=true});s.style.display=v?"":"none";var p=s.previousElementSibling;if(p)p.style.display=v?"":"none"});
+  // Spotlight dropdown
+  if(matches.length&&q.length>1){
+    resultsDiv.style.display="block";
+    resultsDiv.innerHTML=matches.map(function(m){return'<a href="'+m.href+'" style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;border-radius:8px;color:var(--text);text-decoration:none;transition:background .2s"><span style="font-size:1.2rem">'+m.name.substring(0,2)+'</span><span style="flex:1">'+m.name+'</span><span style="color:var(--text2);font-size:.75rem">→</span></a>'}).join("")+'<style>#searchResults a:hover{background:var(--card)}</style>';
+  }else{resultsDiv.style.display="none"}
+});
+document.getElementById("searchTools").addEventListener("blur",function(){setTimeout(function(){document.getElementById("searchResults").style.display="none"},200)});
+    </script>
     <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;gap:.5rem"><button onclick="setView('normal')" id="viewNormal" class="btn" style="padding:.3rem .6rem;font-size:.8rem">🔲 Normal</button><button onclick="setView('compact')" id="viewCompact" class="btn btn-outline" style="padding:.3rem .6rem;font-size:.8rem">▪️ Compact</button></div>
 
     <div id="toolOfDay" style="background:var(--card);padding:1.2rem;border-radius:12px;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border:1px solid var(--border)">
