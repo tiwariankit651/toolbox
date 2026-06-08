@@ -59,6 +59,18 @@
       <div class="row" style="margin-top:.5rem"><label>Output format:</label>
         <select id="fmt"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WebP</option></select>
       </div>
+      <div class="row" style="margin-top:.5rem"><label>Quality:</label>
+        <select id="quality"><option value="max">Maximum (PNG)</option><option value="high">High (JPG 95%)</option><option value="medium">Medium (JPG 80%)</option><option value="low">Low (JPG 60%)</option></select>
+      </div>
+      <h3 style="margin:1rem 0 .5rem">🔍 Enhance & Enlarge</h3>
+      <p class="info" style="margin-bottom:.5rem">Use this to increase image dimensions while maintaining quality</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.5rem">
+        <button class="btn btn-outline" onclick="upscale(1.5)" style="font-size:.8rem">1.5x</button>
+        <button class="btn btn-outline" onclick="upscale(2)" style="font-size:.8rem">2x</button>
+        <button class="btn btn-outline" onclick="upscale(3)" style="font-size:.8rem">3x</button>
+        <button class="btn btn-outline" onclick="upscale(4)" style="font-size:.8rem">4x</button>
+      </div>
+      <label><input type="checkbox" id="sharpen"> Sharpen after resize</label>
       <h3 style="margin:1rem 0 .5rem">Quick Presets (Government / Common)</h3>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
         <button class="btn btn-outline" onclick="setSize(3.5,4.5,'cm')" style="font-size:.8rem">Passport Photo (3.5x4.5 cm)</button>
@@ -134,9 +146,11 @@
   <script>let file,ratio,origW,origH,stepSize=10;
 function adjustSize(dim,dir){var el=document.getElementById(dim);var v=parseFloat(el.value)||0;el.value=Math.max(1,v+dir*stepSize);if(document.getElementById("lock").checked){if(dim==="w")document.getElementById("h").value=Math.round(el.value/ratio);else document.getElementById("w").value=Math.round(el.value*ratio)}}
 function scaleBy(factor){var w=document.getElementById("w"),h=document.getElementById("h");w.value=Math.round((parseFloat(w.value)||origW)*factor);h.value=Math.round((parseFloat(h.value)||origH)*factor)}
+function upscale(factor){if(!origW)return;document.getElementById("w").value=Math.round(origW*factor);document.getElementById("h").value=Math.round(origH*factor);document.getElementById("unit").value="px";convertUnit()}
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block";loadImage(file).then(img=>{origW=img.width;origH=img.height;document.getElementById("previewInfo").textContent="✅ "+file.name+" — "+origW+"×"+origH+"px ("+formatSize(file.size)+")";document.getElementById("unit").value="px";document.getElementById("w").value=img.width;document.getElementById("h").value=img.height;ratio=img.width/img.height;document.getElementById("w").oninput=function(){if(document.getElementById("lock").checked)document.getElementById("h").value=Math.round(this.value/ratio)};document.getElementById("h").oninput=function(){if(document.getElementById("lock").checked)document.getElementById("w").value=Math.round(this.value*ratio)}})});
 function toPx(val,unit){var dpi=+document.getElementById("dpi").value||300;if(unit==="cm")return Math.round(val*dpi/2.54);if(unit==="mm")return Math.round(val*dpi/25.4);if(unit==="inch")return Math.round(val*dpi);return Math.round(val)}
 function convertUnit(){var u=document.getElementById("unit").value;document.getElementById("unitW").textContent=u;document.getElementById("unitH").textContent=u}
 function setSize(w,h,unit){document.getElementById("unit").value=unit==="cm"?"cm":unit==="inch"?"inch":unit==="mm"?"mm":"px";convertUnit();document.getElementById("w").value=w;document.getElementById("h").value=h;document.getElementById("lock").checked=false}
-async function go(){if(!file)return;var img=await loadImage(file);var unit=document.getElementById("unit").value;var w=toPx(+document.getElementById("w").value,unit);var h=toPx(+document.getElementById("h").value,unit);var fmt=document.getElementById("fmt").value;var mime="image/"+fmt;var ext=fmt==="jpeg"?"jpg":fmt;var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);c.toBlob(function(b){document.getElementById("result").innerHTML="<p class='info'>Resized to "+w+" x "+h+" px ("+formatSize(b.size)+")</p><img src='"+URL.createObjectURL(b)+"'><br><button class='btn' onclick='download(window._b,\"resized."+ext+"\")'>Download "+ext.toUpperCase()+"</button>";window._b=b},mime,0.92)}</script>
+function applySharpen(ctx,w,h){var img=ctx.getImageData(0,0,w,h);var d=img.data;var copy=new Uint8ClampedArray(d);var str=0.5;for(var y=1;y<h-1;y++){for(var x=1;x<w-1;x++){var i=(y*w+x)*4;for(var c=0;c<3;c++){var center=copy[i+c]*5;var neighbors=copy[((y-1)*w+x)*4+c]+copy[((y+1)*w+x)*4+c]+copy[(y*w+x-1)*4+c]+copy[(y*w+x+1)*4+c];var sharp=center-neighbors;d[i+c]=Math.min(255,Math.max(0,copy[i+c]+str*sharp))}}}ctx.putImageData(img,0,0)}
+async function go(){if(!file)return;var img=await loadImage(file);var unit=document.getElementById("unit").value;var w=toPx(+document.getElementById("w").value,unit);var h=toPx(+document.getElementById("h").value,unit);var q=document.getElementById("quality").value;var fmt=q==="max"?"png":document.getElementById("fmt").value;var qual=q==="max"?1:q==="high"?0.95:q==="medium"?0.80:0.60;var mime=q==="max"?"image/png":"image/"+fmt;var ext=q==="max"?"png":fmt==="jpeg"?"jpg":fmt;var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");if(w>img.width||h>img.height){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high"}ctx.drawImage(img,0,0,w,h);if(document.getElementById("sharpen").checked)applySharpen(ctx,w,h);c.toBlob(function(b){document.getElementById("result").innerHTML="<p class='info'>Resized to "+w+" × "+h+" px — Output: "+formatSize(b.size)+"</p><img src='"+URL.createObjectURL(b)+"'><br><button class='btn' onclick='download(window._b,\"resized."+ext+"\")'>Download "+ext.toUpperCase()+"</button>";window._b=b},mime,qual)}</script>
 </body></html>
