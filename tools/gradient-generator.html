@@ -55,7 +55,7 @@
 
       <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem;font-family:monospace;font-size:.85rem;word-break:break-all;line-height:1.6" id="code"></div>
       <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
-        <button class="btn" onclick="copyCSS()">📋 Copy CSS</button>
+        <button class="btn" onclick="copyCSS(this)">📋 Copy CSS</button>
         <button class="btn btn-outline" onclick="downloadImg()">💾 Download PNG</button>
         <button class="btn btn-outline" onclick="randomGradient()">🎲 Random</button>
         <button class="btn btn-outline" onclick="saveGradient()">💾 Save</button>
@@ -226,9 +226,9 @@ function gen(){
   document.getElementById("code").textContent="background: "+css+";";
 }
 
-function copyCSS(){
+function copyCSS(btn){
   navigator.clipboard.writeText(document.getElementById("code").textContent);
-  event.target.textContent="Copied!";setTimeout(function(){event.target.textContent="📋 Copy CSS"},1000);
+  btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy CSS"},1000);
 }
 
 function downloadImg(){
