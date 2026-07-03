@@ -136,9 +136,8 @@ async function compressPDF(){
     
     var page=await pdf.getPage(i);
     var origVp=page.getViewport({scale:1});
-    // Use scale=1 for rendering, only increase if DPI > 72 AND quality is high
-    var renderScale=Math.min(scale,1.5);
-    var vp=page.getViewport({scale:renderScale});
+    // DPI controls render resolution: scale = dpi/72
+    var vp=page.getViewport({scale:scale});
     
     var canvas=document.createElement("canvas");
     canvas.width=vp.width;

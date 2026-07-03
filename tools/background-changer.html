@@ -46,14 +46,20 @@
     <div class="tool-section">
       <h1>🎨 Image Background Changer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
-      <p class="info">Remove background and replace with white, blue, red or any custom color. Great for passport photos, ID cards & documents.</p>
+      <p class="info">AI cuts out your subject precisely, then places it on any color, gradient, or transparent background. Perfect for passport photos, ID cards & product shots.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
       <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row">
+        <label>Cutout Mode:</label>
+        <select id="mode">
+          <option value="ai" selected>🤖 AI Precise (best — any background)</option>
+          <option value="fast">⚡ Fast (solid backgrounds only)</option>
+        </select>
+      </div>
+      <div class="row" id="threshRow" style="display:none">
         <label>Detection Threshold: <strong id="tv">30</strong></label>
         <input type="range" id="thresh" min="5" max="120" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3">
       </div>
-      <p class="info">Adjust threshold if background isn't fully detected. Higher = more aggressive removal.</p>
       <label><strong>Choose Background Color:</strong></label>
       <div class="color-presets">
         <button style="background:#ffffff" onclick="pickColor('#ffffff',this)" title="White"></button>
@@ -69,8 +75,8 @@
         <input type="color" id="gradColor1" value="#4f8cff" style="width:30px;height:30px;border:none">
         <input type="color" id="gradColor2" value="#a855f7" style="width:30px;height:30px;border:none">
       </div>
-      <button class="btn" onclick="process()" id="goBtn" disabled>Change Background</button>
-      <p class="info" style="font-size:.75rem;margin-top:.3rem">⚠️ Works best with photos on solid backgrounds. Supported: JPG, PNG, WebP.</p>
+      <button class="btn" onclick="process()" id="goBtn" disabled style="width:100%">Change Background</button>
+      <p class="info" style="font-size:.75rem;margin-top:.3rem">🤖 AI mode downloads a ~40MB model on first use (cached after). Supported: JPG, PNG, WebP.</p>
       <div id="result" class="preview-area"></div>
     </div>
     <div style="min-height:90px">
@@ -132,8 +138,9 @@ if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el
 </script>
 
   <script>
-let file,bgColor="#ffffff";
+let file,bgColor="#ffffff",imglyRemove=null;
 setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
+document.getElementById("mode").addEventListener("change",function(){document.getElementById("threshRow").style.display=this.value==="fast"?"flex":"none"});
 
 function pickColor(c,btn){
   bgColor=c;
@@ -144,77 +151,114 @@ function pickColor(c,btn){
 
 function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b]}
 
+// Paint the chosen background (color or gradient) onto a canvas context
+function paintBackground(ctx,w,h){
+  const useGrad=document.getElementById("useGradient").checked;
+  if(useGrad){
+    const grad=ctx.createLinearGradient(0,0,w,h);
+    grad.addColorStop(0,document.getElementById("gradColor1").value);
+    grad.addColorStop(1,document.getElementById("gradColor2").value);
+    ctx.fillStyle=grad;
+  }else{
+    ctx.fillStyle=bgColor;
+  }
+  ctx.fillRect(0,0,w,h);
+}
+
 async function process(){
   if(!file)return;
   document.getElementById("goBtn").disabled=true;
+  var mode=document.getElementById("mode").value;
+  if(mode==="ai"){await processAI();}else{processFast();}
+}
+
+// ---- AI: cut out subject with imgly, composite over new background ----
+async function processAI(){
+  var res=document.getElementById("result");
+  res.innerHTML="<p class='info'>⏳ Loading AI model (first time ~40MB, then cached)...</p>";
+  try{
+    if(!imglyRemove){
+      var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
+      imglyRemove=mod.removeBackground||mod.default;
+    }
+    res.innerHTML="<p class='info'>🤖 AI cutting out subject... (10-30s)</p>";
+    var cutout=await imglyRemove(file,{progress:function(key,cur,tot){if(key&&key.indexOf("fetch")===0)res.innerHTML="<p class='info'>⏳ Downloading model: "+Math.round(cur/tot*100)+"%</p>"}});
+    var subject=await loadImage(cutout);
+    var c=document.createElement("canvas");c.width=subject.width;c.height=subject.height;
+    var ctx=c.getContext("2d");
+    paintBackground(ctx,c.width,c.height);
+    ctx.drawImage(subject,0,0);
+    c.toBlob(b=>finish(b),"image/png");
+  }catch(err){
+    res.innerHTML="<p class='info' style='color:#f44336'>❌ AI failed ("+(err&&err.message?err.message:"unknown")+"). Trying Fast mode...</p>";
+    setTimeout(processFast,800);
+  }
+}
+
+// ---- Fast: corner flood-fill mask, recolor background ----
+function processFast(){
   document.getElementById("result").innerHTML="<p class='info'>⏳ Processing...</p>";
-  const img=await loadImage(file);
-  const c=document.createElement("canvas");
-  c.width=img.width;c.height=img.height;
-  const ctx=c.getContext("2d");
-  ctx.drawImage(img,0,0);
-  const data=ctx.getImageData(0,0,c.width,c.height);
-  const d=data.data;
-  const t=+document.getElementById("thresh").value;
-  const w=c.width,h=c.height;
-  // Sample background from corners
-  const samples=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
-  let br=0,bg2=0,bb=0;
-  for(const[sx,sy]of samples){const i=(sy*w+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
-  br/=4;bg2/=4;bb/=4;
-  const [nr,ng,nb]=hexToRgb(bgColor);
-  // Compute edge map (Sobel)
-  const gray=new Uint8Array(w*h);
-  for(let i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
-  const edge=new Uint8Array(w*h);
-  for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){
-    const idx=y*w+x;
-    const gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
-    const gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
-    edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
-  }}
-  const edgeThresh=30;
-  // Flood fill from edges, stops at strong edges
-  const mask=new Uint8Array(w*h);
-  const queue=[];
-  for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
-  for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
-  let qi=0;
-  while(qi<queue.length){
-    const x=queue[qi++],y=queue[qi++];
-    if(x<0||x>=w||y<0||y>=h)continue;
-    const idx=y*w+x;
-    if(mask[idx])continue;
-    const pi=idx*4;
-    const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
-    if(diffBg>=t*3)continue;
-    if(edge[idx]>edgeThresh&&qi>w*4)continue;
-    mask[idx]=1;
-    queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
-  }
-  // Apply new background color/gradient to masked pixels
-  const useGrad=document.getElementById("useGradient").checked;
-  if(useGrad){
-    const g1=document.getElementById("gradColor1").value;
-    const g2=document.getElementById("gradColor2").value;
-    const bgCanvas=document.createElement("canvas");bgCanvas.width=w;bgCanvas.height=h;
-    const bgCtx=bgCanvas.getContext("2d");
-    const grad=bgCtx.createLinearGradient(0,0,w,h);
-    grad.addColorStop(0,g1);grad.addColorStop(1,g2);
-    bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,w,h);
-    const bgData=bgCtx.getImageData(0,0,w,h).data;
-    for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=bgData[p];d[p+1]=bgData[p+1];d[p+2]=bgData[p+2];d[p+3]=255}}
-  }else{
-    for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=nr;d[p+1]=ng;d[p+2]=nb;d[p+3]=255}}
-  }
-  ctx.putImageData(data,0,0);
-  c.toBlob(b=>{
-    const origUrl=URL.createObjectURL(file);
-    const newUrl=URL.createObjectURL(b);
-    document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><img src='"+newUrl+"'></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>Download</button>";
-    window._b=b;
-    document.getElementById("goBtn").disabled=false;
-  },"image/png");
+  setTimeout(async function(){
+    const img=await loadImage(file);
+    const c=document.createElement("canvas");c.width=img.width;c.height=img.height;
+    const ctx=c.getContext("2d");ctx.drawImage(img,0,0);
+    const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;
+    const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
+    const samples=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+    let br=0,bg2=0,bb=0;
+    for(const[sx,sy]of samples){const i=(sy*w+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
+    br/=4;bg2/=4;bb/=4;
+    const [nr,ng,nb]=hexToRgb(bgColor);
+    const gray=new Uint8Array(w*h);
+    for(let i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
+    const edge=new Uint8Array(w*h);
+    for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){
+      const idx=y*w+x;
+      const gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
+      const gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
+      edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
+    }}
+    const edgeThresh=30;
+    const mask=new Uint8Array(w*h);
+    const queue=[];
+    for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
+    for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
+    let qi=0;
+    while(qi<queue.length){
+      const x=queue[qi++],y=queue[qi++];
+      if(x<0||x>=w||y<0||y>=h)continue;
+      const idx=y*w+x;
+      if(mask[idx])continue;
+      const pi=idx*4;
+      const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+      if(diffBg>=t*3)continue;
+      if(edge[idx]>edgeThresh&&qi>w*4)continue;
+      mask[idx]=1;
+      queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
+    }
+    const useGrad=document.getElementById("useGradient").checked;
+    if(useGrad){
+      const bgCanvas=document.createElement("canvas");bgCanvas.width=w;bgCanvas.height=h;
+      const bgCtx=bgCanvas.getContext("2d");
+      const grad=bgCtx.createLinearGradient(0,0,w,h);
+      grad.addColorStop(0,document.getElementById("gradColor1").value);grad.addColorStop(1,document.getElementById("gradColor2").value);
+      bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,w,h);
+      const bgData=bgCtx.getImageData(0,0,w,h).data;
+      for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=bgData[p];d[p+1]=bgData[p+1];d[p+2]=bgData[p+2];d[p+3]=255}}
+    }else{
+      for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=nr;d[p+1]=ng;d[p+2]=nb;d[p+3]=255}}
+    }
+    ctx.putImageData(data,0,0);
+    c.toBlob(b=>finish(b),"image/png");
+  },100);
+}
+
+function finish(b){
+  const origUrl=URL.createObjectURL(file);
+  const newUrl=URL.createObjectURL(b);
+  document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><img src='"+newUrl+"'></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>💾 Download</button>";
+  window._b=b;
+  document.getElementById("goBtn").disabled=false;
 }
   </script>
 </body>
