@@ -28,6 +28,17 @@
   <meta name="keywords" content="compress image online, reduce image size, image compressor free, compress jpg png">
   <link rel="canonical" href="https://freetoolhubs.com/tools/image-compressor">
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .compare-slider{position:relative;display:inline-block;max-width:100%;overflow:hidden;border-radius:10px;touch-action:none;user-select:none}
+    .compare-slider img{display:block;max-width:100%;max-height:300px;pointer-events:none}
+    .compare-slider .cs-overlay{position:absolute;top:0;left:0;height:100%;overflow:hidden}
+    .compare-slider .cs-overlay img{display:block;max-height:300px;width:auto;height:100%}
+    .compare-slider .cs-handle{position:absolute;top:0;width:3px;height:100%;background:var(--accent);cursor:ew-resize}
+    .compare-slider .cs-handle::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+    .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.7rem;background:rgba(0,0,0,.6);color:#fff}
+    .compare-slider .cs-label-left{left:8px}
+    .compare-slider .cs-label-right{right:8px}
+  </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head>
 <body>
@@ -62,7 +73,7 @@
       <h3 style="margin:.5rem 0 .3rem">⚙️ Manual Controls</h3>
       <div class="row"><label>Quality: <strong id="qv">70</strong>%</label><input type="range" id="qual" min="5" max="100" value="70" oninput="document.getElementById('qv').textContent=this.value;updateEstimate()" style="flex:3"><span id="estimate" class="info" style="min-width:100px;text-align:right"></span></div>
       <div class="row" style="flex-wrap:wrap;gap:.5rem">
-        <div><label>Output:</label><select id="outFmt"><option value="image/jpeg">JPG (smaller)</option><option value="image/png">PNG (lossless)</option><option value="image/webp">WebP (best)</option></select></div>
+        <div><label>Output:</label><select id="outFmt"><option value="image/jpeg">JPG (smaller)</option><option value="image/png">PNG (lossless)</option><option value="image/webp">WebP (best)</option><option value="image/avif">AVIF (smallest)</option></select></div>
         <div><label>Max Width (px):</label><input type="number" id="maxW" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
         <div><label>Max Height (px):</label><input type="number" id="maxH" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
         <div><label>Target Size (KB):</label><input type="number" id="targetKB" value="0" min="0" placeholder="0 = no limit" style="width:90px"></div>
@@ -131,7 +142,12 @@
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>let files=[],compressedBlobs=[];
+  <script>var files=[],compressedBlobs=[],avifSupported=null;
+// Detect AVIF support
+(function(){
+  var c=document.createElement("canvas");c.width=1;c.height=1;
+  c.toBlob(function(b){avifSupported=!!b},"image/avif",0.5);
+})();
 function updateEstimate(){var q=+document.getElementById("qual").value;var est=q<30?"~90% smaller":q<50?"~70% smaller":q<70?"~50% smaller":q<85?"~30% smaller":"~10% smaller";document.getElementById("estimate").textContent=est}
 function setPreset(w,h,maxKB){
   document.getElementById("maxW").value=w||0;
@@ -142,12 +158,11 @@ function setPreset(w,h,maxKB){
   if(w&&h)info="Resize to "+w+"x"+h+"px";
   if(maxKB)info+=(info?" | ":"")+"Target: under "+maxKB+"KB";
   document.getElementById("presetInfo").style.display="block";
-  document.getElementById("presetText").textContent="✅ Preset applied: "+info;
+  document.getElementById("presetText").textContent="\u2705 Preset applied: "+info;
 }
-setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(f=>f.name+" ("+formatSize(f.size)+")").join(", ")+"</p>";updateEstimate()});
+setupDrop("drop","inp",function(f){files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(function(f){return f.name+" ("+formatSize(f.size)+")"}).join(", ")+"</p>";updateEstimate()});
 
 function enhanceImage(ctx,w,h){
-  // Sharpen using unsharp mask
   var imageData=ctx.getImageData(0,0,w,h);var d=imageData.data;
   var c2=document.createElement("canvas");c2.width=w;c2.height=h;
   var ctx2=c2.getContext("2d");ctx2.filter="blur(1px)";ctx2.drawImage(ctx.canvas,0,0);
@@ -158,30 +173,81 @@ function enhanceImage(ctx,w,h){
     d[i+1]=Math.min(255,Math.max(0,d[i+1]+amt*(d[i+1]-blurred[i+1])));
     d[i+2]=Math.min(255,Math.max(0,d[i+2]+amt*(d[i+2]-blurred[i+2])));
   }
-  // Slight contrast boost
   var factor=1.1;
-  for(var i=0;i<d.length;i+=4){
-    d[i]=Math.min(255,Math.max(0,factor*(d[i]-128)+128));
-    d[i+1]=Math.min(255,Math.max(0,factor*(d[i+1]-128)+128));
-    d[i+2]=Math.min(255,Math.max(0,factor*(d[i+2]-128)+128));
+  for(var i2=0;i2<d.length;i2+=4){
+    d[i2]=Math.min(255,Math.max(0,factor*(d[i2]-128)+128));
+    d[i2+1]=Math.min(255,Math.max(0,factor*(d[i2+1]-128)+128));
+    d[i2+2]=Math.min(255,Math.max(0,factor*(d[i2+2]-128)+128));
   }
   ctx.putImageData(imageData,0,0);
+}
+
+function canvasToBlob(canvas,fmt,quality){
+  return new Promise(function(resolve){canvas.toBlob(function(b){resolve(b)},fmt,quality)});
+}
+
+// Binary search for target KB
+async function compressToTarget(canvas,fmt,targetBytes){
+  var lo=0.01,hi=0.95,best=null;
+  for(var iter=0;iter<8;iter++){
+    var mid=(lo+hi)/2;
+    var blob=await canvasToBlob(canvas,fmt,mid);
+    if(blob.size<=targetBytes){best=blob;lo=mid;}else{hi=mid;}
+  }
+  if(!best)best=await canvasToBlob(canvas,fmt,lo);
+  return best;
+}
+
+// Comparison slider
+function createCompareSlider(origUrl,compUrl){
+  var wrap=document.createElement("div");
+  wrap.className="compare-slider";
+  wrap.innerHTML="<img src='"+compUrl+"' style='display:block;width:100%'><div class='cs-overlay'><img src='"+origUrl+"'></div><div class='cs-handle'></div><span class='cs-label cs-label-left'>Original</span><span class='cs-label cs-label-right'>Compressed</span>";
+  var overlay=wrap.querySelector(".cs-overlay");
+  var handle=wrap.querySelector(".cs-handle");
+  function setPos(x){
+    var rect=wrap.getBoundingClientRect();
+    var pct=Math.max(0,Math.min(1,(x-rect.left)/rect.width));
+    overlay.style.width=(pct*100)+"%";
+    handle.style.left=(pct*100)+"%";
+  }
+  var dragging=false;
+  function startDrag(e){dragging=true;e.preventDefault();setPos(e.touches?e.touches[0].clientX:e.clientX)}
+  function moveDrag(e){if(!dragging)return;e.preventDefault();setPos(e.touches?e.touches[0].clientX:e.clientX)}
+  function endDrag(){dragging=false}
+  handle.addEventListener("mousedown",startDrag);
+  handle.addEventListener("touchstart",startDrag,{passive:false});
+  wrap.addEventListener("mousedown",startDrag);
+  wrap.addEventListener("touchstart",startDrag,{passive:false});
+  document.addEventListener("mousemove",moveDrag);
+  document.addEventListener("touchmove",moveDrag,{passive:false});
+  document.addEventListener("mouseup",endDrag);
+  document.addEventListener("touchend",endDrag);
+  // Set initial at 50%
+  setTimeout(function(){overlay.style.width="50%";handle.style.left="50%"},50);
+  return wrap;
 }
 
 async function compressAll(){if(!files.length)return;
 var qual=document.getElementById("qual").value/100;
 var fmt=document.getElementById("outFmt").value;
-var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":"jpg";
+var avifNotice="";
+// Check AVIF support
+if(fmt==="image/avif"&&!avifSupported){
+  fmt="image/webp";
+  avifNotice="<p class='info' style='color:#ff9800'>\u26a0\ufe0f Your browser does not support AVIF encoding. Falling back to WebP.</p>";
+}
+var ext=fmt==="image/png"?"png":fmt==="image/webp"?"webp":fmt==="image/avif"?"avif":"jpg";
 var maxW=+document.getElementById("maxW").value;
 var maxH=+document.getElementById("maxH").value;
 var targetKB=+document.getElementById("targetKB").value;
 var doEnhance=document.getElementById("enhance").checked;
-var html="";var totalOrig=0,totalComp=0;compressedBlobs=[];
+var html=avifNotice;var totalOrig=0,totalComp=0;compressedBlobs=[];
+var firstOrigUrl=null,firstCompUrl=null;
 
 for(var i=0;i<files.length;i++){
   var file=files[i];var img=await loadImage(file);
   var w=img.width,h=img.height;
-  // Resize if needed
   if(maxW>0&&maxH>0){w=maxW;h=maxH}
   else if(maxW>0&&img.width>maxW){h=Math.round(img.height*(maxW/img.width));w=maxW}
   else if(maxH>0&&img.height>maxH){w=Math.round(img.width*(maxH/img.height));h=maxH}
@@ -189,30 +255,36 @@ for(var i=0;i<files.length;i++){
   var ctx=c.getContext("2d");
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
   ctx.drawImage(img,0,0,w,h);
-  // Enhance if checked
   if(doEnhance)enhanceImage(ctx,w,h);
-  // Compress - if target size set, iteratively reduce quality
   var blob;
   if(targetKB>0){
-    var q=0.92;
-    for(var attempt=0;attempt<10;attempt++){
-      blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,q)});
-      if(blob.size<=targetKB*1024||q<=0.1)break;
-      q-=0.1;
-    }
+    blob=await compressToTarget(c,fmt,targetKB*1024);
   }else{
-    blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,qual)});
+    blob=await canvasToBlob(c,fmt,qual);
   }
   var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
-  var outName='compressed_'+file.name.replace(/\.[^.]+$/,"."+ext);
+  var outName="compressed_"+file.name.replace(/\.[^.]+$/,"."+ext);
   compressedBlobs.push({blob:blob,name:outName});
   window["_cb"+i]=blob;
   var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
-  var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"✅":"⚠️ Could not reach target"):"";
-  html+='<div style="background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><div style="display:flex;gap:.3rem;align-items:center"><img src="'+origUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c" title="Original"><span style="font-size:.7rem">→</span><img src="'+compUrl+'" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60" title="Compressed"></div><div style="flex:1;min-width:150px"><strong>'+file.name+'</strong><br><span class="info">'+formatSize(file.size)+' → '+formatSize(blob.size)+' ('+saved+'% smaller) '+w+'x'+h+'px</span>'+(sizeOk?'<br><span style="font-size:.8rem">'+sizeOk+'</span>':'')+'</div><button class="btn" onclick="download(window._cb'+i+',\''+outName+'\')">💾</button></div>';
+  if(i===0){firstOrigUrl=origUrl;firstCompUrl=compUrl;}
+  var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"\u2705":"\u26a0\ufe0f Could not reach target"):"";
+  html+="<div style='background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap'><div style='display:flex;gap:.3rem;align-items:center'><img src='"+origUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c' title='Original'><span style='font-size:.7rem'>\u2192</span><img src='"+compUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60' title='Compressed'></div><div style='flex:1;min-width:150px'><strong>"+file.name+"</strong><br><span class='info'>"+formatSize(file.size)+" \u2192 "+formatSize(blob.size)+" ("+saved+"% smaller) "+w+"x"+h+"px</span>"+(sizeOk?"<br><span style='font-size:.8rem'>"+sizeOk+"</span>":"")+"</div><button class='btn' onclick=\"download(window._cb"+i+",'"+outName+"')\">\ud83d\udcbe</button></div>";
 }
 var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
-html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center"><strong>Total: '+formatSize(totalOrig)+' → '+formatSize(totalComp)+' ('+totalSaved+'% saved)</strong>'+(compressedBlobs.length>1?'<br><button class="btn" style="margin-top:.5rem" onclick="downloadZip()">📦 Download All as ZIP</button>':'')+'</div>'+html;
-document.getElementById("result").innerHTML=html}
+html="<div style='background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center'><strong>Total: "+formatSize(totalOrig)+" \u2192 "+formatSize(totalComp)+" ("+totalSaved+"% saved)</strong>"+(compressedBlobs.length>1?"<br><button class='btn' style='margin-top:.5rem' onclick='downloadZip()'>\ud83d\udce6 Download All as ZIP</button>":"")+"</div>"+html;
+document.getElementById("result").innerHTML=html;
+// Add before/after comparison slider for first image
+if(firstOrigUrl&&firstCompUrl){
+  var sliderContainer=document.createElement("div");
+  sliderContainer.style.cssText="margin:1rem 0;text-align:center";
+  var sliderTitle=document.createElement("p");
+  sliderTitle.className="info";
+  sliderTitle.textContent="\ud83d\udd0d Before / After Comparison (drag to compare)";
+  sliderContainer.appendChild(sliderTitle);
+  sliderContainer.appendChild(createCompareSlider(firstOrigUrl,firstCompUrl));
+  document.getElementById("result").appendChild(sliderContainer);
+}
+}
 async function downloadZip(){var zip=new JSZip();compressedBlobs.forEach(function(item){zip.file(item.name,item.blob)});var content=await zip.generateAsync({type:"blob"});download(content,"compressed_images.zip")}</script>
 </body></html>

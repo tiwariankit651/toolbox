@@ -37,12 +37,24 @@
     <div class="tool-section">
       <h1>📷 Image to Text (OCR)</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
-      <p class="info">Upload one or more images with text — handwritten notes, screenshots, documents — and extract editable text.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here or click to browse<input type="file" id="inp" accept="image/*" multiple></div>
+      <p class="info">Upload one or more images or a PDF with text — handwritten notes, screenshots, documents — and extract editable text. Language data downloads on first use for each language.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) or PDF here or click to browse<input type="file" id="inp" accept="image/*,.pdf" multiple></div>
       <div class="row">
         <label>Language:</label>
-        <select id="lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="spa">Spanish</option><option value="fra">French</option><option value="deu">German</option></select>
+        <select id="lang">
+          <option value="eng">English</option>
+          <option value="hin">Hindi</option>
+          <option value="ben">Bengali</option>
+          <option value="tam">Tamil</option>
+          <option value="tel">Telugu</option>
+          <option value="mar">Marathi</option>
+          <option value="guj">Gujarati</option>
+          <option value="pan">Punjabi</option>
+          <option value="urd">Urdu</option>
+          <option value="eng+hin">English + Hindi</option>
+        </select>
       </div>
+      <p class="info" style="font-size:.78rem;opacity:.8">⚠️ Language data (~1–15 MB) downloads on first use for each language. Subsequent uses are instant.</p>
       <button class="btn" onclick="doOCR()" id="goBtn" disabled>Extract Text</button>
       <div id="preview" class="preview-area"></div>
       <div id="progress" style="display:none"><div style="background:var(--bg2);border-radius:8px;overflow:hidden;height:22px;margin:.5rem 0"><div id="progBar" style="height:100%;background:linear-gradient(90deg,#4f8cff,#a855f7);width:0%;transition:width .3s;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff"></div></div><p class="info" id="progText"></p></div>
@@ -108,68 +120,124 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-let files=[];
-setupDrop("drop","inp",f=>{
-  files=Array.from(f);document.getElementById("goBtn").disabled=false;
-  document.getElementById("preview").innerHTML=files.map(f=>"<img src='"+URL.createObjectURL(f)+"' style='max-height:120px;margin:.25rem'>").join("");
+var pdfJsLoaded=false;
+function loadPdfJs(){
+  if(pdfJsLoaded)return Promise.resolve();
+  return new Promise(function(resolve){
+    var s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload=function(){
+      pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      pdfJsLoaded=true;resolve();
+    };
+    document.head.appendChild(s);
+  });
+}
+
+var files=[];
+var pdfFile=null;
+setupDrop("drop","inp",function(f){
+  var arr=Array.from(f);
+  pdfFile=null;files=[];
+  var preview=document.getElementById("preview");
+  if(arr.length===1&&arr[0].type==="application/pdf"){
+    pdfFile=arr[0];
+    preview.innerHTML="<p class='info'>📄 PDF selected: "+arr[0].name+"</p>";
+  }else{
+    files=arr.filter(function(x){return x.type.startsWith("image/");});
+    preview.innerHTML=files.map(function(x){return "<img src='"+URL.createObjectURL(x)+"' style='max-height:120px;margin:.25rem'>";}).join("");
+  }
+  document.getElementById("goBtn").disabled=false;
 });
+
 function detectTable(text){
-  const lines=text.split("\n").filter(l=>l.trim());
-  const tabular=lines.filter(l=>/\t/.test(l)||/ {2,}/.test(l));
+  var lines=text.split("\n").filter(function(l){return l.trim();});
+  var tabular=lines.filter(function(l){return /\t/.test(l)||/ {2,}/.test(l);});
   if(tabular.length<2)return null;
-  const rows=tabular.map(l=>l.split(/\t| {2,}/).map(c=>c.trim()).filter(Boolean));
+  var rows=tabular.map(function(l){return l.split(/\t| {2,}/).map(function(c){return c.trim();}).filter(Boolean);});
   if(rows.length<2||rows[0].length<2)return null;
-  const cols=rows[0].length;
-  const consistent=rows.filter(r=>r.length===cols);
+  var cols=rows[0].length;
+  var consistent=rows.filter(function(r){return r.length===cols;});
   if(consistent.length<2)return null;
-  const widths=Array.from({length:cols},(_,i)=>Math.max(...consistent.map(r=>(r[i]||"").length)));
-  const sep=widths.map(w=>"-".repeat(w+2)).join("+");
-  return consistent.map((r,ri)=>{
-    const row="| "+r.map((c,ci)=>c.padEnd(widths[ci])).join(" | ")+" |";
+  var widths=Array.from({length:cols},function(_,i){return Math.max.apply(null,consistent.map(function(r){return (r[i]||"").length;}));});
+  var sep=widths.map(function(w){return "-".repeat(w+2);}).join("+");
+  return consistent.map(function(r,ri){
+    var row="| "+r.map(function(c,ci){return c.padEnd(widths[ci]);}).join(" | ")+" |";
     return ri===0?row+"\n+"+sep+"+":row;
   }).join("\n");
 }
+
+async function renderPdfPages(pdfData){
+  await loadPdfJs();
+  var pdf=await pdfjsLib.getDocument({data:pdfData}).promise;
+  var images=[];
+  for(var i=1;i<=pdf.numPages;i++){
+    var page=await pdf.getPage(i);
+    var vp=page.getViewport({scale:2});
+    var canvas=document.createElement("canvas");
+    canvas.width=vp.width;canvas.height=vp.height;
+    await page.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise;
+    var blob=await new Promise(function(r){canvas.toBlob(r,"image/png");});
+    images.push(blob);
+  }
+  return images;
+}
+
 async function doOCR(){
-  if(!files.length)return;
-  const goBtn=document.getElementById("goBtn");
-  const progDiv=document.getElementById("progress");
-  const progBar=document.getElementById("progBar");
-  const progText=document.getElementById("progText");
-  const resultDiv=document.getElementById("result");
+  if(!files.length&&!pdfFile)return;
+  var goBtn=document.getElementById("goBtn");
+  var progDiv=document.getElementById("progress");
+  var progBar=document.getElementById("progBar");
+  var progText=document.getElementById("progText");
+  var resultDiv=document.getElementById("result");
   goBtn.disabled=true;
   progDiv.style.display="block";
   resultDiv.innerHTML="";
-  const lang=document.getElementById("lang").value;
-  const total=files.length;
-  let combined="";
-  const worker=await Tesseract.createWorker(lang,1,{logger:m=>{
-    if(m.status==='recognizing text'){
-      const pageProgress=m.progress;
-      const overall=((currentPage+pageProgress)/total)*100;
+  var lang=document.getElementById("lang").value;
+
+  var imagesToProcess=[];
+  if(pdfFile){
+    progText.textContent="⏳ Rendering PDF pages...";
+    var pdfData=await pdfFile.arrayBuffer();
+    imagesToProcess=await renderPdfPages(pdfData);
+  }else{
+    imagesToProcess=files;
+  }
+
+  var total=imagesToProcess.length;
+  var combined="";
+  var currentIdx=0;
+
+  var worker=await Tesseract.createWorker(lang,1,{logger:function(m){
+    if(m.status==="recognizing text"){
+      var overall=((currentIdx+m.progress)/total)*100;
       progBar.style.width=overall+"%";
       progBar.textContent=Math.round(overall)+"%";
     }
   }});
-  let currentPage=0;
-  for(let i=0;i<total;i++){
-    currentPage=i;
-    progText.textContent="⏳ Processing image "+(i+1)+" of "+total+"...";
-    const{data}=await worker.recognize(files[i]);
-    combined+=(i>0?"\n\n--- Page "+(i+1)+" ---\n\n":"")+data.text;
+
+  for(var i=0;i<total;i++){
+    currentIdx=i;
+    progText.textContent="⏳ OCR page "+(i+1)+"/"+total+"...";
+    var result=await worker.recognize(imagesToProcess[i]);
+    combined+=(i>0?"\n\n--- Page "+(i+1)+" ---\n\n":"")+result.data.text;
   }
   await worker.terminate();
   progDiv.style.display="none";
-  const table=detectTable(combined);
-  let tableHtml=table?"<details style='margin-top:.5rem'><summary>📊 Detected Table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";
-  const words=combined.split(/\s+/).filter(Boolean).length;
-  resultDiv.innerHTML="<p class='info'>✅ Text extracted ("+words+" words, "+total+" image"+(total>1?"s":"")+")</p><textarea style='min-height:250px'>"+combined.replace(/</g,"&lt;")+"</textarea>"+tableHtml+"<div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.querySelector(\"#result textarea\").value)'>📋 Copy</button><button class='btn btn-outline' onclick='copyFormatted()'>📝 Copy Formatted</button><button class='btn' onclick='download(new Blob([document.querySelector(\"#result textarea\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
+
+  var table=detectTable(combined);
+  var tableHtml=table?"<details style='margin-top:.5rem'><summary>📊 Detected Table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";
+  var words=combined.split(/\s+/).filter(Boolean).length;
+  var chars=combined.length;
+  resultDiv.innerHTML="<p class='info'>✅ Text extracted — "+words+" words, "+chars+" characters ("+total+" "+(pdfFile?"page":"image")+(total>1?"s":"")+")</p><textarea style='min-height:250px' id='ocrOutput'>"+combined.replace(/</g,"&lt;")+"</textarea>"+tableHtml+"<div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.getElementById(\"ocrOutput\").value)'>📋 Copy All</button><button class='btn btn-outline' onclick='copyFormatted()'>📝 Copy Formatted</button><button class='btn' onclick='download(new Blob([document.getElementById(\"ocrOutput\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
   goBtn.disabled=false;
 }
+
 function copyFormatted(){
-  const text=document.querySelector("#result textarea").value;
-  const html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>");
-  const blob=new Blob([html],{type:"text/html"});
-  const plain=new Blob([text],{type:"text/plain"});
+  var text=document.getElementById("ocrOutput").value;
+  var html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>");
+  var blob=new Blob([html],{type:"text/html"});
+  var plain=new Blob([text],{type:"text/plain"});
   navigator.clipboard.write([new ClipboardItem({"text/html":blob,"text/plain":plain})]);
 }
   </script>

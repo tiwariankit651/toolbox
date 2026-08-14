@@ -10,6 +10,18 @@
   <meta property="og:title" content="Video to GIF Converter — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/video-to-gif"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Video to GIF","url":"https://freetoolhubs.com/tools/video-to-gif","description":"Convert video to GIF online","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/video-to-gif"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .trim-container{position:relative;margin:1rem 0;padding:.5rem 0}
+    .trim-track{position:relative;height:8px;background:var(--border);border-radius:4px;margin:0 10px}
+    .trim-range{position:absolute;height:100%;background:var(--accent);border-radius:4px;opacity:.5}
+    .trim-handle{position:absolute;top:-8px;width:20px;height:24px;background:var(--accent);border-radius:4px;cursor:ew-resize;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+    .trim-label{position:absolute;top:18px;font-size:.7rem;color:var(--text2);transform:translateX(-50%)}
+    .preset-card{background:var(--card);padding:.6rem;border-radius:var(--radius);cursor:pointer;text-align:center;border:2px solid transparent;transition:border-color .2s}
+    .preset-card.active{border-color:var(--accent)}
+    .preset-card:hover{border-color:var(--accent)}
+    .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:.5rem 0}
+    .progress-fill{height:100%;background:var(--gradient);transition:width .2s;width:0}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -18,22 +30,64 @@
     <div class="tool-section">
       <h1>🎬 Video to GIF Converter</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#a855f7" opacity=".6"/></svg></div>
-      <p class="info">Upload a video, set start/end time, FPS and width. Convert to GIF in your browser.</p>
+      <p class="info">Upload a video, trim with timeline, choose quality preset, add effects. Convert to GIF in your browser.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop video here (MP4, WebM, MOV)<input type="file" id="inp" accept="video/*"></div>
       <div id="editor" style="display:none">
         <video id="vid" controls style="width:100%;max-height:300px;border-radius:8px;margin:.5rem 0"></video>
-        <div class="row" style="flex-wrap:wrap">
-          <div><label>Start (sec)</label><input type="number" id="startT" value="0" min="0" step="0.1" style="width:70px"></div>
-          <div><label>End (sec)</label><input type="number" id="endT" value="3" min="0.1" step="0.1" style="width:70px"></div>
-          <div><label>FPS</label><input type="number" id="fps" value="10" min="5" max="30" style="width:60px"></div>
-          <div><label>Speed</label><select id="speed"><option value="0.5">0.5x Slow</option><option value="1" selected>1x Normal</option><option value="1.5">1.5x Fast</option><option value="2">2x Fast</option></select></div>
-          <div><label>Width (px)</label><input type="number" id="gifW" value="320" min="100" max="800" style="width:70px"></div>
+
+        <!-- Trim Timeline -->
+        <div style="background:var(--card);padding:1rem;border-radius:var(--radius);margin:.8rem 0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+            <strong style="font-size:.9rem">✂️ Trim Timeline</strong>
+            <span id="trimDuration" style="font-size:.85rem;color:var(--accent);font-weight:600">Duration: 0.0s</span>
+          </div>
+          <div class="trim-container" id="trimContainer">
+            <div class="trim-track" id="trimTrack">
+              <div class="trim-range" id="trimRange"></div>
+              <div class="trim-handle" id="trimStart" style="left:0"><span class="trim-label" id="trimStartLabel">0:00</span></div>
+              <div class="trim-handle" id="trimEnd" style="right:0"><span class="trim-label" id="trimEndLabel">0:00</span></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-top:.3rem">
+            <span>Start: <input type="number" id="startT" value="0" min="0" step="0.1" style="width:60px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.75rem">s</span>
+            <button class="btn btn-outline" onclick="previewTrimSegment()" style="padding:.2rem .6rem;font-size:.75rem">▶ Preview Segment</button>
+            <span>End: <input type="number" id="endT" value="3" min="0.1" step="0.1" style="width:60px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.75rem">s</span>
+          </div>
         </div>
-        <div class="row" style="flex-wrap:wrap;margin-top:.5rem">
-          <div><label><input type="checkbox" id="reverseGif"> Reverse GIF</label></div>
-          <div><label>Text Overlay</label><input type="text" id="overlayText" placeholder="Optional text" style="width:120px"></div>
-          <div><label>Text Position</label><select id="overlayPos"><option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option><option value="center">Center</option><option value="bottom-left">Bottom-Left</option><option value="bottom-center" selected>Bottom-Center</option><option value="bottom-right">Bottom-Right</option></select></div>
+
+        <!-- Quality Presets -->
+        <div style="margin:.8rem 0">
+          <strong style="font-size:.9rem">📐 Quality Preset:</strong>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin-top:.5rem">
+            <div class="preset-card" onclick="setPreset('small')" id="presetSmall"><div style="font-weight:600;font-size:.85rem">Small</div><div style="font-size:.7rem;color:var(--text2)">240p · 8 FPS</div></div>
+            <div class="preset-card active" onclick="setPreset('medium')" id="presetMedium"><div style="font-weight:600;font-size:.85rem">Medium</div><div style="font-size:.7rem;color:var(--text2)">360p · 10 FPS</div></div>
+            <div class="preset-card" onclick="setPreset('high')" id="presetHigh"><div style="font-weight:600;font-size:.85rem">High</div><div style="font-size:.7rem;color:var(--text2)">480p · 15 FPS</div></div>
+            <div class="preset-card" onclick="setPreset('original')" id="presetOriginal"><div style="font-weight:600;font-size:.85rem">Original</div><div style="font-size:.7rem;color:var(--text2)">Full size · 15 FPS</div></div>
+          </div>
+          <div id="sizeEstimate" style="font-size:.75rem;color:var(--text2);margin-top:.4rem;text-align:center">Estimated size: ~1-3 MB</div>
         </div>
+
+        <!-- Advanced Controls -->
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label style="font-size:.8rem">FPS</label><input type="number" id="fps" value="10" min="5" max="30" style="width:55px;padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
+          <div><label style="font-size:.8rem">Width (px)</label><input type="number" id="gifW" value="360" min="100" max="1200" style="width:65px;padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
+          <div><label style="font-size:.8rem">Speed</label><select id="speed" style="padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"><option value="0.5">0.5x Slow</option><option value="1" selected>1x Normal</option><option value="1.5">1.5x Fast</option><option value="2">2x Fast</option></select></div>
+          <div><label style="font-size:.8rem">Loop</label><select id="loopCount" style="padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"><option value="0">Infinite</option><option value="1">1 time</option><option value="3">3 times</option><option value="5">5 times</option></select></div>
+        </div>
+
+        <!-- Effects -->
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label style="font-size:.8rem"><input type="radio" name="playMode" value="normal" checked> Normal</label></div>
+          <div><label style="font-size:.8rem"><input type="radio" name="playMode" value="reverse"> Reverse</label></div>
+          <div><label style="font-size:.8rem"><input type="radio" name="playMode" value="boomerang"> Boomerang</label></div>
+        </div>
+
+        <!-- Text Overlay -->
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label style="font-size:.8rem">Text Overlay</label><input type="text" id="overlayText" placeholder="Optional text" style="width:140px;padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
+          <div><label style="font-size:.8rem">Position</label><select id="overlayPos" style="padding:.3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"><option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option><option value="center">Center</option><option value="bottom-left">Bottom-Left</option><option value="bottom-center" selected>Bottom-Center</option><option value="bottom-right">Bottom-Right</option></select></div>
+        </div>
+
         <button class="btn btn-outline" onclick="preview()" style="width:100%;margin-top:.8rem">👁️ Preview Frames</button>
         <div id="previewArea" style="display:flex;gap:4px;overflow-x:auto;margin:.5rem 0"></div>
         <button class="btn" onclick="convert()" style="width:100%;margin-top:.4rem" id="convertBtn">🎬 Convert to GIF</button>
@@ -91,45 +145,167 @@
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
   <script src="../js/common.js"></script>
   <script>
-var videoFile;
+var videoFile,videoDuration=0;
+
 setupDrop("drop","inp",function(f){
   videoFile=f[0];var vid=document.getElementById("vid");
   vid.src=URL.createObjectURL(videoFile);
-  vid.onloadedmetadata=function(){document.getElementById("endT").value=Math.min(3,vid.duration).toFixed(1);document.getElementById("endT").max=vid.duration};
+  vid.onloadedmetadata=function(){
+    videoDuration=vid.duration;
+    document.getElementById("startT").value=0;
+    document.getElementById("startT").max=vid.duration;
+    document.getElementById("endT").value=Math.min(3,vid.duration).toFixed(1);
+    document.getElementById("endT").max=vid.duration;
+    updateTrimUI();
+    updateSizeEstimate();
+  };
   document.getElementById("editor").style.display="block";
 });
+
+// Trim timeline drag logic
+(function(){
+  var track=document.getElementById("trimTrack");
+  var startHandle=document.getElementById("trimStart");
+  var endHandle=document.getElementById("trimEnd");
+  var dragging=null;
+
+  function getTrackWidth(){return track.getBoundingClientRect().width-20;}
+
+  function onMove(e){
+    if(!dragging||!videoDuration)return;
+    e.preventDefault();
+    var rect=track.getBoundingClientRect();
+    var clientX=e.touches?e.touches[0].clientX:e.clientX;
+    var pct=Math.max(0,Math.min(1,(clientX-rect.left-10)/(rect.width-20)));
+    var time=+(pct*videoDuration).toFixed(1);
+    if(dragging==="start"){
+      var endVal=+document.getElementById("endT").value;
+      if(time>=endVal)time=Math.max(0,endVal-0.1);
+      document.getElementById("startT").value=time;
+    }else{
+      var startVal=+document.getElementById("startT").value;
+      if(time<=startVal)time=Math.min(videoDuration,startVal+0.1);
+      document.getElementById("endT").value=time;
+    }
+    updateTrimUI();
+  }
+
+  function onUp(){dragging=null;document.removeEventListener("mousemove",onMove);document.removeEventListener("mouseup",onUp);document.removeEventListener("touchmove",onMove);document.removeEventListener("touchend",onUp);}
+
+  startHandle.addEventListener("mousedown",function(e){e.preventDefault();dragging="start";document.addEventListener("mousemove",onMove);document.addEventListener("mouseup",onUp);});
+  startHandle.addEventListener("touchstart",function(e){e.preventDefault();dragging="start";document.addEventListener("touchmove",onMove,{passive:false});document.addEventListener("touchend",onUp);});
+  endHandle.addEventListener("mousedown",function(e){e.preventDefault();dragging="end";document.addEventListener("mousemove",onMove);document.addEventListener("mouseup",onUp);});
+  endHandle.addEventListener("touchstart",function(e){e.preventDefault();dragging="end";document.addEventListener("touchmove",onMove,{passive:false});document.addEventListener("touchend",onUp);});
+})();
+
+document.getElementById("startT").addEventListener("input",updateTrimUI);
+document.getElementById("endT").addEventListener("input",updateTrimUI);
+document.getElementById("fps").addEventListener("input",updateSizeEstimate);
+document.getElementById("gifW").addEventListener("input",updateSizeEstimate);
+
+function updateTrimUI(){
+  if(!videoDuration)return;
+  var s=+document.getElementById("startT").value;
+  var e=+document.getElementById("endT").value;
+  var trackEl=document.getElementById("trimTrack");
+  var w=trackEl.getBoundingClientRect().width-20;
+  var startPct=s/videoDuration;
+  var endPct=e/videoDuration;
+  document.getElementById("trimStart").style.left=(startPct*w)+"px";
+  document.getElementById("trimEnd").style.left=(endPct*w)+"px";
+  document.getElementById("trimRange").style.left=(startPct*100)+"%";
+  document.getElementById("trimRange").style.width=((endPct-startPct)*100)+"%";
+  document.getElementById("trimStartLabel").textContent=formatTimeTrim(s);
+  document.getElementById("trimEndLabel").textContent=formatTimeTrim(e);
+  document.getElementById("trimDuration").textContent="Duration: "+(e-s).toFixed(1)+"s";
+  updateSizeEstimate();
+}
+
+function formatTimeTrim(sec){var m=Math.floor(sec/60);var s=Math.floor(sec%60);return m+":"+(s<10?"0":"")+s;}
+
+function updateSizeEstimate(){
+  var s=+document.getElementById("startT").value;
+  var e=+document.getElementById("endT").value;
+  var dur=e-s;
+  var fps=+document.getElementById("fps").value||10;
+  var w=+document.getElementById("gifW").value||360;
+  var frames=Math.ceil(dur*fps);
+  var playMode=document.querySelector('input[name="playMode"]:checked').value;
+  if(playMode==="boomerang")frames=frames*2-1;
+  var bytesPerFrame=w*(w*0.56)*0.3;
+  var est=frames*bytesPerFrame;
+  var label=est>1048576?(est/1048576).toFixed(1)+" MB":(est/1024).toFixed(0)+" KB";
+  document.getElementById("sizeEstimate").textContent="Estimated: ~"+label+" ("+frames+" frames)";
+}
+
+function setPreset(p){
+  document.querySelectorAll(".preset-card").forEach(function(el){el.classList.remove("active");});
+  document.getElementById("preset"+p.charAt(0).toUpperCase()+p.slice(1)).classList.add("active");
+  var vid=document.getElementById("vid");
+  if(p==="small"){document.getElementById("gifW").value=240;document.getElementById("fps").value=8;}
+  else if(p==="medium"){document.getElementById("gifW").value=360;document.getElementById("fps").value=10;}
+  else if(p==="high"){document.getElementById("gifW").value=480;document.getElementById("fps").value=15;}
+  else if(p==="original"){document.getElementById("gifW").value=vid.videoWidth||640;document.getElementById("fps").value=15;}
+  updateSizeEstimate();
+}
+
+function previewTrimSegment(){
+  var vid=document.getElementById("vid");
+  var s=+document.getElementById("startT").value;
+  var e=+document.getElementById("endT").value;
+  vid.currentTime=s;
+  vid.play();
+  var checkEnd=setInterval(function(){
+    if(vid.currentTime>=e){vid.pause();clearInterval(checkEnd);}
+  },50);
+}
+
 function drawOverlay(ctx,w,h){
   var text=document.getElementById("overlayText").value;if(!text)return;
   var pos=document.getElementById("overlayPos").value;
-  ctx.font="bold "+Math.max(12,Math.round(h/15))+"px Arial";ctx.fillStyle="#fff";ctx.strokeStyle="#000";ctx.lineWidth=2;
-  var x,y;var p=pos.split("-");
-  if(p[0]==="top")y=h*0.1;else if(p[0]==="bottom"||p[0]==="bottom")y=h*0.92;else y=h/2;
-  if(pos==="center"){x=w/2;y=h/2}
-  if(p[1]==="left"||p[0]==="top"&&!p[1]){ctx.textAlign="left";x=10}
-  else if(p[1]==="right"){ctx.textAlign="right";x=w-10}
-  else{ctx.textAlign="center";x=w/2}
-  if(p[0]==="top")y=h*0.1;else if(p[0]==="bottom")y=h*0.92;else y=h/2;
+  var fontSize=Math.max(14,Math.round(h/12));
+  ctx.font="bold "+fontSize+"px Arial";ctx.fillStyle="#ffffff";ctx.strokeStyle="#000000";ctx.lineWidth=Math.max(2,fontSize/10);
+  ctx.textBaseline="middle";
+  var x,y;
+  var padding=fontSize*0.6;
+  var textWidth=ctx.measureText(text).width;
+  // Determine horizontal position
+  if(pos==="center"||pos==="top-center"||pos==="bottom-center"){
+    ctx.textAlign="center";x=w/2;
+  }else if(pos.indexOf("left")!==-1){
+    ctx.textAlign="left";x=padding;
+  }else{
+    ctx.textAlign="right";x=w-padding;
+  }
+  // Determine vertical position
+  if(pos==="center"){y=h/2;}
+  else if(pos.indexOf("top")!==-1){y=padding+fontSize/2;}
+  else{y=h-padding-fontSize/2;}
   ctx.strokeText(text,x,y);ctx.fillText(text,x,y);
 }
+
 function preview(){
   var vid=document.getElementById("vid");
   var startT=+document.getElementById("startT").value;
   var endT=+document.getElementById("endT").value;
-  var count=Math.min(8,Math.ceil((endT-startT)*2));
+  var count=Math.min(10,Math.ceil((endT-startT)*3));
+  if(count<2)count=2;
   var area=document.getElementById("previewArea");area.innerHTML="";
   var idx=0;
   function grab(){
     if(idx>=count)return;
     vid.currentTime=startT+idx*((endT-startT)/(count-1||1));
     vid.onseeked=function(){
-      var c=document.createElement("canvas");c.width=80;c.height=60;
-      c.style.cssText="border-radius:4px;flex-shrink:0";
-      c.getContext("2d").drawImage(vid,0,0,80,60);
+      var c=document.createElement("canvas");c.width=100;c.height=70;
+      c.style.cssText="border-radius:4px;flex-shrink:0;border:1px solid var(--border)";
+      var cCtx=c.getContext("2d");
+      cCtx.drawImage(vid,0,0,100,70);
       area.appendChild(c);idx++;grab();
     };
   }
   grab();
 }
+
 function convert(){
   var vid=document.getElementById("vid");
   var startT=+document.getElementById("startT").value;
@@ -141,10 +317,13 @@ function convert(){
   var duration=endT-startT;
   var totalFrames=Math.ceil(duration*fps);
   var delay=1000/fps/(+document.getElementById("speed").value||1);
-  var reverse=document.getElementById("reverseGif").checked;
+  var playMode=document.querySelector('input[name="playMode"]:checked').value;
+  var loopCount=+document.getElementById("loopCount").value;
+
   document.getElementById("convertBtn").disabled=true;
-  document.getElementById("progress").innerHTML='<div style="text-align:center;padding:1rem"><div style="display:inline-block;width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p class="info">Capturing frames... 0/'+totalFrames+'</p></div>';
-  if(!document.getElementById("spinCSS")){var s=document.createElement("style");s.id="spinCSS";s.textContent="@keyframes spin{to{transform:rotate(360deg)}}";document.head.appendChild(s)}
+  document.getElementById("progress").innerHTML='<div style="padding:.5rem"><p class="info" style="margin-bottom:.3rem">Capturing frames... 0/'+totalFrames+'</p><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div></div>';
+  if(!document.getElementById("spinCSS")){var s=document.createElement("style");s.id="spinCSS";s.textContent="@keyframes spin{to{transform:rotate(360deg)}}";document.head.appendChild(s);}
+
   var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
   var ctx=canvas.getContext("2d");
   var frames=[];var frameIdx=0;
@@ -154,22 +333,40 @@ function convert(){
     drawOverlay(ctx,gifW,gifH);
     frames.push(ctx.getImageData(0,0,gifW,gifH));
     frameIdx++;
-    document.getElementById("progress").querySelector("p").textContent="Capturing frames... "+frameIdx+"/"+totalFrames;
-    if(frameIdx<totalFrames){vid.currentTime=startT+(frameIdx/fps)}
-    else{
-      if(reverse)frames.reverse();
-      var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
-      frames.forEach(function(f){ctx.putImageData(f,0,0);gif.addFrame(ctx,{copy:true,delay:delay})});
-      document.getElementById("progress").querySelector("p").textContent="Encoding GIF...";
-      gif.on("finished",function(blob){
-        document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+(blob.size/1024).toFixed(1)+' KB | '+gifW+'x'+gifH+' | '+fps+' FPS'+(reverse?' | Reversed':'')+'</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
-        window._gifBlob=blob;
-        document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done!</p>';
-        document.getElementById("convertBtn").disabled=false;
-      });
-      gif.render();
-    }
+    var pct=Math.round(frameIdx/totalFrames*100);
+    document.getElementById("progress").querySelector("p").textContent="Capturing frames... "+frameIdx+"/"+totalFrames+" ("+pct+"%)";
+    document.getElementById("progFill").style.width=pct/2+"%";
+    if(frameIdx<totalFrames){vid.currentTime=startT+(frameIdx/fps);}
+    else{encodeGif(frames,gifW,gifH,delay,playMode,loopCount);}
   };
+}
+
+function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
+  if(playMode==="reverse"){frames.reverse();}
+  else if(playMode==="boomerang"){var rev=frames.slice(1,-1).reverse();frames=frames.concat(rev);}
+
+  var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
+  var ctx=canvas.getContext("2d");
+  var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,repeat:loopCount,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
+  frames.forEach(function(f){ctx.putImageData(f,0,0);gif.addFrame(ctx,{copy:true,delay:delay});});
+
+  document.getElementById("progress").querySelector("p").textContent="Encoding GIF...";
+
+  gif.on("progress",function(p){
+    var pct=Math.round(50+p*50);
+    document.getElementById("progFill").style.width=pct+"%";
+    document.getElementById("progress").querySelector("p").textContent="Encoding GIF... "+pct+"%";
+  });
+
+  gif.on("finished",function(blob){
+    var sizeStr=blob.size>1048576?(blob.size/1048576).toFixed(2)+" MB":(blob.size/1024).toFixed(1)+" KB";
+    var playModeLabel=document.querySelector('input[name="playMode"]:checked').value;
+    document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+sizeStr+' | '+gifW+'x'+gifH+' | '+document.getElementById("fps").value+' FPS'+(playModeLabel!=="normal"?" | "+playModeLabel:"")+'</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
+    window._gifBlob=blob;
+    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done! Final size: '+sizeStr+'</p>';
+    document.getElementById("convertBtn").disabled=false;
+  });
+  gif.render();
 }
   </script>
 </body>

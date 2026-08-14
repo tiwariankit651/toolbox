@@ -38,7 +38,7 @@
     <div class="tool-section"><h1>✂️ Remove Image Background</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
       <p class="info">AI-powered background removal — works on people, products, animals & complex photos. Runs 100% in your browser.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row"><label>Mode:</label>
         <select id="mode">
@@ -118,84 +118,189 @@ if(typeof download==="undefined"){function download(blob,name){var a=document.cr
 if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el==="string")el=document.getElementById(el);if(el)el.innerHTML="<p class=\"info\">⏳ Processing...</p>"}}
 </script>
 
-  <script>let file;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>var files=[];
+var batchResults=[];
 document.getElementById("mode").addEventListener("change",function(){document.getElementById("threshRow").style.display=this.value==="fast"?"flex":"none"});
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
+setupDrop("drop","inp",function(f){
+  files=Array.from(f);
+  document.getElementById("goBtn").disabled=false;
+  if(files.length===1){
+    document.getElementById("previewImg").src=URL.createObjectURL(files[0]);
+    document.getElementById("preview").style.display="block";
+  }else{
+    document.getElementById("preview").style.display="none";
+  }
+});
 
 async function go(){
-  if(!file)return;
-  var mode=document.getElementById("mode").value;
+  if(!files.length)return;
   document.getElementById("goBtn").disabled=true;
-  if(mode==="ai"){await runAI();}else{runFast();}
+  batchResults=[];
+  if(files.length===1){
+    var mode=document.getElementById("mode").value;
+    if(mode==="ai"){await runAI(files[0],true);}else{await runFastSingle(files[0]);}
+  }else{
+    await processBatch();
+  }
 }
 
 // ---- AI mode: @imgly/background-removal (runs in browser via WASM) ----
 var imglyRemove=null;
-async function runAI(){
+async function ensureModel(){
+  if(!imglyRemove){
+    var res=document.getElementById("result");
+    res.innerHTML="<p class='info'>\u23f3 Loading AI model (first time downloads ~40MB, then cached)...</p>";
+    var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
+    imglyRemove=mod.removeBackground||mod.default;
+  }
+}
+
+async function runAI(f,single){
   var res=document.getElementById("result");
-  res.innerHTML="<p class='info'>⏳ Loading AI model (first time downloads ~40MB, then cached)...</p>";
+  if(single)res.innerHTML="<p class='info'>\u23f3 Loading AI model (first time downloads ~40MB, then cached)...</p>";
   try{
-    if(!imglyRemove){
-      var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
-      imglyRemove=mod.removeBackground||mod.default;
-    }
-    res.innerHTML="<p class='info'>🤖 AI is removing background... (may take 10-30s depending on image size)</p>";
-    var blob=await imglyRemove(file,{
+    await ensureModel();
+    if(single)res.innerHTML="<p class='info'>\ud83e\udd16 AI is removing background... (may take 10-30s depending on image size)</p>";
+    var blob=await imglyRemove(f,{
       progress:function(key,cur,tot){
-        if(key&&key.indexOf("fetch")===0){res.innerHTML="<p class='info'>⏳ Downloading AI model: "+Math.round(cur/tot*100)+"%</p>";}
+        if(single&&key&&key.indexOf("fetch")===0){res.innerHTML="<p class='info'>\u23f3 Downloading AI model: "+Math.round(cur/tot*100)+"%</p>";}
       }
     });
-    showResult(blob);
+    if(single)showResult(blob);
+    return blob;
   }catch(err){
-    res.innerHTML="<p class='info' style='color:#f44336'>❌ AI mode failed ("+(err&&err.message?err.message:"unknown")+"). Switching to Fast mode...</p>";
-    setTimeout(runFast,800);
+    if(single){
+      res.innerHTML="<p class='info' style='color:#f44336'>\u274c AI mode failed ("+(err&&err.message?err.message:"unknown")+"). Switching to Fast mode...</p>";
+      await new Promise(function(r){setTimeout(r,800)});
+      await runFastSingle(f);
+    }
+    return null;
   }
 }
 
 // ---- Fast mode: corner flood-fill (solid backgrounds only) ----
-function runFast(){
-  showProcessing("result");
-  setTimeout(async function(){
-    const img=await loadImage(file);const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
-    const gray=new Uint8Array(w*h);
-    for(let i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
-    const edge=new Uint8Array(w*h);
-    for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){
-      const idx=y*w+x;
-      const gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
-      const gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
+function runFastOnFile(f){
+  return new Promise(async function(resolve){
+    var img=await loadImage(f);var c=document.createElement("canvas");c.width=img.width;c.height=img.height;var ctx=c.getContext("2d");ctx.drawImage(img,0,0);var data=ctx.getImageData(0,0,c.width,c.height);var d=data.data;var t=+document.getElementById("thresh").value;var w=c.width,h=c.height;
+    var gray=new Uint8Array(w*h);
+    for(var i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
+    var edge=new Uint8Array(w*h);
+    for(var y=1;y<h-1;y++){for(var x=1;x<w-1;x++){
+      var idx=y*w+x;
+      var gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
+      var gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
       edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
     }}
-    const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
-    let br=0,bg2=0,bb=0;
-    for(const[cx,cy]of corners){const i=(cy*w+cx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
+    var corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+    var br=0,bg2=0,bb=0;
+    for(var ci=0;ci<corners.length;ci++){var pi2=(corners[ci][1]*w+corners[ci][0])*4;br+=d[pi2];bg2+=d[pi2+1];bb+=d[pi2+2]}
     br/=4;bg2/=4;bb/=4;
-    const edgeThresh=30;
-    const visited=new Uint8Array(w*h);
-    const queue=[];
-    for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
-    for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
-    let qi=0;
+    var edgeThresh=30;
+    var visited=new Uint8Array(w*h);
+    var queue=[];
+    for(var x2=0;x2<w;x2++){queue.push(x2,0);queue.push(x2,h-1)}
+    for(var y2=1;y2<h-1;y2++){queue.push(0,y2);queue.push(w-1,y2)}
+    var qi=0;
     while(qi<queue.length){
-      const x=queue[qi++],y=queue[qi++];
-      if(x<0||x>=w||y<0||y>=h)continue;
-      const idx=y*w+x;
-      if(visited[idx])continue;
-      const pi=idx*4;
-      const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+      var xx=queue[qi++],yy=queue[qi++];
+      if(xx<0||xx>=w||yy<0||yy>=h)continue;
+      var idx2=yy*w+xx;
+      if(visited[idx2])continue;
+      var pi=idx2*4;
+      var diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
       if(diffBg>=t*3)continue;
-      if(edge[idx]>edgeThresh&&qi>w*4)continue;
-      visited[idx]=1;
-      queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
+      if(edge[idx2]>edgeThresh&&qi>w*4)continue;
+      visited[idx2]=1;
+      queue.push(xx-1,yy,xx+1,yy,xx,yy-1,xx,yy+1);
     }
-    for(let i=0;i<w*h;i++){if(visited[i])d[i*4+3]=0}
+    for(var i2=0;i2<w*h;i2++){if(visited[i2])d[i2*4+3]=0}
     ctx.putImageData(data,0,0);
-    c.toBlob(b=>showResult(b),"image/png");
-  },100);
+    c.toBlob(function(b){resolve(b)},"image/png");
+  });
+}
+
+async function runFastSingle(f){
+  showProcessing("result");
+  var blob=await runFastOnFile(f);
+  showResult(blob);
+}
+
+// ---- Batch processing ----
+async function processBatch(){
+  var res=document.getElementById("result");
+  var mode=document.getElementById("mode").value;
+  var total=files.length;
+  var done=0;
+  batchResults=[];
+  // Build initial queue HTML
+  function renderQueue(){
+    var html="<div style='margin-bottom:.8rem'><strong>Batch Progress: "+done+"/"+total+" done</strong></div>";
+    html+="<div id='batchQueue'>";
+    for(var i=0;i<total;i++){
+      var status=i<done?"done":(i===done?"processing":"waiting");
+      var icon=status==="done"?"\u2705":(status==="processing"?"\u23f3":"\u23f8\ufe0f");
+      var label=status==="done"?"Done":(status==="processing"?"Processing...":"Waiting");
+      html+="<div style='display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;background:var(--card);border-radius:6px;margin:.3rem 0'><span>"+icon+"</span><span style='flex:1;font-size:.85rem'>"+files[i].name+"</span><span style='font-size:.75rem;color:var(--text2)'>"+label+"</span></div>";
+    }
+    html+="</div><div id='batchResults' style='margin-top:1rem'></div>";
+    res.innerHTML=html;
+  }
+  // Load model once for AI mode
+  if(mode==="ai"){
+    res.innerHTML="<p class='info'>\u23f3 Loading AI model for batch processing...</p>";
+    try{await ensureModel();}catch(e){
+      res.innerHTML="<p class='info' style='color:#f44336'>\u274c Failed to load AI model. Try Fast mode.</p>";
+      document.getElementById("goBtn").disabled=false;return;
+    }
+  }
+  renderQueue();
+  for(var i=0;i<total;i++){
+    done=i;renderQueue();
+    var blob=null;
+    try{
+      if(mode==="ai"){
+        blob=await imglyRemove(files[i]);
+      }else{
+        blob=await runFastOnFile(files[i]);
+      }
+    }catch(e){blob=null;}
+    batchResults.push({name:files[i].name,blob:blob});
+    done=i+1;renderQueue();
+    // Append result thumbnail
+    var brDiv=document.getElementById("batchResults");
+    if(blob){
+      var url=URL.createObjectURL(blob);
+      var outName="no-bg_"+files[i].name.replace(/\.[^.]+$/,".png");
+      window["_batch"+i]=blob;
+      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top'><div style='background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/16px 16px;border-radius:8px;padding:6px;display:inline-block'><img src='"+url+"' style='max-width:120px;max-height:120px;display:block;border-radius:6px'></div><br><button class='btn' style='font-size:.75rem;padding:.3rem .6rem;margin-top:.3rem' onclick=\"download(window._batch"+i+",'"+outName+"')\">"+"\ud83d\udcbe Download</button></div>";
+    }else{
+      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top;padding:1rem;background:var(--card);border-radius:8px'><span>\u274c</span><br><span style='font-size:.75rem'>"+files[i].name+"<br>Failed</span></div>";
+    }
+  }
+  // Add Download All as ZIP if more than one succeeded
+  var successes=batchResults.filter(function(r){return r.blob});
+  if(successes.length>1){
+    var brDiv2=document.getElementById("batchResults");
+    brDiv2.innerHTML="<div style='text-align:center;margin-bottom:.8rem'><button class='btn' onclick='downloadAllZip()'>\ud83d\udce6 Download All as ZIP ("+successes.length+" images)</button></div>"+brDiv2.innerHTML;
+  }
+  document.getElementById("goBtn").disabled=false;
+}
+
+async function downloadAllZip(){
+  var zip=new JSZip();
+  for(var i=0;i<batchResults.length;i++){
+    if(batchResults[i].blob){
+      var name="no-bg_"+batchResults[i].name.replace(/\.[^.]+$/,".png");
+      zip.file(name,batchResults[i].blob);
+    }
+  }
+  var content=await zip.generateAsync({type:"blob"});
+  download(content,"background-removed.zip");
 }
 
 function showResult(b){
-  document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">💾 Download PNG</button>";
+  document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">\ud83d\udcbe Download PNG</button>";
   window._b=b;
   document.getElementById("goBtn").disabled=false;
 }

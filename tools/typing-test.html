@@ -37,20 +37,50 @@
     <div class="tool-section">
       <h1>⌨️ Typing Speed Test</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Start typing the text below. Timer starts automatically.</p>
-      <div class="row" style="margin-bottom:.5rem">
-        <label>Duration:</label>
-        <select id="duration" onchange="reset()"><option value="30">30 sec</option><option value="60" selected>60 sec</option><option value="120">2 min</option><option value="300">5 min</option></select>
-        <label>Difficulty:</label>
-        <select id="difficulty" onchange="reset()"><option value="beginner">Beginner</option><option value="moderate" selected>Moderate</option><option value="expert">Expert</option></select>
+      <p class="info">Start typing the text below. Timer starts automatically. Supports Hindi & English with exam presets.</p>
+
+      <!-- Exam Presets -->
+      <div style="margin-bottom:.8rem">
+        <label style="font-weight:600">Exam Preset:</label>
+        <select id="examPreset" onchange="applyPreset()" style="padding:.4rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text)">
+          <option value="none">— Custom / Free Practice —</option>
+          <option value="ssc-chsl-en">SSC CHSL English (35 WPM, 10 min)</option>
+          <option value="ssc-chsl-hi">SSC CHSL Hindi (30 WPM, 10 min)</option>
+          <option value="ssc-cgl-deo">SSC CGL DEO (8000 KDPH, 15 min)</option>
+          <option value="court-steno-en">Court Stenographer English (40 WPM, 10 min)</option>
+          <option value="court-steno-hi">Court Stenographer Hindi (30 WPM, 10 min)</option>
+          <option value="uppcl">UPPCL Typist (25 WPM Hindi, 10 min)</option>
+          <option value="rrb-ntpc">RRB NTPC Typing (30 WPM English, 10 min)</option>
+        </select>
       </div>
-      <div class="row" style="margin-bottom:1rem">
+
+      <div class="row" style="margin-bottom:.5rem;flex-wrap:wrap">
+        <label>Duration:</label>
+        <select id="duration" onchange="reset()" style="padding:.3rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text)">
+          <option value="60">1 min</option>
+          <option value="120">2 min</option>
+          <option value="180">3 min</option>
+          <option value="300">5 min</option>
+          <option value="600" selected>10 min</option>
+        </select>
+        <label>Difficulty:</label>
+        <select id="difficulty" onchange="reset()" style="padding:.3rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text)">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
         <label>Language:</label>
-        <select id="lang" onchange="reset()"><option value="en" selected>English</option><option value="hi">Hindi</option><option value="bn">Bengali</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="gu">Gujarati</option><option value="kn">Kannada</option><option value="pa">Punjabi</option><option value="ml">Malayalam</option><option value="mix">English + Numbers</option></select>
+        <select id="lang" onchange="reset()" style="padding:.3rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text)">
+          <option value="en" selected>English</option>
+          <option value="hi">Hindi (हिन्दी)</option>
+        </select>
+      </div>
+      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap">
         <button class="btn" onclick="reset()">New Test</button>
         <button class="btn btn-outline" onclick="document.getElementById('customTextArea').style.display=document.getElementById('customTextArea').style.display==='none'?'block':'none'">📝 Custom Text</button>
         <button class="btn btn-outline" onclick="document.getElementById('hindiGuide').style.display=document.getElementById('hindiGuide').style.display==='none'?'block':'none'">🇮🇳 Hindi Typing Guide</button>
       </div>
+
       <div id="hindiGuide" style="display:none;background:var(--card);padding:1rem;border-radius:10px;margin-bottom:1rem;font-size:.9rem;line-height:1.8">
         <h3>⌨️ Hindi Typing Setup Guide (Inscript / Remington)</h3>
         <p><strong>For SSC CHSL, CGL, UP/Bihar Govt Exams:</strong></p>
@@ -61,16 +91,28 @@
         <p><strong>Remington (GAIL):</strong> Based on Hindi typewriter. Popular in UP, Bihar, MP govt exams. Install via "Remington Gail" software or use Google Input Tools.</p>
         <h4>Practice Tips:</h4>
         <ul style="margin-left:1.5rem"><li>Enable Hindi keyboard on your computer first</li><li>Select "Hindi" language in this tool</li><li>Practice daily 15-30 minutes</li><li>SSC requires 35 WPM English / 30 WPM Hindi</li></ul>
-        <p class="info">💡 After enabling Hindi keyboard, select "Hindi" language above and start typing. This tool supports all keyboard layouts your OS provides.</p>
+        <p class="info">💡 After enabling Hindi keyboard, select "Hindi" language above and start typing. This tool supports all keyboard layouts your OS provides. For Inscript layout, keys are mapped to Devanagari characters directly. For Remington, you need the Remington GAIL software installed.</p>
       </div>
+
       <div id="customTextArea" style="display:none;margin-bottom:1rem">
-        <textarea id="customText" rows="3" placeholder="Paste your own text here for practice..."></textarea>
+        <textarea id="customText" rows="3" placeholder="Paste your own text here for practice..." style="width:100%;padding:.6rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical"></textarea>
         <button class="btn" onclick="useCustom()" style="margin-top:.3rem">Use This Text</button>
       </div>
-      <div id="textDisplay" style="background:var(--card);padding:1.2rem;border-radius:12px;font-size:1.1rem;line-height:1.8;letter-spacing:.5px;margin-bottom:1rem;min-height:100px;overflow-wrap:break-word"></div>
+
+      <!-- Live Stats Bar -->
+      <div id="liveStats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;margin-bottom:.8rem">
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveWpm">0</div><div style="font-size:.7rem;color:var(--text2)">Net WPM</div></div>
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveGross">0</div><div style="font-size:.7rem;color:var(--text2)">Gross WPM</div></div>
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveAcc">100%</div><div style="font-size:.7rem;color:var(--text2)">Accuracy</div></div>
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveKeys">0</div><div style="font-size:.7rem;color:var(--text2)">Keystrokes</div></div>
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveErrors">0</div><div style="font-size:.7rem;color:var(--text2)">Errors</div></div>
+        <div style="background:var(--card);padding:.5rem;border-radius:var(--radius);text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)" id="liveKdph">0</div><div style="font-size:.7rem;color:var(--text2)">KDPH</div></div>
+      </div>
+
+      <div id="textDisplay" style="background:var(--card);padding:1.2rem;border-radius:12px;font-size:1.1rem;line-height:1.8;letter-spacing:.5px;margin-bottom:1rem;min-height:100px;overflow-wrap:break-word;max-height:200px;overflow-y:auto"></div>
       <textarea id="typingInput" rows="3" placeholder="Start typing here..." style="width:100%;font-size:16px;padding:.8rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:none" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
       <div id="timer" style="text-align:center;font-size:1.5rem;font-weight:700;margin:.8rem 0;color:var(--accent)"></div>
-      <div id="result" style="display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div id="result" style="display:none;margin:1rem 0"></div>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -124,99 +166,279 @@
   <script src="../js/common.js"></script>
   <script>
 var texts={
-  beginner:{
-    en:["the cat sat on the mat and looked at the bird in the sky","i like to read books and play games with my friends every day","the sun is bright and the sky is blue on a warm summer day","she went to the shop to buy some milk bread and eggs for breakfast","we had a great time at the park playing with the dog and eating ice cream","my mother makes the best food in the world and i love her cooking","the children played in the garden while their parents sat and talked","he woke up early in the morning and went for a walk near the lake","the teacher asked the students to open their books and read the first page","it was raining outside so we decided to stay home and watch a movie","the dog ran across the field and jumped over the small fence","she likes to draw pictures of flowers and trees in her notebook","we went to the market to buy fruits and vegetables for the week","the train was late so we had to wait at the station for one hour","he finished his homework and then went outside to play with his friends","the birds were singing in the trees and the wind was blowing gently","i want to learn how to swim so i can go to the beach this summer","the old man sat on the bench and fed the birds with small pieces of bread","they walked to school together every morning and came back home together","the baby was sleeping in the room while the mother was cooking food"],
-    hi:["भारत एक महान देश है जहाँ अनेक भाषाएँ बोली जाती हैं","मुझे किताबें पढ़ना और संगीत सुनना बहुत पसंद है","आज मौसम बहुत अच्छा है बाहर धूप खिली हुई है","हमारे विद्यालय में हर साल वार्षिक उत्सव मनाया जाता है","प्रतिदिन व्यायाम करने से शरीर स्वस्थ और मन प्रसन्न रहता है","मेरे परिवार में चार सदस्य हैं माता पिता भाई और मैं","गर्मियों की छुट्टियों में हम नानी के घर जाते हैं","सुबह जल्दी उठना स्वास्थ्य के लिए बहुत लाभदायक होता है","हमारे देश में अनेक त्योहार मनाए जाते हैं जैसे दीवाली होली और ईद","मेरा प्रिय खेल क्रिकेट है जो मैं अपने दोस्तों के साथ खेलता हूँ","पेड़ पौधे हमें ऑक्सीजन देते हैं इसलिए हमें पेड़ लगाने चाहिए","मेरी माँ बहुत अच्छा खाना बनाती हैं मुझे उनके हाथ का खाना बहुत पसंद है","बच्चे बगीचे में खेल रहे थे और पक्षी पेड़ों पर बैठे थे","हमें रोज सुबह दूध पीना चाहिए यह हमारे शरीर को मजबूत बनाता है","मेरे दादाजी मुझे रोज रात को कहानियाँ सुनाते हैं"],
-    bn:["বাংলাদেশ এবং ভারতের পশ্চিমবঙ্গে বাংলা ভাষা বলা হয়","আমি প্রতিদিন সকালে বই পড়তে ভালোবাসি","আজ আবহাওয়া খুব সুন্দর বাইরে রোদ উঠেছে"],
-    ta:["தமிழ் உலகின் மிகப் பழமையான மொழிகளில் ஒன்றாகும்","நான் தினமும் புத்தகங்கள் படிக்க விரும்புகிறேன்","இன்று வானிலை மிகவும் அழகாக இருக்கிறது"],
-    te:["తెలుగు భారతదేశంలో అత్యధికంగా మాట్లాడే భాషలలో ఒకటి","నాకు పుస్తకాలు చదవడం మరియు సంగీతం వినడం చాలా ఇష్టం","ఈ రోజు వాతావరణం చాలా బాగుంది బయట ఎండ కాస్తోంది"],
-    mr:["मराठी ही महाराष्ट्राची राजभाषा आहे आणि कोट्यवधी लोक ती बोलतात","मला पुस्तके वाचायला आणि संगीत ऐकायला खूप आवडते","आज हवामान खूप छान आहे बाहेर ऊन पडले आहे"],
-    gu:["ગુજરાતી ભારતની એક પ્રમુખ ભાષા છે જે ગુજરાતમાં બોલાય છે","મને પુસ્તકો વાંચવા અને સંગીત સાંભળવું ખૂબ ગમે છે","આજે હવામાન ખૂબ સારું છે બહાર તડકો છે"],
-    kn:["ಕನ್ನಡ ಕರ್ನಾಟಕ ರಾಜ್ಯದ ಅಧಿಕೃತ ಭಾಷೆಯಾಗಿದೆ","ನನಗೆ ಪುಸ್ತಕಗಳನ್ನು ಓದುವುದು ಮತ್ತು ಸಂಗೀತ ಕೇಳುವುದು ತುಂಬಾ ಇಷ್ಟ","ಇಂದು ಹವಾಮಾನ ತುಂಬಾ ಚೆನ್ನಾಗಿದೆ ಹೊರಗೆ ಬಿಸಿಲು ಇದೆ"],
-    pa:["ਪੰਜਾਬੀ ਭਾਰਤ ਅਤੇ ਪਾਕਿਸਤਾਨ ਵਿੱਚ ਬੋਲੀ ਜਾਣ ਵਾਲੀ ਭਾਸ਼ਾ ਹੈ","ਮੈਨੂੰ ਕਿਤਾਬਾਂ ਪੜ੍ਹਨਾ ਅਤੇ ਸੰਗੀਤ ਸੁਣਨਾ ਬਹੁਤ ਪਸੰਦ ਹੈ","ਅੱਜ ਮੌਸਮ ਬਹੁਤ ਵਧੀਆ ਹੈ ਬਾਹਰ ਧੁੱਪ ਨਿਕਲੀ ਹੋਈ ਹੈ"],
-    ml:["മലയാളം കേരളത്തിന്റെ ഔദ്യോഗിക ഭാഷയാണ്","എനിക്ക് പുസ്തകങ്ങള്‍ വായിക്കാനും സംഗീതം കേള്‍ക്കാനും വളരെ ഇഷ്ടമാണ്","ഇന്ന് കാലാവസ്ഥ വളരെ നല്ലതാണ് പുറത്ത് വെയില്‍ ഉണ്ട്"],
-    mix:["the order number is 4523 and it was placed on 12 march 2026","please call me at 98765 or send an email to the office by 5 pm","the room has 3 windows 2 doors and costs about 1500 per month"]
+  easy:{
+    en:["the cat sat on the mat and looked at the bird in the sky the sun was warm and the breeze was gentle it was a perfect day to be outside playing in the garden with friends and family everyone was happy and content the children laughed and played while the adults sat in the shade drinking tea and talking about their day it was a simple but beautiful moment that everyone would remember for a long time","i like to read books and play games with my friends every day we go to school together and learn new things our teacher is very kind and helps us when we do not understand something after school we play in the park near our house and come home when the sun sets mother always has hot food ready for us","the sun is bright and the sky is blue on a warm summer day the flowers bloom in the garden and butterflies fly from one plant to another the birds sing beautiful songs in the trees and the gentle wind carries their melody across the fields it is a wonderful time to be alive and enjoy nature","she went to the shop to buy some milk bread and eggs for breakfast the shopkeeper smiled and helped her find everything she needed the shop was small but had all the basic things one would need for daily cooking she paid with exact change and walked back home feeling happy about the fresh items she got","my mother makes the best food in the world and i love her cooking she spends hours in the kitchen preparing meals for our family every dish she makes is full of love and care whether it is a simple dal rice or a special festive sweet she puts her heart into everything"],
+    hi:["भारत एक महान देश है जहाँ अनेक भाषाएँ बोली जाती हैं यहाँ की संस्कृति बहुत समृद्ध और विविधताओं से भरी है हर राज्य की अपनी भाषा अपनी परंपरा और अपना खान पान है फिर भी सब मिलकर एक देश के रूप में रहते हैं यही भारत की सबसे बड़ी ताकत है","मुझे किताबें पढ़ना बहुत पसंद है मैं हर रोज कम से कम एक घंटा पढ़ाई करता हूँ किताबों से हमें ज्ञान मिलता है और हमारी सोच विकसित होती है अच्छी किताबें पढ़ने से हमारा शब्द भंडार भी बढ़ता है जो टाइपिंग में भी सहायक होता है","हमारे विद्यालय में हर साल वार्षिक उत्सव मनाया जाता है इसमें सभी छात्र भाग लेते हैं कोई नाटक करता है कोई गाना गाता है और कोई भाषण देता है इस दिन हमारे अभिभावक भी आते हैं और हमारा उत्साह बढ़ाते हैं यह दिन हम सबके लिए बहुत खास होता है","प्रतिदिन व्यायाम करने से शरीर स्वस्थ और मन प्रसन्न रहता है सुबह जल्दी उठकर योग और प्राणायाम करना चाहिए इससे हमारा शरीर लचीला बनता है और बीमारियाँ दूर रहती हैं स्वस्थ शरीर में ही स्वस्थ मन निवास करता है","मेरे परिवार में चार सदस्य हैं माता पिता भाई और मैं हम सब मिलकर रहते हैं और एक दूसरे का सहयोग करते हैं रविवार को हम सब साथ में भोजन करते हैं और बातें करते हैं परिवार का साथ जीवन में सबसे महत्वपूर्ण है"]
   },
-  moderate:{
-    en:["The quick brown fox jumps over the lazy dog, creating a scene that has been used in typing tests for decades.","Technology has transformed the way we communicate, learn, and work; making it possible to connect with people across the globe.","Education is the most powerful weapon which you can use to change the world. It opens doors and creates opportunities.","Good communication skills are essential for success in both personal and professional life.","Time management is a crucial skill that helps students balance their studies, activities, and personal life effectively.","The Indian economy has grown significantly over the past decade, with sectors like IT, manufacturing, and services contributing to the GDP.","Climate change is affecting weather patterns worldwide. Rising temperatures, melting glaciers, and extreme rainfall events are becoming more frequent.","The Supreme Court of India is the highest judicial body in the country. It was established on January 28, 1950, two days after India became a republic.","Online learning platforms have made education accessible to millions of students who previously had limited access to quality teaching resources.","Social media has changed the way people interact, share information, and consume news. However, it also raises concerns about privacy and misinformation.","The Reserve Bank of India (RBI) is responsible for regulating the monetary policy of the country. It was established in 1935 under the RBI Act.","Regular exercise, a balanced diet, and adequate sleep are the three pillars of a healthy lifestyle. Mental health is equally important and should not be ignored.","India is the largest democracy in the world, with a population of over 1.4 billion people. The country has 28 states and 8 union territories.","Artificial intelligence is being used in healthcare to diagnose diseases, in finance to detect fraud, and in education to personalize learning experiences.","The Himalayas are the youngest mountain range in the world. They stretch across five countries: India, Nepal, Bhutan, China, and Pakistan."],
-    hi:["भारत की राजधानी नई दिल्ली है, जो देश का राजनीतिक केंद्र है। यहाँ संसद भवन और अनेक महत्वपूर्ण सरकारी कार्यालय स्थित हैं।","कंप्यूटर ने हमारे जीवन को पूरी तरह बदल दिया है। आज हम घर बैठे खरीदारी, पढ़ाई और काम कर सकते हैं।","स्वस्थ जीवन जीने के लिए संतुलित आहार, नियमित व्यायाम और पर्याप्त नींद आवश्यक है।","पर्यावरण प्रदूषण आज की सबसे बड़ी समस्या है। वायु, जल और भूमि प्रदूषण से मानव स्वास्थ्य पर गंभीर प्रभाव पड़ रहा है।","शिक्षा का महत्व हर युग में रहा है। एक शिक्षित व्यक्ति समाज में सम्मान पाता है और देश के विकास में योगदान देता है।","भारतीय रेलवे विश्व का चौथा सबसे बड़ा रेल नेटवर्क है। यह प्रतिदिन लाखों यात्रियों को एक स्थान से दूसरे स्थान तक पहुँचाता है।","इंटरनेट ने सूचना क्रांति ला दी है। आज कोई भी व्यक्ति घर बैठे दुनिया भर की जानकारी प्राप्त कर सकता है।","भारत में विभिन्न प्रकार की जलवायु पाई जाती है। उत्तर में हिमालय की ठंडी जलवायु है, तो दक्षिण में उष्णकटिबंधीय जलवायु है।","लोकतंत्र में प्रत्येक नागरिक को मतदान का अधिकार प्राप्त है। यह अधिकार संविधान द्वारा प्रदान किया गया है।","विज्ञान और प्रौद्योगिकी ने मानव जीवन को सरल और सुविधाजनक बना दिया है। चिकित्सा, कृषि और संचार के क्षेत्र में अद्भुत प्रगति हुई है।"],
-    mix:["The meeting is scheduled for March 15, 2026 at 10:30 AM in Room 3. Please bring your laptop and ID card.","Dear Sir, I am writing to confirm my order 78432. The total amount is Rs. 2,499 and the delivery address is: 42/B, Sector-15, Noida.","Flight AI-302 departs from Delhi at 14:25 and arrives in Mumbai at 16:50. Gate: B-12. Boarding starts at 13:45."]
+  medium:{
+    en:["The quick brown fox jumps over the lazy dog, creating a scene that has been used in typing tests for decades. This sentence contains every letter of the English alphabet, making it ideal for practicing all key positions on the keyboard. Professional typists often use this phrase to warm up before important work sessions.","Technology has transformed the way we communicate, learn, and work; making it possible to connect with people across the globe in seconds. The internet has democratized access to information, and smartphones have become extensions of our daily lives. However, with great connectivity comes the responsibility of digital literacy and online safety.","Education is the most powerful weapon which you can use to change the world. It opens doors and creates opportunities that would otherwise remain closed. In India, millions of students prepare for competitive examinations every year, hoping to secure government positions that offer stability and service to the nation.","The Indian economy has grown significantly over the past decade, with sectors like IT, manufacturing, and services contributing to the GDP. India is now the fifth-largest economy in the world by nominal GDP. The country aims to become a developed nation by 2047, the centenary of independence.","The Supreme Court of India is the highest judicial body in the country. It was established on January 28, 1950, two days after India became a republic. The court ensures that the fundamental rights of citizens are protected and that the government operates within constitutional boundaries.","Regular exercise, a balanced diet, and adequate sleep are the three pillars of a healthy lifestyle. Mental health is equally important and should not be ignored. Studies show that just 30 minutes of moderate exercise daily can significantly reduce the risk of chronic diseases.","India is the largest democracy in the world, with a population of over 1.4 billion people. The country has 28 states and 8 union territories. Each state has its own language, culture, and traditions, yet all are united under one constitution and one flag.","Artificial intelligence is being used in healthcare to diagnose diseases, in finance to detect fraud, and in education to personalize learning experiences. As AI becomes more powerful, it is essential that we develop it responsibly and ensure it benefits all sections of society."],
+    hi:["भारत की राजधानी नई दिल्ली है, जो देश का राजनीतिक केंद्र है। यहाँ संसद भवन, राष्ट्रपति भवन और अनेक महत्वपूर्ण सरकारी कार्यालय स्थित हैं। दिल्ली एक ऐतिहासिक शहर है जिसने कई साम्राज्यों का उत्थान और पतन देखा है।","कंप्यूटर ने हमारे जीवन को पूरी तरह बदल दिया है। आज हम घर बैठे खरीदारी, पढ़ाई और काम कर सकते हैं। सरकारी कार्यालयों में भी अब अधिकांश काम कंप्यूटर पर होता है, इसलिए टाइपिंग का ज्ञान होना अत्यंत आवश्यक है।","पर्यावरण प्रदूषण आज की सबसे बड़ी समस्या है। वायु, जल और भूमि प्रदूषण से मानव स्वास्थ्य पर गंभीर प्रभाव पड़ रहा है। कारखानों से निकलने वाला धुआँ, नदियों में बहाया जाने वाला कचरा और प्लास्टिक का अत्यधिक उपयोग इस समस्या के मुख्य कारण हैं।","शिक्षा का महत्व हर युग में रहा है। एक शिक्षित व्यक्ति समाज में सम्मान पाता है और देश के विकास में योगदान देता है। भारत सरकार ने शिक्षा को मौलिक अधिकार बनाया है ताकि प्रत्येक बच्चे को गुणवत्तापूर्ण शिक्षा मिल सके।","भारतीय रेलवे विश्व का चौथा सबसे बड़ा रेल नेटवर्क है। यह प्रतिदिन लाखों यात्रियों को एक स्थान से दूसरे स्थान तक पहुँचाता है। रेलवे भारतीय अर्थव्यवस्था की रीढ़ है और रोजगार का एक प्रमुख स्रोत भी है।","इंटरनेट ने सूचना क्रांति ला दी है। आज कोई भी व्यक्ति घर बैठे दुनिया भर की जानकारी प्राप्त कर सकता है। ऑनलाइन शिक्षा, डिजिटल भुगतान और ई-कॉमर्स ने लोगों के जीवन को सरल बना दिया है।","लोकतंत्र में प्रत्येक नागरिक को मतदान का अधिकार प्राप्त है। यह अधिकार संविधान द्वारा प्रदान किया गया है। मतदान के माध्यम से जनता अपने प्रतिनिधि चुनती है जो सरकार चलाते हैं। इसलिए हर नागरिक को जिम्मेदारी से मतदान करना चाहिए।","विज्ञान और प्रौद्योगिकी ने मानव जीवन को सरल और सुविधाजनक बना दिया है। चिकित्सा क्षेत्र में नई खोजों से कई गंभीर बीमारियों का इलाज संभव हो गया है। कृषि में आधुनिक तकनीकों के उपयोग से उत्पादन बढ़ा है।"]
   },
-  expert:{
-    en:["The juxtaposition of quantum mechanics and general relativity remains one of the greatest unsolved puzzles in physics; reconciling these frameworks could revolutionize our understanding of spacetime and black holes.","Notwithstanding the unprecedented challenges posed by climate change, rising sea levels, extreme weather events, and biodiversity loss, international cooperation through the Paris Agreement (2015) offers a pathway toward sustainable development.","The efficacy of machine learning algorithms depends critically on hyperparameter optimization, feature engineering, and cross-validation techniques; without rigorous methodology, models risk overfitting to training data.","In constitutional democracies, the separation of powers serves as a safeguard against authoritarianism. Checks and balances ensure that no single branch accumulates disproportionate influence over governance."],
-    hi:["भारतीय संविधान विश्व का सबसे लंबा लिखित संविधान है, जिसमें 448 अनुच्छेद, 12 अनुसूचियाँ और 105 संशोधन हैं। इसे 26 जनवरी, 1950 को लागू किया गया था।","कृत्रिम बुद्धिमत्ता और मशीन लर्निंग ने चिकित्सा, शिक्षा, वित्त और परिवहन जैसे क्षेत्रों में क्रांतिकारी परिवर्तन लाए हैं।","भारत की अर्थव्यवस्था विश्व की पाँचवीं सबसे बड़ी अर्थव्यवस्था है। सकल घरेलू उत्पाद में सेवा क्षेत्र का योगदान लगभग 54 प्रतिशत है।"],
-    mix:["Server DB-042 experienced a critical failure at 03:47 UTC on 2026-04-13. Error code: 0xE0000235. CPU usage spiked to 99.8 percent, RAM: 31.2/32 GB. Contact: ops at company dot com or call 011-2345-6789.","Invoice INV-2026-04-0847, Date: 13/04/2026, Client: Sharma and Associates, Items: Web Development Rs. 45,000, SEO Rs. 15,000, Hosting 12 months at Rs. 499 per month Rs. 5,988, Subtotal: Rs. 65,988, GST 18 percent: Rs. 11,878, Total: Rs. 77,866."]
+  hard:{
+    en:["The juxtaposition of quantum mechanics and general relativity remains one of the greatest unsolved puzzles in physics; reconciling these frameworks could revolutionize our understanding of spacetime, black holes, and the fundamental nature of reality. Scientists at CERN and research institutions worldwide continue to push the boundaries of particle physics in search of a unified theory.","Notwithstanding the unprecedented challenges posed by climate change — rising sea levels, extreme weather events (cyclones, droughts, heat waves), and biodiversity loss — international cooperation through mechanisms like the Paris Agreement (2015) and COP summits offers a viable pathway toward sustainable development. India's commitment to achieving net-zero emissions by 2070 demonstrates significant ambition.","The efficacy of machine learning algorithms depends critically on hyperparameter optimization, feature engineering, and cross-validation techniques; without rigorous methodology, models risk overfitting to training data and performing poorly on unseen examples. The bias-variance tradeoff remains a central concern in statistical learning theory (Hastie, Tibshirani & Friedman, 2009).","In constitutional democracies, the separation of powers — legislative (Parliament/Congress), executive (President/Prime Minister), and judicial (Supreme Court/High Courts) — serves as a crucial safeguard against authoritarian tendencies. India's Constitution, drafted by Dr. B.R. Ambedkar and adopted on November 26, 1949, embodies these principles comprehensively.","The Staff Selection Commission (SSC) conducts the Combined Higher Secondary Level (CHSL) examination annually for recruitment to posts such as Lower Division Clerk (LDC), Junior Secretariat Assistant (JSA), Postal Assistant (PA), Sorting Assistant (SA), and Data Entry Operator (DEO). Candidates must clear Tier-I (objective), Tier-II (descriptive), and Tier-III (typing/skill) tests."],
+    hi:["भारतीय संविधान विश्व का सबसे लंबा लिखित संविधान है, जिसमें 448 अनुच्छेद, 25 भाग, 12 अनुसूचियाँ और 105 संशोधन (2023 तक) हैं। इसे 26 जनवरी, 1950 को लागू किया गया था। डॉ. भीमराव अम्बेडकर को संविधान का मुख्य शिल्पकार माना जाता है। संविधान सभा ने 2 वर्ष, 11 माह और 18 दिन में इसे तैयार किया।","कृत्रिम बुद्धिमत्ता (Artificial Intelligence) और मशीन लर्निंग ने चिकित्सा, शिक्षा, वित्त और परिवहन जैसे क्षेत्रों में क्रांतिकारी परिवर्तन लाए हैं। भारत सरकार ने 'डिजिटल इंडिया' अभियान के तहत AI के विकास और अनुसंधान को बढ़ावा देने के लिए विशेष नीतियाँ बनाई हैं। NITI आयोग ने 'National Strategy for AI' प्रकाशित की है।","कर्मचारी चयन आयोग (SSC) द्वारा आयोजित संयुक्त उच्चतर माध्यमिक स्तर (CHSL) परीक्षा में हिन्दी टाइपिंग का मापदंड 30 शब्द प्रति मिनट है। यह परीक्षा तीन चरणों में आयोजित की जाती है — टियर-I (वस्तुनिष्ठ), टियर-II (वर्णनात्मक) और टियर-III (टाइपिंग/कौशल परीक्षा)। उम्मीदवारों को 10 मिनट में न्यूनतम 300 शब्द टाइप करने होते हैं।","भारत की अर्थव्यवस्था विश्व की पाँचवीं सबसे बड़ी अर्थव्यवस्था है। सकल घरेलू उत्पाद (GDP) में सेवा क्षेत्र का योगदान लगभग 54 प्रतिशत है, जबकि उद्योग क्षेत्र का योगदान 25 प्रतिशत और कृषि क्षेत्र का योगदान 21 प्रतिशत है। भारत 2047 तक विकसित राष्ट्र बनने का लक्ष्य रखता है।","सूचना प्रौद्योगिकी अधिनियम, 2000 (IT Act) भारत में साइबर अपराधों से निपटने के लिए बनाया गया प्रमुख कानून है। इसमें डेटा सुरक्षा, इलेक्ट्रॉनिक हस्ताक्षर, हैकिंग, फिशिंग और ऑनलाइन धोखाधड़ी जैसे विषयों पर प्रावधान हैं। 2008 में इस अधिनियम में महत्वपूर्ण संशोधन किए गए।"]
   }
 };
-var text,start,timer,dur,ended;
+
+var text="",start=null,timer=null,dur=600,ended=false,totalKeystrokes=0,totalErrors=0;
+
+// Exam presets configuration
+var presets={
+  "ssc-chsl-en":{duration:600,lang:"en",difficulty:"medium",reqWpm:35,reqType:"wpm",label:"SSC CHSL English"},
+  "ssc-chsl-hi":{duration:600,lang:"hi",difficulty:"medium",reqWpm:30,reqType:"wpm",label:"SSC CHSL Hindi"},
+  "ssc-cgl-deo":{duration:900,lang:"en",difficulty:"hard",reqKdph:8000,reqType:"kdph",label:"SSC CGL DEO"},
+  "court-steno-en":{duration:600,lang:"en",difficulty:"hard",reqWpm:40,reqType:"wpm",label:"Court Stenographer English"},
+  "court-steno-hi":{duration:600,lang:"hi",difficulty:"medium",reqWpm:30,reqType:"wpm",label:"Court Stenographer Hindi"},
+  "uppcl":{duration:600,lang:"hi",difficulty:"medium",reqWpm:25,reqType:"wpm",label:"UPPCL Typist Hindi"},
+  "rrb-ntpc":{duration:600,lang:"en",difficulty:"medium",reqWpm:30,reqType:"wpm",label:"RRB NTPC English"}
+};
+
+function applyPreset(){
+  var sel=document.getElementById("examPreset").value;
+  if(sel==="none")return;
+  var p=presets[sel];
+  if(!p)return;
+  document.getElementById("duration").value=p.duration;
+  document.getElementById("lang").value=p.lang;
+  document.getElementById("difficulty").value=p.difficulty;
+  reset();
+}
+
 function reset(){
   ended=false;
+  totalKeystrokes=0;
+  totalErrors=0;
   dur=+document.getElementById("duration").value;
   var diff=document.getElementById("difficulty").value;
   var lang=document.getElementById("lang").value;
   var pool=(texts[diff]&&texts[diff][lang])?texts[diff][lang]:texts[diff].en;
-  text=pool[Math.floor(Math.random()*pool.length)];
-  document.getElementById("textDisplay").innerHTML=text.split("").map(function(c){return "<span>"+c+"</span>"}).join("");
+  // Combine multiple passages for longer tests
+  var combined="";
+  var shuffled=pool.slice().sort(function(){return Math.random()-0.5});
+  for(var i=0;i<shuffled.length&&combined.length<2000;i++){
+    combined+=(combined?" ":"")+shuffled[i];
+  }
+  text=combined;
+  renderText();
   document.getElementById("typingInput").value="";
   document.getElementById("typingInput").disabled=false;
   document.getElementById("typingInput").focus();
   document.getElementById("result").style.display="none";
-  document.getElementById("timer").textContent=dur+"s";
+  document.getElementById("result").innerHTML="";
+  document.getElementById("timer").textContent=formatTime(dur);
   start=null;
   clearInterval(timer);
+  updateLiveStats(0,0,0,0,0);
 }
+
+function renderText(){
+  document.getElementById("textDisplay").innerHTML=text.split("").map(function(c,i){return '<span id="ch'+i+'">'+escHtml(c)+'</span>'}).join("");
+}
+
+function escHtml(c){
+  if(c==="<")return"&lt;";if(c===">")return"&gt;";if(c==="&")return"&amp;";return c;
+}
+
+function formatTime(s){
+  var m=Math.floor(s/60);var sec=s%60;
+  return m+":"+(sec<10?"0":"")+sec;
+}
+
+function updateLiveStats(netWpm,grossWpm,acc,keys,errors){
+  document.getElementById("liveWpm").textContent=netWpm;
+  document.getElementById("liveGross").textContent=grossWpm;
+  document.getElementById("liveAcc").textContent=acc+"%";
+  document.getElementById("liveKeys").textContent=keys;
+  document.getElementById("liveErrors").textContent=errors;
+  var elapsed=start?(Date.now()-start)/1000:0;
+  var kdph=elapsed>0?Math.round(keys/(elapsed/3600)):0;
+  document.getElementById("liveKdph").textContent=kdph;
+}
+
+document.getElementById("typingInput").addEventListener("keydown",function(e){
+  if(ended)return;
+  if(e.key&&e.key.length===1){totalKeystrokes++;}
+  if(e.key==="Backspace"){totalKeystrokes++;}
+});
+
 document.getElementById("typingInput").addEventListener("input",function(){
   if(ended)return;
   if(!start){start=Date.now();timer=setInterval(tick,200);}
   var spans=document.getElementById("textDisplay").querySelectorAll("span");
   var val=this.value;
-  var correct=0;
+  var correct=0;var errors=0;
   for(var i=0;i<spans.length;i++){
     if(i<val.length){
-      if(val[i]===text[i]){correct++;spans[i].style.color="#4caf50";spans[i].style.textDecoration="none";}
-      else{spans[i].style.color="#f44336";spans[i].style.textDecoration="underline";}
-    }else{spans[i].style.color="";spans[i].style.textDecoration="";}
+      if(val[i]===text[i]){correct++;spans[i].style.color="#4caf50";spans[i].style.background="rgba(76,175,80,0.1)";spans[i].style.textDecoration="none";spans[i].style.borderBottom="none";}
+      else{errors++;spans[i].style.color="#f44336";spans[i].style.background="rgba(244,67,54,0.1)";spans[i].style.textDecoration="none";spans[i].style.borderBottom="2px solid #f44336";}
+    }else{
+      spans[i].style.color="";spans[i].style.background="";spans[i].style.textDecoration="";spans[i].style.borderBottom="";
+    }
+  }
+  // Highlight current character
+  if(val.length<spans.length){
+    spans[val.length].style.borderBottom="2px solid var(--accent)";spans[val.length].style.background="rgba(79,140,255,0.1)";
+  }
+  totalErrors=errors;
+  var elapsed=(Date.now()-start)/1000;
+  var minutes=elapsed/60;
+  var grossWpm=minutes>0?Math.round((val.length/5)/minutes):0;
+  var netWpm=minutes>0?Math.round(Math.max(0,((val.length/5)-(errors))/minutes)):0;
+  var acc=val.length?Math.round(correct/val.length*100):100;
+  updateLiveStats(netWpm,grossWpm,acc,totalKeystrokes,errors);
+  // Auto-scroll text display
+  if(val.length<spans.length){
+    spans[val.length].scrollIntoView({block:"nearest",behavior:"smooth"});
   }
   if(val.length>=text.length)finish();
 });
+
 function tick(){
   var elapsed=Math.floor((Date.now()-start)/1000);
   var left=dur-elapsed;
-  document.getElementById("timer").textContent=Math.max(0,left)+"s";
+  document.getElementById("timer").textContent=formatTime(Math.max(0,left));
   if(left<=0)finish();
+  // Update live stats during idle too
+  var val=document.getElementById("typingInput").value;
+  var correct=0;var errors=0;
+  for(var i=0;i<val.length&&i<text.length;i++){
+    if(val[i]===text[i])correct++;else errors++;
+  }
+  var minutes=elapsed/60;
+  var grossWpm=minutes>0?Math.round((val.length/5)/minutes):0;
+  var netWpm=minutes>0?Math.round(Math.max(0,((val.length/5)-errors)/minutes)):0;
+  var acc=val.length?Math.round(correct/val.length*100):100;
+  updateLiveStats(netWpm,grossWpm,acc,totalKeystrokes,errors);
 }
+
 function finish(){
   ended=true;clearInterval(timer);
   document.getElementById("typingInput").disabled=true;
   var elapsed=Math.min((Date.now()-start)/1000,dur);
   var typed=document.getElementById("typingInput").value;
-  var correct=0;
-  for(var i=0;i<typed.length&&i<text.length;i++){if(typed[i]===text[i])correct++;}
-  var words=typed.trim().split(/\s+/).length;
-  var wpm=Math.round(words/(elapsed/60));
-  var cpm=Math.round(typed.length/(elapsed/60));
+  var correct=0;var errors=0;
+  for(var i=0;i<typed.length&&i<text.length;i++){if(typed[i]===text[i])correct++;else errors++;}
+  var minutes=elapsed/60;
+  var grossWpm=Math.round((typed.length/5)/minutes);
+  var netWpm=Math.round(Math.max(0,((typed.length/5)-errors)/minutes));
   var acc=typed.length?Math.round(correct/typed.length*100):0;
-  var grade="";
-  if(wpm>=80)grade="Excellent!";else if(wpm>=60)grade="Great!";else if(wpm>=40)grade="Good";else if(wpm>=25)grade="Average";else grade="Keep Practicing!";
-  var card=function(l,v){var d=document.createElement("div");d.style.cssText="background:var(--card);padding:1rem;border-radius:12px;text-align:center";d.innerHTML="<div style='font-size:1.5rem;font-weight:700;color:var(--accent)'>"+v+"</div><div class='info'>"+l+"</div>";return d.outerHTML;};
+  var kdph=Math.round(totalKeystrokes/(elapsed/3600));
+  var lang=document.getElementById("lang").value;
+
+  // Pass/Fail verdict for preset
+  var preset=document.getElementById("examPreset").value;
+  var verdict="";var verdictColor="";
+  if(preset!=="none"&&presets[preset]){
+    var p=presets[preset];
+    if(p.reqType==="wpm"){
+      if(netWpm>=p.reqWpm){verdict="✅ PASS — You meet the "+p.label+" requirement ("+p.reqWpm+" WPM)";verdictColor="#4caf50";}
+      else{verdict="❌ FAIL — Need "+p.reqWpm+" WPM for "+p.label+", you got "+netWpm+" WPM";verdictColor="#f44336";}
+    }else if(p.reqType==="kdph"){
+      if(kdph>=p.reqKdph){verdict="✅ PASS — You meet the "+p.label+" requirement ("+p.reqKdph+" KDPH)";verdictColor="#4caf50";}
+      else{verdict="❌ FAIL — Need "+p.reqKdph+" KDPH for "+p.label+", you got "+kdph+" KDPH";verdictColor="#f44336";}
+    }
+  }
+
   var r=document.getElementById("result");
-  r.style.display="grid";
-  r.innerHTML=card("WPM",wpm)+card("CPM",cpm)+card("Accuracy",acc+"%")+card("Grade",grade)+card("Correct",correct+"/"+typed.length)+card("Time",Math.round(elapsed)+"s");
-  // Save to leaderboard
+  r.style.display="block";
+  var card=function(l,v){return '<div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--accent)">'+v+'</div><div class="info">'+l+'</div></div>';};
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.8rem;margin-bottom:1rem">';
+  html+=card("Net WPM",netWpm)+card("Gross WPM",grossWpm)+card("Accuracy",acc+"%")+card("Keystrokes",totalKeystrokes)+card("Errors",errors)+card("KDPH",kdph)+card("Time",Math.round(elapsed)+"s")+card("Language",lang==="hi"?"Hindi":"English");
+  html+='</div>';
+  if(verdict){
+    html+='<div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center;margin-bottom:1rem;border:2px solid '+verdictColor+'"><span style="font-size:1.1rem;font-weight:700;color:'+verdictColor+'">'+verdict+'</span></div>';
+  }
+
+  // Save to history
   var lb=JSON.parse(localStorage.getItem("typingLB")||"[]");
-  lb.push({wpm:wpm,acc:acc,date:new Date().toLocaleDateString("en-IN"),lang:document.getElementById("lang").value,diff:document.getElementById("difficulty").value});
-  lb.sort(function(a,b){return b.wpm-a.wpm});lb=lb.slice(0,10);
+  lb.push({wpm:netWpm,grossWpm:grossWpm,acc:acc,kdph:kdph,date:new Date().toLocaleDateString("en-IN"),lang:lang,diff:document.getElementById("difficulty").value,preset:preset!=="none"?presets[preset].label:""});
+  lb.sort(function(a,b){return b.wpm-a.wpm});lb=lb.slice(0,15);
   localStorage.setItem("typingLB",JSON.stringify(lb));
-  // Show leaderboard
-  var lbHtml='<div style="grid-column:1/-1;margin-top:.5rem"><h3>🏆 Your Best Scores</h3>';
-  lb.forEach(function(s,i){lbHtml+='<div style="background:var(--card);padding:.4rem .8rem;border-radius:6px;margin:.2rem 0;display:flex;justify-content:space-between"><span>'+(i+1)+'. '+s.wpm+' WPM ('+s.acc+'%)</span><span class="info">'+s.date+'</span></div>'});
-  lbHtml+='</div>';
-  // Certificate button
-  lbHtml+='<div style="grid-column:1/-1;text-align:center;margin-top:.5rem"><button class="btn" onclick="genCert('+wpm+','+acc+')">🎓 Download Certificate</button></div>';
-  r.innerHTML+=lbHtml;
+
+  // History list
+  html+='<div style="background:var(--card);padding:1rem;border-radius:12px;margin-bottom:1rem"><h3 style="margin-bottom:.5rem">🏆 Best Scores</h3>';
+  lb.slice(0,10).forEach(function(s,i){
+    html+='<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(128,128,128,.15);font-size:.85rem"><span>'+(i+1)+'. '+s.wpm+' WPM ('+s.acc+'%) '+(s.lang==="hi"?"🇮🇳":"🇬🇧")+'</span><span style="color:var(--text2)">'+s.date+(s.preset?' · '+s.preset:'')+'</span></div>';
+  });
+  html+='</div>';
+
+  // Certificate section
+  html+='<div style="text-align:center;margin-top:.5rem"><label style="margin-right:.5rem">Your Name:</label><input type="text" id="certName" placeholder="Enter name for certificate" style="padding:.4rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);color:var(--text);width:200px"><button class="btn" onclick="genCert('+netWpm+','+grossWpm+','+acc+','+kdph+')" style="margin-left:.5rem">🎓 Download Certificate</button></div>';
+
+  r.innerHTML=html;
 }
-function genCert(wpm,acc){var c=document.createElement("canvas");c.width=800;c.height=500;var ctx=c.getContext("2d");var grd=ctx.createLinearGradient(0,0,800,500);grd.addColorStop(0,"#4f8cff");grd.addColorStop(1,"#a855f7");ctx.fillStyle=grd;ctx.fillRect(0,0,800,500);ctx.fillStyle="#fff";ctx.fillRect(20,20,760,460);ctx.fillStyle="#4f8cff";ctx.font="bold 28px Georgia";ctx.textAlign="center";ctx.fillText("Certificate of Achievement",400,80);ctx.fillStyle="#333";ctx.font="16px Arial";ctx.fillText("This certifies that the holder has achieved",400,130);ctx.font="bold 48px Georgia";ctx.fillStyle="#4f8cff";ctx.fillText(wpm+" WPM",400,200);ctx.fillStyle="#333";ctx.font="16px Arial";ctx.fillText("Words Per Minute with "+acc+"% Accuracy",400,240);ctx.fillText("on the FreeToolHubs Typing Speed Test",400,270);ctx.font="14px Arial";ctx.fillStyle="#666";ctx.fillText("Date: "+new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}),400,320);ctx.fillText("freetoolhubs.com/tools/typing-test",400,350);ctx.strokeStyle="#4f8cff";ctx.lineWidth=3;ctx.strokeRect(30,30,740,440);c.toBlob(function(b){download(b,"typing_certificate.png")})}
-function useCustom(){var ct=document.getElementById("customText").value.trim();if(!ct)return alert("Paste some text first");text=ct;document.getElementById("textDisplay").innerHTML=text.split("").map(function(c){return "<span>"+c+"</span>"}).join("");document.getElementById("typingInput").value="";document.getElementById("typingInput").disabled=false;document.getElementById("typingInput").focus();document.getElementById("result").style.display="none";start=null;clearInterval(timer);document.getElementById("timer").textContent=document.getElementById("duration").value+"s";document.getElementById("customTextArea").style.display="none"}
+
+function genCert(wpm,grossWpm,acc,kdph){
+  var name=document.getElementById("certName").value.trim()||"Typing Champion";
+  var lang=document.getElementById("lang").value==="hi"?"Hindi":"English";
+  var preset=document.getElementById("examPreset").value;
+  var presetLabel=preset!=="none"&&presets[preset]?presets[preset].label:"Free Practice";
+  var c=document.createElement("canvas");c.width=1000;c.height=700;
+  var ctx=c.getContext("2d");
+  // Background gradient
+  var grd=ctx.createLinearGradient(0,0,1000,700);grd.addColorStop(0,"#1a1a2e");grd.addColorStop(1,"#16213e");
+  ctx.fillStyle=grd;ctx.fillRect(0,0,1000,700);
+  // Border
+  ctx.strokeStyle="#4f8cff";ctx.lineWidth=4;ctx.strokeRect(20,20,960,660);
+  ctx.strokeStyle="#a855f7";ctx.lineWidth=2;ctx.strokeRect(30,30,940,640);
+  // Header
+  ctx.textAlign="center";
+  ctx.fillStyle="#4f8cff";ctx.font="bold 36px Georgia";ctx.fillText("CERTIFICATE OF ACHIEVEMENT",500,80);
+  ctx.fillStyle="#a855f7";ctx.font="16px Arial";ctx.fillText("FreeToolHubs.com — Typing Speed Test",500,110);
+  // Decorative line
+  ctx.beginPath();ctx.moveTo(200,130);ctx.lineTo(800,130);ctx.strokeStyle="rgba(79,140,255,0.4)";ctx.lineWidth=1;ctx.stroke();
+  // Name
+  ctx.fillStyle="#ffffff";ctx.font="18px Arial";ctx.fillText("This is to certify that",500,180);
+  ctx.font="bold 40px Georgia";ctx.fillStyle="#ffffff";ctx.fillText(name,500,230);
+  ctx.font="18px Arial";ctx.fillStyle="#cccccc";ctx.fillText("has successfully completed the typing test with the following results:",500,270);
+  // Stats boxes
+  var stats=[["Net WPM",wpm],["Gross WPM",grossWpm],["Accuracy",acc+"%"],["KDPH",kdph]];
+  var boxW=180,startX=140;
+  stats.forEach(function(s,i){
+    var x=startX+i*(boxW+40);
+    ctx.fillStyle="rgba(79,140,255,0.1)";ctx.fillRect(x,300,boxW,80);
+    ctx.strokeStyle="rgba(79,140,255,0.5)";ctx.lineWidth=1;ctx.strokeRect(x,300,boxW,80);
+    ctx.fillStyle="#4f8cff";ctx.font="bold 28px Arial";ctx.textAlign="center";ctx.fillText(String(s[1]),x+boxW/2,340);
+    ctx.fillStyle="#aaaaaa";ctx.font="13px Arial";ctx.fillText(s[0],x+boxW/2,365);
+  });
+  // Details
+  ctx.textAlign="center";ctx.fillStyle="#cccccc";ctx.font="16px Arial";
+  ctx.fillText("Language: "+lang+" | Mode: "+presetLabel,500,430);
+  ctx.fillText("Date: "+new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}),500,460);
+  // Pass/fail for presets
+  var preset2=document.getElementById("examPreset").value;
+  if(preset2!=="none"&&presets[preset2]){
+    var p=presets[preset2];var passed=false;
+    if(p.reqType==="wpm")passed=wpm>=p.reqWpm;
+    else passed=kdph>=p.reqKdph;
+    ctx.font="bold 22px Arial";
+    ctx.fillStyle=passed?"#4caf50":"#f44336";
+    ctx.fillText(passed?"✓ PASSED — Meets "+p.label+" Requirement":"✗ Below "+p.label+" Requirement",500,510);
+  }
+  // Footer
+  ctx.fillStyle="#666666";ctx.font="12px Arial";
+  ctx.fillText("This certificate is auto-generated by freetoolhubs.com/tools/typing-test",500,620);
+  ctx.fillText("Verify at freetoolhubs.com",500,645);
+  // Download
+  c.toBlob(function(b){
+    var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="typing_certificate_"+name.replace(/\s+/g,"_")+".png";a.click();
+  });
+}
+
+function useCustom(){
+  var ct=document.getElementById("customText").value.trim();
+  if(!ct)return alert("Paste some text first");
+  text=ct;renderText();
+  document.getElementById("typingInput").value="";
+  document.getElementById("typingInput").disabled=false;
+  document.getElementById("typingInput").focus();
+  document.getElementById("result").style.display="none";
+  start=null;clearInterval(timer);
+  document.getElementById("timer").textContent=formatTime(+document.getElementById("duration").value);
+  document.getElementById("customTextArea").style.display="none";
+  totalKeystrokes=0;totalErrors=0;
+}
+
 reset();
 </script>
 </body>

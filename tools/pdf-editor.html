@@ -35,10 +35,15 @@
     .toolbar button.active{background:var(--accent);color:#fff}
     #viewer{position:relative;margin:1rem 0;overflow:auto;max-height:80vh}
     #viewer canvas{display:block;margin:0 auto 1rem;box-shadow:var(--shadow);border-radius:4px}
-    .overlay-canvas{position:absolute;top:0;left:0;cursor:crosshair}
+    .overlay-canvas{position:absolute;top:0;left:0;cursor:crosshair;z-index:3}
     .page-wrap{position:relative;display:inline-block;margin-bottom:1rem;width:100%}
+    .text-layer{position:absolute;top:0;left:0;z-index:2;overflow:hidden;opacity:0.3;line-height:1}
+    .text-layer span{position:absolute;white-space:pre;color:transparent;cursor:text}
+    .text-layer span::selection{background:rgba(79,140,255,0.4);color:transparent}
     .sticky-note{position:absolute;width:160px;min-height:60px;background:#fff59d;border:1px solid #e6d800;border-radius:4px;padding:4px 6px;font-size:12px;box-shadow:2px 2px 6px rgba(0,0,0,.2);cursor:move;z-index:10}
     .sticky-note textarea{width:100%;min-height:50px;border:none;background:transparent;font-size:12px;resize:vertical;outline:none;font-family:Arial,sans-serif}
+    #extractPanel{display:none;margin-top:1rem}
+    #extractPanel textarea{min-height:200px;width:100%;background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:.8rem;font-size:.85rem}
   </style>
 </head>
 <body>
@@ -56,6 +61,7 @@
         <button onclick="setTool('draw')" id="btn-draw">🖊️ Draw</button>
         <button onclick="setTool('highlight')" id="btn-highlight">🟡 Highlight</button>
         <button onclick="setTool('whiteout')" id="btn-whiteout">⬜ White-out</button>
+        <select id="whiteoutColor" title="White-out color" style="width:80px"><option value="#ffffff">White</option><option value="#000000">Black</option></select>
         <button onclick="setTool('rect')" id="btn-rect">▭ Rectangle</button>
         <button onclick="setTool('arrow')" id="btn-arrow">➡️ Arrow</button>
         <button onclick="setTool('note')" id="btn-note">📌 Sticky Note</button>
@@ -68,7 +74,17 @@
         <button onclick="undoLast()">↩️ Undo</button>
         <button onclick="zoomIn()">🔍+</button>
         <button onclick="zoomOut()">🔍-</button>
+        <button class="btn" onclick="extractAllText()">📄 Extract All Text</button>
         <button class="btn" onclick="savePDF()">💾 Save PDF</button>
+      </div>
+      <div id="extractPanel">
+        <p class="info">📄 Extracted text from all pages:</p>
+        <textarea id="extractedText" readonly></textarea>
+        <div class="row" style="margin-top:.5rem">
+          <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('extractedText').value)">📋 Copy</button>
+          <button class="btn" onclick="download(new Blob([document.getElementById('extractedText').value]),&quot;pdf-text.txt&quot;)">💾 Download .txt</button>
+          <button class="btn btn-outline" onclick="document.getElementById('extractPanel').style.display='none'">✕ Close</button>
+        </div>
       </div>
       <div id="pageNav" style="display:none;text-align:center;margin:.5rem 0">
         <button class="btn btn-outline" onclick="goPage(-1)" style="padding:.3rem .8rem">◀ Prev</button>
@@ -136,13 +152,13 @@ let file,pdfDoc,tool="text",pages=[],overlays=[];
 let SCALE=2;
 let currentPage=0,totalPages=0;
 
-setupDrop("drop","inp",f=>{file=f[0];loadPDF()});
+setupDrop("drop","inp",function(f){file=f[0];loadPDF()});
 
-function zoomIn(){SCALE=Math.min(SCALE+0.5,4);rerender()}
-function zoomOut(){SCALE=Math.max(SCALE-0.5,1);rerender()}
-function goPage(dir){var target=currentPage+dir;if(target>=0&&target<totalPages){currentPage=target;var viewer=document.getElementById("viewer");var wraps=viewer.querySelectorAll(".page-wrap");wraps.forEach(function(w,i){w.style.display=i===currentPage?"block":"none"});document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages}}
-function rerender(){if(pdfDoc)loadPDF()}
-function insertImage(){document.getElementById("imgInput").click()}
+function zoomIn(){SCALE=Math.min(SCALE+0.5,4);rerender();}
+function zoomOut(){SCALE=Math.max(SCALE-0.5,1);rerender();}
+function goPage(dir){var target=currentPage+dir;if(target>=0&&target<totalPages){currentPage=target;var viewer=document.getElementById("viewer");var wraps=viewer.querySelectorAll(".page-wrap");wraps.forEach(function(w,i){w.style.display=i===currentPage?"block":"none"});document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages;}}
+function rerender(){if(pdfDoc)loadPDF();}
+function insertImage(){document.getElementById("imgInput").click();}
 document.getElementById("imgInput").addEventListener("change",function(){
   var f=this.files[0];if(!f)return;
   var reader=new FileReader();reader.onload=function(){
@@ -157,56 +173,101 @@ document.getElementById("imgInput").addEventListener("change",function(){
 });
 
 async function loadPDF(){
-  const data=await file.arrayBuffer();
-  pdfDoc=await pdfjsLib.getDocument({data}).promise;
+  var data=await file.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data:data}).promise;
   document.getElementById("toolbar").style.display="flex";
   document.getElementById("pageNav").style.display="block";
   totalPages=pdfDoc.numPages;
   document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages;
-  const viewer=document.getElementById("viewer");
+  var viewer=document.getElementById("viewer");
   viewer.innerHTML="";pages=[];overlays=[];
 
-  for(let i=1;i<=pdfDoc.numPages;i++){
-    const page=await pdfDoc.getPage(i);
-    const vp=page.getViewport({scale:SCALE});
-    const wrap=document.createElement("div");
+  for(var i=1;i<=pdfDoc.numPages;i++){
+    var page=await pdfDoc.getPage(i);
+    var vp=page.getViewport({scale:SCALE});
+    var wrap=document.createElement("div");
     wrap.className="page-wrap";wrap.style.width=vp.width+"px";
 
-    const c=document.createElement("canvas");
+    var c=document.createElement("canvas");
     c.width=vp.width;c.height=vp.height;
     await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
 
-    const oc=document.createElement("canvas");
+    // Text layer for selection
+    var textLayer=document.createElement("div");
+    textLayer.className="text-layer";
+    textLayer.style.width=vp.width+"px";
+    textLayer.style.height=vp.height+"px";
+    var textContent=await page.getTextContent();
+    textContent.items.forEach(function(item){
+      var tx=pdfjsLib.Util.transform(vp.transform,item.transform);
+      var span=document.createElement("span");
+      span.textContent=item.str;
+      span.style.left=tx[4]+"px";
+      span.style.top=(tx[5]-item.height)+"px";
+      span.style.fontSize=Math.abs(tx[3])+"px";
+      span.style.fontFamily=item.fontName||"sans-serif";
+      textLayer.appendChild(span);
+    });
+
+    var oc=document.createElement("canvas");
     oc.width=vp.width;oc.height=vp.height;
     oc.className="overlay-canvas";
     oc.style.width=vp.width+"px";oc.style.height=vp.height+"px";
 
-    wrap.appendChild(c);wrap.appendChild(oc);viewer.appendChild(wrap);
+    wrap.appendChild(c);wrap.appendChild(textLayer);wrap.appendChild(oc);viewer.appendChild(wrap);
     wrap.style.display=(i-1===currentPage)?"block":"none";
-    pages.push({canvas:c,vp});
-    const hist=[];overlays.push({canvas:oc,ctx:oc.getContext("2d"),history:hist});
+    pages.push({canvas:c,vp:vp});
+    var hist=[];
+    overlays.push({canvas:oc,ctx:oc.getContext("2d"),history:hist});
     setupOverlay(oc,overlays[overlays.length-1]);
   }
 }
 
+async function extractAllText(){
+  if(!pdfDoc)return;
+  var panel=document.getElementById("extractPanel");
+  var ta=document.getElementById("extractedText");
+  ta.value="Extracting...";panel.style.display="block";
+  var allText="";
+  for(var i=1;i<=pdfDoc.numPages;i++){
+    var page=await pdfDoc.getPage(i);
+    var tc=await page.getTextContent();
+    var pageText=tc.items.map(function(item){return item.str;}).join(" ");
+    allText+="--- Page "+i+" ---\n"+pageText+"\n\n";
+  }
+  ta.value=allText.trim();
+}
+
 function setTool(t){
   tool=t;
-  document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.toolbar button').forEach(function(b){b.classList.remove('active')});
   var btn=document.getElementById('btn-'+t);if(btn)btn.classList.add('active');
-  if(t==='note')document.getElementById('viewer').style.cursor='pointer';
-  else document.getElementById('viewer').style.cursor=t==='text'?'text':'crosshair';
+  // When using text selection tool or overlay, adjust pointer events
+  var viewer=document.getElementById('viewer');
+  var textLayers=viewer.querySelectorAll('.text-layer');
+  var overlayCvs=viewer.querySelectorAll('.overlay-canvas');
+  if(t==='select'){
+    textLayers.forEach(function(tl){tl.style.pointerEvents='auto';tl.style.zIndex='5';});
+    overlayCvs.forEach(function(oc){oc.style.pointerEvents='none';});
+    viewer.style.cursor='text';
+  }else{
+    textLayers.forEach(function(tl){tl.style.pointerEvents='none';tl.style.zIndex='2';});
+    overlayCvs.forEach(function(oc){oc.style.pointerEvents='auto';});
+    if(t==='note')viewer.style.cursor='pointer';
+    else viewer.style.cursor=t==='text'?'text':'crosshair';
+  }
 }
 
 function setupOverlay(canvas,ov){
-  let drawing=false,sx,sy;
-  canvas.addEventListener("mousedown",e=>{
-    const r=canvas.getBoundingClientRect();
+  var drawing=false,sx,sy;
+  canvas.addEventListener("mousedown",function(e){
+    var r=canvas.getBoundingClientRect();
     sx=e.clientX-r.left;sy=e.clientY-r.top;
     if(tool==="text"){
-      const txt=prompt("Enter text:");
+      var txt=prompt("Enter text:");
       if(txt){
-        const sz=+document.getElementById("textSize").value;
-        const ff=document.getElementById("fontFamily").value;
+        var sz=+document.getElementById("textSize").value;
+        var ff=document.getElementById("fontFamily").value;
         ov.ctx.font=sz+"px '"+ff+"'";
         ov.ctx.fillStyle=document.getElementById("color").value;
         ov.ctx.fillText(txt,sx,sy);
@@ -215,18 +276,17 @@ function setupOverlay(canvas,ov){
       return;
     }
     if(tool==="note"){
-      const wrap=canvas.parentElement;
-      const note=document.createElement("div");
+      var wrap=canvas.parentElement;
+      var note=document.createElement("div");
       note.className="sticky-note";note.style.left=sx+"px";note.style.top=sy+"px";
-      const ta=document.createElement("textarea");
+      var ta=document.createElement("textarea");
       ta.placeholder="Type note...";
       note.appendChild(ta);wrap.appendChild(note);
       ta.focus();
-      // drag support
-      let dragging=false,dx,dy;
-      note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging=true;dx=ev.offsetX;dy=ev.offsetY;ev.stopPropagation()});
-      document.addEventListener("mousemove",function(ev){if(!dragging)return;var wr=wrap.getBoundingClientRect();note.style.left=(ev.clientX-wr.left-dx)+"px";note.style.top=(ev.clientY-wr.top-dy)+"px"});
-      document.addEventListener("mouseup",function(){dragging=false});
+      var dragging2=false,dx2,dy2;
+      note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging2=true;dx2=ev.offsetX;dy2=ev.offsetY;ev.stopPropagation();});
+      document.addEventListener("mousemove",function(ev){if(!dragging2)return;var wr=wrap.getBoundingClientRect();note.style.left=(ev.clientX-wr.left-dx2)+"px";note.style.top=(ev.clientY-wr.top-dy2)+"px";});
+      document.addEventListener("mouseup",function(){dragging2=false;});
       return;
     }
     drawing=true;
@@ -235,33 +295,36 @@ function setupOverlay(canvas,ov){
     }
     ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
   });
-  canvas.addEventListener("mousemove",e=>{
+  canvas.addEventListener("mousemove",function(e){
     if(!drawing)return;
-    const r=canvas.getBoundingClientRect();
-    const x=e.clientX-r.left,y=e.clientY-r.top;
-    const col=document.getElementById("color").value;
-    const bs=+document.getElementById("brushSize").value;
+    var r=canvas.getBoundingClientRect();
+    var x=e.clientX-r.left,y=e.clientY-r.top;
+    var col=document.getElementById("color").value;
+    var bs=+document.getElementById("brushSize").value;
     if(tool==="draw"){
       ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;ov.ctx.lineCap="round";
       ov.ctx.lineTo(x,y);ov.ctx.stroke();
     }else if(tool==="highlight"){
-      // live preview: restore state and draw rect
       if(ov.history.length)ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);
       ov.ctx.fillStyle="rgba(255,255,0,0.35)";
       ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
+    }else if(tool==="whiteout"){
+      if(ov.history.length)ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);
+      ov.ctx.fillStyle=document.getElementById("whiteoutColor").value;
+      ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
     }
   });
-  canvas.addEventListener("mouseup",e=>{
+  canvas.addEventListener("mouseup",function(e){
     if(!drawing)return;drawing=false;
-    const r=canvas.getBoundingClientRect();
-    const x=e.clientX-r.left,y=e.clientY-r.top;
-    const col=document.getElementById("color").value;
-    const bs=+document.getElementById("brushSize").value;
+    var r=canvas.getBoundingClientRect();
+    var x=e.clientX-r.left,y=e.clientY-r.top;
+    var col=document.getElementById("color").value;
+    var bs=+document.getElementById("brushSize").value;
     if(tool==="highlight"){
       ov.ctx.fillStyle="rgba(255,255,0,0.35)";
       ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
     }else if(tool==="whiteout"){
-      ov.ctx.fillStyle="#ffffff";
+      ov.ctx.fillStyle=document.getElementById("whiteoutColor").value;
       ov.ctx.fillRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
     }else if(tool==="rect"){
       ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;
@@ -269,7 +332,7 @@ function setupOverlay(canvas,ov){
     }else if(tool==="arrow"){
       ov.ctx.strokeStyle=col;ov.ctx.lineWidth=bs;ov.ctx.beginPath();
       ov.ctx.moveTo(sx,sy);ov.ctx.lineTo(x,y);ov.ctx.stroke();
-      const a=Math.atan2(y-sy,x-sx);const hl=15;
+      var a=Math.atan2(y-sy,x-sx);var hl=15;
       ov.ctx.beginPath();ov.ctx.moveTo(x,y);
       ov.ctx.lineTo(x-hl*Math.cos(a-0.4),y-hl*Math.sin(a-0.4));
       ov.ctx.moveTo(x,y);
@@ -281,24 +344,23 @@ function setupOverlay(canvas,ov){
 }
 
 function undoLast(){
-  for(const ov of overlays){
-    if(ov.history.length>1){ov.history.pop();ov.ctx.putImageData(ov.history[ov.history.length-1],0,0)}
-    else if(ov.history.length===1){ov.history.pop();ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height)}
-  }
+  var ov=overlays[currentPage];
+  if(!ov)return;
+  if(ov.history.length>1){ov.history.pop();ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);}
+  else if(ov.history.length===1){ov.history.pop();ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height);}
 }
 
 async function savePDF(){
-  const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
-  const pgs=doc.getPages();
-  const wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
-  for(let i=0;i<pgs.length;i++){
-    const merged=document.createElement("canvas");
+  var doc=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
+  var pgs=doc.getPages();
+  var wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
+  for(var i=0;i<pgs.length;i++){
+    var merged=document.createElement("canvas");
     merged.width=pages[i].canvas.width;merged.height=pages[i].canvas.height;
-    const mctx=merged.getContext("2d");
+    var mctx=merged.getContext("2d");
     mctx.drawImage(pages[i].canvas,0,0);
     mctx.drawImage(overlays[i].canvas,0,0);
-    // Render sticky notes
-    const notes=wraps[i].querySelectorAll(".sticky-note");
+    var notes=wraps[i].querySelectorAll(".sticky-note");
     notes.forEach(function(n){
       var x=parseInt(n.style.left)||0,y=parseInt(n.style.top)||0;
       var w=n.offsetWidth,h=n.offsetHeight;
@@ -307,16 +369,16 @@ async function savePDF(){
       var ta=n.querySelector("textarea");
       if(ta&&ta.value){mctx.fillStyle="#333";mctx.font="12px Arial";
         var lines=ta.value.split("\n"),ly=y+16;
-        lines.forEach(function(l){mctx.fillText(l,x+5,ly);ly+=14});
+        lines.forEach(function(l){mctx.fillText(l,x+5,ly);ly+=14;});
       }
     });
-    const blob=await new Promise(r=>merged.toBlob(r,"image/jpeg",0.92));
-    const img=await doc.embedJpg(await blob.arrayBuffer());
-    const pg=pgs[i];
-    const{width,height}=pg.getSize();
-    pg.drawImage(img,{x:0,y:0,width,height});
+    var blob=await new Promise(function(r){merged.toBlob(r,"image/jpeg",0.92);});
+    var img=await doc.embedJpg(await blob.arrayBuffer());
+    var pg=pgs[i];
+    var sz=pg.getSize();
+    pg.drawImage(img,{x:0,y:0,width:sz.width,height:sz.height});
   }
-  const out=await doc.save();
+  var out=await doc.save();
   download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
 }
   </script>

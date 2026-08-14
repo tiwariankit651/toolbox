@@ -47,7 +47,7 @@
       <h1>🎨 Image Background Changer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
       <p class="info">AI cuts out your subject precisely, then places it on any color, gradient, or transparent background. Perfect for passport photos, ID cards & product shots.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row">
         <label>Cutout Mode:</label>
@@ -62,6 +62,7 @@
       </div>
       <label><strong>Choose Background Color:</strong></label>
       <div class="color-presets">
+        <button style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/12px 12px;border:3px solid var(--text2)" onclick="pickColor('transparent',this)" title="Transparent (no background)">🚫</button>
         <button style="background:#ffffff" onclick="pickColor('#ffffff',this)" title="White"></button>
         <button style="background:#0066cc" onclick="pickColor('#0066cc',this)" title="Blue"></button>
         <button style="background:#cc0000" onclick="pickColor('#cc0000',this)" title="Red"></button>
@@ -74,6 +75,17 @@
       <div class="row" style="margin:.5rem 0"><label><input type="checkbox" id="useGradient"> Gradient Background</label>
         <input type="color" id="gradColor1" value="#4f8cff" style="width:30px;height:30px;border:none">
         <input type="color" id="gradColor2" value="#a855f7" style="width:30px;height:30px;border:none">
+      </div>
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
+        <label><strong>Output Size:</strong></label>
+        <select id="outputSize">
+          <option value="0x0">Keep original size</option>
+          <option value="200x230">200×230 px (SSC/UPSC Photo)</option>
+          <option value="300x350">300×350 px (ID Card)</option>
+          <option value="413x531">413×531 px (Passport 35×45mm)</option>
+          <option value="600x800">600×800 px (Large Passport)</option>
+          <option value="150x200">150×200 px (Thumbnail)</option>
+        </select>
       </div>
       <button class="btn" onclick="process()" id="goBtn" disabled style="width:100%">Change Background</button>
       <p class="info" style="font-size:.75rem;margin-top:.3rem">🤖 AI mode downloads a ~40MB model on first use (cached after). Supported: JPG, PNG, WebP.</p>
@@ -137,25 +149,43 @@ if(typeof download==="undefined"){function download(blob,name){var a=document.cr
 if(typeof showProcessing==="undefined"){function showProcessing(el){if(typeof el==="string")el=document.getElementById(el);if(el)el.innerHTML="<p class=\"info\">⏳ Processing...</p>"}}
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
-let file,bgColor="#ffffff",imglyRemove=null;
-setupDrop("drop","inp",f=>{file=f[0];document.getElementById("goBtn").disabled=false;document.getElementById("previewImg").src=URL.createObjectURL(file);document.getElementById("preview").style.display="block"});
+var files=[],bgColor="#ffffff",imglyRemove=null,batchResults=[];
+setupDrop("drop","inp",function(f){
+  files=Array.from(f);
+  document.getElementById("goBtn").disabled=false;
+  if(files.length===1){
+    document.getElementById("previewImg").src=URL.createObjectURL(files[0]);
+    document.getElementById("preview").style.display="block";
+  }else{
+    document.getElementById("preview").style.display="none";
+  }
+});
 document.getElementById("mode").addEventListener("change",function(){document.getElementById("threshRow").style.display=this.value==="fast"?"flex":"none"});
 
 function pickColor(c,btn){
   bgColor=c;
-  document.querySelectorAll(".color-presets button").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".color-presets button").forEach(function(b){b.classList.remove("active")});
   if(btn)btn.classList.add("active");
-  document.getElementById("customColor").value=c;
+  if(c!=="transparent")document.getElementById("customColor").value=c;
 }
 
-function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b]}
+function hexToRgb(h){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b]}
+
+function getOutputSize(){
+  var val=document.getElementById("outputSize").value;
+  if(val==="0x0")return null;
+  var parts=val.split("x");
+  return{w:parseInt(parts[0]),h:parseInt(parts[1])};
+}
 
 // Paint the chosen background (color or gradient) onto a canvas context
 function paintBackground(ctx,w,h){
-  const useGrad=document.getElementById("useGradient").checked;
+  if(bgColor==="transparent"){ctx.clearRect(0,0,w,h);return;}
+  var useGrad=document.getElementById("useGradient").checked;
   if(useGrad){
-    const grad=ctx.createLinearGradient(0,0,w,h);
+    var grad=ctx.createLinearGradient(0,0,w,h);
     grad.addColorStop(0,document.getElementById("gradColor1").value);
     grad.addColorStop(1,document.getElementById("gradColor2").value);
     ctx.fillStyle=grad;
@@ -165,100 +195,191 @@ function paintBackground(ctx,w,h){
   ctx.fillRect(0,0,w,h);
 }
 
-async function process(){
-  if(!file)return;
-  document.getElementById("goBtn").disabled=true;
-  var mode=document.getElementById("mode").value;
-  if(mode==="ai"){await processAI();}else{processFast();}
+// Composite cutout blob onto chosen background, optionally resizing
+function compositeResult(cutoutBlob){
+  return new Promise(async function(resolve){
+    var subject=await loadImage(cutoutBlob);
+    var size=getOutputSize();
+    var w=size?size.w:subject.width;
+    var h=size?size.h:subject.height;
+    var c=document.createElement("canvas");c.width=w;c.height=h;
+    var ctx=c.getContext("2d");
+    paintBackground(ctx,w,h);
+    // Fit subject into canvas maintaining aspect ratio
+    var scale=Math.min(w/subject.width,h/subject.height);
+    var sw=Math.round(subject.width*scale);
+    var sh=Math.round(subject.height*scale);
+    var sx=Math.round((w-sw)/2);
+    var sy=Math.round((h-sh)/2);
+    ctx.drawImage(subject,sx,sy,sw,sh);
+    c.toBlob(function(b){resolve(b)},"image/png");
+  });
 }
 
-// ---- AI: cut out subject with imgly, composite over new background ----
-async function processAI(){
-  var res=document.getElementById("result");
-  res.innerHTML="<p class='info'>⏳ Loading AI model (first time ~40MB, then cached)...</p>";
-  try{
-    if(!imglyRemove){
-      var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
-      imglyRemove=mod.removeBackground||mod.default;
-    }
-    res.innerHTML="<p class='info'>🤖 AI cutting out subject... (10-30s)</p>";
-    var cutout=await imglyRemove(file,{progress:function(key,cur,tot){if(key&&key.indexOf("fetch")===0)res.innerHTML="<p class='info'>⏳ Downloading model: "+Math.round(cur/tot*100)+"%</p>"}});
-    var subject=await loadImage(cutout);
-    var c=document.createElement("canvas");c.width=subject.width;c.height=subject.height;
-    var ctx=c.getContext("2d");
-    paintBackground(ctx,c.width,c.height);
-    ctx.drawImage(subject,0,0);
-    c.toBlob(b=>finish(b),"image/png");
-  }catch(err){
-    res.innerHTML="<p class='info' style='color:#f44336'>❌ AI failed ("+(err&&err.message?err.message:"unknown")+"). Trying Fast mode...</p>";
-    setTimeout(processFast,800);
+async function process(){
+  if(!files.length)return;
+  document.getElementById("goBtn").disabled=true;
+  if(files.length===1){
+    var mode=document.getElementById("mode").value;
+    if(mode==="ai"){await processAISingle(files[0]);}else{await processFastSingle(files[0]);}
+  }else{
+    await processBatch();
   }
 }
 
-// ---- Fast: corner flood-fill mask, recolor background ----
-function processFast(){
-  document.getElementById("result").innerHTML="<p class='info'>⏳ Processing...</p>";
-  setTimeout(async function(){
-    const img=await loadImage(file);
-    const c=document.createElement("canvas");c.width=img.width;c.height=img.height;
-    const ctx=c.getContext("2d");ctx.drawImage(img,0,0);
-    const data=ctx.getImageData(0,0,c.width,c.height);const d=data.data;
-    const t=+document.getElementById("thresh").value;const w=c.width,h=c.height;
-    const samples=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
-    let br=0,bg2=0,bb=0;
-    for(const[sx,sy]of samples){const i=(sy*w+sx)*4;br+=d[i];bg2+=d[i+1];bb+=d[i+2]}
-    br/=4;bg2/=4;bb/=4;
-    const [nr,ng,nb]=hexToRgb(bgColor);
-    const gray=new Uint8Array(w*h);
-    for(let i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
-    const edge=new Uint8Array(w*h);
-    for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){
-      const idx=y*w+x;
-      const gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
-      const gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
-      edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
-    }}
-    const edgeThresh=30;
-    const mask=new Uint8Array(w*h);
-    const queue=[];
-    for(let x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}
-    for(let y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}
-    let qi=0;
-    while(qi<queue.length){
-      const x=queue[qi++],y=queue[qi++];
-      if(x<0||x>=w||y<0||y>=h)continue;
-      const idx=y*w+x;
-      if(mask[idx])continue;
-      const pi=idx*4;
-      const diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
-      if(diffBg>=t*3)continue;
-      if(edge[idx]>edgeThresh&&qi>w*4)continue;
-      mask[idx]=1;
-      queue.push(x-1,y,x+1,y,x,y-1,x,y+1);
-    }
-    const useGrad=document.getElementById("useGradient").checked;
-    if(useGrad){
-      const bgCanvas=document.createElement("canvas");bgCanvas.width=w;bgCanvas.height=h;
-      const bgCtx=bgCanvas.getContext("2d");
-      const grad=bgCtx.createLinearGradient(0,0,w,h);
-      grad.addColorStop(0,document.getElementById("gradColor1").value);grad.addColorStop(1,document.getElementById("gradColor2").value);
-      bgCtx.fillStyle=grad;bgCtx.fillRect(0,0,w,h);
-      const bgData=bgCtx.getImageData(0,0,w,h).data;
-      for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=bgData[p];d[p+1]=bgData[p+1];d[p+2]=bgData[p+2];d[p+3]=255}}
-    }else{
-      for(let i=0;i<w*h;i++){if(mask[i]){const p=i*4;d[p]=nr;d[p+1]=ng;d[p+2]=nb;d[p+3]=255}}
-    }
-    ctx.putImageData(data,0,0);
-    c.toBlob(b=>finish(b),"image/png");
-  },100);
+// ---- AI: ensure model loaded once ----
+async function ensureModel(){
+  if(!imglyRemove){
+    var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
+    imglyRemove=mod.removeBackground||mod.default;
+  }
 }
 
-function finish(b){
-  const origUrl=URL.createObjectURL(file);
-  const newUrl=URL.createObjectURL(b);
-  document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><img src='"+newUrl+"'></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>💾 Download</button>";
-  window._b=b;
+// ---- AI single ----
+async function processAISingle(f){
+  var res=document.getElementById("result");
+  res.innerHTML="<p class='info'>\u23f3 Loading AI model (first time ~40MB, then cached)...</p>";
+  try{
+    await ensureModel();
+    res.innerHTML="<p class='info'>\ud83e\udd16 AI cutting out subject... (10-30s)</p>";
+    var cutout=await imglyRemove(f,{progress:function(key,cur,tot){if(key&&key.indexOf("fetch")===0)res.innerHTML="<p class='info'>\u23f3 Downloading model: "+Math.round(cur/tot*100)+"%</p>"}});
+    var final=await compositeResult(cutout);
+    finishSingle(f,final);
+  }catch(err){
+    res.innerHTML="<p class='info' style='color:#f44336'>\u274c AI failed ("+(err&&err.message?err.message:"unknown")+"). Trying Fast mode...</p>";
+    await new Promise(function(r){setTimeout(r,800)});
+    await processFastSingle(f);
+  }
+}
+
+// ---- Fast single ----
+async function processFastSingle(f){
+  document.getElementById("result").innerHTML="<p class='info'>\u23f3 Processing...</p>";
+  var cutout=await runFastCutout(f);
+  var final=await compositeResult(cutout);
+  finishSingle(f,final);
+}
+
+// Fast flood-fill returns transparent cutout blob
+function runFastCutout(f){
+  return new Promise(async function(resolve){
+    var img=await loadImage(f);
+    var c=document.createElement("canvas");c.width=img.width;c.height=img.height;
+    var ctx=c.getContext("2d");ctx.drawImage(img,0,0);
+    var data=ctx.getImageData(0,0,c.width,c.height);var d=data.data;
+    var t=+document.getElementById("thresh").value;var w=c.width,h=c.height;
+    var samples=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+    var br=0,bg2=0,bb=0;
+    for(var si=0;si<samples.length;si++){var pi2=(samples[si][1]*w+samples[si][0])*4;br+=d[pi2];bg2+=d[pi2+1];bb+=d[pi2+2]}
+    br/=4;bg2/=4;bb/=4;
+    var gray=new Uint8Array(w*h);
+    for(var i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
+    var edge=new Uint8Array(w*h);
+    for(var y=1;y<h-1;y++){for(var x=1;x<w-1;x++){
+      var idx=y*w+x;
+      var gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
+      var gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
+      edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
+    }}
+    var edgeThresh=30;
+    var mask=new Uint8Array(w*h);
+    var queue=[];
+    for(var x2=0;x2<w;x2++){queue.push(x2,0);queue.push(x2,h-1)}
+    for(var y2=1;y2<h-1;y2++){queue.push(0,y2);queue.push(w-1,y2)}
+    var qi=0;
+    while(qi<queue.length){
+      var xx=queue[qi++],yy=queue[qi++];
+      if(xx<0||xx>=w||yy<0||yy>=h)continue;
+      var idx2=yy*w+xx;
+      if(mask[idx2])continue;
+      var pi=idx2*4;
+      var diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
+      if(diffBg>=t*3)continue;
+      if(edge[idx2]>edgeThresh&&qi>w*4)continue;
+      mask[idx2]=1;
+      queue.push(xx-1,yy,xx+1,yy,xx,yy-1,xx,yy+1);
+    }
+    for(var i2=0;i2<w*h;i2++){if(mask[i2])d[i2*4+3]=0}
+    ctx.putImageData(data,0,0);
+    c.toBlob(function(b){resolve(b)},"image/png");
+  });
+}
+
+function finishSingle(origFile,blob){
+  var origUrl=URL.createObjectURL(origFile);
+  var newUrl=URL.createObjectURL(blob);
+  var bgStyle=bgColor==="transparent"?"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/16px 16px;":"";
+  document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><div style='display:inline-block;border-radius:10px;"+bgStyle+"padding:4px'><img src='"+newUrl+"' style='border-radius:8px'></div></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>\ud83d\udcbe Download</button>";
+  window._b=blob;
   document.getElementById("goBtn").disabled=false;
+}
+
+// ---- Batch processing ----
+async function processBatch(){
+  var res=document.getElementById("result");
+  var mode=document.getElementById("mode").value;
+  var total=files.length;
+  var done=0;
+  batchResults=[];
+  function renderQueue(){
+    var html="<div style='margin-bottom:.8rem'><strong>Batch Progress: "+done+"/"+total+" done</strong></div>";
+    html+="<div id='batchQueue'>";
+    for(var i=0;i<total;i++){
+      var status=i<done?"done":(i===done?"processing":"waiting");
+      var icon=status==="done"?"\u2705":(status==="processing"?"\u23f3":"\u23f8\ufe0f");
+      var label=status==="done"?"Done":(status==="processing"?"Processing...":"Waiting");
+      html+="<div style='display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;background:var(--card);border-radius:6px;margin:.3rem 0'><span>"+icon+"</span><span style='flex:1;font-size:.85rem'>"+files[i].name+"</span><span style='font-size:.75rem;color:var(--text2)'>"+label+"</span></div>";
+    }
+    html+="</div><div id='batchResults' style='margin-top:1rem'></div>";
+    res.innerHTML=html;
+  }
+  if(mode==="ai"){
+    res.innerHTML="<p class='info'>\u23f3 Loading AI model for batch processing...</p>";
+    try{await ensureModel();}catch(e){
+      res.innerHTML="<p class='info' style='color:#f44336'>\u274c Failed to load AI model. Try Fast mode.</p>";
+      document.getElementById("goBtn").disabled=false;return;
+    }
+  }
+  renderQueue();
+  for(var i=0;i<total;i++){
+    done=i;renderQueue();
+    var blob=null;
+    try{
+      var cutout;
+      if(mode==="ai"){cutout=await imglyRemove(files[i]);}else{cutout=await runFastCutout(files[i]);}
+      blob=await compositeResult(cutout);
+    }catch(e){blob=null;}
+    batchResults.push({name:files[i].name,blob:blob});
+    done=i+1;renderQueue();
+    var brDiv=document.getElementById("batchResults");
+    if(blob){
+      var url=URL.createObjectURL(blob);
+      var outName="bg-changed_"+files[i].name.replace(/\.[^.]+$/,".png");
+      window["_batch"+i]=blob;
+      var bgStyle2=bgColor==="transparent"?"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/16px 16px;":"";
+      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top'><div style='"+bgStyle2+"border-radius:8px;padding:6px;display:inline-block'><img src='"+url+"' style='max-width:120px;max-height:120px;display:block;border-radius:6px'></div><br><button class='btn' style='font-size:.75rem;padding:.3rem .6rem;margin-top:.3rem' onclick=\"download(window._batch"+i+",'"+outName+"')\">\ud83d\udcbe Download</button></div>";
+    }else{
+      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top;padding:1rem;background:var(--card);border-radius:8px'><span>\u274c</span><br><span style='font-size:.75rem'>"+files[i].name+"<br>Failed</span></div>";
+    }
+  }
+  var successes=batchResults.filter(function(r){return r.blob});
+  if(successes.length>1){
+    var brDiv2=document.getElementById("batchResults");
+    brDiv2.innerHTML="<div style='text-align:center;margin-bottom:.8rem'><button class='btn' onclick='downloadAllZip()'>\ud83d\udce6 Download All as ZIP ("+successes.length+" images)</button></div>"+brDiv2.innerHTML;
+  }
+  document.getElementById("goBtn").disabled=false;
+}
+
+async function downloadAllZip(){
+  var zip=new JSZip();
+  for(var i=0;i<batchResults.length;i++){
+    if(batchResults[i].blob){
+      var name="bg-changed_"+batchResults[i].name.replace(/\.[^.]+$/,".png");
+      zip.file(name,batchResults[i].blob);
+    }
+  }
+  var content=await zip.generateAsync({type:"blob"});
+  download(content,"background-changed.zip");
 }
   </script>
 </body>

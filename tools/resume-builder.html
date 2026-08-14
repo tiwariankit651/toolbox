@@ -28,6 +28,9 @@
   </script>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+  @media print{nav,footer,.breadcrumb,.btn,.btn-outline,#atsPanel,.info,.tool-section:not(:first-child),#skillsList,.row:has(#newSkill),#exp+.btn-outline,#edu+.btn-outline,h2:not(#livePreview h2),textarea,input,select,label,#result,.tools-grid,details,#photoPreview,.faq,svg#tool-illustration,[style*="min-height:90px"]{display:none!important}#livePreview{border:none!important;max-height:none!important;padding:0!important;margin:0!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -37,24 +40,24 @@
     <div class="tool-section">
       <h1>📄 Resume Builder</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#a855f7" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#4f8cff" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#a855f7"/></svg></div>
-      <p class="info">Fill the form, choose a template, and download a professional PDF resume.</p>
-      <div class="row" style="margin-bottom:1rem"><label>Template:</label>
-        <select id="template"><option value="classic">📋 Classic (Clean)</option><option value="modern">🎨 Modern (Blue Accent)</option><option value="minimal">✨ Minimal (Simple)</option><option value="creative">🎭 Creative (Sidebar)</option><option value="executive">👔 Executive (Elegant)</option></select>
-        <label>Accent Color:</label><input type="color" id="accentColor" value="#4f8cff" style="width:40px;height:35px;border:none">
+      <p class="info">Fill the form, choose a template, preview live, check ATS score, and download a professional PDF resume.</p>
+      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap"><label>Template:</label>
+        <select id="template" onchange="updatePreview()"><option value="classic">📋 Classic (Single Column)</option><option value="modern">🎨 Modern (Two-Column Sidebar)</option><option value="minimal">✨ Minimal (Clean)</option><option value="ats">🤖 ATS-Safe (Plain)</option></select>
+        <label>Accent Color:</label><input type="color" id="accentColor" value="#4f8cff" style="width:40px;height:35px;border:none" onchange="updatePreview()">
       </div>
       <h2>Personal Info</h2>
-      <div class="row"><input type="text" id="name" placeholder="Full Name"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)"></div>
-      <div class="row"><input type="email" id="email" placeholder="Email"><input type="text" id="phone" placeholder="Phone"></div>
-      <div class="row"><input type="text" id="location" placeholder="City, Country"><input type="text" id="linkedin" placeholder="LinkedIn URL (optional)"></div>
-      <div class="row"><input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)">
+      <div class="row"><input type="text" id="name" placeholder="Full Name" oninput="autoSave();updatePreview()"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)" oninput="autoSave();updatePreview()"></div>
+      <div class="row"><input type="email" id="email" placeholder="Email" oninput="autoSave();updatePreview()"><input type="text" id="phone" placeholder="Phone" oninput="autoSave();updatePreview()"></div>
+      <div class="row"><input type="text" id="location" placeholder="City, Country" oninput="autoSave();updatePreview()"><input type="text" id="linkedin" placeholder="LinkedIn URL (optional)" oninput="autoSave();updatePreview()"></div>
+      <div class="row"><input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)" oninput="autoSave();updatePreview()">
         <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1"><img id="photoPreview" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
       </div>
       <h2 style="margin-top:1rem">Summary</h2>
-      <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px"></textarea>
+      <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px" oninput="autoSave();updatePreview()"></textarea>
       <h2 style="margin-top:1rem">Skills</h2>
       <div id="skillsList"></div>
       <div class="row"><input type="text" id="newSkill" placeholder="Skill name"><select id="newSkillRating"><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3" selected>★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select><button class="btn btn-outline" onclick="addSkill()">+ Add Skill</button></div>
-      <input type="text" id="skills" placeholder="Or paste comma-separated: JavaScript, Python, React" style="margin-top:.3rem">
+      <input type="text" id="skills" placeholder="Or paste comma-separated: JavaScript, Python, React" style="margin-top:.3rem" oninput="autoSave();updatePreview()">
       <h2 style="margin-top:1rem">Experience</h2>
       <div id="exp"></div>
       <button class="btn btn-outline" onclick="addExp()">+ Add Experience</button>
@@ -62,12 +65,35 @@
       <div id="edu"></div>
       <button class="btn btn-outline" onclick="addEdu()">+ Add Education</button>
       <h2 style="margin-top:1rem">Certifications (optional)</h2>
-      <input type="text" id="certs" placeholder="e.g. AWS Certified, Google Analytics, NPTEL Python">
+      <input type="text" id="certs" placeholder="e.g. AWS Certified, Google Analytics, NPTEL Python" oninput="autoSave();updatePreview()">
       <h2 style="margin-top:1rem">Languages (optional)</h2>
-      <input type="text" id="languages" placeholder="e.g. English (Fluent), Hindi (Native), French (Basic)">
-      <p class="info" style="font-size:.8rem;margin-top:1rem">🤖 <strong>ATS-Friendly:</strong> The generated PDF uses standard fonts and clean formatting, making it compatible with Applicant Tracking Systems used by recruiters.</p>
-      <button class="btn" onclick="genResume()" style="margin-top:1rem;width:100%">📄 Generate & Download PDF</button>
+      <input type="text" id="languages" placeholder="e.g. English (Fluent), Hindi (Native), French (Basic)" oninput="autoSave();updatePreview()">
+
+      <!-- ATS Score Panel -->
+      <div id="atsPanel" style="margin-top:1.5rem;background:var(--card);padding:1.2rem;border-radius:var(--radius);border:1px solid rgba(79,140,255,.2)">
+        <h3 style="margin:0 0 .8rem">🤖 ATS Score</h3>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.8rem">
+          <div id="atsScoreNum" style="font-size:2rem;font-weight:bold;color:var(--accent)">0</div>
+          <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;height:16px;overflow:hidden">
+            <div id="atsBar" style="height:100%;width:0%;border-radius:8px;transition:width .4s,background .4s"></div>
+          </div>
+          <span id="atsLabel" style="font-size:.85rem;font-weight:bold">/100</span>
+        </div>
+        <ul id="atsTips" style="margin:0;padding-left:1.2rem;font-size:.85rem;line-height:1.8;color:var(--text2)"></ul>
+      </div>
+
+      <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
+        <button class="btn" onclick="genResume()" style="flex:1">📄 Generate & Download PDF</button>
+        <button class="btn btn-outline" onclick="printResume()" style="flex:0">🖨️ Print</button>
+        <button class="btn btn-outline" onclick="clearAll()" style="flex:0;color:#e55">🗑️ Clear All</button>
+      </div>
       <div id="result"></div>
+
+      <!-- Live Preview -->
+      <h2 style="margin-top:1.5rem">Live Preview</h2>
+      <div id="livePreview" style="background:#fff;color:#222;padding:2rem;border-radius:var(--radius);min-height:400px;font-family:Georgia,serif;overflow:auto;max-height:600px"></div>
+
+      <p class="info" style="font-size:.8rem;margin-top:1rem">💡 <strong>Related:</strong> Check your resume with our <a href="/tools/ats-checker">ATS Checker</a> or generate a matching <a href="/tools/cover-letter">Cover Letter</a>.</p>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -133,188 +159,118 @@
   <script src="../js/common.js"></script>
   <script>
 var ratedSkills=[];
-function addSkill(){
-  var name=document.getElementById('newSkill').value.trim();
-  if(!name)return;
-  var rating=parseInt(document.getElementById('newSkillRating').value);
-  ratedSkills.push({name:name,rating:rating});
-  document.getElementById('newSkill').value='';
-  renderSkills();
-}
-function removeSkill(i){ratedSkills.splice(i,1);renderSkills()}
-function renderSkills(){
-  var h='';ratedSkills.forEach(function(s,i){
-    h+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);padding:.3rem .6rem;border-radius:8px;margin:.2rem">'+s.name+' <span style="color:#f5a623">'+'●'.repeat(s.rating)+'</span><span style="color:#ccc">'+'●'.repeat(5-s.rating)+'</span><button onclick="removeSkill('+i+')" style="border:none;background:none;cursor:pointer;color:#e55">✕</button></span>';
-  });document.getElementById('skillsList').innerHTML=h;
-}
-function addExp(){
-  const d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';
-  d.innerHTML='<div class="row"><input type="text" placeholder="Company"><input type="text" placeholder="Role"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)"></div><textarea placeholder="Key responsibilities..." style="min-height:60px"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove()" style="margin-top:.3rem">✕ Remove</button>';
-  document.getElementById('exp').appendChild(d);
-}
-function addEdu(){
-  const d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';
-  d.innerHTML='<div class="row"><input type="text" placeholder="Institution"><input type="text" placeholder="Degree"></div><div class="row"><input type="text" placeholder="Year (e.g. 2020-2024)"><input type="text" placeholder="Score/CGPA"></div><button class="btn btn-outline" onclick="this.parentElement.remove()" style="margin-top:.3rem">✕ Remove</button>';
-  document.getElementById('edu').appendChild(d);
-}
-addExp();addEdu();
-document.getElementById('photo').addEventListener('change',function(e){
-  var file=e.target.files[0];if(!file)return;
-  var prev=document.getElementById('photoPreview');
-  prev.src=URL.createObjectURL(file);prev.style.display='inline-block';
-});
-async function getPhotoBytes(){
-  var file=document.getElementById('photo').files[0];
-  if(!file)return null;
-  var buf=await file.arrayBuffer();
-  if(file.type==='image/png')return{bytes:buf,type:'png'};
-  return{bytes:buf,type:'jpg'};
-}
+var autoSaveTimer=null;
+function autoSave(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(function(){
+  var data={name:gv('name'),title:gv('title'),email:gv('email'),phone:gv('phone'),location:gv('location'),linkedin:gv('linkedin'),portfolio:gv('portfolio'),summary:gv('summary'),skills:gv('skills'),certs:gv('certs'),languages:gv('languages'),ratedSkills:ratedSkills,template:document.getElementById('template').value,accentColor:document.getElementById('accentColor').value};
+  var exps=[];document.querySelectorAll('#exp > div').forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');exps.push({company:inp[0]?inp[0].value:'',role:inp[1]?inp[1].value:'',duration:inp[2]?inp[2].value:'',desc:ta?ta.value:''});});data.exps=exps;
+  var edus=[];document.querySelectorAll('#edu > div').forEach(function(e){var inp=e.querySelectorAll('input');edus.push({inst:inp[0]?inp[0].value:'',degree:inp[1]?inp[1].value:'',year:inp[2]?inp[2].value:'',score:inp[3]?inp[3].value:''});});data.edus=edus;
+  localStorage.setItem('resumeBuilderData',JSON.stringify(data));calcATS();updatePreview();
+},600);}
+function loadSaved(){var raw=localStorage.getItem('resumeBuilderData');if(!raw)return;try{var d=JSON.parse(raw);
+  if(d.name)document.getElementById('name').value=d.name;if(d.title)document.getElementById('title').value=d.title;if(d.email)document.getElementById('email').value=d.email;if(d.phone)document.getElementById('phone').value=d.phone;if(d.location)document.getElementById('location').value=d.location;if(d.linkedin)document.getElementById('linkedin').value=d.linkedin;if(d.portfolio)document.getElementById('portfolio').value=d.portfolio;if(d.summary)document.getElementById('summary').value=d.summary;if(d.skills)document.getElementById('skills').value=d.skills;if(d.certs)document.getElementById('certs').value=d.certs;if(d.languages)document.getElementById('languages').value=d.languages;if(d.template)document.getElementById('template').value=d.template;if(d.accentColor)document.getElementById('accentColor').value=d.accentColor;
+  if(d.ratedSkills&&d.ratedSkills.length){ratedSkills=d.ratedSkills;renderSkills();}
+  document.getElementById('exp').innerHTML='';document.getElementById('edu').innerHTML='';
+  if(d.exps&&d.exps.length){d.exps.forEach(function(ex){addExpWith(ex)});}else{addExp();}
+  if(d.edus&&d.edus.length){d.edus.forEach(function(ed){addEduWith(ed)});}else{addEdu();}
+}catch(e){}}
+function clearAll(){if(!confirm('Clear all entered data? This cannot be undone.'))return;localStorage.removeItem('resumeBuilderData');ratedSkills=[];renderSkills();['name','title','email','phone','location','linkedin','portfolio','summary','skills','certs','languages'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('exp').innerHTML='';document.getElementById('edu').innerHTML='';addExp();addEdu();document.getElementById('template').value='classic';document.getElementById('accentColor').value='#4f8cff';calcATS();updatePreview();}
+function gv(id){return document.getElementById(id).value.trim();}
+function addSkill(){var name=document.getElementById('newSkill').value.trim();if(!name)return;var rating=parseInt(document.getElementById('newSkillRating').value);ratedSkills.push({name:name,rating:rating});document.getElementById('newSkill').value='';renderSkills();autoSave();}
+function removeSkill(i){ratedSkills.splice(i,1);renderSkills();autoSave();}
+function renderSkills(){var h='';ratedSkills.forEach(function(s,i){h+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);padding:.3rem .6rem;border-radius:8px;margin:.2rem">'+s.name+' <span style="color:#f5a623">'+'●'.repeat(s.rating)+'</span><span style="color:#ccc">'+'●'.repeat(5-s.rating)+'</span><button onclick="removeSkill('+i+')" style="border:none;background:none;cursor:pointer;color:#e55">✕</button></span>';});document.getElementById('skillsList').innerHTML=h;}
+function addExp(){addExpWith(null);}
+function addExpWith(data){var d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';d.innerHTML='<div class="row"><input type="text" placeholder="Company" oninput="autoSave()"><input type="text" placeholder="Role" oninput="autoSave()"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)" oninput="autoSave()"></div><textarea placeholder="Key responsibilities..." style="min-height:60px" oninput="autoSave()"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove();autoSave()" style="margin-top:.3rem">✕ Remove</button>';if(data){var inp=d.querySelectorAll('input');var ta=d.querySelector('textarea');if(data.company)inp[0].value=data.company;if(data.role)inp[1].value=data.role;if(data.duration)inp[2].value=data.duration;if(data.desc)ta.value=data.desc;}document.getElementById('exp').appendChild(d);}
+function addEdu(){addEduWith(null);}
+function addEduWith(data){var d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';d.innerHTML='<div class="row"><input type="text" placeholder="Institution" oninput="autoSave()"><input type="text" placeholder="Degree" oninput="autoSave()"></div><div class="row"><input type="text" placeholder="Year (e.g. 2020-2024)" oninput="autoSave()"><input type="text" placeholder="Score/CGPA" oninput="autoSave()"></div><button class="btn btn-outline" onclick="this.parentElement.remove();autoSave()" style="margin-top:.3rem">✕ Remove</button>';if(data){var inp=d.querySelectorAll('input');if(data.inst)inp[0].value=data.inst;if(data.degree)inp[1].value=data.degree;if(data.year)inp[2].value=data.year;if(data.score)inp[3].value=data.score;}document.getElementById('edu').appendChild(d);}
+document.getElementById('photo').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var prev=document.getElementById('photoPreview');prev.src=URL.createObjectURL(file);prev.style.display='inline-block';});
+async function getPhotoBytes(){var file=document.getElementById('photo').files[0];if(!file)return null;var buf=await file.arrayBuffer();if(file.type==='image/png')return{bytes:buf,type:'png'};return{bytes:buf,type:'jpg'};}
+function calcATS(){var score=0;var tips=[];var name=gv('name'),email=gv('email'),phone=gv('phone'),loc=gv('location'),summary=gv('summary'),tmpl=document.getElementById('template').value;var allSkills=ratedSkills.slice();var sk=gv('skills');if(sk)sk.split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});var exps=document.querySelectorAll('#exp > div');var edus=document.querySelectorAll('#edu > div');
+  if(name){score+=5;}else{tips.push('❌ Add your full name');}
+  if(email){score+=4;}else{tips.push('❌ Add email address');}
+  if(phone){score+=3;}else{tips.push('❌ Add phone number');}
+  if(loc){score+=3;}else{tips.push('⚠️ Add your location (city/country)');}
+  if(summary&&summary.length>30){score+=15;}else if(summary){score+=8;tips.push('⚠️ Write a longer summary (3+ sentences)');}else{tips.push('❌ Add a professional summary');}
+  if(allSkills.length>=5){score+=15;}else if(allSkills.length>=2){score+=10;tips.push('⚠️ Add more skills (aim for 5+)');}else if(allSkills.length>=1){score+=5;tips.push('⚠️ Add more skills');}else{tips.push('❌ Add relevant skills');}
+  var expFilled=0;exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()&&inp[1]&&inp[1].value.trim())expFilled++;});
+  if(expFilled>=2){score+=20;}else if(expFilled>=1){score+=12;tips.push('⚠️ Add more experience entries');}else{tips.push('❌ Add work experience');}
+  var eduFilled=0;edus.forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()&&inp[1]&&inp[1].value.trim())eduFilled++;});
+  if(eduFilled>=1){score+=10;}else{tips.push('❌ Add education details');}
+  var actionVerbs=['managed','developed','led','created','implemented','designed','built','improved','increased','reduced','achieved','delivered','launched','streamlined','coordinated','analyzed','resolved','optimized','mentored','spearheaded'];
+  var expText='';exps.forEach(function(e){var ta=e.querySelector('textarea');if(ta)expText+=ta.value.toLowerCase()+' ';});
+  var verbCount=0;actionVerbs.forEach(function(v){if(expText.indexOf(v)!==-1)verbCount++;});
+  if(verbCount>=3){score+=10;}else if(verbCount>=1){score+=5;tips.push('💡 Use more action verbs (managed, developed, led, etc.)');}else if(expFilled>0){tips.push('💡 Start bullet points with action verbs (managed, developed, built...)');}
+  var hasNumbers=/\d+%|\d+ percent|\$\d+|\u20b9\d+|\d+ users|\d+ team|\d+ projects/i.test(expText);
+  if(hasNumbers){score+=10;}else if(expFilled>0){tips.push('💡 Add quantified achievements (e.g. "increased sales by 20%")');}
+  if(tmpl==='ats'){score+=5;}else{tips.push('💡 Use "ATS-Safe" template for maximum compatibility');}
+  if(summary&&summary.length>500){tips.push('⚠️ Summary is too long — keep under 4 lines');}
+  if(tips.length===0){tips.push('✅ Excellent! Your resume is well-optimized.');}
+  score=Math.min(100,Math.max(0,score));
+  document.getElementById('atsScoreNum').textContent=score;var bar=document.getElementById('atsBar');bar.style.width=score+'%';bar.style.background=score>=80?'#4caf50':score>=50?'#ff9800':'#e55';document.getElementById('atsScoreNum').style.color=score>=80?'#4caf50':score>=50?'#ff9800':'#e55';document.getElementById('atsTips').innerHTML=tips.map(function(t){return '<li>'+t+'</li>';}).join('');}
+function escH(s){if(!s)return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function updatePreview(){var tmpl=document.getElementById('template').value;var ac=document.getElementById('accentColor').value;var name=gv('name')||'Your Name',title=gv('title')||'Job Title',email=gv('email'),phone=gv('phone'),loc=gv('location'),summary=gv('summary'),certs=gv('certs'),langs=gv('languages');var allSkills=ratedSkills.slice();var sk=gv('skills');if(sk)sk.split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});
+  var expHTML='';document.querySelectorAll('#exp > div').forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()){expHTML+='<div style="margin-bottom:.8rem"><strong>'+escH(inp[1]?inp[1].value:'')+'</strong> at '+escH(inp[0].value)+' <span style="color:#888;font-size:.85em">'+escH(inp[2]?inp[2].value:'')+'</span>'+(ta&&ta.value?'<p style="margin:.3rem 0;font-size:.9em;white-space:pre-wrap">'+escH(ta.value)+'</p>':'')+'</div>';}});
+  var eduHTML='';document.querySelectorAll('#edu > div').forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()){eduHTML+='<div style="margin-bottom:.6rem"><strong>'+escH(inp[1]?inp[1].value:'')+'</strong> — '+escH(inp[0].value)+' <span style="color:#888;font-size:.85em">'+escH(inp[2]?inp[2].value:'')+(inp[3]&&inp[3].value?' | '+escH(inp[3].value):'')+'</span></div>';}});
+  var skillsHTML=allSkills.map(function(s){return '<span style="display:inline-block;background:'+ac+'22;color:'+ac+';padding:.2rem .6rem;border-radius:12px;margin:.2rem;font-size:.85em">'+escH(s.name)+'</span>';}).join('');
+  var contact=[email,phone,loc].filter(Boolean).map(escH).join(' | ');var html='';
+  if(tmpl==='modern'){html='<div style="display:flex;gap:1.5rem"><div style="flex:0 0 35%;background:'+ac+'11;padding:1rem;border-radius:8px"><h2 style="color:'+ac+';margin:0 0 .5rem;font-size:1.2em">'+escH(name)+'</h2><p style="margin:0 0 .8rem;font-size:.9em;color:#555">'+escH(title)+'</p><p style="font-size:.8em;color:#666">'+contact+'</p>'+(allSkills.length?'<h4 style="margin:1rem 0 .5rem;color:'+ac+'">Skills</h4>'+skillsHTML:'')+(langs?'<h4 style="margin:1rem 0 .3rem;color:'+ac+'">Languages</h4><p style="font-size:.85em">'+escH(langs)+'</p>':'')+'</div><div style="flex:1">'+(summary?'<h4 style="color:'+ac+';border-bottom:2px solid '+ac+';padding-bottom:.3rem">Summary</h4><p style="font-size:.9em">'+escH(summary)+'</p>':'')+(expHTML?'<h4 style="color:'+ac+';border-bottom:2px solid '+ac+';padding-bottom:.3rem">Experience</h4>'+expHTML:'')+(eduHTML?'<h4 style="color:'+ac+';border-bottom:2px solid '+ac+';padding-bottom:.3rem">Education</h4>'+eduHTML:'')+(certs?'<h4 style="color:'+ac+';border-bottom:2px solid '+ac+';padding-bottom:.3rem">Certifications</h4><p style="font-size:.9em">'+escH(certs)+'</p>':'')+'</div></div>';}
+  else if(tmpl==='ats'){html='<div style="font-family:Arial,sans-serif"><h2 style="margin:0;text-transform:uppercase;letter-spacing:1px">'+escH(name)+'</h2><p style="margin:.2rem 0 .8rem;color:#555">'+escH(title)+'</p><p style="font-size:.85em;color:#444">'+contact+'</p><hr style="border:1px solid #ddd">'+(summary?'<h3>PROFESSIONAL SUMMARY</h3><p style="font-size:.9em">'+escH(summary)+'</p>':'')+(allSkills.length?'<h3>SKILLS</h3><p style="font-size:.9em">'+allSkills.map(function(s){return escH(s.name);}).join(', ')+'</p>':'')+(expHTML?'<h3>WORK EXPERIENCE</h3>'+expHTML:'')+(eduHTML?'<h3>EDUCATION</h3>'+eduHTML:'')+(certs?'<h3>CERTIFICATIONS</h3><p style="font-size:.9em">'+escH(certs)+'</p>':'')+(langs?'<h3>LANGUAGES</h3><p style="font-size:.9em">'+escH(langs)+'</p>':'')+'</div>';}
+  else if(tmpl==='minimal'){html='<div style="font-family:Georgia,serif"><h2 style="margin:0;font-weight:normal;font-size:1.5em">'+escH(name)+'</h2><p style="margin:.2rem 0;color:#666;font-style:italic">'+escH(title)+'</p><p style="font-size:.8em;color:#888">'+contact+'</p><hr style="border:none;border-top:1px solid #eee;margin:1rem 0">'+(summary?'<p style="font-size:.9em;line-height:1.6">'+escH(summary)+'</p>':'')+(allSkills.length?'<p style="font-size:.85em">'+skillsHTML+'</p>':'')+(expHTML?'<h4 style="margin:1rem 0 .5rem;font-weight:normal;text-transform:uppercase;letter-spacing:2px;font-size:.9em;color:#999">Experience</h4>'+expHTML:'')+(eduHTML?'<h4 style="margin:1rem 0 .5rem;font-weight:normal;text-transform:uppercase;letter-spacing:2px;font-size:.9em;color:#999">Education</h4>'+eduHTML:'')+(certs?'<h4 style="margin:1rem 0 .5rem;font-weight:normal;text-transform:uppercase;letter-spacing:2px;font-size:.9em;color:#999">Certifications</h4><p style="font-size:.9em">'+escH(certs)+'</p>':'')+'</div>';}
+  else{html='<div style="font-family:Helvetica,Arial,sans-serif"><h2 style="margin:0;color:'+ac+'">'+escH(name)+'</h2><p style="margin:.2rem 0;color:#555">'+escH(title)+'</p><p style="font-size:.8em;color:#888">'+contact+'</p><hr style="border:none;border-top:2px solid '+ac+';margin:1rem 0">'+(summary?'<h4 style="color:'+ac+'">Summary</h4><p style="font-size:.9em">'+escH(summary)+'</p>':'')+(allSkills.length?'<h4 style="color:'+ac+'">Skills</h4>'+skillsHTML:'')+(expHTML?'<h4 style="color:'+ac+'">Experience</h4>'+expHTML:'')+(eduHTML?'<h4 style="color:'+ac+'">Education</h4>'+eduHTML:'')+(certs?'<h4 style="color:'+ac+'">Certifications</h4><p style="font-size:.9em">'+escH(certs)+'</p>':'')+(langs?'<h4 style="color:'+ac+'">Languages</h4><p style="font-size:.9em">'+escH(langs)+'</p>':'')+'</div>';}
+  document.getElementById('livePreview').innerHTML=html;}
+function printResume(){updatePreview();window.print();}
 
 async function genResume(){
-  const v=id=>document.getElementById(id).value.trim();
-  const tmpl=document.getElementById("template").value;
-  const acHex=document.getElementById("accentColor").value;
-  const acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;
-  const doc=await PDFLib.PDFDocument.create();
-  const pg=doc.addPage([595,842]);
-  const f=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
-  const b=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-  const serif=await doc.embedFont(PDFLib.StandardFonts.TimesRoman);
-  const serifB=await doc.embedFont(PDFLib.StandardFonts.TimesRomanBold);
-  const accent=PDFLib.rgb(acR,acG,acB);const dark=PDFLib.rgb(0.1,0.1,0.15);const gray=PDFLib.rgb(0.4,0.4,0.45);const white=PDFLib.rgb(1,1,1);
-  let y=790;
-  // Embed photo if provided
+  var v=function(id){return document.getElementById(id).value.trim();};
+  var tmpl=document.getElementById("template").value;var acHex=document.getElementById("accentColor").value;
+  var acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;
+  var doc=await PDFLib.PDFDocument.create();var pg=doc.addPage([595,842]);
+  var f=await doc.embedFont(PDFLib.StandardFonts.Helvetica);var b=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  var accent=PDFLib.rgb(acR,acG,acB);var dark=PDFLib.rgb(0.1,0.1,0.15);var gray=PDFLib.rgb(0.4,0.4,0.45);var white=PDFLib.rgb(1,1,1);var y=790;
   var photoImg=null;var photoData=await getPhotoBytes();
-  if(photoData){try{photoImg=photoData.type==='png'?await doc.embedPng(photoData.bytes):await doc.embedJpg(photoData.bytes)}catch(e){}}
-  // Draw circular clipped photo helper
-  const drawPhoto=(cx,cy,r)=>{if(!photoImg)return;var dim=photoImg.scale(1);var aspect=dim.width/dim.height;var drawW=r*2,drawH=r*2;pg.drawCircle({x:cx,y:cy,size:r,color:PDFLib.rgb(.9,.9,.9)});pg.drawImage(photoImg,{x:cx-r,y:cy-r,width:drawW,height:drawH})};
-  const t=(s,x,yy,font,sz,col)=>{if(!s)return yy;pg.drawText(s,{x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy};
-  const wrapText=(s,x,yy,font,sz,maxW,col)=>{if(!s)return yy;var words=s.split(' ');var ln='';words.forEach(function(w){if((font||f).widthOfTextAtSize(ln+' '+w,sz||10)>maxW){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);ln=w}else ln+=(ln?' ':'')+w});if(ln){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4)}return yy};
-  const line=yy=>{pg.drawLine({start:{x:50,y:yy},end:{x:545,y:yy},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-15};
-  const section=(title,yy,sx,ex,fnt,col)=>{yy-=10;t(title,sx||50,yy,fnt||b,13,col||accent);pg.drawLine({start:{x:sx||50,y:yy-5},end:{x:ex||545,y:yy-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-20};
-
-  var contentX=50,contentW=490;
-
-  // Template: Creative — colored sidebar with photo and skills bars
-  if(tmpl==="creative"){
-    var sideW=180;
-    pg.drawRectangle({x:0,y:0,width:sideW,height:842,color:accent});
-    // Photo in sidebar
-    drawPhoto(90,770,40);
-    var sy=710;
-    t(v('name')||'Your Name',15,sy,b,14,white);sy-=18;
-    t(v('title')||'',15,sy,f,10,white);sy-=22;
-    // Contact in sidebar
-    [v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).forEach(function(c){t(c,15,sy,f,8,white);sy-=14});
-    sy-=10;
-    // Skills bars in sidebar
-    var allSkills=ratedSkills.slice();
-    if(v('skills')){v('skills').split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3})})}
-    if(allSkills.length){t('SKILLS',15,sy,b,11,white);sy-=16;
-      allSkills.forEach(function(s){t(s.name,15,sy,f,8,white);sy-=12;
-        pg.drawRectangle({x:15,y:sy,width:150,height:6,color:PDFLib.rgb(.7,.7,.75)});
-        pg.drawRectangle({x:15,y:sy,width:150*(s.rating/5),height:6,color:white});sy-=14});
-    }
-    // Languages in sidebar
-    if(v('languages')){sy-=10;t('LANGUAGES',15,sy,b,11,white);sy-=16;t(v('languages'),15,sy,f,8,white)}
-    // Main content area
-    contentX=200;contentW=370;y=800;
-    // Summary
-    if(v('summary')){y=section('SUMMARY',y,contentX,565,b,accent);y=wrapText(v('summary'),contentX,y,f,10,contentW)}
-    // Experience
-    var exps=document.querySelectorAll('#exp > div');
-    if(exps.length){y=section('EXPERIENCE',y,contentX,565,b,accent);
-      exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');
-        t(inp[1]?.value||'',contentX,y,b,11);t(inp[2]?.value||'',480,y,f,9,gray);y-=14;
-        t(inp[0]?.value||'',contentX,y,f,10,gray);y-=14;
-        if(ta?.value){y=wrapText('• '+ta.value.replace(/\n/g,'\n• '),contentX+5,y,f,9,contentW-10)}y-=6})}
-    // Education
-    var edus=document.querySelectorAll('#edu > div');
-    if(edus.length){y=section('EDUCATION',y,contentX,565,b,accent);
-      edus.forEach(function(e){var inp=e.querySelectorAll('input');
-        t(inp[1]?.value||'',contentX,y,b,11);t(inp[2]?.value||'',480,y,f,9,gray);y-=14;
-        t((inp[0]?.value||'')+(inp[3]?.value?' — '+inp[3].value:''),contentX,y,f,10,gray);y-=18})}
-    // Certifications
-    if(v('certs')){y=section('CERTIFICATIONS',y,contentX,565,b,accent);y=wrapText(v('certs'),contentX,y,f,10,contentW)}
-  }
-  // Template: Executive — dark header bar, serif font
-  else if(tmpl==="executive"){
-    pg.drawRectangle({x:0,y:780,width:595,height:62,color:dark});
-    t(v('name')||'Your Name',50,810,serifB,24,white);
-    t(v('title')||'',50,792,serif,12,PDFLib.rgb(.8,.8,.85));
-    drawPhoto(535,810,25);
-    y=770;
-    var contact=[v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).join('  |  ');
-    t(contact,50,y,serif,9,gray);y-=15;y=line(y);
-  }
-  // Template: Modern — blue header bar
-  else if(tmpl==="modern"){pg.drawRectangle({x:0,y:770,width:595,height:72,color:accent});
-    t(v('name')||'Your Name',50,810,b,24,white);y=800;
-    t(v('title')||'',50,790,f,12,white);y=775;
-    drawPhoto(535,810,25);
-    var contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
-    t(contact,50,y,f,9,white);y=755;y=line(y);
-  }
-  // Template: Classic
-  else if(tmpl==="classic"){
+  if(photoData){try{photoImg=photoData.type==='png'?await doc.embedPng(photoData.bytes):await doc.embedJpg(photoData.bytes);}catch(e){}}
+  var drawPhoto=function(cx,cy,r){if(!photoImg)return;pg.drawImage(photoImg,{x:cx-r,y:cy-r,width:r*2,height:r*2});};
+  var t=function(s,x,yy,font,sz,col){if(!s)return yy;pg.drawText(s,{x:x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy;};
+  var wrapText=function(s,x,yy,font,sz,maxW,col){if(!s)return yy;var words=s.split(' ');var ln='';words.forEach(function(w){if((font||f).widthOfTextAtSize(ln+' '+w,sz||10)>maxW){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);ln=w;}else{ln+=(ln?' ':'')+w;}});if(ln){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);}return yy;};
+  var section=function(title,yy){yy-=10;t(title,50,yy,b,13,accent);pg.drawLine({start:{x:50,y:yy-5},end:{x:545,y:yy-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-20;};
+  var allSkills=ratedSkills.slice();if(v('skills')){v('skills').split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});}
+  if(tmpl==='modern'){
+    var sideW=180;pg.drawRectangle({x:0,y:0,width:sideW,height:842,color:accent});drawPhoto(90,780,35);var sy=730;
+    t(v('name')||'Your Name',15,sy,b,13,white);sy-=16;t(v('title')||'',15,sy,f,9,white);sy-=20;
+    [v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).forEach(function(c){t(c,15,sy,f,8,white);sy-=13;});sy-=10;
+    if(allSkills.length){t('SKILLS',15,sy,b,10,white);sy-=14;allSkills.forEach(function(s){t(s.name,15,sy,f,8,white);sy-=11;pg.drawRectangle({x:15,y:sy,width:150,height:5,color:PDFLib.rgb(.7,.7,.75)});pg.drawRectangle({x:15,y:sy,width:150*(s.rating/5),height:5,color:white});sy-=12;});}
+    if(v('languages')){sy-=8;t('LANGUAGES',15,sy,b,10,white);sy-=14;t(v('languages'),15,sy,f,8,white);}
+    var cx=200,cw=370;y=800;
+    if(v('summary')){t('SUMMARY',cx,y,b,13,accent);pg.drawLine({start:{x:cx,y:y-5},end:{x:565,y:y-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});y-=20;y=wrapText(v('summary'),cx,y,f,10,cw);}
+    var exps=document.querySelectorAll('#exp > div');if(exps.length){y-=10;t('EXPERIENCE',cx,y,b,13,accent);pg.drawLine({start:{x:cx,y:y-5},end:{x:565,y:y-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});y-=20;exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()){t(inp[1]?inp[1].value:'',cx,y,b,11);t(inp[2]?inp[2].value:'',490,y,f,9,gray);y-=14;t(inp[0].value,cx,y,f,10,gray);y-=14;if(ta&&ta.value){y=wrapText(ta.value,cx+5,y,f,9,cw-10);}y-=6;}});}
+    var edus=document.querySelectorAll('#edu > div');if(edus.length){y-=10;t('EDUCATION',cx,y,b,13,accent);pg.drawLine({start:{x:cx,y:y-5},end:{x:565,y:y-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});y-=20;edus.forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()){t(inp[1]?inp[1].value:'',cx,y,b,11);t(inp[2]?inp[2].value:'',490,y,f,9,gray);y-=14;t(inp[0].value+(inp[3]&&inp[3].value?' \u2014 '+inp[3].value:''),cx,y,f,10,gray);y-=18;}});}
+    if(v('certs')){y-=10;t('CERTIFICATIONS',cx,y,b,13,accent);y-=20;y=wrapText(v('certs'),cx,y,f,10,cw);}
+  }else if(tmpl==='ats'){
+    t(v('name')||'Your Name',50,y,b,20,dark);y-=20;t(v('title')||'',50,y,f,12,gray);y-=16;
+    var contact=[v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).join(' | ');t(contact,50,y,f,9,gray);y-=10;
+    pg.drawLine({start:{x:50,y:y},end:{x:545,y:y},thickness:1,color:PDFLib.rgb(.5,.5,.5)});y-=20;
+    if(v('summary')){t('PROFESSIONAL SUMMARY',50,y,b,12,dark);y-=16;y=wrapText(v('summary'),50,y,f,10,490);}
+    if(allSkills.length){y-=5;t('SKILLS',50,y,b,12,dark);y-=16;y=wrapText(allSkills.map(function(s){return s.name;}).join(', '),50,y,f,10,490);}
+    var exps=document.querySelectorAll('#exp > div');if(exps.length){y-=5;t('WORK EXPERIENCE',50,y,b,12,dark);y-=16;exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()){t((inp[1]?inp[1].value:'')+' \u2014 '+inp[0].value,50,y,b,10);t(inp[2]?inp[2].value:'',450,y,f,9,gray);y-=14;if(ta&&ta.value){y=wrapText(ta.value,55,y,f,9,480);}y-=6;}});}
+    var edus=document.querySelectorAll('#edu > div');if(edus.length){y-=5;t('EDUCATION',50,y,b,12,dark);y-=16;edus.forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()){t((inp[1]?inp[1].value:'')+' \u2014 '+inp[0].value,50,y,b,10);t((inp[2]?inp[2].value:'')+(inp[3]&&inp[3].value?' | '+inp[3].value:''),450,y,f,9,gray);y-=18;}});}
+    if(v('certs')){y-=5;t('CERTIFICATIONS',50,y,b,12,dark);y-=16;y=wrapText(v('certs'),50,y,f,10,490);}
+    if(v('languages')){y-=5;t('LANGUAGES',50,y,b,12,dark);y-=16;t(v('languages'),50,y,f,10);}
+  }else{
     drawPhoto(535,800,25);
-    t(v('name')||'Your Name',50,y,b,22,accent);y-=20;
-    t(v('title')||'',50,y,f,12,gray);y-=18;
-    var contact=[v('email'),v('phone'),v('location')].filter(Boolean).join('  |  ');
-    t(contact,50,y,f,9,gray);y-=10;
-    var links=[v('linkedin'),v('portfolio')].filter(Boolean).join('  |  ');
-    if(links){t(links,50,y,f,8,accent);y-=10}
-    y=line(y);
+    if(tmpl==='minimal'){t(v('name')||'Your Name',50,y,b,20,dark);y-=18;t(v('title')||'',50,y,f,11,gray);y-=16;}
+    else{t(v('name')||'Your Name',50,y,b,22,accent);y-=20;t(v('title')||'',50,y,f,12,gray);y-=18;}
+    var contact=[v('email'),v('phone'),v('location')].filter(Boolean).join(' | ');t(contact,50,y,f,9,gray);y-=10;
+    var links=[v('linkedin'),v('portfolio')].filter(Boolean).join(' | ');if(links){t(links,50,y,f,8,accent);y-=10;}
+    pg.drawLine({start:{x:50,y:y},end:{x:545,y:y},thickness:1,color:PDFLib.rgb(.85,.85,.9)});y-=15;
+    if(v('summary')){y=section('SUMMARY',y);y=wrapText(v('summary'),50,y,f,10,490);}
+    if(allSkills.length){y=section('SKILLS',y);allSkills.forEach(function(s){t(s.name,50,y,f,10);for(var i=0;i<5;i++){pg.drawCircle({x:200+i*12,y:y+3,size:4,color:i<s.rating?accent:PDFLib.rgb(.82,.82,.85)});}y-=16;});}
+    var exps=document.querySelectorAll('#exp > div');if(exps.length){y=section('EXPERIENCE',y);exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()){t(inp[1]?inp[1].value:'',50,y,b,11);t(inp[2]?inp[2].value:'',430,y,f,9,gray);y-=14;t(inp[0].value,50,y,f,10,gray);y-=14;if(ta&&ta.value){y=wrapText(ta.value,55,y,f,9,480);}y-=6;}});}
+    var edus=document.querySelectorAll('#edu > div');if(edus.length){y=section('EDUCATION',y);edus.forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()){t(inp[1]?inp[1].value:'',50,y,b,11);t(inp[2]?inp[2].value:'',430,y,f,9,gray);y-=14;t(inp[0].value+(inp[3]&&inp[3].value?' \u2014 '+inp[3].value:''),50,y,f,10,gray);y-=18;}});}
+    if(v('certs')){y=section('CERTIFICATIONS',y);y=wrapText(v('certs'),50,y,f,10,490);}
+    if(v('languages')){y=section('LANGUAGES',y);t(v('languages'),50,y,f,10);y-=14;}
   }
-  // Template: Minimal
-  else{
-    drawPhoto(535,800,25);
-    t(v('name')||'Your Name',50,y,b,20,dark);y-=18;
-    t(v('title')||'',50,y,f,11,gray);y-=16;
-    var contact=[v('email'),v('phone'),v('location'),v('linkedin'),v('portfolio')].filter(Boolean).join(' • ');
-    t(contact,50,y,f,8,gray);y-=10;y=line(y);
-  }
-
-  // Shared body content for non-creative templates
-  if(tmpl!=="creative"){
-    var bodyFont=tmpl==='executive'?serif:f;
-    var bodyBold=tmpl==='executive'?serifB:b;
-    // Summary
-    if(v('summary')){y=section('SUMMARY',y,50,545,bodyBold,accent);y=wrapText(v('summary'),50,y,bodyFont,10,490)}
-    // Skills with rating dots
-    var allSkills=ratedSkills.slice();
-    if(v('skills')){v('skills').split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3})})}
-    if(allSkills.length){y=section('SKILLS',y,50,545,bodyBold,accent);
-      allSkills.forEach(function(s){
-        t(s.name,50,y,bodyFont,10);
-        for(var i=0;i<5;i++){pg.drawCircle({x:200+i*12,y:y+3,size:4,color:i<s.rating?accent:PDFLib.rgb(.82,.82,.85)})}
-        y-=16;
-      });
-    }
-    // Experience
-    var exps=document.querySelectorAll('#exp > div');
-    if(exps.length){y=section('EXPERIENCE',y,50,545,bodyBold,accent);
-      exps.forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');
-        t(inp[1]?.value||'',50,y,bodyBold,11);t(inp[2]?.value||'',430,y,bodyFont,9,gray);y-=14;
-        t(inp[0]?.value||'',50,y,bodyFont,10,gray);y-=14;
-        if(ta?.value){y=wrapText('• '+ta.value.replace(/\n/g,'\n• '),55,y,bodyFont,9,480)}y-=6})}
-    // Education
-    var edus=document.querySelectorAll('#edu > div');
-    if(edus.length){y=section('EDUCATION',y,50,545,bodyBold,accent);
-      edus.forEach(function(e){var inp=e.querySelectorAll('input');
-        t(inp[1]?.value||'',50,y,bodyBold,11);t(inp[2]?.value||'',430,y,bodyFont,9,gray);y-=14;
-        t((inp[0]?.value||'')+(inp[3]?.value?' — '+inp[3].value:''),50,y,bodyFont,10,gray);y-=18})}
-    // Certifications
-    if(v('certs')){y=section('CERTIFICATIONS',y,50,545,bodyBold,accent);y=wrapText(v('certs'),50,y,bodyFont,10,490)}
-    // Languages
-    if(v('languages')){y=section('LANGUAGES',y,50,545,bodyBold,accent);t(v('languages'),50,y,bodyFont,10);y-=14}
-  }
-
-  var blob=new Blob([await doc.save()],{type:'application/pdf'});
-  download(blob,'resume.pdf');
-  document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>✅ Resume downloaded! Template: "+tmpl+"</p>";
-}
+  var blob=new Blob([await doc.save()],{type:'application/pdf'});download(blob,'resume.pdf');
+  document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>\u2705 Resume downloaded! Template: "+tmpl+"</p>";}
+loadSaved();if(!document.querySelectorAll('#exp > div').length)addExp();if(!document.querySelectorAll('#edu > div').length)addEdu();calcATS();updatePreview();
   </script>
 </body>
 </html>
