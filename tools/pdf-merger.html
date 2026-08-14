@@ -40,11 +40,16 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>📄 Merge PDF Files Online</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="6" fill="none" stroke="#4f8cff" stroke-width="3"/><path d="M120,10 L145,35 H120 Z" fill="#4f8cff" opacity=".3"/><line x1="75" y1="50" x2="125" y2="50" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="65" x2="125" y2="65" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="80" x2="110" y2="80" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Combine multiple PDF files into one. Drag and drop or click to add files.</p>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="6" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M120,10 L145,35 H120 Z" fill="#6366f1" opacity=".3"/><line x1="75" y1="50" x2="125" y2="50" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="65" x2="125" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="80" x2="110" y2="80" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <p class="info">Combine multiple PDF files into one. Drag and drop or click to add files. Reorder, set page ranges, and merge.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF files here or click to browse<input type="file" id="inp" accept=".pdf" multiple></div>
-      <ul id="pdfList"></ul>
-      <button class="btn" onclick="merge()" id="mergeBtn" disabled>Merge All PDFs</button>
+      <div id="pdfCards" style="margin:1rem 0"></div>
+      <div class="row" id="actionRow" style="display:none;justify-content:space-between">
+        <button class="btn btn-outline" onclick="document.getElementById('inp2').click()" style="font-size:.85rem">➕ Add More Files<input type="file" id="inp2" accept=".pdf" multiple style="display:none"></button>
+        <button class="btn btn-outline" onclick="clearAll()" style="font-size:.85rem;border-color:#f44336;color:#f44336">🗑️ Clear All</button>
+      </div>
+      <div id="totalInfo" class="info" style="margin:.5rem 0;font-weight:600"></div>
+      <button class="btn" onclick="merge()" id="mergeBtn" disabled style="width:100%">Merge All PDFs</button>
       <div id="result"></div>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How to merge PDF files?</summary><p>Click the upload area, select multiple PDF files, then click Merge. Your combined PDF will download automatically.</p></details>
@@ -86,7 +91,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -102,11 +107,204 @@
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="../js/common.js"></script>
-  <script>let files=[];
-setupDrop("drop","inp",f=>{for(const x of f)files.push(x);render()});
-function render(){document.getElementById("pdfList").innerHTML=files.map((f,i)=>'<li style="background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;align-items:center;gap:.5rem"><span style="flex:1">'+f.name+' ('+formatSize(f.size)+')</span><button onclick="moveFile('+i+',-1)" style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:.2rem .4rem" title="Move up">▲</button><button onclick="moveFile('+i+',1)" style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:.2rem .4rem" title="Move down">▼</button><button onclick="files.splice('+i+',1);render()" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">✕</button></li>').join("");document.getElementById("mergeBtn").disabled=files.length<2}
-function moveFile(i,dir){var j=i+dir;if(j<0||j>=files.length)return;var t=files[i];files[i]=files[j];files[j]=t;render()}
-async function merge(){const m=await PDFLib.PDFDocument.create();for(const f of files){const d=await PDFLib.PDFDocument.load(await f.arrayBuffer());(await m.copyPages(d,d.getPageIndices())).forEach(p=>m.addPage(p))}download(new Blob([await m.save()],{type:"application/pdf"}),"merged.pdf");document.getElementById("result").innerHTML="<p class='info' style='color:#4caf50'>✅ Merged PDF downloaded!</p>"}</script>
+  <script>
+var pdfItems = [];
+var dragSrcIdx = null;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+setupDrop("drop", "inp", function(f) { addFiles(f); });
+document.getElementById('inp2').addEventListener('change', function() { addFiles(this.files); this.value = ''; });
+
+async function addFiles(fileList) {
+  if (!checkFileSize(fileList)) return;
+  for (var i = 0; i < fileList.length; i++) {
+    var f = fileList[i];
+    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) continue;
+    var ab = await f.arrayBuffer();
+    var pdfDoc = await PDFLib.PDFDocument.load(ab);
+    var pageCount = pdfDoc.getPageCount();
+    var thumbUrl = await renderThumb(ab);
+    pdfItems.push({ file: f, pageCount: pageCount, thumbUrl: thumbUrl, pageRange: '' });
+  }
+  render();
+}
+
+async function renderThumb(arrayBuffer) {
+  try {
+    var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+    var page = await pdf.getPage(1);
+    var vp = page.getViewport({ scale: 0.3 });
+    var canvas = document.createElement('canvas');
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    var ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    return canvas.toDataURL();
+  } catch (e) {
+    return '';
+  }
+}
+
+function render() {
+  var container = document.getElementById('pdfCards');
+  var html = '';
+  for (var i = 0; i < pdfItems.length; i++) {
+    var item = pdfItems[i];
+    html += '<div class="pdf-card" draggable="true" data-idx="' + i + '" style="background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:.8rem;margin:.5rem 0;display:flex;align-items:center;gap:.8rem;cursor:grab;transition:all .2s">';
+    html += '<div style="flex-shrink:0;width:50px;height:65px;border-radius:6px;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center">';
+    if (item.thumbUrl) {
+      html += '<img src="' + item.thumbUrl + '" style="width:100%;height:100%;object-fit:cover" alt="Preview">';
+    } else {
+      html += '<span style="font-size:1.5rem">📄</span>';
+    }
+    html += '</div>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.file.name + '</div>';
+    html += '<div style="font-size:.78rem;color:var(--text2)">' + formatSize(item.file.size) + ' · ' + item.pageCount + ' page' + (item.pageCount > 1 ? 's' : '') + '</div>';
+    html += '<input type="text" data-range="' + i + '" value="' + (item.pageRange || '') + '" placeholder="Pages: all (or 1-3,5)" style="width:100%;max-width:180px;font-size:.75rem;padding:.3rem .5rem;margin-top:.3rem;border-radius:6px">';
+    html += '</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">';
+    html += '<button onclick="moveItem(' + i + ',-1)" class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem;margin:0" title="Move up">▲</button>';
+    html += '<button onclick="moveItem(' + i + ',1)" class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem;margin:0" title="Move down">▼</button>';
+    html += '</div>';
+    html += '<button onclick="removeItem(' + i + ')" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.3rem;flex-shrink:0" title="Remove">×</button>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+  document.getElementById('actionRow').style.display = pdfItems.length > 0 ? 'flex' : 'none';
+  document.getElementById('mergeBtn').disabled = pdfItems.length < 2;
+  updateTotalInfo();
+  attachDragListeners();
+  attachRangeListeners();
+}
+
+function attachRangeListeners() {
+  document.querySelectorAll('[data-range]').forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      var idx = parseInt(this.getAttribute('data-range'));
+      pdfItems[idx].pageRange = this.value.trim();
+      updateTotalInfo();
+    });
+  });
+}
+
+function updateTotalInfo() {
+  var total = 0;
+  for (var i = 0; i < pdfItems.length; i++) {
+    var item = pdfItems[i];
+    if (item.pageRange) {
+      total += parseRange(item.pageRange, item.pageCount).length;
+    } else {
+      total += item.pageCount;
+    }
+  }
+  document.getElementById('totalInfo').textContent = pdfItems.length + ' file' + (pdfItems.length !== 1 ? 's' : '') + ' · Estimated output: ' + total + ' pages';
+}
+
+function parseRange(str, max) {
+  var pages = [];
+  str.split(',').forEach(function(part) {
+    part = part.trim();
+    if (!part) return;
+    if (part.indexOf('-') > -1) {
+      var ab = part.split('-').map(Number);
+      var start = Math.max(1, ab[0]);
+      var end = Math.min(max, ab[1]);
+      for (var p = start; p <= end; p++) pages.push(p - 1);
+    } else {
+      var n = parseInt(part);
+      if (n >= 1 && n <= max) pages.push(n - 1);
+    }
+  });
+  return pages;
+}
+
+function moveItem(i, dir) {
+  var j = i + dir;
+  if (j < 0 || j >= pdfItems.length) return;
+  var tmp = pdfItems[i];
+  pdfItems[i] = pdfItems[j];
+  pdfItems[j] = tmp;
+  render();
+}
+
+function removeItem(i) {
+  if (pdfItems[i].thumbUrl) URL.revokeObjectURL(pdfItems[i].thumbUrl);
+  pdfItems.splice(i, 1);
+  render();
+}
+
+function clearAll() {
+  pdfItems.forEach(function(item) { if (item.thumbUrl) URL.revokeObjectURL(item.thumbUrl); });
+  pdfItems = [];
+  render();
+  document.getElementById('result').innerHTML = '';
+}
+
+function attachDragListeners() {
+  var cards = document.querySelectorAll('.pdf-card');
+  cards.forEach(function(card) {
+    card.addEventListener('dragstart', function(e) {
+      dragSrcIdx = parseInt(this.getAttribute('data-idx'));
+      this.style.opacity = '0.4';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function() {
+      this.style.opacity = '1';
+      document.querySelectorAll('.pdf-card').forEach(function(c) { c.style.borderTop = ''; });
+    });
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.style.borderTop = '2px solid var(--accent)';
+    });
+    card.addEventListener('dragleave', function() {
+      this.style.borderTop = '';
+    });
+    card.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.style.borderTop = '';
+      var targetIdx = parseInt(this.getAttribute('data-idx'));
+      if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+      var moved = pdfItems.splice(dragSrcIdx, 1)[0];
+      pdfItems.splice(targetIdx, 0, moved);
+      dragSrcIdx = null;
+      render();
+    });
+  });
+}
+
+async function merge() {
+  if (pdfItems.length < 2) return alert('Add at least 2 PDF files');
+  document.getElementById('mergeBtn').disabled = true;
+  document.getElementById('mergeBtn').textContent = 'Merging...';
+  try {
+    var merged = await PDFLib.PDFDocument.create();
+    for (var i = 0; i < pdfItems.length; i++) {
+      var item = pdfItems[i];
+      var src = await PDFLib.PDFDocument.load(await item.file.arrayBuffer());
+      var indices;
+      if (item.pageRange) {
+        indices = parseRange(item.pageRange, src.getPageCount());
+      } else {
+        indices = src.getPageIndices();
+      }
+      var copied = await merged.copyPages(src, indices);
+      copied.forEach(function(p) { merged.addPage(p); });
+    }
+    var pdfBytes = await merged.save();
+    var blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    download(blob, 'merged.pdf');
+    document.getElementById('result').innerHTML = '<p class="info" style="color:#4caf50">✅ Merged PDF downloaded! ' + merged.getPageCount() + ' pages · ' + formatSize(pdfBytes.length) + '</p>';
+  } catch (err) {
+    document.getElementById('result').innerHTML = '<p style="color:#f44336">❌ Error: ' + err.message + '</p>';
+  }
+  document.getElementById('mergeBtn').disabled = false;
+  document.getElementById('mergeBtn').textContent = 'Merge All PDFs';
+}
+</script>
 </body>
 </html>

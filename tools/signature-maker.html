@@ -27,8 +27,33 @@
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/signature-maker">
   <link rel="stylesheet" href="../css/style.css">
-  <style>@import url('https://fonts.googleapis.com/css2?family=Caveat&family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Satisfy&display=swap');</style>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Caveat&family=Dancing+Script&family=Great+Vibes&family=Sacramento&family=Satisfy&display=swap');</style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .mode-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+    .mode-tabs button{flex:1;min-width:100px}
+    .mode-tabs button.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .mode-panel{display:none}
+    .mode-panel.active{display:block}
+    .color-swatches{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+    .color-swatches button{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:border-color .2s,transform .15s}
+    .color-swatches button.active{border-color:var(--accent);transform:scale(1.15)}
+    .canvas-wrap{position:relative;margin:1rem 0}
+    .canvas-wrap canvas{width:100%;border-radius:var(--radius);cursor:crosshair;touch-action:none;border:2px dashed var(--border,rgba(255,255,255,.15))}
+    .checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+    .upload-zone{border:2px dashed var(--border,rgba(255,255,255,.15));border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:border-color .2s}
+    .upload-zone:hover{border-color:var(--accent)}
+    .output-options{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:1rem}
+    @media(max-width:500px){.output-options{grid-template-columns:1fr}}
+    .output-options .opt-item{display:flex;flex-direction:column;gap:.3rem}
+    .output-options .opt-item label{font-size:.8rem;color:var(--text2)}
+    .output-options .opt-item select{padding:.4rem;border-radius:var(--radius);border:1px solid var(--border,rgba(255,255,255,.1));background:var(--card);color:var(--text);font-size:.85rem}
+    .preset-sizes{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+    .preset-sizes button{font-size:.75rem;padding:.3rem .6rem;border-radius:var(--radius);border:1px solid var(--border,rgba(255,255,255,.1));background:var(--card);color:var(--text);cursor:pointer}
+    .preset-sizes button:hover{background:var(--accent);color:#fff}
+    .threshold-row{display:flex;align-items:center;gap:.8rem;margin:.8rem 0;flex-wrap:wrap}
+    .threshold-row label{font-size:.85rem;color:var(--text2)}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -37,27 +62,117 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>✍️ Digital Signature Maker</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Draw your signature below. Download as transparent PNG.</p>
-      <div class="row" style="margin-bottom:.5rem"><button class="btn" onclick="setSignMode('draw')" id="mDraw">✏️ Draw</button><button class="btn btn-outline" onclick="setSignMode('type')" id="mType">⌨️ Type</button></div>
-      <div id="typeMode" style="display:none;margin-bottom:.5rem">
-        <input type="text" id="typedName" placeholder="Type your name..." oninput="renderTyped()" style="font-size:1.2rem;text-align:center">
-        <div class="row"><label>Font:</label><select id="signFont" onchange="renderTyped()"><option value="'Dancing Script',cursive">Dancing Script</option><option value="'Great Vibes',cursive">Great Vibes</option><option value="'Pacifico',cursive">Pacifico</option><option value="'Caveat',cursive">Caveat</option><option value="'Satisfy',cursive">Satisfy</option></select></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <p class="info">Create professional digital signatures — draw, type, or upload. Download as transparent PNG or white-background JPG.</p>
+
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button class="btn active" id="tabDraw" onclick="switchMode('draw')">✏️ Draw</button>
+        <button class="btn btn-outline" id="tabType" onclick="switchMode('type')">⌨️ Type</button>
+        <button class="btn btn-outline" id="tabUpload" onclick="switchMode('upload')">📷 Upload</button>
       </div>
-      <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap">
-        <label>Color:</label>
-        <input type="color" id="penColor" value="#000000" style="width:40px;height:35px;border:none;cursor:pointer">
-        <label>Thickness:</label>
-        <input type="range" id="penSize" min="1" max="8" value="3" style="flex:1;max-width:150px">
-        <label>Background:</label>
-        <select id="bgType"><option value="transparent">Transparent</option><option value="white">White</option></select>
+
+      <!-- DRAW MODE -->
+      <div class="mode-panel active" id="panelDraw">
+        <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap;gap:.6rem;align-items:center">
+          <label style="font-size:.85rem">Ink Color:</label>
+          <div class="color-swatches" id="colorSwatches">
+            <button style="background:#000000" data-color="#000000" class="active" title="Black" onclick="setInkColor('#000000')"></button>
+            <button style="background:#1e3a5f" data-color="#1e3a5f" title="Dark Blue" onclick="setInkColor('#1e3a5f')"></button>
+            <button style="background:#2563eb" data-color="#2563eb" title="Blue" onclick="setInkColor('#2563eb')"></button>
+          </div>
+          <label style="font-size:.85rem;margin-left:.5rem">Width:</label>
+          <input type="range" id="penSize" min="1" max="8" value="3" style="width:100px">
+          <span id="penSizeVal" style="font-size:.75rem;color:var(--text2)">3px</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="drawCanvas" width="700" height="250" style="background:#fff"></canvas>
+        </div>
+        <div class="row" style="margin-top:.6rem;gap:.5rem;flex-wrap:wrap">
+          <button class="btn" onclick="undoDraw()">↩ Undo</button>
+          <button class="btn" onclick="clearDraw()">🗑 Clear</button>
+        </div>
       </div>
-      <canvas id="canvas" width="700" height="250" style="width:100%;background:#fff;border-radius:12px;cursor:crosshair;touch-action:none;border:2px dashed var(--border)"></canvas>
-      <div class="row" style="margin-top:.8rem">
-        <button class="btn" onclick="clearCanvas()">Clear</button>
-        <button class="btn" onclick="undo()">Undo</button>
-        <button class="btn" onclick="downloadSig()">Download PNG</button>
+
+      <!-- TYPE MODE -->
+      <div class="mode-panel" id="panelType">
+        <input type="text" id="typedName" placeholder="Type your name..." oninput="renderTyped()" style="font-size:1.2rem;text-align:center;width:100%;padding:.7rem;border-radius:var(--radius);border:1px solid var(--border,rgba(255,255,255,.1));background:var(--card);color:var(--text);margin-bottom:.8rem">
+        <div class="row" style="flex-wrap:wrap;gap:.8rem;margin-bottom:.8rem">
+          <div style="display:flex;flex-direction:column;gap:.3rem">
+            <label style="font-size:.8rem;color:var(--text2)">Font</label>
+            <select id="signFont" onchange="renderTyped()" style="padding:.4rem;border-radius:var(--radius);border:1px solid var(--border,rgba(255,255,255,.1));background:var(--card);color:var(--text)">
+              <option value="'Dancing Script',cursive">Dancing Script</option>
+              <option value="'Great Vibes',cursive">Great Vibes</option>
+              <option value="'Sacramento',cursive">Sacramento</option>
+              <option value="'Caveat',cursive">Caveat</option>
+              <option value="'Satisfy',cursive">Satisfy</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.3rem">
+            <label style="font-size:.8rem;color:var(--text2)">Size</label>
+            <input type="range" id="typeSize" min="30" max="100" value="60" oninput="renderTyped()" style="width:120px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.3rem">
+            <label style="font-size:.8rem;color:var(--text2)">Color</label>
+            <div class="color-swatches">
+              <button style="background:#000000;width:26px;height:26px" data-tcolor="#000000" class="active" onclick="setTypeColor('#000000')"></button>
+              <button style="background:#1e3a5f;width:26px;height:26px" data-tcolor="#1e3a5f" onclick="setTypeColor('#1e3a5f')"></button>
+              <button style="background:#2563eb;width:26px;height:26px" data-tcolor="#2563eb" onclick="setTypeColor('#2563eb')"></button>
+            </div>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="typeCanvas" width="700" height="250" style="background:#fff"></canvas>
+        </div>
       </div>
+
+      <!-- UPLOAD MODE -->
+      <div class="mode-panel" id="panelUpload">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('uploadInp').click()">
+          <p style="margin:0;font-size:1rem">📷 Click or drop a photo of your signature</p>
+          <p style="margin:.3rem 0 0;font-size:.8rem;color:var(--text2)">White/light background will be removed automatically</p>
+          <input type="file" id="uploadInp" accept="image/*" style="display:none">
+        </div>
+        <div class="threshold-row" id="thresholdRow" style="display:none">
+          <label>Background threshold:</label>
+          <input type="range" id="bgThreshold" min="100" max="255" value="220" oninput="processUpload()" style="flex:1;max-width:200px">
+          <span id="threshVal" style="font-size:.8rem;color:var(--text2)">220</span>
+        </div>
+        <div class="canvas-wrap" id="uploadPreviewWrap" style="display:none">
+          <canvas id="uploadCanvas" width="700" height="250" class="checkerboard"></canvas>
+        </div>
+      </div>
+
+      <!-- Output Options -->
+      <h3 style="margin-top:1.2rem;font-size:1rem">📐 Output Options</h3>
+      <div class="output-options">
+        <div class="opt-item">
+          <label>Output Size</label>
+          <select id="outputSize">
+            <option value="auto">Auto-crop (fit to signature)</option>
+            <option value="140x60">140 × 60 px (Govt forms)</option>
+            <option value="300x80">300 × 80 px (Standard)</option>
+            <option value="500x200">500 × 200 px (Large)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="opt-item">
+          <label>Padding</label>
+          <select id="outputPadding">
+            <option value="10">Small (10px)</option>
+            <option value="20" selected>Medium (20px)</option>
+            <option value="40">Large (40px)</option>
+            <option value="0">None</option>
+          </select>
+        </div>
+      </div>
+      <p style="font-size:.75rem;color:var(--text2);margin-top:.4rem">💡 Tip: Government forms typically need &lt;30 KB file size. Use smaller presets and JPG format.</p>
+
+      <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
+        <button class="btn" onclick="downloadSig('png')">⬇️ Download PNG (transparent)</button>
+        <button class="btn" onclick="downloadSig('jpg')">⬇️ Download JPG (white bg)</button>
+      </div>
+      <div id="downloadResult"></div>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -102,7 +217,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -119,26 +234,280 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
-var signMode="draw";
-function setSignMode(m){signMode=m;document.getElementById("mDraw").className=m==="draw"?"btn":"btn btn-outline";document.getElementById("mType").className=m==="type"?"btn":"btn btn-outline";document.getElementById("typeMode").style.display=m==="type"?"block":"none";canvas.style.cursor=m==="draw"?"crosshair":"default";if(m==="type")renderTyped()}
-function renderTyped(){var name=document.getElementById("typedName").value||"Your Name";var font=document.getElementById("signFont").value;var color=document.getElementById("penColor").value;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle=color;ctx.font="60px "+font;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(name,canvas.width/2,canvas.height/2)}
-let drawing=false,strokes=[],current=[];
-function getPos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)}}
-function startDraw(e){e.preventDefault();drawing=true;current=[{...getPos(e),color:document.getElementById("penColor").value,size:+document.getElementById("penSize").value}]}
-function draw(e){if(!drawing)return;e.preventDefault();const p={...getPos(e),color:current[0].color,size:current[0].size};current.push(p);redraw()}
-function stopDraw(){if(!drawing)return;drawing=false;if(current.length>0)strokes.push([...current]);current=[]}
-function redraw(){ctx.clearRect(0,0,canvas.width,canvas.height);[...strokes,[...current]].forEach(s=>{if(s.length<2)return;ctx.beginPath();ctx.strokeStyle=s[0].color;ctx.lineWidth=s[0].size;ctx.lineCap="round";ctx.lineJoin="round";ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()})}
-function clearCanvas(){strokes=[];current=[];ctx.clearRect(0,0,canvas.width,canvas.height)}
-function undo(){strokes.pop();redraw()}
-function downloadSig(){
-  const tmp=document.createElement("canvas");tmp.width=canvas.width;tmp.height=canvas.height;const tc=tmp.getContext("2d");
-  if(document.getElementById("bgType").value==="white"){tc.fillStyle="#fff";tc.fillRect(0,0,tmp.width,tmp.height)}
-  tc.drawImage(canvas,0,0);
-  tmp.toBlob(b=>download(b,"signature.png"));
+/* === MODE SWITCHING === */
+var currentMode="draw";
+function switchMode(mode){
+  currentMode=mode;
+  document.querySelectorAll(".mode-tabs button").forEach(function(b){b.className="btn btn-outline"});
+  document.getElementById("tab"+mode.charAt(0).toUpperCase()+mode.slice(1)).className="btn active";
+  document.querySelectorAll(".mode-panel").forEach(function(p){p.classList.remove("active")});
+  document.getElementById("panel"+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add("active");
+  if(mode==="type")renderTyped();
 }
-canvas.addEventListener("mousedown",startDraw);canvas.addEventListener("mousemove",draw);canvas.addEventListener("mouseup",stopDraw);canvas.addEventListener("mouseleave",stopDraw);
-canvas.addEventListener("touchstart",startDraw);canvas.addEventListener("touchmove",draw);canvas.addEventListener("touchend",stopDraw);
+
+/* === DRAW MODE — Smooth pointer events with quadratic interpolation === */
+var drawCanvas=document.getElementById("drawCanvas");
+var drawCtx=drawCanvas.getContext("2d");
+var drawing=false,strokes=[],currentStroke=[];
+var inkColor="#000000",penWidth=3;
+var lastPressure=0.5,lastVelocity=0;
+var lastPoint=null,lastTime=0;
+
+function setInkColor(c){
+  inkColor=c;
+  document.querySelectorAll("#colorSwatches button").forEach(function(b){b.classList.toggle("active",b.dataset.color===c)});
+}
+
+document.getElementById("penSize").addEventListener("input",function(){
+  penWidth=+this.value;
+  document.getElementById("penSizeVal").textContent=penWidth+"px";
+});
+
+function getPointerPos(e){
+  var r=drawCanvas.getBoundingClientRect();
+  return{x:(e.clientX-r.left)*(drawCanvas.width/r.width),y:(e.clientY-r.top)*(drawCanvas.height/r.height)};
+}
+
+function getStrokeWidth(e){
+  var pressure=e.pressure||0.5;
+  var now=Date.now();
+  if(lastPoint){
+    var dx=e.clientX-(lastPoint.cx||e.clientX);
+    var dy=e.clientY-(lastPoint.cy||e.clientY);
+    var dt=Math.max(now-lastTime,1);
+    var vel=Math.sqrt(dx*dx+dy*dy)/dt;
+    lastVelocity=lastVelocity*0.6+vel*0.4;
+  }
+  lastTime=now;
+  lastPoint={cx:e.clientX,cy:e.clientY};
+  var velFactor=Math.max(0.4,1-lastVelocity*0.3);
+  return penWidth*pressure*velFactor;
+}
+
+drawCanvas.addEventListener("pointerdown",function(e){
+  e.preventDefault();
+  drawCanvas.setPointerCapture(e.pointerId);
+  drawing=true;
+  lastVelocity=0;lastPoint=null;lastTime=Date.now();
+  var p=getPointerPos(e);
+  var w=getStrokeWidth(e);
+  currentStroke=[{x:p.x,y:p.y,w:w}];
+});
+
+drawCanvas.addEventListener("pointermove",function(e){
+  if(!drawing)return;
+  e.preventDefault();
+  var p=getPointerPos(e);
+  var w=getStrokeWidth(e);
+  currentStroke.push({x:p.x,y:p.y,w:w});
+  redrawAll();
+});
+
+drawCanvas.addEventListener("pointerup",function(e){
+  if(!drawing)return;
+  drawing=false;
+  if(currentStroke.length>0){
+    strokes.push({points:[...currentStroke],color:inkColor});
+  }
+  currentStroke=[];
+});
+
+drawCanvas.addEventListener("pointerleave",function(e){
+  if(!drawing)return;
+  drawing=false;
+  if(currentStroke.length>0){
+    strokes.push({points:[...currentStroke],color:inkColor});
+  }
+  currentStroke=[];
+});
+
+function drawStroke(ctx,pts,color){
+  if(pts.length<2){
+    if(pts.length===1){ctx.beginPath();ctx.arc(pts[0].x,pts[0].y,pts[0].w/2,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()}
+    return;
+  }
+  ctx.strokeStyle=color;ctx.lineCap="round";ctx.lineJoin="round";
+  for(var i=1;i<pts.length;i++){
+    ctx.beginPath();
+    ctx.lineWidth=(pts[i-1].w+pts[i].w)/2;
+    if(i===1){ctx.moveTo(pts[0].x,pts[0].y);ctx.lineTo(pts[1].x,pts[1].y)}
+    else{
+      var mx=(pts[i-1].x+pts[i].x)/2;
+      var my=(pts[i-1].y+pts[i].y)/2;
+      ctx.moveTo((pts[i-2].x+pts[i-1].x)/2,(pts[i-2].y+pts[i-1].y)/2);
+      ctx.quadraticCurveTo(pts[i-1].x,pts[i-1].y,mx,my);
+    }
+    ctx.stroke();
+  }
+}
+
+function redrawAll(){
+  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  strokes.forEach(function(s){drawStroke(drawCtx,s.points,s.color)});
+  if(currentStroke.length>0)drawStroke(drawCtx,currentStroke,inkColor);
+}
+
+function undoDraw(){strokes.pop();redrawAll()}
+function clearDraw(){strokes=[];currentStroke=[];redrawAll()}
+
+/* === TYPE MODE === */
+var typeCanvas=document.getElementById("typeCanvas");
+var typeCtx=typeCanvas.getContext("2d");
+var typeColor="#000000";
+
+function setTypeColor(c){
+  typeColor=c;
+  document.querySelectorAll("[data-tcolor]").forEach(function(b){b.classList.toggle("active",b.dataset.tcolor===c)});
+  renderTyped();
+}
+
+function renderTyped(){
+  var name=document.getElementById("typedName").value||"Your Name";
+  var font=document.getElementById("signFont").value;
+  var size=+document.getElementById("typeSize").value;
+  typeCtx.clearRect(0,0,typeCanvas.width,typeCanvas.height);
+  typeCtx.fillStyle=typeColor;
+  typeCtx.font=size+"px "+font;
+  typeCtx.textAlign="center";
+  typeCtx.textBaseline="middle";
+  typeCtx.fillText(name,typeCanvas.width/2,typeCanvas.height/2);
+}
+
+/* === UPLOAD MODE — background removal === */
+var uploadCanvas=document.getElementById("uploadCanvas");
+var uploadCtx=uploadCanvas.getContext("2d");
+var uploadedImage=null;
+
+document.getElementById("uploadInp").addEventListener("change",function(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      uploadedImage=img;
+      var ratio=img.width/img.height;
+      uploadCanvas.width=700;
+      uploadCanvas.height=Math.round(700/ratio);
+      document.getElementById("thresholdRow").style.display="flex";
+      document.getElementById("uploadPreviewWrap").style.display="block";
+      processUpload();
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Drop support for upload zone
+var uploadZone=document.getElementById("uploadZone");
+uploadZone.addEventListener("dragover",function(e){e.preventDefault();uploadZone.style.borderColor="var(--accent)"});
+uploadZone.addEventListener("dragleave",function(){uploadZone.style.borderColor=""});
+uploadZone.addEventListener("drop",function(e){
+  e.preventDefault();uploadZone.style.borderColor="";
+  var file=e.dataTransfer.files[0];
+  if(file&&file.type.startsWith("image/")){
+    var dt=new DataTransfer();dt.items.add(file);
+    document.getElementById("uploadInp").files=dt.files;
+    document.getElementById("uploadInp").dispatchEvent(new Event("change"));
+  }
+});
+
+function processUpload(){
+  if(!uploadedImage)return;
+  var threshold=+document.getElementById("bgThreshold").value;
+  document.getElementById("threshVal").textContent=threshold;
+  uploadCtx.clearRect(0,0,uploadCanvas.width,uploadCanvas.height);
+  uploadCtx.drawImage(uploadedImage,0,0,uploadCanvas.width,uploadCanvas.height);
+  var imgData=uploadCtx.getImageData(0,0,uploadCanvas.width,uploadCanvas.height);
+  var d=imgData.data;
+  for(var i=0;i<d.length;i+=4){
+    if(d[i]>=threshold&&d[i+1]>=threshold&&d[i+2]>=threshold){
+      d[i+3]=0; // make transparent
+    }
+  }
+  uploadCtx.putImageData(imgData,0,0);
+}
+
+/* === OUTPUT / DOWNLOAD === */
+function getActiveCanvas(){
+  if(currentMode==="draw")return drawCanvas;
+  if(currentMode==="type")return typeCanvas;
+  return uploadCanvas;
+}
+
+function autoCrop(canvas){
+  var ctx=canvas.getContext("2d");
+  var w=canvas.width,h=canvas.height;
+  var data=ctx.getImageData(0,0,w,h).data;
+  var top=h,left=w,right=0,bottom=0;
+  for(var y=0;y<h;y++){
+    for(var x=0;x<w;x++){
+      var idx=(y*w+x)*4;
+      if(data[idx+3]>10){
+        if(y<top)top=y;
+        if(y>bottom)bottom=y;
+        if(x<left)left=x;
+        if(x>right)right=x;
+      }
+    }
+  }
+  if(right<=left||bottom<=top)return canvas;
+  var cw=right-left+1,ch=bottom-top+1;
+  var tmp=document.createElement("canvas");
+  tmp.width=cw;tmp.height=ch;
+  tmp.getContext("2d").drawImage(canvas,left,top,cw,ch,0,0,cw,ch);
+  return tmp;
+}
+
+function downloadSig(format){
+  var src=getActiveCanvas();
+  var outputSizeVal=document.getElementById("outputSize").value;
+  var padding=+document.getElementById("outputPadding").value;
+
+  // Auto-crop first
+  var cropped=autoCrop(src);
+
+  var finalW,finalH;
+  if(outputSizeVal==="auto"){
+    finalW=cropped.width+padding*2;
+    finalH=cropped.height+padding*2;
+  }else if(outputSizeVal==="custom"){
+    finalW=cropped.width+padding*2;
+    finalH=cropped.height+padding*2;
+  }else{
+    var parts=outputSizeVal.split("x");
+    finalW=+parts[0];
+    finalH=+parts[1];
+  }
+
+  var out=document.createElement("canvas");
+  out.width=finalW;out.height=finalH;
+  var octx=out.getContext("2d");
+
+  if(format==="jpg"){
+    octx.fillStyle="#ffffff";
+    octx.fillRect(0,0,finalW,finalH);
+  }
+
+  // Draw cropped signature centered with padding
+  var drawW=finalW-padding*2;
+  var drawH=finalH-padding*2;
+  var scale=Math.min(drawW/cropped.width,drawH/cropped.height,1);
+  var sw=cropped.width*scale;
+  var sh=cropped.height*scale;
+  var sx=padding+(drawW-sw)/2;
+  var sy=padding+(drawH-sh)/2;
+  octx.drawImage(cropped,0,0,cropped.width,cropped.height,sx,sy,sw,sh);
+
+  var mimeType=format==="jpg"?"image/jpeg":"image/png";
+  var ext=format==="jpg"?"jpg":"png";
+  var quality=format==="jpg"?0.92:undefined;
+
+  out.toBlob(function(blob){
+    download(blob,"signature."+ext);
+    document.getElementById("downloadResult").innerHTML="<p class='info' style='margin-top:.5rem'>✅ Downloaded — "+finalW+"×"+finalH+"px, "+formatSize(blob.size)+"</p>";
+  },mimeType,quality);
+}
   </script>
 </body>
 </html>

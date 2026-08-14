@@ -15,7 +15,7 @@
     #canvas-wrap{position:relative;width:100%;height:500px;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
     #map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
     #map-svg line{pointer-events:stroke;cursor:pointer;stroke-width:8}
-    .node{position:absolute;padding:8px 16px;border-radius:20px;background:#4f8cff;color:#fff;cursor:grab;user-select:none;font-size:.9rem;font-weight:500;white-space:nowrap;min-width:60px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:box-shadow .2s}
+    .node{position:absolute;padding:8px 16px;border-radius:20px;background:#6366f1;color:#fff;cursor:grab;user-select:none;font-size:.9rem;font-weight:500;white-space:nowrap;min-width:60px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:box-shadow .2s}
     .node:hover{box-shadow:0 4px 16px rgba(0,0,0,.25)}
     .node.selected{outline:3px solid #ff9800}
     .node.shape-rect{border-radius:4px}
@@ -39,7 +39,7 @@
     <div class="breadcrumb"><a href="../">Home</a> → 🧠 Mind Map Maker</div>
     <div class="tool-section">
       <h1>🧠 Mind Map Maker</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#4f8cff" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#4f8cff" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#a855f7" stroke-width="3"/></svg></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
       <p class="info">Create visual mind maps with draggable nodes, color coding, templates, and PNG export. All in your browser.</p>
 
       <div class="controls">
@@ -72,7 +72,7 @@
           <option value="rounded-rect">Rounded Rect</option>
         </select>
         <label>Color</label>
-        <input type="color" id="edit-color" value="#4f8cff" onchange="updateNodeColor(this.value)">
+        <input type="color" id="edit-color" value="#6366f1" onchange="updateNodeColor(this.value)">
         <button class="btn btn-outline" onclick="renameNode()" style="margin-left:.5rem;font-size:.8rem">✏️ Rename</button>
         <button class="btn btn-outline" onclick="deleteNode()" style="margin-left:.5rem;font-size:.8rem;color:#f44336">🗑 Delete</button>
       </div>
@@ -138,7 +138,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -166,7 +166,7 @@ function getVisibleChildren(pid){if(collapsed[pid])return[];return getChildren(p
 function countAllDescendants(id){var ch=getChildren(id);var c=ch.length;ch.forEach(function(n){c+=countAllDescendants(n.id)});return c}
 
 function createNode(text,x,y,parentId,color,shape){
-  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff",shape:shape||"circle",manualPos:false};
+  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#6366f1",shape:shape||"circle",manualPos:false};
   nodes.push(n);return n;
 }
 
@@ -552,7 +552,7 @@ function clearAll(){
   nodes=[];idCounter=1;connLabels={};collapsed={};selectedId=null;
   document.getElementById("node-editor").style.display="none";
   panX=0;panY=0;scale=1;
-  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
+  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#6366f1");
   renderAll();
 }
 
@@ -572,28 +572,28 @@ function loadTemplate(t){
   if(!t)return;nodes=[];idCounter=1;selectedId=null;connLabels={};collapsed={};
   var cx=wrap.clientWidth/2-50,cy=200;
   if(t==="project"){
-    createNode("Project",cx,cy,null,"#4f8cff");
-    createNode("Planning",cx-180,cy-100,1,"#a855f7");
+    createNode("Project",cx,cy,null,"#6366f1");
+    createNode("Planning",cx-180,cy-100,1,"#8b5cf6");
     createNode("Design",cx+150,cy-100,1,"#10b981");
     createNode("Development",cx-180,cy+100,1,"#f59e0b");
     createNode("Testing",cx+150,cy+100,1,"#ef4444");
-    createNode("Timeline",cx-300,cy-160,2,"#a855f7");
-    createNode("Resources",cx-100,cy-160,2,"#a855f7");
+    createNode("Timeline",cx-300,cy-160,2,"#8b5cf6");
+    createNode("Resources",cx-100,cy-160,2,"#8b5cf6");
     createNode("UI/UX",cx+100,cy-160,3,"#10b981");
     createNode("Architecture",cx+280,cy-160,3,"#10b981");
   }else if(t==="study"){
     createNode("Subject",cx,cy,null,"#10b981");
-    createNode("Chapter 1",cx-180,cy-100,1,"#4f8cff");
-    createNode("Chapter 2",cx+150,cy-100,1,"#a855f7");
+    createNode("Chapter 1",cx-180,cy-100,1,"#6366f1");
+    createNode("Chapter 2",cx+150,cy-100,1,"#8b5cf6");
     createNode("Chapter 3",cx-180,cy+100,1,"#f59e0b");
     createNode("Key Terms",cx+150,cy+100,1,"#ef4444");
-    createNode("Topic A",cx-300,cy-160,2,"#4f8cff");
-    createNode("Topic B",cx-100,cy-160,2,"#4f8cff");
-    createNode("Topic C",cx+100,cy-160,3,"#a855f7");
+    createNode("Topic A",cx-300,cy-160,2,"#6366f1");
+    createNode("Topic B",cx-100,cy-160,2,"#6366f1");
+    createNode("Topic C",cx+100,cy-160,3,"#8b5cf6");
   }else if(t==="brainstorm"){
     createNode("Main Idea",cx,cy,null,"#f59e0b");
-    createNode("Who?",cx-180,cy-100,1,"#4f8cff");
-    createNode("What?",cx+150,cy-100,1,"#a855f7");
+    createNode("Who?",cx-180,cy-100,1,"#6366f1");
+    createNode("What?",cx+150,cy-100,1,"#8b5cf6");
     createNode("How?",cx-180,cy+100,1,"#10b981");
     createNode("Why?",cx+150,cy+100,1,"#ef4444");
     createNode("When?",cx,cy+180,1,"#ec4899");
@@ -603,7 +603,7 @@ function loadTemplate(t){
 
 // Init
 if(!loadAutoSave()){
-  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
+  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#6366f1");
 }
 renderAll();
 if(nodes.length)selectNode(nodes[0].id);

@@ -36,21 +36,64 @@
     <div class="breadcrumb"><a href="../">Home</a> → 🖼️ Photo Collage Maker</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>🖼️ Photo Collage Maker</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
-      <p class="info">Upload multiple photos and arrange them in a grid collage. Choose layout, spacing, and background color.</p>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
+      <p class="info">Upload multiple photos, pick a layout, adjust spacing & background, zoom/pan within cells, add captions, and download for social media.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop images here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="thumbs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0"></div>
+
       <div style="margin:.8rem 0"><label><strong>Layout:</strong></label>
         <div id="layouts" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem"></div>
       </div>
-      <div class="row"><label>Gap: <strong id="gv">4</strong>px</label><input type="range" id="gap" min="0" max="20" value="4" oninput="document.getElementById('gv').textContent=this.value" style="flex:3"></div>
-      <div class="row"><label>Background:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"></div>
+
+      <div style="margin:.8rem 0"><label><strong>Output Size:</strong></label>
+        <div class="row" style="margin-top:.4rem"><select id="sizePreset" style="flex:1">
+          <option value="1080,1080">Instagram Square (1080×1080)</option>
+          <option value="1080,1350">Instagram Portrait (1080×1350)</option>
+          <option value="1080,1920">Instagram Story (1080×1920)</option>
+          <option value="1200,630">Facebook Post (1200×630)</option>
+          <option value="1280,720">YouTube Thumbnail (1280×720)</option>
+          <option value="custom">Custom</option>
+        </select></div>
+        <div id="customSizeRow" class="row" style="display:none;margin-top:.4rem"><input type="number" id="customW" placeholder="Width" style="width:100px" value="1080"><span>×</span><input type="number" id="customH" placeholder="Height" style="width:100px" value="1080"><span>px</span></div>
+      </div>
+
+      <div class="row"><label>Gap: <strong id="gv">8</strong>px</label><input type="range" id="gap" min="0" max="60" value="8" oninput="document.getElementById('gv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label>Border/Padding: <strong id="pv">10</strong>px</label><input type="range" id="padding" min="0" max="60" value="10" oninput="document.getElementById('pv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label>Corner Radius: <strong id="rv">0</strong>px</label><input type="range" id="radius" min="0" max="50" value="0" oninput="document.getElementById('rv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label>Background:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"><label style="margin-left:1rem"><input type="checkbox" id="bgGradient"> Gradient</label><input type="color" id="bgColor2" value="#8b5cf6" style="width:50px;height:34px;border:none;cursor:pointer;margin-left:.3rem"></div>
+
+      <div style="margin:.8rem 0;padding:.8rem;background:var(--card);border-radius:var(--radius)">
+        <label><strong>Caption (optional):</strong></label>
+        <input type="text" id="captionText" placeholder="Enter caption text..." style="width:100%;margin-top:.4rem;padding:.4rem .6rem;border-radius:6px;border:1px solid rgba(99,102,241,.3);background:var(--card);color:var(--text)">
+        <div class="row" style="margin-top:.4rem;flex-wrap:wrap;gap:.4rem">
+          <label>Size:</label><input type="number" id="captionSize" value="36" style="width:60px" min="10" max="200">
+          <label>Color:</label><input type="color" id="captionColor" value="#ffffff" style="width:40px;height:30px;border:none;cursor:pointer">
+          <label>Position:</label><select id="captionPos"><option value="bottom">Bottom</option><option value="top">Top</option><option value="center">Center</option></select>
+        </div>
+      </div>
+
+      <p class="info" style="font-size:.8rem">💡 Click a cell in the preview to assign/swap an image. Drag inside a cell to pan. Scroll to zoom.</p>
       <button class="btn" onclick="renderCollage()" id="goBtn" disabled style="width:100%">Create Collage</button>
+
+      <div id="cellEditor" style="display:none;margin:.8rem 0;padding:.8rem;background:var(--card);border-radius:var(--radius)">
+        <strong>Live Preview — click a cell to assign image, drag to pan, scroll to zoom</strong>
+        <div style="overflow:auto;margin-top:.5rem;text-align:center"><canvas id="previewCanvas" style="max-width:100%;border-radius:8px;cursor:crosshair"></canvas></div>
+      </div>
+
       <div id="result" class="preview-area"></div>
+
+      <div id="downloadSection" style="display:none;margin:.8rem 0">
+        <div class="row"><label>Format:</label><select id="dlFmt"><option value="png">PNG</option><option value="jpeg">JPG</option></select></div>
+        <div class="row" id="jpgQRow" style="display:none"><label>Quality: <strong id="jqv">92</strong>%</label><input type="range" id="jpgQuality" min="10" max="100" value="92" style="flex:3" oninput="document.getElementById('jqv').textContent=this.value"></div>
+        <p id="fileSizeInfo" class="info" style="font-size:.8rem"></p>
+        <button class="btn" onclick="downloadCollage()" style="width:100%">💾 Download Collage</button>
+      </div>
+
       <div class="faq"><h2>FAQ</h2>
-        <details><summary>How many images can I use?</summary><p>You can upload as many images as your layout supports. Extra images beyond the grid slots will be ignored.</p></details>
-        <details><summary>What layouts are available?</summary><p>2×1, 1×2, 2×2, 2×3, and 3×3 grid layouts. Choose the one that fits your needs.</p></details>
-        <details><summary>Can I adjust the spacing between photos?</summary><p>Yes, use the gap slider to set spacing from 0 to 20 pixels, and pick any background color for the gaps.</p></details>
+        <details><summary>How many images can I use?</summary><p>Upload as many images as you like. Each layout has a fixed number of cells — assign any image to any cell by clicking.</p></details>
+        <details><summary>What layouts are available?</summary><p>2×2, 3×3, 1+2 (one large + two small), 2×1 side-by-side, 1×2 stacked, 3-strip horizontal, 3-strip vertical, and freeform.</p></details>
+        <details><summary>Can I adjust the crop per image?</summary><p>Yes! After creating the collage, click any cell to assign/swap an image, drag inside a cell to pan, or scroll to zoom in/out for precise cropping.</p></details>
+        <details><summary>What output sizes are supported?</summary><p>Presets for Instagram (square, portrait, story), Facebook post, YouTube thumbnail, plus custom width/height.</p></details>
       </div></div>
     <div style="min-height:90px">
 <h2>Frequently Asked Questions</h2>
@@ -98,7 +141,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -116,54 +159,318 @@
   <script src="../js/common.js"></script>
   <script>
 var images=[];
-var layouts=[{name:"2×1",cols:2,rows:1},{name:"1×2",cols:1,rows:2},{name:"2×2",cols:2,rows:2},{name:"2×3",cols:2,rows:3},{name:"3×3",cols:3,rows:3}];
-var selectedLayout=layouts[2];
+var loadedImgs=[];
+var cellAssignments=[];
+var cellZoom=[];
+var cellPan=[];
+var selectedCell=-1;
+var previewRendered=false;
 
-(function initLayouts(){var c=document.getElementById("layouts");layouts.forEach(function(l,i){var b=document.createElement("button");b.className="btn"+(i===2?" active":"");b.textContent=l.name;b.style.minWidth="50px";b.onclick=function(){selectedLayout=l;c.querySelectorAll("button").forEach(function(x){x.classList.remove("active")});b.classList.add("active")};c.appendChild(b)})})();
+var layouts=[
+  {name:"2×2",slots:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}],icon:"⊞"},
+  {name:"3×3",slots:(function(){var s=[];for(var r=0;r<3;r++)for(var c=0;c<3;c++)s.push({x:c/3,y:r/3,w:1/3,h:1/3});return s})(),icon:"⊞⊞"},
+  {name:"1+2",slots:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}],icon:"◧"},
+  {name:"2×1",slots:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}],icon:"◫"},
+  {name:"1×2",slots:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}],icon:"⬒"},
+  {name:"3H",slots:[{x:0,y:0,w:1/3,h:1},{x:1/3,y:0,w:1/3,h:1},{x:2/3,y:0,w:1/3,h:1}],icon:"|||"},
+  {name:"3V",slots:[{x:0,y:0,w:1,h:1/3},{x:0,y:1/3,w:1,h:1/3},{x:0,y:2/3,w:1,h:1/3}],icon:"≡"},
+  {name:"Free",slots:null,icon:"✦"}
+];
+var selectedLayout=layouts[0];
+
+(function initLayouts(){
+  var c=document.getElementById("layouts");
+  layouts.forEach(function(l,i){
+    var b=document.createElement("button");
+    b.className="btn"+(i===0?" active":"");
+    b.style.cssText="min-width:50px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:.4rem .6rem;font-size:.75rem";
+    b.innerHTML='<span style="font-size:1.1rem">'+l.icon+'</span>'+l.name;
+    b.onclick=function(){
+      selectedLayout=l;
+      c.querySelectorAll("button").forEach(function(x){x.classList.remove("active")});
+      b.classList.add("active");
+      resetCellState();
+    };
+    c.appendChild(b);
+  });
+})();
+
+document.getElementById("sizePreset").addEventListener("change",function(){
+  document.getElementById("customSizeRow").style.display=this.value==="custom"?"flex":"none";
+});
+document.getElementById("dlFmt").addEventListener("change",function(){
+  document.getElementById("jpgQRow").style.display=this.value==="jpeg"?"flex":"none";
+  updateFileSize();
+});
+document.getElementById("jpgQuality").addEventListener("input",function(){updateFileSize()});
+
+function getOutputSize(){
+  var sel=document.getElementById("sizePreset").value;
+  if(sel==="custom") return [+document.getElementById("customW").value||1080,+document.getElementById("customH").value||1080];
+  var p=sel.split(",");return [+p[0],+p[1]];
+}
+
+function resetCellState(){
+  var slots=getSlots();
+  cellAssignments=[];cellZoom=[];cellPan=[];
+  for(var i=0;i<slots.length;i++){
+    cellAssignments[i]=i<loadedImgs.length?i:-1;
+    cellZoom[i]=1;
+    cellPan[i]={x:0,y:0};
+  }
+}
+
+function getSlots(){
+  if(selectedLayout.slots) return selectedLayout.slots;
+  var n=Math.max(images.length,1);
+  var cols=Math.ceil(Math.sqrt(n));
+  var rows=Math.ceil(n/cols);
+  var s=[];
+  for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
+    if(s.length>=n) break;
+    s.push({x:c/cols,y:r/rows,w:1/cols,h:1/rows});
+  }
+  return s;
+}
 
 setupDrop("drop","inp",function(f){
-  images=[];
+  images=[];loadedImgs=[];
   var thumbs=document.getElementById("thumbs");thumbs.innerHTML="";
-  Array.from(f).forEach(function(file){
+  var arr=Array.from(f);
+  arr.forEach(function(file,idx){
     var url=URL.createObjectURL(file);
     images.push(file);
-    var img=document.createElement("img");img.src=url;img.style.cssText="width:60px;height:60px;object-fit:cover;border-radius:6px";
+    var img=document.createElement("img");
+    img.src=url;
+    img.style.cssText="width:60px;height:60px;object-fit:cover;border-radius:6px;border:2px solid var(--accent);cursor:pointer";
+    img.title="Image "+(idx+1);
     thumbs.appendChild(img);
   });
   document.getElementById("goBtn").disabled=false;
+  Promise.all(arr.map(function(file){return loadImage(file)})).then(function(loaded){
+    loadedImgs=loaded;
+    resetCellState();
+  });
 });
+
+function drawCollageToCanvas(canvas){
+  var size=getOutputSize();
+  var W=size[0],H=size[1];
+  canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext("2d");
+  var pad=+document.getElementById("padding").value;
+  var gap=+document.getElementById("gap").value;
+  var cornerR=+document.getElementById("radius").value;
+  var bg=document.getElementById("bgColor").value;
+  var useGrad=document.getElementById("bgGradient").checked;
+  var bg2=document.getElementById("bgColor2").value;
+
+  if(useGrad){
+    var grad=ctx.createLinearGradient(0,0,W,H);
+    grad.addColorStop(0,bg);grad.addColorStop(1,bg2);
+    ctx.fillStyle=grad;
+  } else {
+    ctx.fillStyle=bg;
+  }
+  ctx.fillRect(0,0,W,H);
+
+  var slots=getSlots();
+  var innerW=W-2*pad;
+  var innerH=H-2*pad;
+
+  for(var i=0;i<slots.length;i++){
+    var s=slots[i];
+    var cx=pad+s.x*innerW;
+    var cy=pad+s.y*innerH;
+    var cw=s.w*innerW-gap;
+    var ch=s.h*innerH-gap;
+    cx+=gap/2;cy+=gap/2;
+
+    ctx.save();
+    if(cornerR>0){
+      ctx.beginPath();
+      ctx.roundRect(cx,cy,cw,ch,cornerR);
+      ctx.clip();
+    } else {
+      ctx.beginPath();ctx.rect(cx,cy,cw,ch);ctx.clip();
+    }
+
+    var imgIdx=cellAssignments[i];
+    if(imgIdx>=0&&imgIdx<loadedImgs.length){
+      var img=loadedImgs[imgIdx];
+      var zoom=cellZoom[i]||1;
+      var pan=cellPan[i]||{x:0,y:0};
+      var sr=img.width/img.height,dr=cw/ch;
+      var dw,dh;
+      if(sr>dr){dh=ch*zoom;dw=dh*sr;}
+      else{dw=cw*zoom;dh=dw/sr;}
+      var dx=cx+(cw-dw)/2+pan.x;
+      var dy=cy+(ch-dh)/2+pan.y;
+      ctx.drawImage(img,dx,dy,dw,dh);
+    } else {
+      ctx.fillStyle="rgba(99,102,241,0.1)";
+      ctx.fillRect(cx,cy,cw,ch);
+      ctx.fillStyle="var(--text2)";
+      ctx.font="14px sans-serif";
+      ctx.textAlign="center";
+      ctx.fillText("Empty",cx+cw/2,cy+ch/2);
+    }
+    ctx.restore();
+
+    if(i===selectedCell){
+      ctx.save();
+      ctx.strokeStyle="#6366f1";ctx.lineWidth=3;
+      ctx.setLineDash([6,4]);
+      if(cornerR>0){ctx.beginPath();ctx.roundRect(cx,cy,cw,ch,cornerR);ctx.stroke();}
+      else ctx.strokeRect(cx,cy,cw,ch);
+      ctx.restore();
+    }
+  }
+
+  var caption=document.getElementById("captionText").value.trim();
+  if(caption){
+    var fontSize=+document.getElementById("captionSize").value||36;
+    var fontColor=document.getElementById("captionColor").value;
+    var pos=document.getElementById("captionPos").value;
+    ctx.font="bold "+fontSize+"px sans-serif";
+    ctx.fillStyle=fontColor;
+    ctx.textAlign="center";
+    ctx.shadowColor="rgba(0,0,0,0.5)";ctx.shadowBlur=4;ctx.shadowOffsetY=2;
+    var ty;
+    if(pos==="top") ty=pad+fontSize+10;
+    else if(pos==="center") ty=H/2+fontSize/3;
+    else ty=H-pad-15;
+    ctx.fillText(caption,W/2,ty);
+    ctx.shadowColor="transparent";
+  }
+}
 
 async function renderCollage(){
   if(!images.length)return;
-  var cols=selectedLayout.cols,rows=selectedLayout.rows;
-  var slots=cols*rows;
-  var gap=+document.getElementById("gap").value;
-  var bg=document.getElementById("bgColor").value;
-  var cellW=400,cellH=400;
-  var w=cols*cellW+(cols+1)*gap;
-  var h=rows*cellH+(rows+1)*gap;
-  var canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
-  var ctx=canvas.getContext("2d");
-  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-
-  for(var i=0;i<Math.min(slots,images.length);i++){
-    var img=await loadImage(images[i]);
-    var col=i%cols,row=Math.floor(i/cols);
-    var x=gap+(cellW+gap)*col;
-    var y=gap+(cellH+gap)*row;
-    // cover-fit drawing
-    var sr=img.width/img.height,dr=cellW/cellH;
-    var sx=0,sy=0,sw=img.width,sh=img.height;
-    if(sr>dr){sw=img.height*dr;sx=(img.width-sw)/2}
-    else{sh=img.width/dr;sy=(img.height-sh)/2}
-    ctx.drawImage(img,sx,sy,sw,sh,x,y,cellW,cellH);
+  if(!loadedImgs.length){
+    loadedImgs=await Promise.all(images.map(function(file){return loadImage(file)}));
+    resetCellState();
   }
+  var canvas=document.getElementById("previewCanvas");
+  drawCollageToCanvas(canvas);
+  document.getElementById("cellEditor").style.display="block";
+  document.getElementById("downloadSection").style.display="block";
+  previewRendered=true;
+  updateFileSize();
+  document.getElementById("result").innerHTML="";
+}
 
+function updateFileSize(){
+  if(!previewRendered) return;
+  var fmt=document.getElementById("dlFmt").value;
+  var q=fmt==="jpeg"?+document.getElementById("jpgQuality").value/100:undefined;
+  var canvas=document.getElementById("previewCanvas");
   canvas.toBlob(function(blob){
-    window._collageBlob=blob;
-    var url=URL.createObjectURL(blob);
-    document.getElementById("result").innerHTML='<div style="text-align:center"><img src="'+url+'" style="max-width:100%;border-radius:10px;margin:.8rem 0"><br><button class="btn" onclick="download(window._collageBlob,\'collage.png\')">💾 Download Collage</button></div>';
-  },"image/png");
+    if(blob) document.getElementById("fileSizeInfo").textContent="Estimated file size: "+(blob.size/1024).toFixed(1)+" KB";
+  },"image/"+fmt,q);
+}
+
+(function setupPreviewInteraction(){
+  var canvas=document.getElementById("previewCanvas");
+  var dragging=false,startX,startY,dragCell=-1;
+
+  canvas.addEventListener("click",function(e){
+    if(dragging) return;
+    var rect=canvas.getBoundingClientRect();
+    var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+    var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
+    var slots=getSlots();
+    var pad=+document.getElementById("padding").value;
+    var gap=+document.getElementById("gap").value;
+    var innerW=canvas.width-2*pad,innerH=canvas.height-2*pad;
+    for(var i=0;i<slots.length;i++){
+      var s=slots[i];
+      var cx=pad+s.x*innerW+gap/2,cy=pad+s.y*innerH+gap/2;
+      var cw=s.w*innerW-gap,ch=s.h*innerH-gap;
+      if(mx>=cx&&mx<=cx+cw&&my>=cy&&my<=cy+ch){
+        if(selectedCell===i){
+          var nextImg=(cellAssignments[i]+1)%loadedImgs.length;
+          cellAssignments[i]=nextImg;
+        }
+        selectedCell=i;
+        drawCollageToCanvas(canvas);
+        return;
+      }
+    }
+  });
+
+  canvas.addEventListener("mousedown",function(e){
+    var rect=canvas.getBoundingClientRect();
+    var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+    var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
+    var slots=getSlots();
+    var pad=+document.getElementById("padding").value;
+    var gap=+document.getElementById("gap").value;
+    var innerW=canvas.width-2*pad,innerH=canvas.height-2*pad;
+    for(var i=0;i<slots.length;i++){
+      var s=slots[i];
+      var cx=pad+s.x*innerW+gap/2,cy=pad+s.y*innerH+gap/2;
+      var cw=s.w*innerW-gap,ch=s.h*innerH-gap;
+      if(mx>=cx&&mx<=cx+cw&&my>=cy&&my<=cy+ch){
+        dragCell=i;startX=e.clientX;startY=e.clientY;
+        dragging=false;
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener("mousemove",function(e){
+    if(dragCell<0) return;
+    var dx=e.clientX-startX,dy=e.clientY-startY;
+    if(Math.abs(dx)>3||Math.abs(dy)>3) dragging=true;
+    if(!dragging) return;
+    var rect=canvas.getBoundingClientRect();
+    var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+    cellPan[dragCell]={x:(cellPan[dragCell]?cellPan[dragCell].x:0)+dx*scaleX,y:(cellPan[dragCell]?cellPan[dragCell].y:0)+dy*scaleY};
+    startX=e.clientX;startY=e.clientY;
+    drawCollageToCanvas(canvas);
+  });
+
+  canvas.addEventListener("mouseup",function(){
+    if(dragging){setTimeout(function(){dragging=false},50)}
+    dragCell=-1;
+  });
+  canvas.addEventListener("mouseleave",function(){dragCell=-1;dragging=false});
+
+  canvas.addEventListener("wheel",function(e){
+    e.preventDefault();
+    var rect=canvas.getBoundingClientRect();
+    var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+    var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
+    var slots=getSlots();
+    var pad=+document.getElementById("padding").value;
+    var gp=+document.getElementById("gap").value;
+    var innerW=canvas.width-2*pad,innerH=canvas.height-2*pad;
+    for(var i=0;i<slots.length;i++){
+      var s=slots[i];
+      var cx=pad+s.x*innerW+gp/2,cy=pad+s.y*innerH+gp/2;
+      var cw=s.w*innerW-gp,ch=s.h*innerH-gp;
+      if(mx>=cx&&mx<=cx+cw&&my>=cy&&my<=cy+ch){
+        var delta=e.deltaY>0?-0.1:0.1;
+        cellZoom[i]=Math.max(0.5,Math.min(5,(cellZoom[i]||1)+delta));
+        drawCollageToCanvas(canvas);
+        break;
+      }
+    }
+  },{passive:false});
+})();
+
+function downloadCollage(){
+  var fmt=document.getElementById("dlFmt").value;
+  var q=fmt==="jpeg"?+document.getElementById("jpgQuality").value/100:undefined;
+  var outCanvas=document.createElement("canvas");
+  drawCollageToCanvas(outCanvas);
+  selectedCell=-1;
+  drawCollageToCanvas(outCanvas);
+  outCanvas.toBlob(function(blob){
+    document.getElementById("fileSizeInfo").textContent="Final file size: "+(blob.size/1024).toFixed(1)+" KB";
+    download(blob,"collage."+fmt);
+  },"image/"+fmt,q);
 }
 </script>
 </body>

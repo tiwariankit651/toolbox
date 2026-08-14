@@ -36,16 +36,19 @@
     <div class="breadcrumb"><a href="../">Home</a> → 🔄 Convert Image Format</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>🔄 Convert Image Format</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#4f8cff" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#a855f7" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#4f8cff" opacity=".6"/></svg></div>
-      <p class="info">Convert images between PNG, JPG, and WebP instantly. Supports batch conversion.</p>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
+      <p class="info">Convert images between PNG, JPG, WebP, AVIF & BMP. Batch convert, resize, target file size, and download as ZIP. EXIF data is stripped for privacy.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="preview" style="display:none;margin:.8rem 0;background:var(--card);padding:.8rem;border-radius:10px"><div id="previewThumbs" style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center"></div><p class="info" id="previewInfo" style="margin-top:.5rem;text-align:center"></p></div>
-      <div class="row"><label>Convert to:</label><select id="fmt"><option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WebP</option></select></div>
+      <div class="row"><label>Convert to:</label><select id="fmt"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option><option value="image/avif">AVIF</option><option value="image/bmp">BMP</option></select><span id="fmtWarn" style="font-size:.75rem;color:#f59e0b;display:none;margin-left:.5rem">⚠️ Not supported in this browser</span></div>
       <div class="row" id="qualityRow"><label>Quality:</label><input type="range" id="quality" min="10" max="100" value="92" style="flex:1"><span id="qualityVal">92%</span></div>
-      <div class="row"><label>Max Width (px):</label><input type="number" id="maxWidth" placeholder="Leave empty for original" style="width:150px"></div>
-      <button class="btn" onclick="go()" id="goBtn" disabled>Convert & Download</button>
-      <p class="info" style="font-size:.75rem;margin-top:.3rem">⚠️ Supported input: JPG, PNG, WebP, BMP, GIF. Select output format and click convert.</p>
-      <div id="result" class="preview-area"></div></div>
+      <div class="row"><label>Target size (KB):</label><input type="number" id="targetKB" placeholder="Leave empty to skip" style="width:130px" min="1"><span class="info" style="font-size:.7rem;margin-left:.4rem">Binary search ~8 iterations</span></div>
+      <div class="row"><label>Resize:</label><select id="resizeMode" style="width:140px"><option value="none">No resize</option><option value="max">Max width/height</option><option value="scale">Scale %</option></select><input type="number" id="resizeVal" placeholder="e.g. 800 or 50" style="width:90px;display:none" min="1"></div>
+      <div class="row" id="bgRow" style="display:none"><label>Background for transparency:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"><span class="info" style="font-size:.75rem;margin-left:.5rem">⚠️ JPEG cannot hold transparency — alpha pixels will use this color</span></div>
+      <p class="info" style="font-size:.75rem;margin-top:.3rem">🔒 Canvas re-encode strips EXIF metadata by default — a privacy benefit. No location or camera data in output files.</p>
+      <button class="btn" onclick="go()" id="goBtn" disabled>Convert All</button>
+      <div id="result" class="preview-area"></div>
+      <button class="btn" id="zipBtn" style="display:none;margin-top:.5rem;width:100%" onclick="downloadZip()">📦 Download All as ZIP</button></div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -89,7 +92,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -105,9 +108,129 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>let files=[];
-setupDrop("drop","inp",f=>{files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("preview").style.display="block";document.getElementById("previewThumbs").innerHTML=files.map(f=>'<img src="'+URL.createObjectURL(f)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:2px solid var(--accent)">').join("");document.getElementById("previewInfo").textContent="✅ "+files.length+" file(s) selected — "+files.map(f=>f.name).join(", ")});
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>var files=[];var convertedBlobs=[];var formatSupport={};
+(function detectFormats(){
+  var testCanvas=document.createElement("canvas");testCanvas.width=1;testCanvas.height=1;
+  ["image/webp","image/avif"].forEach(function(mime){
+    testCanvas.toBlob(function(blob){formatSupport[mime]=!!(blob&&blob.size>0)},mime,0.5);
+  });
+  formatSupport["image/jpeg"]=true;formatSupport["image/png"]=true;formatSupport["image/bmp"]=true;
+})();
+
+setupDrop("drop","inp",function(f){files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("preview").style.display="block";document.getElementById("previewThumbs").innerHTML=files.map(function(f){return'<img src="'+URL.createObjectURL(f)+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:2px solid var(--accent)">'}).join("");document.getElementById("previewInfo").textContent="\u2705 "+files.length+" file(s) selected \u2014 "+files.map(function(f){return f.name}).join(", ")});
+
 document.getElementById("quality").addEventListener("input",function(){document.getElementById("qualityVal").textContent=this.value+"%"});
-document.getElementById("fmt").addEventListener("change",function(){document.getElementById("qualityRow").style.display=this.value==="image/png"?"none":"flex"});
-async function go(){if(!files.length)return;var fmt=document.getElementById("fmt").value;var ext=fmt.split("/")[1];var quality=+document.getElementById("quality").value/100;var maxW=+document.getElementById("maxWidth").value||0;var res=document.getElementById("result");res.innerHTML="";for(var i=0;i<files.length;i++){var f=files[i];var img=await loadImage(f);var w=img.width,h=img.height;if(maxW&&w>maxW){h=Math.round(h*(maxW/w));w=maxW}var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);var blob=await new Promise(function(resolve){c.toBlob(resolve,fmt,quality)});var card=document.createElement("div");card.style.cssText="background:var(--card);padding:.8rem;border-radius:10px;margin-bottom:.5rem";card.innerHTML='<strong>'+f.name+'</strong><br><span style="font-size:.85rem">Original: '+formatSize(f.size)+' → Converted: '+formatSize(blob.size)+' ('+ext.toUpperCase()+')</span><br><span style="font-size:.8rem;color:var(--accent)">'+(blob.size<f.size?"↓ Saved "+formatSize(f.size-blob.size):"↑ Increased "+formatSize(blob.size-f.size))+'</span><br><button class="btn" style="margin-top:.4rem;font-size:.8rem" data-idx="'+i+'">Download</button>';res.appendChild(card);(function(b,name){card.querySelector("button").onclick=function(){download(b,name.replace(/\.[^.]+$/,"")+"."+ext)}})(blob,f.name)}}</script>
+document.getElementById("fmt").addEventListener("change",function(){
+  var v=this.value;
+  var isLossy=v==="image/jpeg"||v==="image/webp"||v==="image/avif";
+  document.getElementById("qualityRow").style.display=isLossy?"flex":"none";
+  document.getElementById("bgRow").style.display=(v==="image/jpeg"||v==="image/bmp")?"flex":"none";
+  var warn=document.getElementById("fmtWarn");
+  if((v==="image/webp"||v==="image/avif")&&!formatSupport[v]){warn.style.display="inline";warn.textContent="\u26a0\ufe0f "+v.split("/")[1].toUpperCase()+" encoding not supported in this browser";}
+  else{warn.style.display="none";}
+});
+document.getElementById("resizeMode").addEventListener("change",function(){
+  document.getElementById("resizeVal").style.display=this.value==="none"?"none":"inline-block";
+  document.getElementById("resizeVal").placeholder=this.value==="max"?"Max px":"Scale %";
+});
+
+function getResizedDims(origW,origH){
+  var mode=document.getElementById("resizeMode").value;
+  var val=+document.getElementById("resizeVal").value||0;
+  if(mode==="none"||!val) return{w:origW,h:origH};
+  if(mode==="max"){
+    if(origW<=val&&origH<=val) return{w:origW,h:origH};
+    var ratio=Math.min(val/origW,val/origH);
+    return{w:Math.round(origW*ratio),h:Math.round(origH*ratio)};
+  }
+  if(mode==="scale"){
+    var s=val/100;
+    return{w:Math.round(origW*s),h:Math.round(origH*s)};
+  }
+  return{w:origW,h:origH};
+}
+
+function renderToCanvas(img,w,h,fmt){
+  var c=document.createElement("canvas");c.width=w;c.height=h;
+  var ctx=c.getContext("2d");
+  if(fmt==="image/jpeg"||fmt==="image/bmp"){
+    ctx.fillStyle=document.getElementById("bgColor").value;
+    ctx.fillRect(0,0,w,h);
+  }
+  ctx.drawImage(img,0,0,w,h);
+  return c;
+}
+
+function canvasToBlob(canvas,fmt,quality){
+  return new Promise(function(resolve){canvas.toBlob(function(b){resolve(b)},fmt,quality)});
+}
+
+async function blobAtQuality(img,w,h,fmt,q){
+  var c=renderToCanvas(img,w,h,fmt);
+  return canvasToBlob(c,fmt,q);
+}
+
+async function binarySearchQuality(img,w,h,fmt,targetBytes){
+  var lo=0.01,hi=1.0,best=null;
+  for(var i=0;i<8;i++){
+    var mid=(lo+hi)/2;
+    var blob=await blobAtQuality(img,w,h,fmt,mid);
+    best=blob;
+    if(blob.size>targetBytes) hi=mid;
+    else lo=mid;
+  }
+  return best;
+}
+
+async function go(){
+  if(!files.length)return;
+  var fmt=document.getElementById("fmt").value;
+  var ext=fmt.split("/")[1];if(ext==="jpeg")ext="jpg";
+  var quality=+document.getElementById("quality").value/100;
+  var targetKB=+document.getElementById("targetKB").value||0;
+  var res=document.getElementById("result");
+  res.innerHTML='<p style="text-align:center;padding:1rem">Converting...</p>';
+  convertedBlobs=[];
+
+  var table='<table style="width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem"><thead><tr style="border-bottom:2px solid var(--accent)"><th style="padding:.4rem;text-align:left">File</th><th>Before</th><th>After</th><th>Change</th><th>Dims</th><th>Preview</th></tr></thead><tbody>';
+
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    var img=await loadImage(f);
+    var dims=getResizedDims(img.width,img.height);
+    var w=dims.w,h=dims.h;
+    var blob;
+    if(targetKB>0&&(fmt==="image/jpeg"||fmt==="image/webp"||fmt==="image/avif")){
+      blob=await binarySearchQuality(img,w,h,fmt,targetKB*1024);
+    } else {
+      blob=await blobAtQuality(img,w,h,fmt,quality);
+    }
+    if(!blob){
+      table+='<tr><td colspan="6" style="padding:.4rem;color:#ef4444">'+f.name+' — conversion failed (format may not be supported)</td></tr>';
+      continue;
+    }
+    var pct=((blob.size-f.size)/f.size*100).toFixed(1);
+    var pctColor=blob.size<f.size?"#10b981":"#f59e0b";
+    var thumbUrl=URL.createObjectURL(blob);
+    var origThumbUrl=URL.createObjectURL(f);
+    var newName=f.name.replace(/\.[^.]+$/,"")+"."+ext;
+    convertedBlobs.push({blob:blob,name:newName});
+
+    table+='<tr style="border-bottom:1px solid rgba(99,102,241,.15)"><td style="padding:.4rem;word-break:break-all">'+f.name+'</td><td style="text-align:center">'+f.type.split("/")[1].toUpperCase()+'<br>'+formatSize(f.size)+'</td><td style="text-align:center">'+ext.toUpperCase()+'<br>'+formatSize(blob.size)+'</td><td style="text-align:center;color:'+pctColor+'">'+pct+'%</td><td style="text-align:center">'+w+'\u00d7'+h+'</td><td style="text-align:center"><img src="'+origThumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"> \u2192 <img src="'+thumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"><br><button class="btn" style="font-size:.7rem;padding:.2rem .5rem;margin-top:.2rem" onclick="download(convertedBlobs['+i+'].blob,convertedBlobs['+i+'].name)">Download</button></td></tr>';
+  }
+  table+='</tbody></table>';
+  res.innerHTML=table;
+  if(convertedBlobs.length>1) document.getElementById("zipBtn").style.display="block";
+  else document.getElementById("zipBtn").style.display="none";
+}
+
+async function downloadZip(){
+  if(!convertedBlobs.length)return;
+  var zip=new JSZip();
+  convertedBlobs.forEach(function(item){zip.file(item.name,item.blob)});
+  var content=await zip.generateAsync({type:"blob"});
+  download(content,"converted-images.zip");
+}
+</script>
 </body></html>

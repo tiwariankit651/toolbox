@@ -17,14 +17,14 @@
     <div class="breadcrumb"><a href="../">Home</a> → 📋 To-Do & Kanban</div>
     <div class="tool-section">
       <h1>📋 To-Do List & Kanban Board</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#4f8cff" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#4f8cff" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
       <p class="info">Add tasks and move them between columns. Auto-saves to browser.</p>
       <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()">
         <select id="priority"><option value="medium">Medium</option><option value="high">🔴 High</option><option value="low">🟢 Low</option></select>
         <input type="date" id="dueDate" title="Due date (optional)">
         <button class="btn" onclick="addTask()">+ Add</button></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem">
-        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4f8cff">📝 To Do <span id="countTodo" class="info"></span></h3><div id="colTodo" style="min-height:100px"></div></div>
+        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #6366f1">📝 To Do <span id="countTodo" class="info"></span></h3><div id="colTodo" style="min-height:100px"></div></div>
         <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #ff9800">🔄 Doing <span id="countDoing" class="info"></span></h3><div id="colDoing" style="min-height:100px"></div></div>
         <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4caf50">✅ Done <span id="countDone" class="info"></span></h3><div id="colDone" style="min-height:100px"></div></div>
       </div>
@@ -72,7 +72,7 @@
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4f8cff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
         <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
       </div>
       <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
@@ -102,7 +102,7 @@ function render(){
   tasks.forEach(function(t,i){t._i=i;if(cols[t.col])cols[t.col].push(t)});
   ["todo","doing","done"].forEach(function(col){
     var el=document.getElementById("col"+col.charAt(0).toUpperCase()+col.slice(1));
-    var colors={todo:"#4f8cff",doing:"#ff9800",done:"#4caf50"};
+    var colors={todo:"#6366f1",doing:"#ff9800",done:"#4caf50"};
     var nextCol={todo:"doing",doing:"done",done:"todo"};
     var arrows={todo:"→ Doing",doing:"→ Done",done:"↩ To Do"};
     el.innerHTML=cols[col].map(function(t){
