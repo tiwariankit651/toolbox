@@ -17,81 +17,206 @@
     <div class="tool-section">
       <h1>🔍 Regex Tester</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Test regular expressions with real-time matching and highlights.</p>
+      <p class="info">Test regular expressions with real-time matching, highlighting, and detailed group info.</p>
       <style>
-        .cheat-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:.5rem;font-weight:600;margin-bottom:.5rem}
-        .cheat-toggle::before{content:'▶';font-size:.7rem;transition:transform .2s}
-        .cheat-toggle.open::before{transform:rotate(90deg)}
-        .cheat-panel{display:none;background:var(--card);border-radius:8px;padding:.8rem;margin-bottom:1rem;max-height:300px;overflow-y:auto;font-size:.82rem}
-        .cheat-panel.open{display:block}
-        .cheat-panel table{width:100%;border-collapse:collapse}
-        .cheat-panel td{padding:3px 8px;border-bottom:1px solid rgba(128,128,128,.15);font-family:monospace}
-        .cheat-panel td:first-child{font-weight:bold;white-space:nowrap;color:#6366f1}
-        .flag-wrap{display:inline-block;position:relative}
-        .flag-wrap .flag-tip{display:none;position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:4px 8px;border-radius:4px;font-size:.72rem;white-space:nowrap;z-index:10}
-        .flag-wrap:hover .flag-tip{display:block}
-        .flag-label{cursor:help;border-bottom:1px dashed rgba(128,128,128,.5);padding:0 3px;font-family:monospace;font-size:.85rem}
-        .group-colors{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem;font-size:.8rem}
-        .group-colors span{padding:1px 6px;border-radius:3px;font-family:monospace}
+        .rx-tabs{display:flex;gap:.3rem;margin:1rem 0 .5rem;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:.5rem}
+        .rx-tab{padding:.5rem 1.2rem;border-radius:10px 10px 0 0;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);background:transparent;border:none;transition:all .2s}
+        .rx-tab.active{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent)}
+        .rx-tab:hover{color:var(--accent)}
+        .rx-panel{display:none}
+        .rx-panel.active{display:block}
+        .rx-flags{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
+        .rx-flag{display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.82rem}
+        .rx-flag input[type="checkbox"]{width:auto;margin:0}
+        .rx-flag code{font-family:monospace;font-weight:700;color:var(--accent)}
+        .rx-flag .flag-desc{color:var(--text2);font-size:.72rem}
+        .rx-highlight-wrap{position:relative;margin:.8rem 0}
+        .rx-highlight-backdrop{position:absolute;top:0;left:0;right:0;bottom:0;padding:.75rem 1rem;font-size:.95rem;font-family:inherit;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;overflow:auto;color:transparent;pointer-events:none;border-radius:12px;border:1px solid transparent}
+        .rx-highlight-backdrop mark{background:rgba(99,102,241,.25);border-radius:3px;border-bottom:2px solid var(--accent);color:transparent;padding:1px 0}
+        .rx-highlight-textarea{background:transparent;position:relative;z-index:1;color:var(--text);resize:vertical;min-height:120px;line-height:1.5}
+        .rx-error{color:#ef4444;font-size:.85rem;margin:.4rem 0;padding:.4rem .8rem;background:rgba(239,68,68,.1);border-radius:8px;display:none}
+        .rx-error.visible{display:block}
+        .rx-results{background:var(--card);border-radius:12px;padding:1rem;margin:.8rem 0;max-height:300px;overflow-y:auto;font-size:.85rem}
+        .rx-results .match-item{border-bottom:1px solid rgba(255,255,255,.05);padding:.5rem 0}
+        .rx-results .match-item:last-child{border-bottom:none}
+        .rx-results .match-idx{color:var(--accent);font-weight:700;font-size:.75rem}
+        .rx-results .match-text{font-family:monospace;background:rgba(99,102,241,.1);padding:2px 6px;border-radius:4px;margin:0 .3rem}
+        .rx-results .group-item{margin-left:1rem;color:var(--text2);font-size:.8rem}
+        .rx-results .group-item code{color:var(--accent);font-family:monospace}
+        .rx-match-count{font-weight:700;color:var(--accent);margin-bottom:.5rem}
+        .rx-replace-output{background:var(--card);border-radius:12px;padding:1rem;margin:.5rem 0;font-family:monospace;font-size:.9rem;word-break:break-all;min-height:40px;position:relative}
+        .rx-copy-btn{position:absolute;top:.5rem;right:.5rem;background:var(--gradient);color:#fff;border:none;padding:.3rem .7rem;border-radius:8px;cursor:pointer;font-size:.75rem}
+        .rx-patterns-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.4rem;margin:.5rem 0}
+        .rx-patterns-grid button{font-size:.75rem;padding:.5rem .6rem;margin:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rx-cheat{background:var(--card);border-radius:12px;padding:1rem;margin:.8rem 0}
+        .rx-cheat-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:.5rem;font-weight:600;margin-bottom:.5rem}
+        .rx-cheat-toggle::before{content:"\25B6";font-size:.7rem;transition:transform .2s}
+        .rx-cheat-toggle.open::before{transform:rotate(90deg)}
+        .rx-cheat-body{display:none;max-height:400px;overflow-y:auto}
+        .rx-cheat-body.open{display:block}
+        .rx-cheat table{width:100%;border-collapse:collapse;font-size:.82rem}
+        .rx-cheat td{padding:4px 8px;border-bottom:1px solid rgba(128,128,128,.12);vertical-align:top}
+        .rx-cheat td:first-child{font-family:monospace;font-weight:700;color:var(--accent);white-space:nowrap;width:80px}
+        .rx-cheat td:last-child{color:var(--text2)}
+        .rx-cheat h4{margin:1rem 0 .3rem;color:var(--text);font-size:.9rem}
       </style>
 
-      <!-- Cheat Sheet Sidebar -->
-      <div class="cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">📖 Regex Cheat Sheet</div>
-      <div class="cheat-panel">
-        <table>
-          <tr><td>.</td><td>Any character except newline</td></tr>
-          <tr><td>*</td><td>0 or more (e.g. <code>a*</code>)</td></tr>
-          <tr><td>+</td><td>1 or more (e.g. <code>\d+</code>)</td></tr>
-          <tr><td>?</td><td>0 or 1 (optional) (e.g. <code>colou?r</code>)</td></tr>
-          <tr><td>\d</td><td>Digit [0-9]</td></tr>
-          <tr><td>\w</td><td>Word char [a-zA-Z0-9_]</td></tr>
-          <tr><td>\s</td><td>Whitespace (space, tab, newline)</td></tr>
-          <tr><td>^</td><td>Start of string/line</td></tr>
-          <tr><td>$</td><td>End of string/line</td></tr>
-          <tr><td>[abc]</td><td>Character class — matches a, b, or c</td></tr>
-          <tr><td>(abc)</td><td>Capturing group</td></tr>
-          <tr><td>a|b</td><td>Alternation — a or b</td></tr>
-          <tr><td>{n,m}</td><td>Between n and m repetitions</td></tr>
-          <tr><td>(?=...)</td><td>Lookahead — matches if followed by ...</td></tr>
-          <tr><td>(?&lt;=...)</td><td>Lookbehind — matches if preceded by ...</td></tr>
-        </table>
-      </div>
-
       <!-- Pattern & Flags -->
-      <div class="row"><label>/</label><input type="text" id="pattern" placeholder="Enter regex pattern..." value="\b(\w+)@(\w+)\.(\w+)\b" oninput="test()" style="flex:3;font-family:monospace"><label>/</label><input type="text" id="flags" value="gi" placeholder="flags" oninput="test()" style="width:50px;font-family:monospace"></div>
-      <div style="margin:.4rem 0;display:flex;flex-wrap:wrap;gap:.6rem">
-        <span class="flag-wrap"><span class="flag-label">g</span><span class="flag-tip">Global — find all matches, not just the first</span></span>
-        <span class="flag-wrap"><span class="flag-label">i</span><span class="flag-tip">Case-insensitive — ignore upper/lower case</span></span>
-        <span class="flag-wrap"><span class="flag-label">m</span><span class="flag-tip">Multiline — ^ and $ match line starts/ends</span></span>
-        <span class="flag-wrap"><span class="flag-label">s</span><span class="flag-tip">Dotall — dot (.) also matches newline characters</span></span>
-        <span class="flag-wrap"><span class="flag-label">u</span><span class="flag-tip">Unicode — treat pattern as Unicode code points</span></span>
+      <div class="row"><label style="font-size:1.2rem;font-family:monospace">/</label><input type="text" id="pattern" placeholder="Enter regex pattern..." value="\b(\w+)@(\w+)\.(\w+)\b" style="flex:3;font-family:monospace"><label style="font-size:1.2rem;font-family:monospace">/</label><span id="flagDisplay" style="font-family:monospace;min-width:40px;color:var(--accent)">gi</span></div>
+
+      <!-- Flag toggles -->
+      <div class="rx-flags">
+        <label class="rx-flag"><input type="checkbox" id="flag-g" checked><code>g</code><span class="flag-desc">Global — find all matches</span></label>
+        <label class="rx-flag"><input type="checkbox" id="flag-i" checked><code>i</code><span class="flag-desc">Case-insensitive</span></label>
+        <label class="rx-flag"><input type="checkbox" id="flag-m"><code>m</code><span class="flag-desc">Multiline — ^ $ match lines</span></label>
+        <label class="rx-flag"><input type="checkbox" id="flag-s"><code>s</code><span class="flag-desc">Dotall — . matches newline</span></label>
+        <label class="rx-flag"><input type="checkbox" id="flag-u"><code>u</code><span class="flag-desc">Unicode mode</span></label>
+        <label class="rx-flag"><input type="checkbox" id="flag-y"><code>y</code><span class="flag-desc">Sticky — match from lastIndex</span></label>
       </div>
 
-      <textarea id="text" rows="5" placeholder="Enter test string..." oninput="test()">Contact us at hello@example.com or support@freetoolhubs.com for help.</textarea>
-      <div id="result" style="background:var(--card);padding:1rem;border-radius:8px;margin-top:.5rem;line-height:1.8;min-height:40px"></div>
-      <div id="matches" class="info" style="margin-top:.5rem"></div>
-      <div id="groups" class="group-colors" style="margin-top:.3rem"></div>
+      <!-- Error Display -->
+      <div class="rx-error" id="rxError"></div>
 
-      <!-- Replace Mode -->
-      <div style="background:var(--card);padding:.8rem;border-radius:8px;margin-top:.5rem">
-        <div class="row"><label>Replace with:</label><input type="text" id="replacement" placeholder="Replacement string (supports $1, $2...)" style="flex:3;font-family:monospace" oninput="doReplace()"></div>
-        <div id="replaced" style="margin-top:.3rem;font-family:monospace;font-size:.9rem;word-break:break-all"></div>
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('replaced').textContent)" style="margin-top:.3rem;font-size:.8rem">📋 Copy Replaced</button>
+      <!-- Tabs: Match | Replace | Patterns | Cheatsheet -->
+      <div class="rx-tabs">
+        <button class="rx-tab active" onclick="switchRxTab('match')">🎯 Match</button>
+        <button class="rx-tab" onclick="switchRxTab('replace')">🔄 Replace</button>
+        <button class="rx-tab" onclick="switchRxTab('patterns')">📚 Patterns</button>
+        <button class="rx-tab" onclick="switchRxTab('cheatsheet')">📖 Cheatsheet</button>
       </div>
 
-      <!-- Common Patterns Library -->
-      <h3 style="margin:1rem 0 .5rem">Common Patterns</h3>
-      <div style="display:flex;flex-wrap:wrap;gap:4px">
-        <button class="btn btn-outline" onclick="setP('\\b[\\w.-]+@[\\w.-]+\\.\\w{2,}\\b')" style="font-size:.75rem">📧 Email</button>
-        <button class="btn btn-outline" onclick="setP('[+]?\\d{1,3}[-.\\s]?\\d{3,}[-.\\s]?\\d{4,}')" style="font-size:.75rem">📞 Phone</button>
-        <button class="btn btn-outline" onclick="setP('https?://[\\w.-]+(?:/[\\w./?%&=-]*)?')" style="font-size:.75rem">🔗 URL</button>
-        <button class="btn btn-outline" onclick="setP('\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b')" style="font-size:.75rem">🌐 IP Address</button>
-        <button class="btn btn-outline" onclick="setP('\\b\\d{4}[-/]\\d{2}[-/]\\d{2}\\b')" style="font-size:.75rem">📅 Date</button>
-        <button class="btn btn-outline" onclick="setP('\\b([01]?\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?\\b')" style="font-size:.75rem">⏰ Time</button>
-        <button class="btn btn-outline" onclick="setP('<([a-z][a-z0-9]*)\\b[^>]*>(.*?)</\\1>')" style="font-size:.75rem">🏷️ HTML Tag</button>
-        <button class="btn btn-outline" onclick="setP('#([0-9a-fA-F]{3}){1,2}\\b')" style="font-size:.75rem">🎨 Hex Color</button>
-        <button class="btn btn-outline" onclick="setP('(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,}')" style="font-size:.75rem">🔑 Password (8+)</button>
-        <button class="btn btn-outline" onclick="setP('\\b[1-9][0-9]{5}\\b')" style="font-size:.75rem">📮 Indian Pincode</button>
+      <!-- Match Panel -->
+      <div class="rx-panel active" id="rxp-match">
+        <div class="rx-highlight-wrap">
+          <div class="rx-highlight-backdrop" id="highlight-backdrop"></div>
+          <textarea id="text" class="rx-highlight-textarea" rows="5" placeholder="Enter test string...">Contact us at hello@example.com or support@freetoolhubs.com for help.</textarea>
+        </div>
+        <div class="rx-results" id="rxResults">
+          <div class="rx-match-count" id="rxMatchCount">0 matches</div>
+          <div id="rxMatchList"></div>
+        </div>
+      </div>
+
+      <!-- Replace Panel -->
+      <div class="rx-panel" id="rxp-replace">
+        <div class="rx-highlight-wrap">
+          <div class="rx-highlight-backdrop" id="highlight-backdrop-replace"></div>
+          <textarea id="text-replace" class="rx-highlight-textarea" rows="4" placeholder="Enter test string for replacement...">Contact us at hello@example.com or support@freetoolhubs.com for help.</textarea>
+        </div>
+        <div class="row" style="margin-top:.5rem">
+          <input type="text" id="replacement" placeholder="Replacement ($1, $2, $<name>...)" style="flex:3;font-family:monospace">
+        </div>
+        <div class="rx-replace-output" id="replaceOutput">
+          <button class="rx-copy-btn" onclick="copyReplaced()">📋 Copy</button>
+          <span id="replacedText"></span>
+        </div>
+      </div>
+
+      <!-- Common Patterns Panel -->
+      <div class="rx-panel" id="rxp-patterns">
+        <p class="info">Click any pattern to load it. Each includes a sample test string.</p>
+        <div class="rx-patterns-grid">
+          <button class="btn btn-outline" onclick="loadPattern('email')">📧 Email</button>
+          <button class="btn btn-outline" onclick="loadPattern('indianMobile')">📱 Indian Mobile</button>
+          <button class="btn btn-outline" onclick="loadPattern('indianPin')">📮 Indian PIN Code</button>
+          <button class="btn btn-outline" onclick="loadPattern('pan')">🪪 PAN Card</button>
+          <button class="btn btn-outline" onclick="loadPattern('aadhaar')">🆔 Aadhaar</button>
+          <button class="btn btn-outline" onclick="loadPattern('gstin')">🏢 GSTIN</button>
+          <button class="btn btn-outline" onclick="loadPattern('ifsc')">🏦 IFSC Code</button>
+          <button class="btn btn-outline" onclick="loadPattern('url')">🔗 URL</button>
+          <button class="btn btn-outline" onclick="loadPattern('ipv4')">🌐 IPv4</button>
+          <button class="btn btn-outline" onclick="loadPattern('dateDMY')">📅 Date dd/mm/yyyy</button>
+          <button class="btn btn-outline" onclick="loadPattern('time')">⏰ Time</button>
+          <button class="btn btn-outline" onclick="loadPattern('hexColor')">🎨 Hex Colour</button>
+          <button class="btn btn-outline" onclick="loadPattern('username')">👤 Username</button>
+          <button class="btn btn-outline" onclick="loadPattern('strongPass')">🔑 Strong Password</button>
+          <button class="btn btn-outline" onclick="loadPattern('htmlTag')">🏷️ HTML Tag</button>
+          <button class="btn btn-outline" onclick="loadPattern('whitespace')">⬜ Whitespace</button>
+          <button class="btn btn-outline" onclick="loadPattern('duplicateWords')">🔁 Duplicate Words</button>
+        </div>
+      </div>
+
+      <!-- Cheatsheet Panel -->
+      <div class="rx-panel" id="rxp-cheatsheet">
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Character Classes</div>
+          <div class="rx-cheat-body open">
+            <table>
+              <tr><td>.</td><td>Any character except newline</td></tr>
+              <tr><td>\d</td><td>Digit [0-9] — e.g. <code>\d+</code> matches "123"</td></tr>
+              <tr><td>\D</td><td>Non-digit [^0-9]</td></tr>
+              <tr><td>\w</td><td>Word char [a-zA-Z0-9_] — e.g. <code>\w+</code> matches "hello_1"</td></tr>
+              <tr><td>\W</td><td>Non-word character</td></tr>
+              <tr><td>\s</td><td>Whitespace (space, tab, newline)</td></tr>
+              <tr><td>\S</td><td>Non-whitespace</td></tr>
+              <tr><td>[abc]</td><td>Any of a, b, or c</td></tr>
+              <tr><td>[^abc]</td><td>Not a, b, or c</td></tr>
+              <tr><td>[a-z]</td><td>Range: a to z</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Quantifiers</div>
+          <div class="rx-cheat-body">
+            <table>
+              <tr><td>*</td><td>0 or more — <code>a*</code> matches "", "a", "aaa"</td></tr>
+              <tr><td>+</td><td>1 or more — <code>a+</code> matches "a", "aaa"</td></tr>
+              <tr><td>?</td><td>0 or 1 (optional) — <code>colou?r</code></td></tr>
+              <tr><td>{n}</td><td>Exactly n — <code>\d{4}</code> matches "2024"</td></tr>
+              <tr><td>{n,}</td><td>n or more</td></tr>
+              <tr><td>{n,m}</td><td>Between n and m</td></tr>
+              <tr><td>*?</td><td>Lazy * (as few as possible)</td></tr>
+              <tr><td>+?</td><td>Lazy +</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Anchors</div>
+          <div class="rx-cheat-body">
+            <table>
+              <tr><td>^</td><td>Start of string (or line with m flag)</td></tr>
+              <tr><td>$</td><td>End of string (or line with m flag)</td></tr>
+              <tr><td>\b</td><td>Word boundary — <code>\bcat\b</code> matches "cat" not "catch"</td></tr>
+              <tr><td>\B</td><td>Non-word boundary</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Groups & References</div>
+          <div class="rx-cheat-body">
+            <table>
+              <tr><td>(abc)</td><td>Capturing group — access with $1</td></tr>
+              <tr><td>(?:abc)</td><td>Non-capturing group</td></tr>
+              <tr><td>(?&lt;name&gt;)</td><td>Named group — access with $&lt;name&gt;</td></tr>
+              <tr><td>\1</td><td>Back-reference to group 1</td></tr>
+              <tr><td>a|b</td><td>Alternation — a or b</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Lookarounds</div>
+          <div class="rx-cheat-body">
+            <table>
+              <tr><td>(?=...)</td><td>Positive lookahead — matches if followed by ...</td></tr>
+              <tr><td>(?!...)</td><td>Negative lookahead — matches if NOT followed by ...</td></tr>
+              <tr><td>(?&lt;=...)</td><td>Positive lookbehind — matches if preceded by ...</td></tr>
+              <tr><td>(?&lt;!...)</td><td>Negative lookbehind — matches if NOT preceded by ...</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="rx-cheat">
+          <div class="rx-cheat-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Escapes</div>
+          <div class="rx-cheat-body">
+            <table>
+              <tr><td>\.</td><td>Literal dot</td></tr>
+              <tr><td>\\</td><td>Literal backslash</td></tr>
+              <tr><td>\n</td><td>Newline</td></tr>
+              <tr><td>\t</td><td>Tab</td></tr>
+              <tr><td>\uFFFF</td><td>Unicode character</td></tr>
+              <tr><td>Special</td><td>Escape these: . * + ? ^ $ { } ( ) | [ ] \</td></tr>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -152,47 +277,235 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var groupColors=['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
-function esc(s){return s.replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})}
-function setP(p){document.getElementById("pattern").value=p;test()}
-function test(){
-  var p=document.getElementById("pattern").value,f=document.getElementById("flags").value,t=document.getElementById("text").value;
-  var resEl=document.getElementById("result"),matchEl=document.getElementById("matches"),grpEl=document.getElementById("groups");
-  if(!p||!t){resEl.innerHTML=esc(t);matchEl.textContent="";grpEl.innerHTML="";return}
-  try{
-    var re=new RegExp(p,f.indexOf('g')===-1?f+'g':f);
-    var count=0,html="",last=0,groupInfo=[];
-    var m;
-    while((m=re.exec(t))!==null){
-      html+=esc(t.slice(last,m.index));
-      var full=m[0],inner='';
-      if(m.length>1){
-        var pos=0;
-        for(var i=1;i<m.length;i++){
-          if(m[i]===undefined)continue;
-          var gi=full.indexOf(m[i],pos);
-          if(gi>pos)inner+=esc(full.slice(pos,gi));
-          var c=groupColors[(i-1)%groupColors.length];
-          inner+='<span style="background:'+c+'33;border-bottom:2px solid '+c+';border-radius:2px;padding:0 1px" title="Group '+i+'">'+esc(m[i])+'</span>';
-          pos=gi+m[i].length;
-          if(!groupInfo[i])groupInfo[i]=c;
-        }
-        if(pos<full.length)inner+=esc(full.slice(pos));
-      }else{inner=esc(full)}
-      html+='<mark style="background:#6366f122;color:var(--text);padding:1px 2px;border-radius:3px;border-bottom:2px solid #6366f1">'+inner+'</mark>';
-      last=m.index+full.length;count++;
-      if(m.index===re.lastIndex)re.lastIndex++;
-    }
-    html+=esc(t.slice(last));
-    resEl.innerHTML=html;
-    matchEl.textContent=count+" match"+(count!==1?"es":"")+" found";
-    var gl='';
-    for(var i=1;i<groupInfo.length;i++){if(groupInfo[i])gl+='<span style="background:'+groupInfo[i]+'33;border-bottom:2px solid '+groupInfo[i]+'">Group '+i+'</span>';}
-    grpEl.innerHTML=gl;
-    doReplace();
-  }catch(e){resEl.innerHTML='<span style="color:#f44336">Invalid regex: '+e.message+'</span>';matchEl.textContent="";grpEl.innerHTML=""}
+var debounceTimer = null;
+var DEBOUNCE_MS = 150;
+var MAX_ITERATIONS = 10000;
+
+var patterns = {
+  email: { regex: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}", sample: "test@gmail.com, hello.world@company.co.in, invalid@, user@domain.org" },
+  indianMobile: { regex: "(?:\\+91[\\s-]?)?[6-9]\\d{9}", sample: "+91 9876543210, 8765432109, +91-7654321098, 1234567890" },
+  indianPin: { regex: "\\b[1-9][0-9]{5}\\b", sample: "PIN: 110001, 400001, 560034, invalid: 000123, 99999" },
+  pan: { regex: "[A-Z]{5}[0-9]{4}[A-Z]", sample: "ABCDE1234F, ZZZZZ9999Z, invalid: ABC1234D, 12345ABCDE" },
+  aadhaar: { regex: "\\b[2-9]\\d{3}\\s?\\d{4}\\s?\\d{4}\\b", sample: "2345 6789 0123, 987654321012, invalid: 0123 4567 8901" },
+  gstin: { regex: "\\d{2}[A-Z]{5}\\d{4}[A-Z]\\d[Z][A-Z0-9]", sample: "27AAPFU0939F1ZV, 06BZAHM6385P6Z2, invalid: 1AABBB1234A1Z1" },
+  ifsc: { regex: "[A-Z]{4}0[A-Z0-9]{6}", sample: "SBIN0001234, HDFC0000001, ICIC0002345, invalid: ABC1234567" },
+  url: { regex: "https?://[\\w.-]+(?:\\.[a-z]{2,})(?:/[\\w./?%&=#-]*)?", sample: "Visit https://example.com/page?q=1 and http://sub.domain.org/path" },
+  ipv4: { regex: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b", sample: "192.168.1.1, 10.0.0.255, 8.8.8.8, invalid: 999.999.999.999" },
+  dateDMY: { regex: "\\b(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/(19|20)\\d{2}\\b", sample: "25/12/2024, 01/01/2000, 31/06/1999, invalid: 32/13/2024" },
+  time: { regex: "\\b([01]?\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?\\b", sample: "14:30, 09:15:45, 23:59:59, 8:05, invalid: 25:61" },
+  hexColor: { regex: "#([0-9a-fA-F]{3}){1,2}\\b", sample: "Colors: #fff, #6366f1, #8b5cf6, #000000, invalid: #xyz" },
+  username: { regex: "^[a-zA-Z][a-zA-Z0-9._-]{2,19}$", sample: "user_123\njohn.doe\n_invalid\na\nValid-User" },
+  strongPass: { regex: "(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,}", sample: "Str0ng!Pass, weakpass, NoSpecial1, Short!1, P@ss1word" },
+  htmlTag: { regex: "<([a-z][a-z0-9]*)\\b[^>]*>(.*?)</\\1>", sample: "<div class=\"x\">hello</div> <span>world</span> <br/>" },
+  whitespace: { regex: "\\s+", sample: "hello   world\t\ttab  spaces\nnewline" },
+  duplicateWords: { regex: "\\b(\\w+)\\s+\\1\\b", sample: "the the quick brown fox fox jumped over the the lazy dog" }
+};
+
+function getFlags() {
+  var flags = "";
+  if (document.getElementById("flag-g").checked) { flags += "g"; }
+  if (document.getElementById("flag-i").checked) { flags += "i"; }
+  if (document.getElementById("flag-m").checked) { flags += "m"; }
+  if (document.getElementById("flag-s").checked) { flags += "s"; }
+  if (document.getElementById("flag-u").checked) { flags += "u"; }
+  if (document.getElementById("flag-y").checked) { flags += "y"; }
+  return flags;
 }
-function doReplace(){var p=document.getElementById("pattern").value,f=document.getElementById("flags").value,t=document.getElementById("text").value,r=document.getElementById("replacement").value;try{var re=new RegExp(p,f);document.getElementById("replaced").textContent=t.replace(re,r)}catch(e){document.getElementById("replaced").textContent=""}}
-test();
+
+function updateFlagDisplay() {
+  document.getElementById("flagDisplay").textContent = getFlags() || "(none)";
+}
+
+function esc(s) {
+  return s.replace(/[<>&"]/g, function(c) {
+    return {"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c];
+  });
+}
+
+function scheduleTest() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(runTest, DEBOUNCE_MS);
+}
+
+function runTest() {
+  updateFlagDisplay();
+  var p = document.getElementById("pattern").value;
+  var flags = getFlags();
+  var t = document.getElementById("text").value;
+  var errorEl = document.getElementById("rxError");
+  var countEl = document.getElementById("rxMatchCount");
+  var listEl = document.getElementById("rxMatchList");
+  var backdropEl = document.getElementById("highlight-backdrop");
+
+  errorEl.classList.remove("visible");
+  errorEl.textContent = "";
+
+  if (!p) {
+    backdropEl.innerHTML = esc(t);
+    countEl.textContent = "0 matches";
+    listEl.innerHTML = "";
+    doReplace();
+    return;
+  }
+
+  try {
+    var testFlags = flags.indexOf("g") === -1 ? flags + "g" : flags;
+    var re = new RegExp(p, testFlags);
+    var count = 0;
+    var html = "";
+    var last = 0;
+    var matchDetails = [];
+    var m;
+
+    while ((m = re.exec(t)) !== null) {
+      count++;
+      if (count > MAX_ITERATIONS) { break; }
+      html += esc(t.slice(last, m.index));
+      html += "<mark>" + esc(m[0]) + "</mark>";
+      last = m.index + m[0].length;
+
+      var detail = { index: m.index, text: m[0], groups: [] };
+      for (var i = 1; i < m.length; i++) {
+        var gName = null;
+        if (m.groups) {
+          var keys = Object.keys(m.groups);
+          for (var k = 0; k < keys.length; k++) {
+            if (m.groups[keys[k]] === m[i] && !detail.groups.some(function(g) { return g.name === keys[k]; })) {
+              gName = keys[k];
+              break;
+            }
+          }
+        }
+        detail.groups.push({ idx: i, value: m[i], name: gName });
+      }
+      matchDetails.push(detail);
+
+      if (m.index === re.lastIndex) { re.lastIndex++; }
+    }
+    html += esc(t.slice(last));
+    backdropEl.innerHTML = html;
+
+    countEl.textContent = count + " match" + (count !== 1 ? "es" : "") + " found";
+
+    var listHtml = "";
+    for (var d = 0; d < matchDetails.length && d < 100; d++) {
+      var det = matchDetails[d];
+      listHtml += '<div class="match-item"><span class="match-idx">Match ' + (d + 1) + " (index " + det.index + ")</span> <span class=\"match-text\">" + esc(det.text) + "</span>";
+      if (det.groups.length > 0) {
+        for (var gi = 0; gi < det.groups.length; gi++) {
+          var grp = det.groups[gi];
+          var label = grp.name ? "Group " + grp.idx + ' (&lt;' + esc(grp.name) + '&gt;)' : "Group " + grp.idx;
+          listHtml += '<div class="group-item">' + label + ": <code>" + (grp.value !== undefined ? esc(grp.value) : "undefined") + "</code></div>";
+        }
+      }
+      listHtml += "</div>";
+    }
+    if (matchDetails.length > 100) {
+      listHtml += '<div class="info">Showing first 100 matches...</div>';
+    }
+    listEl.innerHTML = listHtml;
+
+    doReplace();
+  } catch(e) {
+    errorEl.textContent = "Invalid regex: " + e.message;
+    errorEl.classList.add("visible");
+    backdropEl.innerHTML = esc(t);
+    countEl.textContent = "0 matches";
+    listEl.innerHTML = "";
+  }
+}
+
+function doReplace() {
+  var p = document.getElementById("pattern").value;
+  var flags = getFlags();
+  var t = document.getElementById("text-replace").value;
+  var r = document.getElementById("replacement").value;
+  var outputEl = document.getElementById("replacedText");
+  var backdropReplace = document.getElementById("highlight-backdrop-replace");
+
+  if (!p) {
+    outputEl.textContent = t;
+    backdropReplace.innerHTML = esc(t);
+    return;
+  }
+
+  try {
+    var re = new RegExp(p, flags);
+    outputEl.textContent = t.replace(re, r);
+
+    var testFlags = flags.indexOf("g") === -1 ? flags + "g" : flags;
+    var re2 = new RegExp(p, testFlags);
+    var html = "";
+    var last = 0;
+    var count = 0;
+    var m;
+    while ((m = re2.exec(t)) !== null) {
+      count++;
+      if (count > MAX_ITERATIONS) { break; }
+      html += esc(t.slice(last, m.index));
+      html += "<mark>" + esc(m[0]) + "</mark>";
+      last = m.index + m[0].length;
+      if (m.index === re2.lastIndex) { re2.lastIndex++; }
+    }
+    html += esc(t.slice(last));
+    backdropReplace.innerHTML = html;
+  } catch(e) {
+    outputEl.textContent = "Error: " + e.message;
+    backdropReplace.innerHTML = esc(t);
+  }
+}
+
+function copyReplaced() {
+  var text = document.getElementById("replacedText").textContent;
+  navigator.clipboard.writeText(text);
+}
+
+function switchRxTab(name) {
+  var tabs = document.querySelectorAll(".rx-tab");
+  var panels = document.querySelectorAll(".rx-panel");
+  tabs.forEach(function(tab) { tab.classList.remove("active"); });
+  panels.forEach(function(p) { p.classList.remove("active"); });
+  document.getElementById("rxp-" + name).classList.add("active");
+  var names = ["match", "replace", "patterns", "cheatsheet"];
+  var idx = names.indexOf(name);
+  if (idx >= 0) { tabs[idx].classList.add("active"); }
+}
+
+function loadPattern(key) {
+  var pat = patterns[key];
+  if (!pat) { return; }
+  document.getElementById("pattern").value = pat.regex;
+  document.getElementById("text").value = pat.sample;
+  document.getElementById("text-replace").value = pat.sample;
+  switchRxTab("match");
+  runTest();
+}
+
+function syncTextareas() {
+  var t = document.getElementById("text").value;
+  document.getElementById("text-replace").value = t;
+}
+
+document.getElementById("pattern").addEventListener("input", scheduleTest);
+document.getElementById("text").addEventListener("input", function() { syncTextareas(); scheduleTest(); });
+document.getElementById("text-replace").addEventListener("input", function() { scheduleTest(); });
+document.getElementById("replacement").addEventListener("input", doReplace);
+
+var flagCheckboxes = document.querySelectorAll(".rx-flag input[type=\"checkbox\"]");
+flagCheckboxes.forEach(function(cb) {
+  cb.addEventListener("change", function() { updateFlagDisplay(); scheduleTest(); });
+});
+
+document.getElementById("text").addEventListener("scroll", function() {
+  document.getElementById("highlight-backdrop").scrollTop = this.scrollTop;
+  document.getElementById("highlight-backdrop").scrollLeft = this.scrollLeft;
+});
+
+document.getElementById("text-replace").addEventListener("scroll", function() {
+  document.getElementById("highlight-backdrop-replace").scrollTop = this.scrollTop;
+  document.getElementById("highlight-backdrop-replace").scrollLeft = this.scrollLeft;
+});
+
+runTest();
   </script>
 </body></html>

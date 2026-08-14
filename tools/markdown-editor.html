@@ -28,14 +28,39 @@
   </script>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-  <style>#preview-area{background:var(--card);border-radius:12px;padding:1.5rem;min-height:300px;overflow:auto;line-height:1.8}
+  <style>
+  #preview-area{background:var(--card);border-radius:12px;padding:1.5rem;min-height:300px;overflow:auto;line-height:1.8}
   #preview-area h1,#preview-area h2,#preview-area h3{margin:1rem 0 .5rem}
-  #preview-area code{background:rgba(79,140,255,.1);padding:2px 6px;border-radius:4px;font-size:.9em}
+  #preview-area code{background:rgba(99,102,241,.1);padding:2px 6px;border-radius:4px;font-size:.9em}
   #preview-area pre{background:var(--bg);padding:1rem;border-radius:8px;overflow-x:auto}
-  #preview-area blockquote{border-left:3px solid var(--accent);padding-left:1rem;color:var(--text2)}
-  #preview-area table{border-collapse:collapse;width:100%}#preview-area td,#preview-area th{border:1px solid var(--text2);padding:.5rem}
-  .editor-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-  @media(max-width:700px){.editor-wrap{grid-template-columns:1fr}}</style>
+  #preview-area pre code{background:transparent;padding:0}
+  #preview-area blockquote{border-left:3px solid var(--accent);padding-left:1rem;color:var(--text2);margin:.5rem 0}
+  #preview-area table{border-collapse:collapse;width:100%}
+  #preview-area td,#preview-area th{border:1px solid var(--text2);padding:.5rem}
+  #preview-area th{background:rgba(99,102,241,.1)}
+  #preview-area img{max-width:100%;border-radius:8px}
+  #preview-area hr{border:none;border-top:2px solid var(--text2);margin:1rem 0;opacity:.3}
+  #preview-area ul,#preview-area ol{margin-left:1.5rem;margin-bottom:.5rem}
+  #preview-area li{margin:.2rem 0}
+  #preview-area .task-item{list-style:none;margin-left:-1.5rem}
+  #preview-area .task-item input[type=checkbox]{margin-right:.5rem}
+  #preview-area del{opacity:.6}
+  .editor-wrap{display:grid;gap:1rem;min-height:500px}
+  .editor-wrap.mode-split{grid-template-columns:1fr 1fr}
+  .editor-wrap.mode-editor{grid-template-columns:1fr}
+  .editor-wrap.mode-preview{grid-template-columns:1fr}
+  .editor-wrap.mode-editor .preview-pane{display:none}
+  .editor-wrap.mode-preview .editor-pane{display:none}
+  @media(max-width:700px){.editor-wrap.mode-split{grid-template-columns:1fr}}
+  .md-toolbar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;align-items:center}
+  .md-toolbar button{padding:4px 8px;font-size:.85rem}
+  .md-toolbar .sep{width:1px;height:20px;background:var(--text2);opacity:.3;margin:0 4px}
+  .view-toggle{display:flex;gap:2px;background:var(--card);border-radius:8px;padding:2px;margin-left:auto}
+  .view-toggle button{padding:4px 10px;font-size:.75rem;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:6px;transition:all .2s}
+  .view-toggle button.active{background:var(--accent);color:#fff}
+  .stats-bar{display:flex;gap:1rem;font-size:.75rem;color:var(--text2);margin-top:4px;flex-wrap:wrap}
+  @media print{nav,footer,.md-toolbar,.row,.stats-bar,.view-toggle,.breadcrumb,[style*="min-height:90px"]{display:none!important}.editor-wrap{display:block!important}#preview-area{box-shadow:none!important;border:none!important;padding:0!important}textarea,.editor-pane{display:none!important}}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -45,47 +70,86 @@
     <div class="tool-section">
       <h1>✍️ Markdown Editor</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Write Markdown on the left, see live preview on the right.</p>
-      <div class="editor-wrap">
-        <div><label><strong>Markdown</strong></label>
-        <div class="md-toolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('**','**')"><b>B</b></button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('*','*')"><i>I</i></button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('[','](url)')">🔗 Link</button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('![alt](',')')">🖼 Image</button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('## ','')">H</button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('- ','')">☰ List</button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('`','`')">&lt;/&gt; Code</button>
-          <button type="button" class="btn btn-outline" style="padding:4px 8px;font-size:.85rem" onclick="ins('> ','')">❝ Quote</button>
+      <p class="info">Write Markdown on the left, see live preview on the right. Use toolbar or keyboard shortcuts.</p>
+      <div class="md-toolbar">
+        <button type="button" class="btn btn-outline" onclick="ins('**','**')" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button type="button" class="btn btn-outline" onclick="ins('*','*')" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button type="button" class="btn btn-outline" onclick="ins('~~','~~')" title="Strikethrough"><s>S</s></button>
+        <span class="sep"></span>
+        <button type="button" class="btn btn-outline" onclick="insLine('# ')" title="Heading 1">H1</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('## ')" title="Heading 2">H2</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('### ')" title="Heading 3">H3</button>
+        <span class="sep"></span>
+        <button type="button" class="btn btn-outline" onclick="ins('[','](url)')" title="Link (Ctrl+K)">🔗</button>
+        <button type="button" class="btn btn-outline" onclick="ins('![alt](',')')" title="Image">🖼</button>
+        <button type="button" class="btn btn-outline" onclick="ins('`','`')" title="Inline Code">&lt;/&gt;</button>
+        <button type="button" class="btn btn-outline" onclick="insBlock('```\n','\n```')" title="Code Block">{ }</button>
+        <span class="sep"></span>
+        <button type="button" class="btn btn-outline" onclick="insLine('> ')" title="Blockquote">❝</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('- ')" title="Bullet List">•</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('1. ')" title="Numbered List">1.</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('- [ ] ')" title="Task Item">☑</button>
+        <button type="button" class="btn btn-outline" onclick="insTable()" title="Table">⊞</button>
+        <button type="button" class="btn btn-outline" onclick="insLine('---')" title="Horizontal Rule">―</button>
+        <div class="view-toggle">
+          <button onclick="setView('editor')" id="vEditor">Edit</button>
+          <button onclick="setView('split')" id="vSplit" class="active">Split</button>
+          <button onclick="setView('preview')" id="vPreview">Preview</button>
         </div>
-        <textarea id="md" oninput="render()" style="min-height:400px;font-family:monospace"># Hello World
+      </div>
+      <div class="editor-wrap mode-split" id="editorWrap">
+        <div class="editor-pane">
+          <textarea id="md" oninput="render()" onscroll="syncScroll(this)" style="min-height:500px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.9rem;line-height:1.6;resize:vertical"># Hello World
 
-This is **bold** and *italic* text.
+This is **bold** and *italic* text. Also ~~strikethrough~~.
 
 ## Features
-- Live preview
-- Export to HTML
-- Auto-saved
+- Live split-view preview
+- Formatting toolbar & keyboard shortcuts
+- Export as .md or .html
+- Auto-saved to localStorage
 
 > This is a blockquote
 
-`inline code` and:
+`inline code` and a fenced block:
 
 ```
-code block
+function hello() {
+  console.log("Hello, world!");
+}
 ```
 
 | Name | Score |
 |------|-------|
 | Ankit | 95 |
-| Rahul | 88 |</textarea></div>
-        <div><label><strong>Preview</strong></label><div id="preview-area"></div></div>
+| Rahul | 88 |
+
+### Task List
+- [x] Build markdown parser
+- [ ] Add export options
+- [ ] Write documentation
+
+---
+
+[Visit FreeToolHubs](https://freetoolhubs.com)</textarea>
+          <div class="stats-bar" id="statsBar">
+            <span id="statWords">0 words</span>
+            <span id="statChars">0 chars</span>
+            <span id="statLines">0 lines</span>
+            <span id="statTime">~0 min read</span>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div id="preview-area" onscroll="syncScroll(this)"></div>
+        </div>
       </div>
       <div class="row" style="margin-top:1rem">
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('md').value)">📋 Copy MD</button>
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('preview-area').innerHTML)">📋 Copy HTML</button>
-        <button class="btn" onclick="download(new Blob([document.getElementById('md').value]),'document.md')">💾 Download .md</button>
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('md').value).then(function(){showToast('Markdown copied!')})">📋 Copy MD</button>
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('preview-area').innerHTML).then(function(){showToast('HTML copied!')})">📋 Copy HTML</button>
+        <button class="btn" onclick="downloadMD()">💾 Download .md</button>
         <button class="btn" onclick="exportHTML()">📄 Export HTML</button>
+        <button class="btn btn-outline" onclick="window.print()">🖨 Print/PDF</button>
+        <button class="btn btn-outline" onclick="clearEditor()" style="color:#f44336">🗑 Clear</button>
       </div>
     </div>
     <div style="min-height:90px">
@@ -138,47 +202,296 @@ code block
   </footer>
   <script src="../js/common.js"></script>
   <script>
+(function(){
+"use strict";
+var ta=document.getElementById('md');
+var preview=document.getElementById('preview-area');
+var scrolling=false;
+
+/* --- View Toggle --- */
+function setView(mode){
+  var wrap=document.getElementById('editorWrap');
+  wrap.className='editor-wrap mode-'+mode;
+  document.getElementById('vEditor').className=mode==='editor'?'active':'';
+  document.getElementById('vSplit').className=mode==='split'?'active':'';
+  document.getElementById('vPreview').className=mode==='preview'?'active':'';
+}
+window.setView=setView;
+
+/* --- Insert helpers --- */
 function ins(before,after){
-  const ta=document.getElementById('md');
-  const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
-  const sel=v.substring(s,e)||'text';
+  var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  var sel=v.substring(s,e)||'text';
   ta.value=v.substring(0,s)+before+sel+after+v.substring(e);
   ta.selectionStart=s+before.length;
   ta.selectionEnd=s+before.length+sel.length;
   ta.focus();render();
 }
-function exportHTML(){
-  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Exported Markdown</title></head><body>'+document.getElementById('preview-area').innerHTML+'</body></html>';
-  download(new Blob([html],{type:'text/html'}),'document.html');
+window.ins=ins;
+
+function insLine(prefix){
+  var s=ta.selectionStart,v=ta.value;
+  var lineStart=v.lastIndexOf('\n',s-1)+1;
+  ta.value=v.substring(0,lineStart)+prefix+v.substring(lineStart);
+  ta.selectionStart=ta.selectionEnd=s+prefix.length;
+  ta.focus();render();
 }
-function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
-function render(){
-  let md=document.getElementById('md').value;
-  // Simple markdown parser
-  let html=md
-    .replace(/^### (.*$)/gm,'<h3>$1</h3>')
-    .replace(/^## (.*$)/gm,'<h2>$1</h2>')
-    .replace(/^# (.*$)/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g,'<em>$1</em>')
-    .replace(/`([^`]+)`/g,'<code>$1</code>')
-    .replace(/^> (.*$)/gm,'<blockquote>$1</blockquote>')
-    .replace(/^- (.*$)/gm,'<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s,m=>'<ul>'+m+'</ul>')
-    .replace(/\n\n/g,'<br><br>')
-    .replace(/\n/g,'<br>');
-  // Tables
-  html=html.replace(/\|(.+)\|\s*<br>\|[-| ]+\|\s*<br>([\s\S]*?)(?=<br><br>|$)/g,(m,header,body)=>{
-    const th=header.split('|').map(c=>'<th>'+c.trim()+'</th>').join('');
-    const rows=body.split('<br>').filter(r=>r.includes('|')).map(r=>'<tr>'+r.split('|').map(c=>'<td>'+c.trim()+'</td>').join('')+'</tr>').join('');
-    return '<table><thead><tr>'+th+'</tr></thead><tbody>'+rows+'</tbody></table>';
+window.insLine=insLine;
+
+function insBlock(before,after){
+  var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  var sel=v.substring(s,e)||'code here';
+  var pre=s===0||v[s-1]==='\n'?'':'\n';
+  var post=e>=v.length||v[e]==='\n'?'':'\n';
+  ta.value=v.substring(0,s)+pre+before+sel+after+post+v.substring(e);
+  var newPos=s+pre.length+before.length;
+  ta.selectionStart=newPos;
+  ta.selectionEnd=newPos+sel.length;
+  ta.focus();render();
+}
+window.insBlock=insBlock;
+
+function insTable(){
+  var tpl='\n| Header 1 | Header 2 | Header 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n';
+  var s=ta.selectionStart,v=ta.value;
+  ta.value=v.substring(0,s)+tpl+v.substring(s);
+  ta.selectionStart=ta.selectionEnd=s+tpl.length;
+  ta.focus();render();
+}
+window.insTable=insTable;
+
+/* --- Keyboard shortcuts --- */
+ta.addEventListener('keydown',function(e){
+  var mod=e.ctrlKey||e.metaKey;
+  if(mod&&e.key==='b'){e.preventDefault();ins('**','**');}
+  else if(mod&&e.key==='i'){e.preventDefault();ins('*','*');}
+  else if(mod&&e.key==='k'){e.preventDefault();ins('[','](url)');}
+});
+
+/* --- Markdown Renderer (self-contained, XSS-safe) --- */
+function renderMarkdown(src){
+  // Escape HTML first to prevent XSS
+  var text=src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // Fenced code blocks
+  text=text.replace(/^```(\w*)\n([\s\S]*?)^```/gm,function(m,lang,code){
+    return '<pre><code class="lang-'+lang+'">'+code.trimEnd()+'</code></pre>';
   });
-  document.getElementById('preview-area').innerHTML=html;
-  localStorage.setItem('toolbox-md',md);
+
+  // Split into lines for block processing
+  var lines=text.split('\n');
+  var html=[];
+  var i=0;
+  while(i<lines.length){
+    var line=lines[i];
+
+    // Skip lines that are already processed (pre blocks)
+    if(line.indexOf('<pre>')===0){
+      var block=line;
+      while(i<lines.length&&lines[i].indexOf('</pre>')===-1){
+        i++;
+        if(i<lines.length)block+='\n'+lines[i];
+      }
+      html.push(block);
+      i++;continue;
+    }
+
+    // Headings
+    if(/^#{1,6} /.test(line)){
+      var lvl=line.match(/^(#{1,6}) /)[1].length;
+      html.push('<h'+lvl+'>'+inlineFormat(line.substring(lvl+1))+'</h'+lvl+'>');
+      i++;continue;
+    }
+
+    // Horizontal rule
+    if(/^(---|\*\*\*|___)$/.test(line.trim())){
+      html.push('<hr>');i++;continue;
+    }
+
+    // Blockquote
+    if(/^&gt; /.test(line)){
+      var bq=[];
+      while(i<lines.length&&/^&gt; /.test(lines[i])){
+        bq.push(inlineFormat(lines[i].substring(5)));
+        i++;
+      }
+      html.push('<blockquote>'+bq.join('<br>')+'</blockquote>');
+      continue;
+    }
+
+    // Table
+    if(i+1<lines.length&&/^\|(.+)\|$/.test(line.trim())&&/^\|[-| :]+\|$/.test(lines[i+1].trim())){
+      var headerCells=line.trim().replace(/^\||\|$/g,'').split('|').map(function(c){return c.trim();});
+      i+=2;// skip header and separator
+      var rows=[];
+      while(i<lines.length&&/^\|(.+)\|$/.test(lines[i].trim())){
+        var cells=lines[i].trim().replace(/^\||\|$/g,'').split('|').map(function(c){return c.trim();});
+        rows.push(cells);
+        i++;
+      }
+      var tableHtml='<table><thead><tr>'+headerCells.map(function(c){return '<th>'+inlineFormat(c)+'</th>';}).join('')+'</tr></thead><tbody>';
+      rows.forEach(function(r){
+        tableHtml+='<tr>'+r.map(function(c){return '<td>'+inlineFormat(c)+'</td>';}).join('')+'</tr>';
+      });
+      tableHtml+='</tbody></table>';
+      html.push(tableHtml);
+      continue;
+    }
+
+    // Unordered list
+    if(/^[\-\*\+] /.test(line)){
+      html.push(parseList(lines,i,'ul'));
+      while(i<lines.length&&(/^[\-\*\+] /.test(lines[i])||/^  /.test(lines[i])))i++;
+      continue;
+    }
+
+    // Ordered list
+    if(/^\d+\. /.test(line)){
+      html.push(parseList(lines,i,'ol'));
+      while(i<lines.length&&(/^\d+\. /.test(lines[i])||/^  /.test(lines[i])))i++;
+      continue;
+    }
+
+    // Empty line
+    if(line.trim()===''){html.push('');i++;continue;}
+
+    // Paragraph
+    var para=[];
+    while(i<lines.length&&lines[i].trim()!==''&&!/^#{1,6} /.test(lines[i])&&!/^[\-\*\+] /.test(lines[i])&&!/^\d+\. /.test(lines[i])&&!/^&gt; /.test(lines[i])&&!/^(---|\*\*\*|___)$/.test(lines[i].trim())&&!/^\|/.test(lines[i])&&lines[i].indexOf('<pre>')!==0&&lines[i].indexOf('<table>')!==0&&lines[i].indexOf('<h')!==0&&lines[i].indexOf('<hr>')!==0&&lines[i].indexOf('<blockquote>')!==0){
+      para.push(lines[i]);i++;
+    }
+    if(para.length)html.push('<p>'+inlineFormat(para.join('<br>'))+'</p>');
+  }
+  return html.join('\n');
 }
-const saved=localStorage.getItem('toolbox-md');
-if(saved)document.getElementById('md').value=saved;
+
+function parseList(lines,start,type){
+  var items=[];
+  var i=start;
+  var indent=0;
+  while(i<lines.length){
+    var line=lines[i];
+    if(type==='ul'&&/^[\-\*\+] /.test(line)){
+      var content=line.replace(/^[\-\*\+] /,'');
+      // Task list
+      if(/^\[[ xX]\] /.test(content)){
+        var checked=content[1]!=='  '[0];
+        content=content.substring(4);
+        items.push('<li class="task-item"><input type="checkbox" disabled'+(checked?' checked':'')+'>'+inlineFormat(content)+'</li>');
+      }else{
+        items.push('<li>'+inlineFormat(content)+'</li>');
+      }
+      i++;
+    }else if(type==='ol'&&/^\d+\. /.test(line)){
+      items.push('<li>'+inlineFormat(line.replace(/^\d+\. /,''))+'</li>');
+      i++;
+    }else if(/^  /.test(line)){
+      // nested - append to last item
+      if(items.length){
+        var last=items[items.length-1];
+        items[items.length-1]=last.replace(/<\/li>$/,'<br>'+inlineFormat(line.trim())+'</li>');
+      }
+      i++;
+    }else{
+      break;
+    }
+  }
+  return '<'+type+'>'+items.join('')+'</'+type+'>';
+}
+
+function inlineFormat(text){
+  // Images (before links)
+  text=text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1">');
+  // Links
+  text=text.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Bold
+  text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  text=text.replace(/__(.+?)__/g,'<strong>$1</strong>');
+  // Strikethrough
+  text=text.replace(/~~(.+?)~~/g,'<del>$1</del>');
+  // Italic
+  text=text.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  text=text.replace(/_(.+?)_/g,'<em>$1</em>');
+  // Inline code
+  text=text.replace(/`([^`]+)`/g,'<code>$1</code>');
+  return text;
+}
+
+/* --- Render & Stats --- */
+function render(){
+  preview.innerHTML=renderMarkdown(ta.value);
+  updateStats();
+  localStorage.setItem('toolbox-md',ta.value);
+}
+window.render=render;
+
+function updateStats(){
+  var text=ta.value;
+  var words=text.trim()?text.trim().split(/\s+/).length:0;
+  var chars=text.length;
+  var lineCount=text.split('\n').length;
+  var readTime=Math.max(1,Math.ceil(words/200));
+  document.getElementById('statWords').textContent=words+' words';
+  document.getElementById('statChars').textContent=chars+' chars';
+  document.getElementById('statLines').textContent=lineCount+' lines';
+  document.getElementById('statTime').textContent='~'+readTime+' min read';
+}
+
+/* --- Synchronized scrolling --- */
+function syncScroll(source){
+  if(scrolling)return;
+  scrolling=true;
+  var ratio=source.scrollTop/(source.scrollHeight-source.clientHeight||1);
+  var target=source===ta?preview:ta;
+  target.scrollTop=ratio*(target.scrollHeight-target.clientHeight);
+  setTimeout(function(){scrolling=false;},50);
+}
+window.syncScroll=syncScroll;
+
+/* --- Export functions --- */
+function downloadMD(){
+  download(new Blob([ta.value],{type:'text/markdown'}),'document.md');
+}
+window.downloadMD=downloadMD;
+
+function exportHTML(){
+  var htmlDoc='<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Exported Markdown</title>\n<style>\nbody{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a2e;background:#fafafa}\ncode{background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:.9em}\npre{background:#1a1a2e;color:#f0f0f0;padding:1rem;border-radius:8px;overflow-x:auto}\npre code{background:transparent;color:inherit}\nblockquote{border-left:4px solid #6366f1;padding-left:1rem;color:#555;margin:1rem 0}\ntable{border-collapse:collapse;width:100%}\nth,td{border:1px solid #ddd;padding:.5rem}\nth{background:#f5f5f5}\nimg{max-width:100%}\nhr{border:none;border-top:2px solid #eee;margin:1.5rem 0}\n</style>\n</head>\n<body>\n'+preview.innerHTML+'\n</body>\n</html>';
+  download(new Blob([htmlDoc],{type:'text/html'}),'document.html');
+}
+window.exportHTML=exportHTML;
+
+function download(blob,name){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+window.download=download;
+
+function clearEditor(){
+  if(confirm('Clear all content? This cannot be undone.')){
+    ta.value='';
+    localStorage.removeItem('toolbox-md');
+    render();
+  }
+}
+window.clearEditor=clearEditor;
+
+function showToast(msg){
+  var t=document.createElement('div');
+  t.className='toast';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2000);
+}
+window.showToast=showToast;
+
+/* --- Init --- */
+var saved=localStorage.getItem('toolbox-md');
+if(saved)ta.value=saved;
 render();
+})();
   </script>
 </body>
 </html>

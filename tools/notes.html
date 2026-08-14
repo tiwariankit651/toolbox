@@ -28,6 +28,48 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/notes">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+  .notes-layout{display:grid;grid-template-columns:280px 1fr;gap:1rem;min-height:500px}
+  @media(max-width:700px){
+    .notes-layout{grid-template-columns:1fr}
+    .notes-sidebar{max-height:200px}
+    .notes-sidebar.collapsed{display:none}
+    .mobile-toggle{display:flex!important}
+  }
+  .notes-sidebar{background:var(--card);border-radius:12px;padding:.8rem;overflow-y:auto;max-height:550px;display:flex;flex-direction:column}
+  .sidebar-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}
+  .sidebar-header input{flex:1;min-width:100px;padding:.4rem .6rem;font-size:.85rem}
+  .note-item{padding:.6rem .8rem;border-radius:8px;cursor:pointer;margin:.2rem 0;transition:all .15s;border:1px solid transparent;position:relative}
+  .note-item:hover{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)}
+  .note-item.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .note-item.active .note-meta{color:rgba(255,255,255,.7)}
+  .note-item.active .note-label{border-color:rgba(255,255,255,.5)}
+  .note-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.3rem}
+  .note-meta{font-size:.7rem;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .note-label{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+  .pin-icon{font-size:.7rem;opacity:.7}
+  .note-editor{display:flex;flex-direction:column;gap:.5rem}
+  .editor-header{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .editor-header input{flex:1;font-size:1.1rem;font-weight:600;background:transparent;border:none;border-bottom:1px solid rgba(99,102,241,.2);border-radius:0;padding:.3rem 0}
+  .editor-header input:focus{border-color:var(--accent)}
+  .editor-controls{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center}
+  .editor-controls button{padding:4px 8px;font-size:.75rem}
+  .label-picker{display:flex;gap:4px;align-items:center;margin-left:.5rem}
+  .label-picker span{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+  .label-picker span:hover,.label-picker span.active{transform:scale(1.3);border-color:var(--text)}
+  .saved-indicator{font-size:.75rem;color:var(--text2);transition:opacity .3s;margin-left:auto}
+  .saved-indicator.show{color:#4caf50}
+  .note-stats{font-size:.75rem;color:var(--text2);display:flex;gap:1rem}
+  .sort-bar{display:flex;gap:.5rem;align-items:center;font-size:.75rem;color:var(--text2);margin-top:.3rem;flex-wrap:wrap}
+  .sort-bar button{padding:2px 6px;font-size:.7rem;border:1px solid var(--text2);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;transition:all .15s}
+  .sort-bar button.active{border-color:var(--accent);color:var(--accent);background:rgba(99,102,241,.1)}
+  .mobile-toggle{display:none;align-items:center;gap:.5rem;margin-bottom:.5rem}
+  .mobile-toggle button{padding:.4rem .8rem;font-size:.8rem}
+  .checklist-line{display:flex;align-items:center;gap:.5rem;padding:.2rem 0}
+  .checklist-line input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+  .checklist-line.checked span{text-decoration:line-through;opacity:.5}
+  mark{background:rgba(99,102,241,.3);border-radius:2px;padding:0 1px}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -37,28 +79,59 @@
     <div class="tool-section">
       <h1>🗒️ Quick Notes</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Multiple notes with auto-save. Create, organize, and never lose your ideas.</p>
-      <div class="row" style="margin-bottom:.5rem">
-        <input type="text" id="newTitle" placeholder="New note title..." style="flex:3">
-        <button class="btn" onclick="addNote()">+ New Note</button>
+      <p class="info">Multiple notes with auto-save. Create, organize, pin, label, search and never lose your ideas.</p>
+
+      <div class="mobile-toggle" id="mobileToggle">
+        <button class="btn btn-outline" onclick="toggleSidebar()">📋 Notes List</button>
+        <span id="noteCountMobile" class="info"></span>
       </div>
-      <div class="row" style="margin-bottom:.5rem">
-        <input type="text" id="searchInput" placeholder="🔍 Search notes..." style="flex:1" oninput="searchNotes()">
-      </div>
-      <div style="display:grid;grid-template-columns:200px 1fr;gap:.5rem;min-height:400px">
-        <div id="noteList" style="background:var(--card);border-radius:8px;padding:.5rem;overflow-y:auto;max-height:450px"></div>
-        <div style="position:relative">
-          <div id="highlightLayer" style="position:absolute;top:0;left:0;right:0;bottom:auto;min-height:350px;padding:8px 12px;font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;pointer-events:none;border-radius:8px;overflow:hidden;font-family:inherit"></div>
-          <textarea id="noteContent" placeholder="Select a note or create new..." style="min-height:350px;font-size:1rem;line-height:1.7;width:100%;background:transparent;position:relative" oninput="saveNote();highlightSearch()"></textarea>
-          <div class="row" style="margin-top:.3rem">
-            <span class="info" id="status">✅ Saved</span>
-            <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('noteContent').value)">📋 Copy</button>
-            <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('noteContent').value],{type:'text/plain'}),(notes[activeNote]?.title||'note')+'.txt')">💾 Download</button>
-            <button class="btn btn-outline" onclick="download(new Blob([JSON.stringify(notes)],{type:'application/json'}),'notes_backup.json')">📦 Backup All</button>
-            <button class="btn btn-outline" onclick="deleteNote()" style="color:#f44336">🗑️ Delete</button>
+
+      <div class="notes-layout">
+        <div class="notes-sidebar" id="notesSidebar">
+          <div class="sidebar-header">
+            <input type="text" id="searchInput" placeholder="🔍 Search..." oninput="renderList()">
+            <button class="btn" onclick="addNote()" style="padding:.4rem .7rem;font-size:.8rem;margin:0">+ New</button>
+          </div>
+          <div class="sort-bar">
+            <span id="noteCount">0 notes</span>
+            <button onclick="setSort('modified')" id="sortModified" class="active">Recent</button>
+            <button onclick="setSort('created')" id="sortCreated">Created</button>
+            <button onclick="setSort('alpha')" id="sortAlpha">A-Z</button>
+          </div>
+          <div id="noteList" style="flex:1;overflow-y:auto;margin-top:.3rem"></div>
+        </div>
+
+        <div class="note-editor" id="noteEditor">
+          <div class="editor-header">
+            <input type="text" id="noteTitleInput" placeholder="Note title..." oninput="saveCurrentNote()">
+            <div class="label-picker" id="labelPicker">
+              <span style="background:#ef4444" onclick="setLabel('#ef4444')" title="Red"></span>
+              <span style="background:#f59e0b" onclick="setLabel('#f59e0b')" title="Orange"></span>
+              <span style="background:#10b981" onclick="setLabel('#10b981')" title="Green"></span>
+              <span style="background:#6366f1" onclick="setLabel('#6366f1')" title="Indigo"></span>
+              <span style="background:#8b5cf6" onclick="setLabel('#8b5cf6')" title="Purple"></span>
+              <span style="background:transparent" onclick="setLabel('')" title="None" style="border:1px dashed var(--text2)">✕</span>
+            </div>
+            <span class="saved-indicator" id="savedIndicator">✓ Saved</span>
+          </div>
+          <div class="editor-controls">
+            <button class="btn btn-outline" onclick="togglePin()" id="pinBtn" title="Pin/Unpin">📌 Pin</button>
+            <button class="btn btn-outline" onclick="toggleChecklist()" id="checklistBtn" title="Toggle checklist mode">☑ Checklist</button>
+            <button class="btn btn-outline" onclick="copyNote()">📋 Copy</button>
+            <button class="btn btn-outline" onclick="downloadNote()">💾 .txt</button>
+            <button class="btn btn-outline" onclick="exportAll()">📦 Backup</button>
+            <button class="btn btn-outline" onclick="importNotes()">📥 Import</button>
+            <button class="btn btn-outline" onclick="deleteNote()" style="color:#f44336">🗑️</button>
+          </div>
+          <div id="checklistView" style="display:none;background:var(--card);border-radius:12px;padding:1rem;min-height:300px;overflow-y:auto"></div>
+          <textarea id="noteContent" placeholder="Start writing..." oninput="saveCurrentNote()" style="min-height:350px;font-size:1rem;line-height:1.7"></textarea>
+          <div class="note-stats">
+            <span id="noteWords">0 words</span>
+            <span id="noteChars">0 chars</span>
           </div>
         </div>
       </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
     </div>
     <div style="min-height:90px">
 <h2>Frequently Asked Questions</h2>
@@ -93,37 +166,393 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var notes=JSON.parse(localStorage.getItem("multiNotes")||"[]");
-var activeNote=0;
-// Migrate old single note
-if(!notes.length){var old=localStorage.getItem("toolbox-notes");if(old)notes.push({title:"My Notes",content:old,date:Date.now()});else notes.push({title:"Welcome",content:"Start typing your notes here!\n\nYou can create multiple notes using the + button.",date:Date.now()})}
-function save(){localStorage.setItem("multiNotes",JSON.stringify(notes))}
-function addNote(){var t=document.getElementById("newTitle").value.trim()||"Untitled";notes.unshift({title:t,content:"",date:Date.now()});activeNote=0;document.getElementById("newTitle").value="";save();render()}
-function selectNote(i){activeNote=i;document.getElementById("noteContent").value=notes[i].content;render()}
-function saveNote(){if(notes[activeNote]){notes[activeNote].content=document.getElementById("noteContent").value;notes[activeNote].date=Date.now();save();document.getElementById("status").textContent="✅ Auto-saved"}}
-function deleteNote(){if(notes.length<=1)return alert("Cannot delete last note");if(confirm("Delete '"+notes[activeNote].title+"'?")){notes.splice(activeNote,1);activeNote=0;save();render()}}
-var searchTerm="";
-function searchNotes(){searchTerm=document.getElementById("searchInput").value.toLowerCase();render();highlightSearch()}
-function highlightSearch(){
-  var layer=document.getElementById("highlightLayer");
-  if(!searchTerm){layer.innerHTML="";return}
-  var text=document.getElementById("noteContent").value;
-  var escaped=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  var term=searchTerm.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-  var re=new RegExp("("+term+")","gi");
-  layer.innerHTML=escaped.replace(re,'<mark style="background:#ffeb3b88;border-radius:2px">$1</mark>');
+(function(){
+"use strict";
+var STORAGE_KEY='toolbox-notes-v2';
+var currentSort='modified';
+var activeId=null;
+var checklistMode=false;
+var saveTimeout=null;
+
+/* --- Data Layer --- */
+function loadData(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){var d=JSON.parse(raw);if(d&&d.version&&Array.isArray(d.notes))return d;}
+  }catch(e){}
+  // Migrate from old format
+  var old=JSON.parse(localStorage.getItem('multiNotes')||'null');
+  if(old&&Array.isArray(old)&&old.length){
+    var migrated=old.map(function(n,i){return{id:Date.now()+i,title:n.title||'Untitled',content:n.content||'',created:n.date||Date.now(),modified:n.date||Date.now(),pinned:false,label:'',checklist:false};});
+    var data={version:2,notes:migrated};
+    saveData(data);return data;
+  }
+  // Default
+  var def={version:2,notes:[{id:Date.now(),title:'Welcome',content:'Start typing your notes here!\n\nFeatures:\n- [ ] Multi-note with sidebar\n- [x] Auto-save\n- [ ] Pin & label notes\n- [ ] Search across all notes\n- [ ] Export & import',created:Date.now(),modified:Date.now(),pinned:false,label:'',checklist:false}]};
+  saveData(def);return def;
 }
-function render(){
-  var filtered=notes.map(function(n,i){return{n:n,i:i}}).filter(function(o){return!searchTerm||o.n.title.toLowerCase().includes(searchTerm)||o.n.content.toLowerCase().includes(searchTerm)});
-  document.getElementById("noteList").innerHTML=filtered.map(function(o){
-    var n=o.n,i=o.i,active=i===activeNote;
-    var date=new Date(n.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
-    return '<div onclick="selectNote('+i+')" style="padding:.5rem;border-radius:6px;cursor:pointer;margin:.2rem 0;background:'+(active?"var(--accent)":"transparent")+';color:'+(active?"#fff":"var(--text)")+'"><strong style="font-size:.85rem">'+n.title+'</strong><br><span style="font-size:.7rem;opacity:.7">'+date+" — "+n.content.substring(0,30)+'...</span></div>';
-  }).join("");
-  document.getElementById("noteContent").value=notes[activeNote]?.content||"";
-  highlightSearch();
+
+function saveData(data){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
 }
-render();
+
+var data=loadData();
+
+function getNote(id){
+  for(var i=0;i<data.notes.length;i++){if(data.notes[i].id===id)return data.notes[i];}
+  return null;
+}
+
+function getSortedNotes(){
+  var notes=data.notes.slice();
+  // Filter by search
+  var q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+  if(q){
+    notes=notes.filter(function(n){return n.title.toLowerCase().indexOf(q)!==-1||n.content.toLowerCase().indexOf(q)!==-1;});
+  }
+  // Sort pinned first, then by chosen sort
+  notes.sort(function(a,b){
+    if(a.pinned&&!b.pinned)return -1;
+    if(!a.pinned&&b.pinned)return 1;
+    if(currentSort==='modified')return b.modified-a.modified;
+    if(currentSort==='created')return b.created-a.created;
+    return a.title.localeCompare(b.title);
+  });
+  return notes;
+}
+
+/* --- Render Sidebar --- */
+function renderList(){
+  var notes=getSortedNotes();
+  var q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+  var html='';
+  notes.forEach(function(n){
+    var isActive=n.id===activeId;
+    var date=new Date(n.modified);
+    var dateStr=date.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    var timeStr=date.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    var preview=n.content.substring(0,40).replace(/\n/g,' ');
+    var title=n.title;
+    // Highlight search term in title
+    if(q){
+      var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+      title=title.replace(re,'<mark>$1</mark>');
+      preview=preview.replace(re,'<mark>$1</mark>');
+    }
+    html+='<div class="note-item'+(isActive?' active':'')+'" onclick="selectNote('+n.id+')">';
+    html+='<div class="note-title">';
+    if(n.label)html+='<span class="note-label" style="background:'+n.label+'"></span>';
+    if(n.pinned)html+='<span class="pin-icon">📌</span>';
+    html+=title+'</div>';
+    html+='<div class="note-meta">'+dateStr+' '+timeStr+' — '+preview+'</div>';
+    html+='</div>';
+  });
+  document.getElementById('noteList').innerHTML=html||'<p class="info" style="text-align:center;padding:1rem">No notes found</p>';
+  var total=data.notes.length;
+  document.getElementById('noteCount').textContent=total+' note'+(total!==1?'s':'');
+  var mob=document.getElementById('noteCountMobile');
+  if(mob)mob.textContent=total+' note'+(total!==1?'s':'');
+}
+
+/* --- Select Note --- */
+function selectNote(id){
+  activeId=id;
+  var note=getNote(id);
+  if(!note)return;
+  document.getElementById('noteTitleInput').value=note.title;
+  document.getElementById('noteContent').value=note.content;
+  checklistMode=note.checklist||false;
+  updateEditorView();
+  updateStats();
+  updatePinBtn();
+  updateLabelPicker();
+  renderList();
+}
+window.selectNote=selectNote;
+
+/* --- Save Current Note --- */
+function saveCurrentNote(){
+  if(!activeId)return;
+  var note=getNote(activeId);
+  if(!note)return;
+  note.title=document.getElementById('noteTitleInput').value||'Untitled';
+  note.content=document.getElementById('noteContent').value;
+  note.modified=Date.now();
+  // Debounced save
+  clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(function(){
+    saveData(data);
+    showSaved();
+    renderList();
+  },400);
+  updateStats();
+}
+window.saveCurrentNote=saveCurrentNote;
+
+function showSaved(){
+  var el=document.getElementById('savedIndicator');
+  el.textContent='✓ Saved';
+  el.className='saved-indicator show';
+  setTimeout(function(){el.className='saved-indicator';},2000);
+}
+
+/* --- Add Note --- */
+function addNote(){
+  var note={id:Date.now(),title:'New Note',content:'',created:Date.now(),modified:Date.now(),pinned:false,label:'',checklist:false};
+  data.notes.unshift(note);
+  saveData(data);
+  selectNote(note.id);
+}
+window.addNote=addNote;
+
+/* --- Delete Note --- */
+function deleteNote(){
+  if(!activeId)return;
+  if(data.notes.length<=1){alert('Cannot delete the last note.');return;}
+  var note=getNote(activeId);
+  if(!confirm('Delete "'+note.title+'"?'))return;
+  data.notes=data.notes.filter(function(n){return n.id!==activeId;});
+  saveData(data);
+  activeId=data.notes[0].id;
+  selectNote(activeId);
+}
+window.deleteNote=deleteNote;
+
+/* --- Pin --- */
+function togglePin(){
+  if(!activeId)return;
+  var note=getNote(activeId);
+  note.pinned=!note.pinned;
+  note.modified=Date.now();
+  saveData(data);
+  updatePinBtn();
+  renderList();
+}
+window.togglePin=togglePin;
+
+function updatePinBtn(){
+  var note=getNote(activeId);
+  var btn=document.getElementById('pinBtn');
+  if(note&&note.pinned){btn.textContent='📌 Unpin';}
+  else{btn.textContent='📌 Pin';}
+}
+
+/* --- Label --- */
+function setLabel(color){
+  if(!activeId)return;
+  var note=getNote(activeId);
+  note.label=color;
+  note.modified=Date.now();
+  saveData(data);
+  updateLabelPicker();
+  renderList();
+}
+window.setLabel=setLabel;
+
+function updateLabelPicker(){
+  var note=getNote(activeId);
+  var spans=document.getElementById('labelPicker').querySelectorAll('span');
+  for(var i=0;i<spans.length;i++){
+    var s=spans[i];
+    s.className=(note&&s.style.backgroundColor&&note.label&&s.style.backgroundColor===colorToRgb(note.label))?'active':'';
+  }
+}
+function colorToRgb(hex){
+  // Convert hex to the format style.backgroundColor uses
+  var el=document.createElement('div');
+  el.style.backgroundColor=hex;
+  document.body.appendChild(el);
+  var rgb=getComputedStyle(el).backgroundColor;
+  document.body.removeChild(el);
+  return rgb;
+}
+
+/* --- Sort --- */
+function setSort(mode){
+  currentSort=mode;
+  document.getElementById('sortModified').className=mode==='modified'?'active':'';
+  document.getElementById('sortCreated').className=mode==='created'?'active':'';
+  document.getElementById('sortAlpha').className=mode==='alpha'?'active':'';
+  renderList();
+}
+window.setSort=setSort;
+
+/* --- Checklist Mode --- */
+function toggleChecklist(){
+  if(!activeId)return;
+  var note=getNote(activeId);
+  checklistMode=!checklistMode;
+  note.checklist=checklistMode;
+  note.modified=Date.now();
+  saveData(data);
+  updateEditorView();
+}
+window.toggleChecklist=toggleChecklist;
+
+function updateEditorView(){
+  var ta=document.getElementById('noteContent');
+  var cl=document.getElementById('checklistView');
+  var btn=document.getElementById('checklistBtn');
+  if(checklistMode){
+    ta.style.display='none';
+    cl.style.display='block';
+    btn.style.borderColor='var(--accent)';
+    btn.style.color='var(--accent)';
+    renderChecklist();
+  }else{
+    ta.style.display='';
+    cl.style.display='none';
+    btn.style.borderColor='';
+    btn.style.color='';
+  }
+}
+
+function renderChecklist(){
+  var note=getNote(activeId);
+  if(!note)return;
+  var lines=note.content.split('\n');
+  var html='';
+  lines.forEach(function(line,idx){
+    var match=line.match(/^- \[([ xX])\] (.*)$/);
+    if(match){
+      var checked=match[1]!=='  '[0];
+      html+='<div class="checklist-line'+(checked?' checked':'')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleCheckItem('+idx+')"><span>'+escHtml(match[2])+'</span></div>';
+    }else if(line.trim()){
+      html+='<div class="checklist-line"><input type="checkbox" onchange="toggleCheckItem('+idx+')"><span>'+escHtml(line)+'</span></div>';
+    }
+  });
+  html+='<div style="margin-top:.5rem"><input type="text" id="newCheckItem" placeholder="+ Add item..." style="font-size:.85rem;padding:.4rem .6rem" onkeydown="addCheckItem(event)"></div>';
+  document.getElementById('checklistView').innerHTML=html;
+}
+
+function toggleCheckItem(idx){
+  var note=getNote(activeId);
+  var lines=note.content.split('\n');
+  var line=lines[idx];
+  var match=line.match(/^- \[([ xX])\] (.*)$/);
+  if(match){
+    lines[idx]=match[1]===' '?'- [x] '+match[2]:'- [ ] '+match[2];
+  }else{
+    lines[idx]='- [x] '+line;
+  }
+  note.content=lines.join('\n');
+  note.modified=Date.now();
+  document.getElementById('noteContent').value=note.content;
+  saveData(data);
+  renderChecklist();
+}
+window.toggleCheckItem=toggleCheckItem;
+
+function addCheckItem(e){
+  if(e.key!=='Enter')return;
+  var input=document.getElementById('newCheckItem');
+  var val=input.value.trim();
+  if(!val)return;
+  var note=getNote(activeId);
+  note.content=(note.content?note.content+'\n':'')+'- [ ] '+val;
+  note.modified=Date.now();
+  document.getElementById('noteContent').value=note.content;
+  saveData(data);
+  renderChecklist();
+}
+window.addCheckItem=addCheckItem;
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* --- Stats --- */
+function updateStats(){
+  var text=document.getElementById('noteContent').value;
+  var words=text.trim()?text.trim().split(/\s+/).length:0;
+  var chars=text.length;
+  document.getElementById('noteWords').textContent=words+' words';
+  document.getElementById('noteChars').textContent=chars+' chars';
+}
+
+/* --- Export/Import --- */
+function copyNote(){
+  navigator.clipboard.writeText(document.getElementById('noteContent').value).then(function(){showToast('Copied!');});
+}
+window.copyNote=copyNote;
+
+function downloadNote(){
+  var note=getNote(activeId);
+  if(!note)return;
+  var blob=new Blob([note.content],{type:'text/plain'});
+  dlFile(blob,note.title+'.txt');
+}
+window.downloadNote=downloadNote;
+
+function exportAll(){
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  dlFile(blob,'notes_backup.json');
+}
+window.exportAll=exportAll;
+
+function importNotes(){
+  document.getElementById('importFile').click();
+}
+window.importNotes=importNotes;
+
+function handleImport(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var imported=JSON.parse(ev.target.result);
+      if(!imported||!imported.version||!Array.isArray(imported.notes)){throw new Error('Invalid format');}
+      // Validate each note shape
+      for(var i=0;i<imported.notes.length;i++){
+        var n=imported.notes[i];
+        if(typeof n.id!=='number'||typeof n.title!=='string'||typeof n.content!=='string'){throw new Error('Invalid note at index '+i);}
+      }
+      if(!confirm('Import '+imported.notes.length+' notes? This will replace all current notes.')){return;}
+      data=imported;
+      saveData(data);
+      activeId=data.notes[0]?data.notes[0].id:null;
+      if(activeId)selectNote(activeId);
+      renderList();
+      showToast('Imported '+imported.notes.length+' notes!');
+    }catch(err){
+      alert('Import failed: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+window.handleImport=handleImport;
+
+function dlFile(blob,name){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* --- Mobile --- */
+function toggleSidebar(){
+  var sb=document.getElementById('notesSidebar');
+  sb.classList.toggle('collapsed');
+}
+window.toggleSidebar=toggleSidebar;
+
+/* --- Toast --- */
+function showToast(msg){
+  var t=document.createElement('div');
+  t.className='toast';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2000);
+}
+
+/* --- Init --- */
+if(data.notes.length){
+  activeId=data.notes[0].id;
+  selectNote(activeId);
+}
+renderList();
+})();
   </script>
 </body>
 </html>

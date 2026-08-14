@@ -36,24 +36,141 @@
     <div class="breadcrumb"><a href="../">Home</a> → 📝 Text Tools</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>📝 Text Tools</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div><textarea id="t" placeholder="Paste or type text here..." oninput="stats()"></textarea>
-      <div class="info" id="st">Characters: 0 | Words: 0 | Sentences: 0 | Lines: 0</div>
-      <div class="row" style="flex-wrap:wrap">
-        <button class="btn" onclick="tx('upper')">UPPERCASE</button>
-        <button class="btn" onclick="tx('lower')">lowercase</button>
-        <button class="btn" onclick="tx('title')">Title Case</button>
-        <button class="btn" onclick="tx('sentence')">Sentence case</button>
-        <button class="btn" onclick="tx('reverse')">Reverse</button>
-        <button class="btn" onclick="tx('slug')">slug-case</button>
-        <button class="btn" onclick="tx('camel')">camelCase</button>
-        <button class="btn" onclick="tx('pascal')">PascalCase</button>
-        <button class="btn" onclick="tx('snake')">snake_case</button>
-        <button class="btn" onclick="tx('constant')">CONSTANT_CASE</button>
-        <button class="btn btn-outline" onclick="tx('dedup')">Remove Duplicates</button>
-        <button class="btn btn-outline" onclick="tx('sort')">Sort Lines</button>
-        <button class="btn btn-outline" onclick="tx('trim')">Trim Lines</button>
-        <button class="btn btn-outline" onclick="lorem()">Lorem Ipsum</button>
-      </div></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <style>
+        .tt-stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.5rem;background:var(--card);border-radius:12px;padding:.8rem;margin:.8rem 0;font-size:.78rem;text-align:center}
+        .tt-stats-bar .stat-item{display:flex;flex-direction:column;gap:.15rem}
+        .tt-stats-bar .stat-val{font-weight:700;font-size:1.1rem;color:var(--accent)}
+        .tt-stats-bar .stat-label{color:var(--text2);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}
+        .tt-tabs{display:flex;flex-wrap:wrap;gap:.3rem;margin:1rem 0 .5rem;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:.5rem}
+        .tt-tab{padding:.5rem 1rem;border-radius:10px 10px 0 0;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);background:transparent;border:none;transition:all .2s}
+        .tt-tab.active{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent)}
+        .tt-tab:hover{color:var(--accent)}
+        .tt-panel{display:none}
+        .tt-panel.active{display:block}
+        .tt-btn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.4rem;margin:.5rem 0}
+        .tt-btn-grid .btn{padding:.6rem .8rem;font-size:.82rem;margin:0;text-align:center;white-space:nowrap}
+        .tt-toolbar{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0;align-items:center}
+        .tt-toolbar .btn{padding:.5rem 1rem;font-size:.82rem;margin:0}
+        .tt-find-replace{background:var(--card);border-radius:12px;padding:1rem;margin:.8rem 0}
+        .tt-find-replace .row{gap:.5rem;margin:.4rem 0}
+        .tt-find-replace input[type="text"]{flex:1;min-width:100px}
+        .tt-find-replace label{font-size:.82rem;display:flex;align-items:center;gap:.3rem;cursor:pointer;white-space:nowrap}
+        .tt-find-replace label input[type="checkbox"]{width:auto;margin:0}
+        .tt-fr-status{font-size:.8rem;color:var(--text2);margin-top:.3rem}
+        .tt-group-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:.8rem 0 .3rem;font-weight:600}
+      </style>
+
+      <!-- Textarea -->
+      <textarea id="t" placeholder="Paste or type text here..." oninput="onInput()"></textarea>
+
+      <!-- Live Stats Bar -->
+      <div class="tt-stats-bar" id="statsBar">
+        <div class="stat-item"><span class="stat-val" id="s-chars">0</span><span class="stat-label">Characters</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-charsns">0</span><span class="stat-label">No Spaces</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-words">0</span><span class="stat-label">Words</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-sentences">0</span><span class="stat-label">Sentences</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-paragraphs">0</span><span class="stat-label">Paragraphs</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-lines">0</span><span class="stat-label">Lines</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-reading">0s</span><span class="stat-label">Reading Time</span></div>
+      </div>
+
+      <!-- Toolbar: Undo, Copy, Clear, Download, Paste -->
+      <div class="tt-toolbar">
+        <button class="btn btn-outline" onclick="undoText()" title="Undo last change">↩ Undo</button>
+        <button class="btn btn-outline" onclick="copyText()" title="Copy to clipboard">📋 Copy</button>
+        <button class="btn btn-outline" onclick="pasteText()" title="Paste from clipboard">📥 Paste</button>
+        <button class="btn btn-outline" onclick="clearText()" title="Clear text">🗑 Clear</button>
+        <button class="btn btn-outline" onclick="downloadText()" title="Download as .txt">💾 Download</button>
+      </div>
+
+      <!-- Find & Replace -->
+      <div class="tt-find-replace">
+        <div class="row">
+          <input type="text" id="findInput" placeholder="Find..." oninput="doFindReplace()">
+          <input type="text" id="replaceInput" placeholder="Replace with...">
+          <button class="btn" onclick="doFindReplace(true)" style="flex:none;padding:.6rem 1rem">Replace All</button>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:.4rem;flex-wrap:wrap">
+          <label><input type="checkbox" id="frCase" onchange="doFindReplace()"> Match case</label>
+          <label><input type="checkbox" id="frRegex" onchange="doFindReplace()"> Regex</label>
+        </div>
+        <div class="tt-fr-status" id="frStatus"></div>
+      </div>
+
+      <!-- Tabs for groups -->
+      <div class="tt-tabs">
+        <button class="tt-tab active" onclick="switchTab('case')">✏️ Case</button>
+        <button class="tt-tab" onclick="switchTab('clean')">🧹 Clean</button>
+        <button class="tt-tab" onclick="switchTab('transform')">🔄 Transform</button>
+        <button class="tt-tab" onclick="switchTab('encode')">🔐 Encode</button>
+      </div>
+
+      <!-- Case Panel -->
+      <div class="tt-panel active" id="panel-case">
+        <div class="tt-btn-grid">
+          <button class="btn" onclick="tx('upper')">UPPERCASE</button>
+          <button class="btn" onclick="tx('lower')">lowercase</button>
+          <button class="btn" onclick="tx('title')">Title Case</button>
+          <button class="btn" onclick="tx('sentence')">Sentence case</button>
+          <button class="btn" onclick="tx('alternating')">aLtErNaTiNg</button>
+          <button class="btn" onclick="tx('inverse')">iNVERSE cASE</button>
+          <button class="btn" onclick="tx('slug')">slug-case</button>
+          <button class="btn" onclick="tx('camel')">camelCase</button>
+          <button class="btn" onclick="tx('pascal')">PascalCase</button>
+          <button class="btn" onclick="tx('snake')">snake_case</button>
+          <button class="btn" onclick="tx('constant')">CONSTANT_CASE</button>
+        </div>
+      </div>
+
+      <!-- Clean Panel -->
+      <div class="tt-panel" id="panel-clean">
+        <div class="tt-btn-grid">
+          <button class="btn btn-outline" onclick="tx('trim')">Trim Spaces</button>
+          <button class="btn btn-outline" onclick="tx('removeBlankLines')">Remove Blank Lines</button>
+          <button class="btn btn-outline" onclick="tx('removeLineBreaks')">Remove Line Breaks</button>
+          <button class="btn btn-outline" onclick="tx('removeSpecial')">Remove Special Chars</button>
+          <button class="btn btn-outline" onclick="tx('removeNumbers')">Remove Numbers</button>
+          <button class="btn btn-outline" onclick="tx('stripHtml')">Strip HTML Tags</button>
+          <button class="btn btn-outline" onclick="tx('removeExtraSpaces')">Remove Extra Spaces</button>
+        </div>
+      </div>
+
+      <!-- Transform Panel -->
+      <div class="tt-panel" id="panel-transform">
+        <div class="tt-btn-grid">
+          <button class="btn btn-outline" onclick="tx('reverse')">Reverse Text</button>
+          <button class="btn btn-outline" onclick="tx('reverseWords')">Reverse Words</button>
+          <button class="btn btn-outline" onclick="tx('sort')">Sort Lines A→Z</button>
+          <button class="btn btn-outline" onclick="tx('sortDesc')">Sort Lines Z→A</button>
+          <button class="btn btn-outline" onclick="tx('shuffle')">Shuffle Lines</button>
+          <button class="btn btn-outline" onclick="tx('dedup')">Remove Duplicates</button>
+          <button class="btn btn-outline" onclick="tx('numberLines')">Number Lines</button>
+          <button class="btn btn-outline" onclick="tx('prefix')">Add Prefix/Suffix</button>
+          <button class="btn btn-outline" onclick="lorem()">Lorem Ipsum</button>
+        </div>
+        <div id="prefixSuffixUI" style="display:none;margin-top:.8rem">
+          <div class="row">
+            <input type="text" id="prefixVal" placeholder="Prefix (before each line)">
+            <input type="text" id="suffixVal" placeholder="Suffix (after each line)">
+            <button class="btn" onclick="applyPrefixSuffix()" style="flex:none">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Encode Panel -->
+      <div class="tt-panel" id="panel-encode">
+        <div class="tt-btn-grid">
+          <button class="btn btn-outline" onclick="tx('urlEncode')">URL Encode</button>
+          <button class="btn btn-outline" onclick="tx('urlDecode')">URL Decode</button>
+          <button class="btn btn-outline" onclick="tx('htmlEncode')">HTML Encode</button>
+          <button class="btn btn-outline" onclick="tx('htmlDecode')">HTML Decode</button>
+          <button class="btn btn-outline" onclick="tx('base64Encode')">Base64 Encode</button>
+          <button class="btn btn-outline" onclick="tx('base64Decode')">Base64 Decode</button>
+          <button class="btn btn-outline" onclick="tx('slugify')">Slugify</button>
+        </div>
+      </div>
+    </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -113,7 +230,228 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function stats(){const t=document.getElementById("t").value;const w=t.trim()?t.trim().split(/\s+/).length:0;document.getElementById("st").textContent="Characters: "+t.length+" | Words: "+w+" | Sentences: "+(t.trim()?t.split(/[.!?]+/).filter(s=>s.trim()).length:0)+" | Lines: "+(t?t.split("\n").length:0)}
-function tx(m){const e=document.getElementById("t");let t=e.value;var words=t.replace(/[^a-zA-Z0-9\s]/g," ").trim().split(/\s+/);switch(m){case"upper":t=t.toUpperCase();break;case"lower":t=t.toLowerCase();break;case"title":t=t.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());break;case"sentence":t=t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/g,(m,p,c)=>p+c.toUpperCase());break;case"reverse":t=t.split("").reverse().join("");break;case"slug":t=t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");break;case"camel":t=words.map(function(w,i){w=w.toLowerCase();return i===0?w:w[0].toUpperCase()+w.slice(1)}).join("");break;case"pascal":t=words.map(function(w){w=w.toLowerCase();return w[0].toUpperCase()+w.slice(1)}).join("");break;case"snake":t=words.map(function(w){return w.toLowerCase()}).join("_");break;case"constant":t=words.map(function(w){return w.toUpperCase()}).join("_");break;case"dedup":t=[...new Set(t.split("\n"))].join("\n");break;case"sort":t=t.split("\n").sort().join("\n");break;case"trim":t=t.split("\n").map(l=>l.trim()).join("\n");break}e.value=t;stats()}
-function lorem(){document.getElementById("t").value="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";stats()}</script>
+  <script>
+var history_stack = [];
+var HISTORY_MAX = 50;
+var saveTimer = null;
+
+function pushHistory() {
+  var val = document.getElementById("t").value;
+  if (history_stack.length === 0 || history_stack[history_stack.length - 1] !== val) {
+    history_stack.push(val);
+    if (history_stack.length > HISTORY_MAX) { history_stack.shift(); }
+  }
+}
+
+function undoText() {
+  if (history_stack.length > 1) {
+    history_stack.pop();
+    document.getElementById("t").value = history_stack[history_stack.length - 1];
+  } else if (history_stack.length === 1) {
+    document.getElementById("t").value = history_stack[0];
+  }
+  updateStats();
+  autoSave();
+}
+
+function copyText() {
+  var el = document.getElementById("t");
+  navigator.clipboard.writeText(el.value).then(function() {
+    showToast("Copied to clipboard!");
+  });
+}
+
+function pasteText() {
+  navigator.clipboard.readText().then(function(text) {
+    pushHistory();
+    document.getElementById("t").value = text;
+    updateStats();
+    autoSave();
+  });
+}
+
+function clearText() {
+  pushHistory();
+  document.getElementById("t").value = "";
+  updateStats();
+  autoSave();
+}
+
+function downloadText() {
+  var text = document.getElementById("t").value;
+  var blob = new Blob([text], { type: "text/plain" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "text-tools-output.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function showToast(msg) {
+  var toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2000);
+}
+
+function onInput() {
+  pushHistory();
+  updateStats();
+  autoSave();
+}
+
+function updateStats() {
+  var t = document.getElementById("t").value;
+  var chars = t.length;
+  var charsNoSpace = t.replace(/\s/g, "").length;
+  var words = t.trim() ? t.trim().split(/\s+/).length : 0;
+  var sentences = t.trim() ? t.split(/[.!?]+/).filter(function(s) { return s.trim(); }).length : 0;
+  var paragraphs = t.trim() ? t.split(/\n\s*\n/).filter(function(s) { return s.trim(); }).length : 0;
+  var lines = t ? t.split("\n").length : 0;
+  var readMin = Math.ceil(words / 200);
+  var readStr = readMin < 1 ? (words > 0 ? "<1m" : "0s") : readMin + "m";
+
+  document.getElementById("s-chars").textContent = chars;
+  document.getElementById("s-charsns").textContent = charsNoSpace;
+  document.getElementById("s-words").textContent = words;
+  document.getElementById("s-sentences").textContent = sentences;
+  document.getElementById("s-paragraphs").textContent = paragraphs;
+  document.getElementById("s-lines").textContent = lines;
+  document.getElementById("s-reading").textContent = readStr;
+}
+
+function autoSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() {
+    try { localStorage.setItem("tt_autosave", document.getElementById("t").value); } catch(e) {}
+  }, 500);
+}
+
+function loadSaved() {
+  try {
+    var saved = localStorage.getItem("tt_autosave");
+    if (saved) {
+      document.getElementById("t").value = saved;
+      pushHistory();
+      updateStats();
+    }
+  } catch(e) {}
+}
+
+function switchTab(name) {
+  var tabs = document.querySelectorAll(".tt-tab");
+  var panels = document.querySelectorAll(".tt-panel");
+  tabs.forEach(function(tab) { tab.classList.remove("active"); });
+  panels.forEach(function(p) { p.classList.remove("active"); });
+  document.getElementById("panel-" + name).classList.add("active");
+  var idx = ["case","clean","transform","encode"].indexOf(name);
+  if (idx >= 0) { tabs[idx].classList.add("active"); }
+}
+
+function tx(m) {
+  pushHistory();
+  var e = document.getElementById("t");
+  var t = e.value;
+  var words = t.replace(/[^a-zA-Z0-9\s]/g, " ").trim().split(/\s+/);
+  switch(m) {
+    case "upper": t = t.toUpperCase(); break;
+    case "lower": t = t.toLowerCase(); break;
+    case "title": t = t.replace(/\w\S*/g, function(w) { return w[0].toUpperCase() + w.slice(1).toLowerCase(); }); break;
+    case "sentence": t = t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/g, function(m, p, c) { return p + c.toUpperCase(); }); break;
+    case "alternating": t = t.split("").map(function(c, i) { return i % 2 === 0 ? c.toLowerCase() : c.toUpperCase(); }).join(""); break;
+    case "inverse": t = t.split("").map(function(c) { return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase(); }).join(""); break;
+    case "reverse": t = t.split("").reverse().join(""); break;
+    case "reverseWords": t = t.split(/\s+/).reverse().join(" "); break;
+    case "slug": t = t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); break;
+    case "camel": t = words.map(function(w, i) { w = w.toLowerCase(); return i === 0 ? w : w[0].toUpperCase() + w.slice(1); }).join(""); break;
+    case "pascal": t = words.map(function(w) { w = w.toLowerCase(); return w[0].toUpperCase() + w.slice(1); }).join(""); break;
+    case "snake": t = words.map(function(w) { return w.toLowerCase(); }).join("_"); break;
+    case "constant": t = words.map(function(w) { return w.toUpperCase(); }).join("_"); break;
+    case "dedup": t = [].concat(new Set(t.split("\n"))).filter(function(v, i, a) { return a.indexOf(v) === i; }).join("\n"); break;
+    case "sort": t = t.split("\n").sort().join("\n"); break;
+    case "sortDesc": t = t.split("\n").sort().reverse().join("\n"); break;
+    case "shuffle": var lines = t.split("\n"); for (var i = lines.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = lines[i]; lines[i] = lines[j]; lines[j] = tmp; } t = lines.join("\n"); break;
+    case "trim": t = t.split("\n").map(function(l) { return l.trim(); }).join("\n"); break;
+    case "removeBlankLines": t = t.split("\n").filter(function(l) { return l.trim() !== ""; }).join("\n"); break;
+    case "removeLineBreaks": t = t.replace(/\n/g, " "); break;
+    case "removeSpecial": t = t.replace(/[^a-zA-Z0-9\s]/g, ""); break;
+    case "removeNumbers": t = t.replace(/[0-9]/g, ""); break;
+    case "stripHtml": t = t.replace(/<[^>]*>/g, ""); break;
+    case "removeExtraSpaces": t = t.replace(/[ \t]+/g, " ").split("\n").map(function(l) { return l.trim(); }).join("\n"); break;
+    case "numberLines": t = t.split("\n").map(function(l, i) { return (i + 1) + ". " + l; }).join("\n"); break;
+    case "prefix": document.getElementById("prefixSuffixUI").style.display = "block"; return;
+    case "urlEncode": t = encodeURIComponent(t); break;
+    case "urlDecode": try { t = decodeURIComponent(t); } catch(err) { showToast("Invalid encoded text"); return; } break;
+    case "htmlEncode": t = t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); break;
+    case "htmlDecode": var d = document.createElement("textarea"); d.innerHTML = t; t = d.value; break;
+    case "base64Encode": try { t = btoa(unescape(encodeURIComponent(t))); } catch(err) { showToast("Encoding failed"); return; } break;
+    case "base64Decode": try { t = decodeURIComponent(escape(atob(t))); } catch(err) { showToast("Invalid Base64"); return; } break;
+    case "slugify": t = t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); break;
+  }
+  e.value = t;
+  pushHistory();
+  updateStats();
+  autoSave();
+}
+
+function applyPrefixSuffix() {
+  pushHistory();
+  var e = document.getElementById("t");
+  var prefix = document.getElementById("prefixVal").value;
+  var suffix = document.getElementById("suffixVal").value;
+  e.value = e.value.split("\n").map(function(l) { return prefix + l + suffix; }).join("\n");
+  pushHistory();
+  updateStats();
+  autoSave();
+}
+
+function lorem() {
+  pushHistory();
+  document.getElementById("t").value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+  pushHistory();
+  updateStats();
+  autoSave();
+}
+
+function doFindReplace(execute) {
+  var findVal = document.getElementById("findInput").value;
+  var replaceVal = document.getElementById("replaceInput").value;
+  var matchCase = document.getElementById("frCase").checked;
+  var useRegex = document.getElementById("frRegex").checked;
+  var statusEl = document.getElementById("frStatus");
+
+  if (!findVal) { statusEl.textContent = ""; return; }
+
+  var t = document.getElementById("t").value;
+  var flags = "g" + (matchCase ? "" : "i");
+  var re;
+  try {
+    if (useRegex) {
+      re = new RegExp(findVal, flags);
+    } else {
+      re = new RegExp(findVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), flags);
+    }
+  } catch(err) {
+    statusEl.textContent = "Invalid regex: " + err.message;
+    return;
+  }
+
+  var matches = t.match(re);
+  var count = matches ? matches.length : 0;
+  statusEl.textContent = count + " match" + (count !== 1 ? "es" : "") + " found";
+
+  if (execute && count > 0) {
+    pushHistory();
+    document.getElementById("t").value = t.replace(re, replaceVal);
+    statusEl.textContent = count + " replacement" + (count !== 1 ? "s" : "") + " made";
+    pushHistory();
+    updateStats();
+    autoSave();
+  }
+}
+
+loadSaved();
+updateStats();
+  </script>
 </body></html>
