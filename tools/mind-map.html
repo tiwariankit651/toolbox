@@ -10,6 +10,7 @@
   <meta property="og:title" content="Mind Map Maker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/mind-map"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Mind Map Maker","url":"https://freetoolhubs.com/tools/mind-map","description":"Create visual mind maps online with drag-and-drop nodes, templates, and PNG export","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/mind-map"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <style>
     #canvas-wrap{position:relative;width:100%;height:500px;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
     #map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
@@ -20,6 +21,8 @@
     .node.shape-rect{border-radius:4px}
     .node.shape-diamond{border-radius:4px;transform-origin:center;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);padding:16px 24px}
     .node.shape-rounded-rect{border-radius:10px}
+    .node .collapse-btn{position:absolute;right:-10px;bottom:-10px;width:20px;height:20px;border-radius:50%;background:var(--card);border:2px solid var(--border);font-size:11px;line-height:16px;text-align:center;cursor:pointer;color:var(--text);font-weight:bold;z-index:2}
+    .node .child-count{position:absolute;left:-8px;top:-8px;width:18px;height:18px;border-radius:50%;background:#ff9800;color:#fff;font-size:10px;line-height:18px;text-align:center;font-weight:bold}
     .conn-label{position:absolute;font-size:.7rem;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1px 5px;cursor:pointer;white-space:nowrap}
     .controls{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0}
     .controls button,.controls select{font-size:.85rem}
@@ -27,6 +30,7 @@
     #node-editor label{font-size:.85rem;font-weight:600}
     #node-editor input[type=text]{width:100%;padding:.4rem;margin:.3rem 0 .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
     #node-editor input[type=color]{width:50px;height:35px;border:none;border-radius:6px;cursor:pointer}
+    .inline-edit{position:absolute;z-index:10;padding:4px 8px;font-size:.9rem;border-radius:6px;border:2px solid var(--accent);background:var(--card);color:var(--text);min-width:80px;text-align:center}
   </style>
 </head>
 <body>
@@ -43,9 +47,12 @@
         <button class="btn btn-outline" onclick="autoLayout()">🌳 Auto Layout</button>
         <button class="btn btn-outline" onclick="zoomIn()">🔍+</button>
         <button class="btn btn-outline" onclick="zoomOut()">🔍−</button>
-        <button class="btn btn-outline" onclick="exportPNG()">📥 Export PNG</button>
-        <button class="btn btn-outline" onclick="saveMap()">💾 Save</button>
-        <button class="btn btn-outline" onclick="loadMap()">📂 Load</button>
+        <button class="btn btn-outline" onclick="fitToScreen()">⊡ Fit</button>
+        <button class="btn btn-outline" onclick="exportPNG()">📥 PNG</button>
+        <button class="btn btn-outline" onclick="exportPDF()">📄 PDF</button>
+        <button class="btn btn-outline" onclick="exportJSON()">💾 JSON</button>
+        <button class="btn btn-outline" onclick="importJSON()">📂 Import</button>
+        <button class="btn btn-outline" onclick="clearAll()">🗑 Clear</button>
         <select onchange="loadTemplate(this.value)" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
           <option value="">📋 Templates...</option>
           <option value="project">Project Planning</option>
@@ -66,7 +73,8 @@
         </select>
         <label>Color</label>
         <input type="color" id="edit-color" value="#4f8cff" onchange="updateNodeColor(this.value)">
-        <button class="btn btn-outline" onclick="deleteNode()" style="margin-left:1rem;font-size:.8rem;color:#f44336">🗑 Delete</button>
+        <button class="btn btn-outline" onclick="renameNode()" style="margin-left:.5rem;font-size:.8rem">✏️ Rename</button>
+        <button class="btn btn-outline" onclick="deleteNode()" style="margin-left:.5rem;font-size:.8rem;color:#f44336">🗑 Delete</button>
       </div>
 
       <div id="canvas-wrap">
@@ -147,36 +155,44 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var nodes=[],selectedId=null,scale=1,dragId=null,dragOff={x:0,y:0};
+var nodes=[],selectedId=null,scale=1,panX=0,panY=0,dragId=null,dragOff={x:0,y:0};
 var wrap=document.getElementById("canvas-wrap"),svg=document.getElementById("map-svg");
-var idCounter=1,connLabels={};
+var idCounter=1,connLabels={},collapsed={};
+var isPanning=false,panStart={x:0,y:0},panStartOff={x:0,y:0};
+var moved=false;
+
+function getChildren(pid){return nodes.filter(function(n){return n.parentId===pid})}
+function getVisibleChildren(pid){if(collapsed[pid])return[];return getChildren(pid)}
+function countAllDescendants(id){var ch=getChildren(id);var c=ch.length;ch.forEach(function(n){c+=countAllDescendants(n.id)});return c}
 
 function createNode(text,x,y,parentId,color,shape){
-  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff",shape:shape||"circle"};
-  nodes.push(n);renderAll();return n;
+  var n={id:idCounter++,text:text,x:x,y:y,parentId:parentId,color:color||"#4f8cff",shape:shape||"circle",manualPos:false};
+  nodes.push(n);return n;
 }
 
 function renderAll(){
-  wrap.querySelectorAll(".node,.conn-label").forEach(function(el){el.remove()});
+  wrap.querySelectorAll(".node,.conn-label,.inline-edit").forEach(function(el){el.remove()});
   svg.innerHTML="";
   nodes.forEach(function(n){
+    if(!isNodeVisible(n.id))return;
     if(n.parentId!==null){
       var p=nodes.find(function(nd){return nd.id===n.parentId});
-      if(p){
+      if(p&&isNodeVisible(n.parentId)){
         var line=document.createElementNS("http://www.w3.org/2000/svg","line");
-        line.setAttribute("x1",(p.x+50)*scale);line.setAttribute("y1",(p.y+18)*scale);
-        line.setAttribute("x2",(n.x+50)*scale);line.setAttribute("y2",(n.y+18)*scale);
+        var x1=(p.x+50)*scale+panX,y1=(p.y+18)*scale+panY;
+        var x2=(n.x+50)*scale+panX,y2=(n.y+18)*scale+panY;
+        line.setAttribute("x1",x1);line.setAttribute("y1",y1);
+        line.setAttribute("x2",x2);line.setAttribute("y2",y2);
         line.setAttribute("stroke",n.color);line.setAttribute("stroke-opacity","0.6");
         line.setAttribute("data-child",n.id);
         line.addEventListener("click",function(e){e.stopPropagation();editConnLabel(n.id)});
         svg.appendChild(line);
-        // render label
         var key=p.id+"-"+n.id;
         if(connLabels[key]){
           var lbl=document.createElement("div");lbl.className="conn-label";
           lbl.textContent=connLabels[key];
-          lbl.style.left=((p.x+n.x)/2+50)*scale+"px";
-          lbl.style.top=((p.y+n.y)/2+18)*scale-10+"px";
+          lbl.style.left=(x1+x2)/2+"px";
+          lbl.style.top=((y1+y2)/2-10)+"px";
           lbl.onclick=function(){editConnLabel(n.id)};
           wrap.appendChild(lbl);
         }
@@ -186,15 +202,72 @@ function renderAll(){
     var shapeClass=n.shape&&n.shape!=="circle"?" shape-"+n.shape:"";
     div.className="node"+shapeClass+(n.id===selectedId?" selected":"");
     div.textContent=n.text;
-    div.style.left=(n.x*scale)+"px";div.style.top=(n.y*scale)+"px";
+    div.style.left=(n.x*scale+panX)+"px";div.style.top=(n.y*scale+panY)+"px";
     div.style.background=n.color;
     div.style.transform="scale("+scale+")";div.style.transformOrigin="top left";
     div.dataset.id=n.id;
-    div.onmousedown=function(e){startDrag(e,n.id)};
-    div.ontouchstart=function(e){startDrag(e.touches[0],n.id);e.preventDefault()};
-    div.onclick=function(){if(!moved)selectNode(n.id)};
+    div.onpointerdown=function(e){startDrag(e,n.id)};
+    div.ondblclick=function(e){e.stopPropagation();startInlineEdit(n.id)};
+    // collapse/expand button if has children
+    var childCount=getChildren(n.id).length;
+    if(childCount>0){
+      var cbtn=document.createElement("span");
+      cbtn.className="collapse-btn";
+      cbtn.textContent=collapsed[n.id]?"+":"−";
+      cbtn.onpointerdown=function(e){e.stopPropagation()};
+      cbtn.onclick=function(e){e.stopPropagation();toggleCollapse(n.id)};
+      div.appendChild(cbtn);
+      if(collapsed[n.id]){
+        var badge=document.createElement("span");
+        badge.className="child-count";
+        badge.textContent=countAllDescendants(n.id);
+        div.appendChild(badge);
+      }
+    }
     wrap.appendChild(div);
   });
+  autoSave();
+}
+
+function isNodeVisible(id){
+  var n=nodes.find(function(nd){return nd.id===id});
+  if(!n)return false;
+  if(n.parentId===null)return true;
+  if(collapsed[n.parentId])return false;
+  return isNodeVisible(n.parentId);
+}
+
+function toggleCollapse(id){
+  collapsed[id]=!collapsed[id];
+  renderAll();
+}
+
+function startInlineEdit(id){
+  var n=nodes.find(function(nd){return nd.id===id});
+  if(!n)return;
+  var input=document.createElement("input");
+  input.type="text";input.value=n.text;
+  input.className="inline-edit";
+  input.style.left=(n.x*scale+panX)+"px";
+  input.style.top=(n.y*scale+panY)+"px";
+  input.style.transform="scale("+scale+")";input.style.transformOrigin="top left";
+  wrap.appendChild(input);
+  input.focus();input.select();
+  function finish(){
+    if(input.parentNode){
+      n.text=input.value||n.text;
+      input.remove();
+      if(selectedId===id){document.getElementById("edit-text").value=n.text}
+      renderAll();
+    }
+  }
+  input.onblur=finish;
+  input.onkeydown=function(e){if(e.key==="Enter")finish();if(e.key==="Escape"){input.remove();renderAll()}};
+}
+
+function renameNode(){
+  if(!selectedId)return;
+  startInlineEdit(selectedId);
 }
 
 function editConnLabel(childId){
@@ -206,26 +279,60 @@ function editConnLabel(childId){
   if(txt!==null){if(txt)connLabels[key]=txt;else delete connLabels[key];renderAll()}
 }
 
-var moved=false;
 function startDrag(e,id){
+  if(e.button&&e.button!==0)return;
+  e.preventDefault();
   dragId=id;moved=false;
   var n=nodes.find(function(nd){return nd.id===id});
-  var rect=wrap.getBoundingClientRect();
-  dragOff.x=e.clientX-rect.left-n.x*scale;
-  dragOff.y=e.clientY-rect.top-n.y*scale;
+  dragOff.x=e.clientX-(n.x*scale+panX);
+  dragOff.y=e.clientY-(n.y*scale+panY);
+  wrap.setPointerCapture(e.pointerId);
 }
-document.addEventListener("mousemove",onDrag);
-document.addEventListener("touchmove",function(e){if(dragId)onDrag(e.touches[0])});
-function onDrag(e){
-  if(!dragId)return;moved=true;
+
+wrap.onpointermove=function(e){
+  if(dragId){
+    moved=true;
+    var n=nodes.find(function(nd){return nd.id===dragId});
+    n.x=Math.max(0,(e.clientX-dragOff.x-panX)/scale);
+    n.y=Math.max(0,(e.clientY-dragOff.y-panY)/scale);
+    n.manualPos=true;
+    renderAll();
+  }else if(isPanning){
+    panX=panStartOff.x+(e.clientX-panStart.x);
+    panY=panStartOff.y+(e.clientY-panStart.y);
+    renderAll();
+  }
+};
+
+wrap.onpointerup=function(e){
+  if(dragId){
+    if(!moved)selectNode(dragId);
+    dragId=null;
+    wrap.releasePointerCapture(e.pointerId);
+  }
+  if(isPanning){isPanning=false;wrap.releasePointerCapture(e.pointerId)}
+};
+
+wrap.onpointerdown=function(e){
+  if(e.target===wrap||e.target===svg){
+    isPanning=true;
+    panStart={x:e.clientX,y:e.clientY};
+    panStartOff={x:panX,y:panY};
+    wrap.setPointerCapture(e.pointerId);
+  }
+};
+
+wrap.addEventListener("wheel",function(e){
+  e.preventDefault();
   var rect=wrap.getBoundingClientRect();
-  var n=nodes.find(function(nd){return nd.id===dragId});
-  n.x=Math.max(0,(e.clientX-rect.left-dragOff.x)/scale);
-  n.y=Math.max(0,(e.clientY-rect.top-dragOff.y)/scale);
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var oldScale=scale;
+  if(e.deltaY<0)scale=Math.min(3,scale*1.1);
+  else scale=Math.max(0.2,scale/1.1);
+  panX=mx-(mx-panX)*(scale/oldScale);
+  panY=my-(my-panY)*(scale/oldScale);
   renderAll();
-}
-document.addEventListener("mouseup",function(){dragId=null});
-document.addEventListener("touchend",function(){dragId=null});
+},{passive:false});
 
 function selectNode(id){
   selectedId=id;
@@ -244,28 +351,53 @@ function updateNodeShape(v){var n=nodes.find(function(nd){return nd.id===selecte
 function addChild(){
   var parent=nodes.find(function(nd){return nd.id===selectedId})||nodes[0];
   if(!parent)return;
-  var angle=Math.random()*Math.PI*2,dist=120+Math.random()*40;
-  createNode("New Idea",parent.x+Math.cos(angle)*dist,parent.y+Math.sin(angle)*dist,parent.id,parent.color,parent.shape);
+  if(collapsed[parent.id])collapsed[parent.id]=false;
+  var siblings=getChildren(parent.id);
+  var angle=(siblings.length*Math.PI*2/Math.max(siblings.length+1,4));
+  var dist=130;
+  var nx=parent.x+Math.cos(angle)*dist;
+  var ny=parent.y+Math.sin(angle)*dist;
+  var n=createNode("New Idea",nx,ny,parent.id,parent.color,parent.shape);
+  selectNode(n.id);
+  autoLayoutSubtree(parent.id);
+  renderAll();
 }
 
 function deleteNode(){
-  if(!selectedId||nodes.length<=1)return;
+  if(!selectedId)return;
+  if(nodes.length<=1){alert("Cannot delete the root node.");return}
+  var desc=countAllDescendants(selectedId);
+  var msg=desc>0?"Delete this node and its "+desc+" descendant(s)?":"Delete this node?";
+  if(!confirm(msg))return;
   var toRemove=[selectedId];
   function findChildren(pid){nodes.forEach(function(n){if(n.parentId===pid){toRemove.push(n.id);findChildren(n.id)}})}
   findChildren(selectedId);
   nodes=nodes.filter(function(n){return toRemove.indexOf(n.id)===-1});
+  toRemove.forEach(function(id){delete collapsed[id]});
   selectedId=null;document.getElementById("node-editor").style.display="none";renderAll();
+}
+
+function autoLayoutSubtree(pid){
+  var parent=nodes.find(function(n){return n.id===pid});
+  if(!parent)return;
+  var children=getChildren(pid).filter(function(n){return !n.manualPos});
+  if(!children.length)return;
+  var angleStep=Math.PI*2/children.length;
+  var dist=140;
+  children.forEach(function(c,i){
+    c.x=parent.x+Math.cos(i*angleStep-Math.PI/2)*dist;
+    c.y=parent.y+Math.sin(i*angleStep-Math.PI/2)*dist;
+  });
 }
 
 function autoLayout(){
   if(!nodes.length)return;
   var root=nodes.find(function(n){return n.parentId===null});
   if(!root)return;
-  var cx=wrap.clientWidth/2-50,cy=30;
-  // Build tree
-  function getChildren(pid){return nodes.filter(function(n){return n.parentId===pid})}
-  function countLeaves(id){var ch=getChildren(id);if(!ch.length)return 1;var s=0;ch.forEach(function(c){s+=countLeaves(c.id)});return s}
+  // Reset manual positions
+  nodes.forEach(function(n){n.manualPos=false});
   var hGap=130,vGap=90;
+  function countLeaves(id){var ch=getChildren(id);if(!ch.length)return 1;var s=0;ch.forEach(function(c){s+=countLeaves(c.id)});return s}
   function layoutTree(id,x,y,width){
     var n=nodes.find(function(nd){return nd.id===id});
     n.x=x+width/2-50;n.y=y;
@@ -281,12 +413,30 @@ function autoLayout(){
   }
   var totalLeaves=countLeaves(root.id);
   var totalWidth=Math.max(totalLeaves*hGap,wrap.clientWidth);
-  layoutTree(root.id,(wrap.clientWidth-totalWidth)/2,cy,totalWidth);
+  layoutTree(root.id,(wrap.clientWidth/scale-totalWidth)/2,30,totalWidth);
   renderAll();
 }
 
-function zoomIn(){scale=Math.min(2,scale+0.15);renderAll()}
-function zoomOut(){scale=Math.max(0.4,scale-0.15);renderAll()}
+function fitToScreen(){
+  if(!nodes.length)return;
+  var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(function(n){
+    if(!isNodeVisible(n.id))return;
+    if(n.x<minX)minX=n.x;if(n.y<minY)minY=n.y;
+    if(n.x+120>maxX)maxX=n.x+120;if(n.y+40>maxY)maxY=n.y+40;
+  });
+  if(minX===Infinity)return;
+  var mapW=maxX-minX+80,mapH=maxY-minY+80;
+  var wW=wrap.clientWidth,wH=wrap.clientHeight;
+  scale=Math.min(wW/mapW,wH/mapH,2);
+  scale=Math.max(scale,0.2);
+  panX=wW/2-(minX+mapW/2)*scale;
+  panY=wH/2-(minY+mapH/2)*scale;
+  renderAll();
+}
+
+function zoomIn(){scale=Math.min(3,scale*1.2);renderAll()}
+function zoomOut(){scale=Math.max(0.2,scale/1.2);renderAll()}
 
 function exportPNG(){
   var c=document.createElement("canvas");
@@ -327,15 +477,99 @@ function exportPNG(){
   c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mindmap.png";a.click()});
 }
 
-function saveMap(){localStorage.setItem("mindmap",JSON.stringify({nodes:nodes,idCounter:idCounter,connLabels:connLabels}));alert("Mind map saved!")}
-function loadMap(){
-  var d=localStorage.getItem("mindmap");
-  if(d){var obj=JSON.parse(d);nodes=obj.nodes;idCounter=obj.idCounter;connLabels=obj.connLabels||{};selectedId=null;renderAll();alert("Mind map loaded!")}
-  else alert("No saved mind map found.");
+async function exportPDF(){
+  var PDFLib=window.PDFLib;
+  if(!PDFLib){alert("PDF library still loading, please try again.");return}
+  var bounds={minX:Infinity,minY:Infinity,maxX:0,maxY:0};
+  nodes.forEach(function(n){
+    if(n.x<bounds.minX)bounds.minX=n.x;if(n.y<bounds.minY)bounds.minY=n.y;
+    if(n.x+120>bounds.maxX)bounds.maxX=n.x+120;if(n.y+40>bounds.maxY)bounds.maxY=n.y+40;
+  });
+  var pad=60,w=bounds.maxX-bounds.minX+pad*2,h=bounds.maxY-bounds.minY+pad*2;
+  var doc=await PDFLib.PDFDocument.create();
+  var page=doc.addPage([w,h]);
+  var font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  // Draw lines
+  nodes.forEach(function(n){
+    if(n.parentId!==null){
+      var p=nodes.find(function(nd){return nd.id===n.parentId});
+      if(p){
+        var x1=p.x-bounds.minX+pad+50,y1=h-(p.y-bounds.minY+pad+15);
+        var x2=n.x-bounds.minX+pad+50,y2=h-(n.y-bounds.minY+pad+15);
+        page.drawLine({start:{x:x1,y:y1},end:{x:x2,y:y2},thickness:2,color:hexToRgb(n.color),opacity:0.6});
+      }
+    }
+  });
+  // Draw nodes
+  nodes.forEach(function(n){
+    var nx=n.x-bounds.minX+pad,ny=h-(n.y-bounds.minY+pad+30);
+    var col=hexToRgb(n.color);
+    page.drawRectangle({x:nx,y:ny,width:100,height:30,color:col,borderRadius:n.shape==="rect"?0:10});
+    var tw=font.widthOfTextAtSize(n.text,10);
+    page.drawText(n.text,{x:nx+50-tw/2,y:ny+10,size:10,font:font,color:PDFLib.rgb(1,1,1)});
+  });
+  var bytes=await doc.save();
+  var blob=new Blob([bytes],{type:"application/pdf"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mindmap.pdf";a.click();
+}
+
+function hexToRgb(hex){
+  var r=parseInt(hex.slice(1,3),16)/255;
+  var g=parseInt(hex.slice(3,5),16)/255;
+  var b=parseInt(hex.slice(5,7),16)/255;
+  return window.PDFLib?window.PDFLib.rgb(r,g,b):{r:r,g:g,b:b};
+}
+
+function exportJSON(){
+  var data=JSON.stringify({nodes:nodes,idCounter:idCounter,connLabels:connLabels,collapsed:collapsed},null,2);
+  var blob=new Blob([data],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mindmap.json";a.click();
+}
+
+function importJSON(){
+  var input=document.createElement("input");input.type="file";input.accept=".json";
+  input.onchange=function(){
+    var file=input.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var obj=JSON.parse(e.target.result);
+        if(obj.nodes&&Array.isArray(obj.nodes)){
+          nodes=obj.nodes;idCounter=obj.idCounter||nodes.length+1;
+          connLabels=obj.connLabels||{};collapsed=obj.collapsed||{};
+          selectedId=null;document.getElementById("node-editor").style.display="none";
+          renderAll();fitToScreen();
+        }else{alert("Invalid mind map JSON file.")}
+      }catch(err){alert("Error reading file: "+err.message)}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function clearAll(){
+  if(!confirm("Clear the entire mind map? This cannot be undone."))return;
+  nodes=[];idCounter=1;connLabels={};collapsed={};selectedId=null;
+  document.getElementById("node-editor").style.display="none";
+  panX=0;panY=0;scale=1;
+  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
+  renderAll();
+}
+
+function autoSave(){
+  try{localStorage.setItem("mindmap_autosave",JSON.stringify({nodes:nodes,idCounter:idCounter,connLabels:connLabels,collapsed:collapsed}))}catch(e){}
+}
+
+function loadAutoSave(){
+  try{
+    var d=localStorage.getItem("mindmap_autosave");
+    if(d){var obj=JSON.parse(d);if(obj.nodes&&obj.nodes.length){nodes=obj.nodes;idCounter=obj.idCounter;connLabels=obj.connLabels||{};collapsed=obj.collapsed||{};return true}}
+  }catch(e){}
+  return false;
 }
 
 function loadTemplate(t){
-  if(!t)return;nodes=[];idCounter=1;selectedId=null;connLabels={};
+  if(!t)return;nodes=[];idCounter=1;selectedId=null;connLabels={};collapsed={};
   var cx=wrap.clientWidth/2-50,cy=200;
   if(t==="project"){
     createNode("Project",cx,cy,null,"#4f8cff");
@@ -367,8 +601,12 @@ function loadTemplate(t){
   renderAll();
 }
 
-createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
-selectNode(1);
+// Init
+if(!loadAutoSave()){
+  createNode("Central Idea",wrap.clientWidth/2-50,220,null,"#4f8cff");
+}
+renderAll();
+if(nodes.length)selectNode(nodes[0].id);
   </script>
 </body>
 </html>
