@@ -17,6 +17,33 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/speed-reader">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<style>
+.sr-rsvp-box{text-align:center;padding:2.5rem 1rem;background:var(--card);border-radius:14px;margin:1rem 0;min-height:160px;position:relative;border:1px solid rgba(255,255,255,.06)}
+.sr-rsvp-word{font-weight:800;transition:font-size .2s;line-height:1.3;letter-spacing:1px}
+.sr-pivot{color:var(--accent2)}
+.sr-controls{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin:.8rem 0}
+.sr-controls button{min-width:44px}
+.sr-progress-bar{width:100%;height:6px;background:rgba(255,255,255,.08);border-radius:4px;margin:.6rem 0;cursor:pointer;position:relative}
+.sr-progress-fill{height:100%;background:var(--gradient);border-radius:4px;transition:width .15s}
+.sr-settings{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;margin:.8rem 0}
+.sr-setting{background:var(--card);padding:.6rem .8rem;border-radius:10px}
+.sr-setting label{font-size:.82rem;color:var(--text2);display:block;margin-bottom:.3rem}
+.sr-meta{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:.82rem;color:var(--text2);margin:.5rem 0}
+.sr-tabs{display:flex;gap:6px;margin-bottom:.8rem;flex-wrap:wrap}
+.sr-highlight-box{background:var(--card);border-radius:12px;padding:1.2rem;margin:1rem 0;line-height:2;font-size:1.05rem;max-height:400px;overflow-y:auto;border:1px solid rgba(255,255,255,.06)}
+.sr-highlight-box .sr-hl-active{background:rgba(99,102,241,.3);border-radius:3px;padding:0 2px}
+.sr-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin:.8rem 0}
+.sr-stat{background:var(--card);border-radius:10px;padding:.6rem;text-align:center}
+.sr-stat-val{font-size:1.2rem;font-weight:700;color:var(--accent)}
+.sr-stat-label{font-size:.72rem;color:var(--text2)}
+.sr-history-item{background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;flex-wrap:wrap;font-size:.85rem}
+.sr-quiz-opt{background:var(--card);border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem 1rem;cursor:pointer;transition:all .2s;margin:.3rem 0}
+.sr-quiz-opt:hover{border-color:var(--accent)}
+.sr-quiz-opt.correct{border-color:#22c55e;background:rgba(34,197,94,.1)}
+.sr-quiz-opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.1)}
+.sr-kbd{display:inline-block;background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:1px 6px;font-size:.75rem;font-family:monospace;color:var(--text2)}
+@media(max-width:600px){.sr-settings{grid-template-columns:1fr}.sr-stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -25,32 +52,112 @@
     <div class="tool-section">
       <h1>📖 Speed Reader</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste text below, set speed, and read word-by-word. Train your brain to read faster!</p>
-      <textarea id="text" rows="5" placeholder="Paste your text here... (article, notes, current affairs)" oninput="updateStats()"></textarea>
-      <div id="textStats" style="font-size:.85rem;color:var(--muted);margin:.3rem 0"></div>
-      <div class="row" style="margin:.8rem 0;flex-wrap:wrap">
-        <label>Speed: <span id="wpmLabel">250</span> WPM</label>
-        <input type="range" id="wpm" min="100" max="800" value="250" step="25" oninput="document.getElementById('wpmLabel').textContent=this.value;updateStats()" style="flex:2">
-        <label>Chunk:</label>
-        <select id="chunk"><option value="1">1 word</option><option value="2">2 words</option><option value="3" selected>3 words</option><option value="5">5 words</option></select>
-        <label>Font size:</label>
-        <input type="range" id="fsize" min="24" max="72" value="40" oninput="document.getElementById('display').style.fontSize=this.value+'px'" style="flex:1">
+      <p class="info">Paste text, upload .txt, or pick a practice passage. Read with RSVP or highlighted-text mode. Track WPM & comprehension.</p>
+
+      <!-- Mode Tabs -->
+      <div class="sr-tabs">
+        <button class="btn" id="srTabRsvp" onclick="srShowTab('rsvp')">⚡ RSVP Mode</button>
+        <button class="btn btn-outline" id="srTabHighlight" onclick="srShowTab('highlight')">🖍️ Highlight Mode</button>
+        <button class="btn btn-outline" id="srTabComprehension" onclick="srShowTab('comprehension')">📝 Comprehension</button>
+        <button class="btn btn-outline" id="srTabHistory" onclick="srShowTab('history')">📊 History</button>
       </div>
-      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem">
-        <button class="btn btn-outline" onclick="toggleReadMode()" id="modeBtn">🌙 Dark Mode</button>
-        <button class="btn btn-outline" onclick="saveBookmark()">🔖 Save Bookmark</button>
-        <button class="btn btn-outline" onclick="loadBookmark()">📂 Resume Bookmark</button>
+
+      <!-- Input Area -->
+      <div id="srInputArea">
+        <textarea id="srText" rows="4" placeholder="Paste your text here... (article, notes, current affairs)" oninput="srUpdateStats()"></textarea>
+        <div class="row" style="margin:.4rem 0;gap:.4rem">
+          <button class="btn btn-outline" onclick="document.getElementById('srFileInput').click()" style="font-size:.85rem">📁 Upload .txt</button>
+          <input type="file" id="srFileInput" accept=".txt" style="display:none" onchange="srLoadFile(event)">
+          <select id="srPassageSelect" onchange="srLoadPassage(this.value)" style="flex:2;font-size:.85rem">
+            <option value="">— Practice Passages —</option>
+            <option value="0">Easy: The Importance of Reading</option>
+            <option value="1">Medium: Climate Change Impact</option>
+            <option value="2">Hard: Quantum Computing Basics</option>
+            <option value="3">Comprehension: The Indian Economy</option>
+            <option value="4">Comprehension: Space Exploration</option>
+          </select>
+        </div>
+        <div id="srTextStats" class="sr-meta"></div>
       </div>
-      <div id="readBox" style="text-align:center;padding:3rem 1rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:120px">
-        <div id="display" style="font-size:40px;font-weight:700">Press Play to start</div>
-        <div id="progress" style="margin-top:1rem;font-size:.85rem;color:var(--muted)"></div>
+
+      <!-- Settings -->
+      <div class="sr-settings">
+        <div class="sr-setting">
+          <label>Speed: <strong id="srWpmLabel">250</strong> WPM</label>
+          <input type="range" id="srWpm" min="100" max="1000" value="250" step="10" oninput="document.getElementById('srWpmLabel').textContent=this.value;srUpdateStats()" style="width:100%">
+        </div>
+        <div class="sr-setting">
+          <label>Words per chunk</label>
+          <select id="srChunk" style="width:100%"><option value="1">1 word</option><option value="2">2 words</option><option value="3">3 words</option><option value="5">5 words</option></select>
+        </div>
+        <div class="sr-setting">
+          <label>Font size: <span id="srFsizeLabel">42</span>px</label>
+          <input type="range" id="srFsize" min="20" max="80" value="42" oninput="document.getElementById('srFsizeLabel').textContent=this.value" style="width:100%">
+        </div>
+        <div class="sr-setting">
+          <label><input type="checkbox" id="srPausePunc" checked> Pause on punctuation</label>
+          <label><input type="checkbox" id="srRampUp"> Ramp up speed gradually</label>
+        </div>
       </div>
-      <div id="wpmResult" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:.5rem"></div>
-      <div class="row" style="justify-content:center">
-        <button class="btn" onclick="startReading()" id="playBtn">▶ Play</button>
-        <button class="btn btn-outline" onclick="pauseReading()">⏸ Pause</button>
-        <button class="btn btn-outline" onclick="resetReading()">↺ Reset</button>
+      <div style="font-size:.78rem;color:var(--text2);margin-bottom:.5rem">
+        Shortcuts: <span class="sr-kbd">Space</span> play/pause &nbsp; <span class="sr-kbd">←</span><span class="sr-kbd">→</span> skip sentence &nbsp; <span class="sr-kbd">R</span> restart
       </div>
+
+      <!-- RSVP Panel -->
+      <div id="srPanelRsvp">
+        <div class="sr-rsvp-box" id="srRsvpBox">
+          <div class="sr-rsvp-word" id="srDisplay" style="font-size:42px">Press Play ▶ to start</div>
+        </div>
+        <div class="sr-progress-bar" id="srProgressBar" onclick="srSeek(event)">
+          <div class="sr-progress-fill" id="srProgressFill" style="width:0%"></div>
+        </div>
+        <div class="sr-meta">
+          <span id="srWordPos">0 / 0</span>
+          <span id="srTimeLeft">ETA: —</span>
+          <span id="srActualWpm">—</span>
+        </div>
+        <div class="sr-controls">
+          <button class="btn btn-outline" onclick="srSkipSentence(-1)" title="Previous sentence">⏮</button>
+          <button class="btn" onclick="srTogglePlay()" id="srPlayBtn">▶ Play</button>
+          <button class="btn btn-outline" onclick="srSkipSentence(1)" title="Next sentence">⏭</button>
+          <button class="btn btn-outline" onclick="srReset()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Highlight Panel -->
+      <div id="srPanelHighlight" style="display:none">
+        <div class="sr-highlight-box" id="srHighlightBox">Load text above, then press Play.</div>
+        <div class="sr-progress-bar" id="srHlProgressBar" onclick="srHlSeek(event)">
+          <div class="sr-progress-fill" id="srHlProgressFill" style="width:0%"></div>
+        </div>
+        <div class="sr-meta">
+          <span id="srHlWordPos">0 / 0</span>
+          <span id="srHlTimeLeft">ETA: —</span>
+        </div>
+        <div class="sr-controls">
+          <button class="btn" onclick="srHlTogglePlay()" id="srHlPlayBtn">▶ Play</button>
+          <button class="btn btn-outline" onclick="srHlReset()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Comprehension Panel -->
+      <div id="srPanelComprehension" style="display:none">
+        <div id="srQuizArea"><p class="info">Select a comprehension passage above, read it, then come here to test understanding.</p></div>
+      </div>
+
+      <!-- History Panel -->
+      <div id="srPanelHistory" style="display:none">
+        <div class="sr-stats-grid">
+          <div class="sr-stat"><div class="sr-stat-val" id="shTotalWords">0</div><div class="sr-stat-label">Total Words Read</div></div>
+          <div class="sr-stat"><div class="sr-stat-val" id="shSessions">0</div><div class="sr-stat-label">Sessions</div></div>
+          <div class="sr-stat"><div class="sr-stat-val" id="shAvgWpm">0</div><div class="sr-stat-label">Avg WPM</div></div>
+          <div class="sr-stat"><div class="sr-stat-val" id="shAvgComp">—</div><div class="sr-stat-label">Avg Comprehension</div></div>
+        </div>
+        <h3 style="margin:.8rem 0 .4rem">Past Sessions</h3>
+        <div id="srHistoryList"></div>
+        <button class="btn btn-outline" onclick="if(confirm('Clear all history?')){srHistory=[];saveJSON('sr_history',[]);srShowTab('history')}" style="margin-top:.5rem">Clear History</button>
+      </div>
+
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Padhai mein slow ho? Speed reading practice karo. Ek ek word flash hoga screen pe — dhire dhire speed badhao. 2x fast padhoge toh 2x zyada cover hoga.</p>
@@ -111,26 +218,458 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var words=[],idx=0,interval=null,playing=false,startTime=0,wordsRead=0,darkRead=false;
-function updateStats(){var t=document.getElementById("text").value.trim();var wc=t?t.split(/\s+/).length:0;var wpm=+document.getElementById("wpm").value;var mins=wpm?Math.ceil(wc/wpm):0;document.getElementById("textStats").textContent=wc?wc+" words · ~"+mins+" min at "+wpm+" WPM":""}
-function startReading(){
-  if(playing)return;
-  if(!words.length){var text=document.getElementById("text").value.trim();if(!text)return alert("Paste some text first!");words=text.split(/\s+/);idx=0;wordsRead=0;startTime=Date.now()}
-  playing=true;document.getElementById("playBtn").textContent="▶ Playing...";
-  var wpm=+document.getElementById("wpm").value;var chunk=+document.getElementById("chunk").value;var delay=60000/wpm*chunk;
-  interval=setInterval(function(){
-    if(idx>=words.length){pauseReading();document.getElementById("display").textContent="Done!";showActualWPM();document.getElementById("progress").textContent="Finished reading "+words.length+" words";return}
-    document.getElementById("display").textContent=words.slice(idx,idx+chunk).join(" ");
-    document.getElementById("progress").textContent="Word "+(idx+1)+"/"+words.length+" ("+Math.round((idx+1)/words.length*100)+"%)";
-    wordsRead=idx+chunk;idx+=chunk;
-  },delay);
+/* ===== PRACTICE PASSAGES ===== */
+var PASSAGES = [
+  { title:"The Importance of Reading", text:"Reading is one of the most fundamental skills a person can develop. It opens doors to new worlds, ideas, and perspectives. Whether you are reading a novel, a newspaper, or a textbook, the act of reading engages your brain in ways that few other activities can. Studies have shown that regular reading improves vocabulary, enhances memory, and reduces stress. It also builds empathy by allowing readers to see the world through different eyes. In today's digital age, the ability to read quickly and comprehend effectively is more valuable than ever. From scrolling through news feeds to analyzing reports at work, reading is an essential part of daily life. The more you read, the better you become at it. Start with just fifteen minutes a day and gradually increase your reading time. Your brain will thank you for the exercise, and you will find yourself more informed, more articulate, and more confident in your communication skills.", questions: null },
+  { title:"Climate Change Impact", text:"Climate change is one of the most pressing challenges facing humanity today. The Earth's average temperature has risen by approximately 1.1 degrees Celsius since the pre-industrial era, primarily due to human activities such as burning fossil fuels, deforestation, and industrial processes. This warming has led to more frequent and intense heatwaves, rising sea levels, melting glaciers, and shifting weather patterns that affect agriculture and water supplies. The Intergovernmental Panel on Climate Change has warned that without significant reductions in greenhouse gas emissions, global temperatures could rise by 1.5 to 4.5 degrees Celsius by the end of this century. The consequences would be devastating: widespread food and water shortages, mass displacement of populations, extinction of numerous species, and increased frequency of natural disasters. Addressing climate change requires a coordinated global effort involving renewable energy adoption, carbon capture technologies, sustainable agriculture, and changes in individual behaviour. Every action counts, from reducing energy consumption to supporting policies that prioritize environmental protection.", questions: null },
+  { title:"Quantum Computing Basics", text:"Quantum computing represents a fundamental shift in how we process information. Unlike classical computers that use bits representing either zero or one, quantum computers use quantum bits or qubits that can exist in multiple states simultaneously through a phenomenon called superposition. This allows quantum computers to explore many possible solutions at once, making them exponentially faster for certain types of problems. Another key quantum property is entanglement, where two qubits become correlated so that the state of one instantly influences the other, regardless of the distance between them. These properties enable quantum computers to tackle problems that would take classical computers millions of years, such as simulating molecular interactions for drug discovery, optimizing complex logistics networks, breaking current encryption methods, and training advanced artificial intelligence models. However, quantum computers face significant challenges including decoherence, where qubits lose their quantum properties due to environmental interference, and the need for extremely cold operating temperatures near absolute zero. Major technology companies and governments worldwide are investing billions in quantum research, and practical quantum advantage for real-world problems is expected within the next decade.", questions: null },
+  { title:"The Indian Economy", text:"India's economy has undergone a remarkable transformation since the liberalization reforms of 1991. From a largely agrarian economy with heavy government regulation, India has emerged as one of the world's fastest-growing major economies. The services sector, particularly information technology and business process outsourcing, has been a key driver of this growth, contributing over fifty percent of the country's GDP. India's demographic advantage, with a median age of twenty-eight years, provides a large workforce that fuels economic expansion. The government's initiatives such as Make in India, Digital India, and the Goods and Services Tax reform have aimed to boost manufacturing, digital infrastructure, and tax compliance. However, challenges remain, including income inequality, unemployment among youth, agricultural distress, and the need for better healthcare and education infrastructure. India's GDP crossed three point five trillion dollars in recent years, making it the fifth largest economy globally. Economists project that with sustained reforms and investment in human capital, India could become the third largest economy by 2030.", questions: [
+    { q: "When did India's major economic liberalization reforms begin?", opts: ["1985","1991","1995","2000"], ans: 1 },
+    { q: "Which sector contributes over 50% of India's GDP?", opts: ["Agriculture","Manufacturing","Services","Mining"], ans: 2 },
+    { q: "What is India's approximate median age mentioned in the passage?", opts: ["22 years","25 years","28 years","32 years"], ans: 2 },
+    { q: "What is India's approximate GDP mentioned in the passage?", opts: ["$2 trillion","$3.5 trillion","$5 trillion","$7 trillion"], ans: 1 },
+    { q: "By when could India become the third largest economy according to the passage?", opts: ["2025","2028","2030","2035"], ans: 2 }
+  ]},
+  { title:"Space Exploration", text:"Space exploration has captivated human imagination for centuries and has become a reality in the modern era. The space race between the United States and the Soviet Union during the Cold War led to remarkable achievements, including the first human in space, Yuri Gagarin, in 1961 and the Apollo 11 moon landing in 1969. Since then, space agencies worldwide have launched thousands of satellites, built the International Space Station, and sent robotic probes to every planet in our solar system. The twenty-first century has witnessed a new era of space exploration driven by both government agencies and private companies like SpaceX, Blue Origin, and Virgin Galactic. SpaceX's reusable rocket technology has dramatically reduced launch costs, making space more accessible. Current goals include establishing a permanent human presence on the Moon through NASA's Artemis program, sending humans to Mars within the next two decades, and deploying mega-constellations of satellites to provide global internet coverage. India's space program, led by ISRO, has achieved remarkable milestones including the Mars Orbiter Mission at a fraction of the cost of other space agencies. The James Webb Space Telescope, launched in 2021, is providing unprecedented views of the early universe, helping scientists understand the origins of galaxies, stars, and potentially life itself.", questions: [
+    { q: "Who was the first human in space?", opts: ["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","John Glenn"], ans: 2 },
+    { q: "In what year did the Apollo 11 moon landing occur?", opts: ["1965","1967","1969","1971"], ans: 2 },
+    { q: "Which company is known for reusable rocket technology?", opts: ["Blue Origin","Virgin Galactic","SpaceX","Boeing"], ans: 2 },
+    { q: "What is NASA's program for returning humans to the Moon called?", opts: ["Apollo","Gemini","Artemis","Mercury"], ans: 2 },
+    { q: "When was the James Webb Space Telescope launched?", opts: ["2019","2020","2021","2022"], ans: 2 }
+  ]}
+];
+
+/* ===== STATE ===== */
+function loadJSON(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } }
+function saveJSON(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+var srHistory = loadJSON('sr_history', []);
+var srWords = [], srIdx = 0, srInterval = null, srPlaying = false, srStartTime = 0, srWordsRead = 0;
+var srCurrentPassageIdx = -1;
+var currentSrTab = 'rsvp';
+
+// Highlight mode state
+var hlWords = [], hlIdx = 0, hlInterval = null, hlPlaying = false;
+
+/* ===== TAB SWITCHING ===== */
+function srShowTab(t) {
+  currentSrTab = t;
+  var tabs = ['rsvp','highlight','comprehension','history'];
+  tabs.forEach(function(id) {
+    var panel = document.getElementById('srPanel' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (panel) panel.style.display = id === t ? '' : 'none';
+    var btn = document.getElementById('srTab' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (btn) btn.className = id === t ? 'btn' : 'btn btn-outline';
+  });
+  if (t === 'history') renderHistory();
+  if (t === 'comprehension') renderComprehension();
+  if (t === 'highlight') srHlInit();
 }
-function showActualWPM(){var elapsed=(Date.now()-startTime)/60000;var actual=elapsed>0?Math.round(wordsRead/elapsed):0;document.getElementById("wpmResult").textContent="Actual speed: "+actual+" WPM ("+wordsRead+" words in "+elapsed.toFixed(1)+" min)"}
-function pauseReading(){playing=false;clearInterval(interval);document.getElementById("playBtn").textContent="▶ Resume";if(wordsRead>0)showActualWPM()}
-function resetReading(){pauseReading();words=[];idx=0;wordsRead=0;startTime=0;document.getElementById("display").textContent="Press Play to start";document.getElementById("progress").textContent="";document.getElementById("wpmResult").textContent="";document.getElementById("playBtn").textContent="▶ Play"}
-function saveBookmark(){if(!words.length)return alert("Nothing to bookmark");localStorage.setItem("sr_bookmark",JSON.stringify({text:document.getElementById("text").value,idx:idx}));alert("Bookmark saved at word "+idx)}
-function loadBookmark(){var b=localStorage.getItem("sr_bookmark");if(!b)return alert("No bookmark found");var d=JSON.parse(b);document.getElementById("text").value=d.text;words=d.text.trim().split(/\s+/);idx=d.idx;updateStats();document.getElementById("display").textContent="Resumed at word "+idx;document.getElementById("playBtn").textContent="▶ Resume"}
-function toggleReadMode(){darkRead=!darkRead;var box=document.getElementById("readBox");if(darkRead){box.style.background="#1a1a2e";box.style.color="#e0e0e0";document.getElementById("display").style.color="#e0e0e0";document.getElementById("modeBtn").textContent="☀️ Light Mode"}else{box.style.background="var(--card)";box.style.color="";document.getElementById("display").style.color="";document.getElementById("modeBtn").textContent="🌙 Dark Mode"}}
-  </script>
-</body>
-</html>
+
+/* ===== TEXT INPUT ===== */
+function srUpdateStats() {
+  var t = (document.getElementById('srText').value || '').trim();
+  var wc = t ? t.split(/\s+/).length : 0;
+  var wpm = parseInt(document.getElementById('srWpm').value) || 250;
+  var mins = wpm ? (wc / wpm) : 0;
+  var el = document.getElementById('srTextStats');
+  el.textContent = wc ? wc + ' words \u00b7 ~' + mins.toFixed(1) + ' min at ' + wpm + ' WPM' : '';
+}
+
+function srLoadFile(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('srText').value = ev.target.result;
+    srUpdateStats();
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function srLoadPassage(idx) {
+  if (idx === '') return;
+  idx = parseInt(idx);
+  srCurrentPassageIdx = idx;
+  document.getElementById('srText').value = PASSAGES[idx].text;
+  srUpdateStats();
+  srReset();
+  srHlReset();
+}
+
+/* ===== RSVP CORE ===== */
+function getPivotIndex(word) {
+  var len = word.length;
+  if (len <= 1) return 0;
+  if (len <= 3) return 0;
+  if (len <= 5) return 1;
+  if (len <= 9) return 2;
+  return 3;
+}
+
+function renderRsvpWord(chunk) {
+  var words = chunk.split(/\s+/);
+  if (words.length === 1) {
+    var word = words[0];
+    var pi = getPivotIndex(word.replace(/[^a-zA-Z]/g, ''));
+    var html = '';
+    for (var i = 0; i < word.length; i++) {
+      if (i === pi) html += '<span class="sr-pivot">' + esc(word[i]) + '</span>';
+      else html += esc(word[i]);
+    }
+    return html;
+  }
+  return esc(chunk);
+}
+
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function srGetDelay(wordChunk) {
+  var wpm = parseInt(document.getElementById('srWpm').value) || 250;
+  var chunk = parseInt(document.getElementById('srChunk').value) || 1;
+
+  if (document.getElementById('srRampUp').checked && srIdx < 20) {
+    var rampFactor = 0.5 + (srIdx / 20) * 0.5;
+    wpm = Math.round(wpm * rampFactor);
+  }
+
+  var baseDelay = 60000 / wpm * chunk;
+
+  if (document.getElementById('srPausePunc').checked && wordChunk) {
+    var lastChar = wordChunk.trim().slice(-1);
+    if ('.!?'.indexOf(lastChar) > -1) baseDelay *= 2;
+    else if (',;:'.indexOf(lastChar) > -1) baseDelay *= 1.3;
+  }
+  return baseDelay;
+}
+
+function srTogglePlay() {
+  if (srPlaying) { srPause(); } else { srPlay(); }
+}
+
+function srPlay() {
+  if (srPlaying) return;
+  if (!srWords.length) {
+    var text = (document.getElementById('srText').value || '').trim();
+    if (!text) { alert('Paste some text first!'); return; }
+    srWords = text.split(/\s+/);
+    srIdx = 0;
+    srWordsRead = 0;
+    srStartTime = Date.now();
+  }
+  srPlaying = true;
+  var fontSize = document.getElementById('srFsize').value;
+  document.getElementById('srDisplay').style.fontSize = fontSize + 'px';
+  document.getElementById('srPlayBtn').textContent = '\u23f8 Pause';
+  srStep();
+}
+
+function srStep() {
+  if (!srPlaying || srIdx >= srWords.length) {
+    if (srIdx >= srWords.length) {
+      srPause();
+      document.getElementById('srDisplay').innerHTML = '\ud83c\udf89 Done!';
+      srFinishSession();
+    }
+    return;
+  }
+  var chunk = parseInt(document.getElementById('srChunk').value) || 1;
+  var wordChunk = srWords.slice(srIdx, srIdx + chunk).join(' ');
+  document.getElementById('srDisplay').innerHTML = renderRsvpWord(wordChunk);
+
+  var pct = Math.round((srIdx + chunk) / srWords.length * 100);
+  document.getElementById('srProgressFill').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('srWordPos').textContent = (srIdx + 1) + ' / ' + srWords.length;
+
+  var remaining = srWords.length - srIdx - chunk;
+  var wpm = parseInt(document.getElementById('srWpm').value) || 250;
+  var eta = remaining > 0 ? (remaining / wpm).toFixed(1) : '0.0';
+  document.getElementById('srTimeLeft').textContent = 'ETA: ' + eta + ' min';
+
+  srWordsRead = srIdx + chunk;
+  var elapsed = (Date.now() - srStartTime) / 60000;
+  var actualWpm = elapsed > 0 ? Math.round(srWordsRead / elapsed) : 0;
+  document.getElementById('srActualWpm').textContent = actualWpm + ' WPM actual';
+
+  srIdx += chunk;
+  var delay = srGetDelay(wordChunk);
+  srInterval = setTimeout(srStep, delay);
+}
+
+function srPause() {
+  srPlaying = false;
+  clearTimeout(srInterval);
+  document.getElementById('srPlayBtn').textContent = '\u25b6 Resume';
+}
+
+function srReset() {
+  srPause();
+  srWords = [];
+  srIdx = 0;
+  srWordsRead = 0;
+  srStartTime = 0;
+  document.getElementById('srDisplay').innerHTML = 'Press Play \u25b6 to start';
+  document.getElementById('srProgressFill').style.width = '0%';
+  document.getElementById('srWordPos').textContent = '0 / 0';
+  document.getElementById('srTimeLeft').textContent = 'ETA: \u2014';
+  document.getElementById('srActualWpm').textContent = '\u2014';
+  document.getElementById('srPlayBtn').textContent = '\u25b6 Play';
+}
+
+function srSkipSentence(dir) {
+  if (!srWords.length) return;
+  if (dir > 0) {
+    for (var i = srIdx; i < srWords.length; i++) {
+      if (/[.!?]$/.test(srWords[i])) { srIdx = Math.min(i + 1, srWords.length); break; }
+    }
+  } else {
+    var target = Math.max(srIdx - 2, 0);
+    for (var j = target; j >= 0; j--) {
+      if (/[.!?]$/.test(srWords[j]) && j < srIdx - 1) { srIdx = j + 1; break; }
+      if (j === 0) srIdx = 0;
+    }
+  }
+  if (srPlaying) { clearTimeout(srInterval); srStep(); }
+  else if (srWords.length) {
+    var chunk = parseInt(document.getElementById('srChunk').value) || 1;
+    var wordChunk = srWords.slice(srIdx, srIdx + chunk).join(' ');
+    document.getElementById('srDisplay').innerHTML = renderRsvpWord(wordChunk);
+    var pct = Math.round((srIdx) / srWords.length * 100);
+    document.getElementById('srProgressFill').style.width = pct + '%';
+    document.getElementById('srWordPos').textContent = (srIdx + 1) + ' / ' + srWords.length;
+  }
+}
+
+function srSeek(e) {
+  if (!srWords.length) return;
+  var rect = e.currentTarget.getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  srIdx = Math.max(0, Math.min(Math.floor(pct * srWords.length), srWords.length - 1));
+  if (srPlaying) { clearTimeout(srInterval); srStep(); }
+  else {
+    var chunk = parseInt(document.getElementById('srChunk').value) || 1;
+    document.getElementById('srDisplay').innerHTML = renderRsvpWord(srWords.slice(srIdx, srIdx + chunk).join(' '));
+    document.getElementById('srProgressFill').style.width = Math.round(srIdx / srWords.length * 100) + '%';
+    document.getElementById('srWordPos').textContent = (srIdx + 1) + ' / ' + srWords.length;
+  }
+}
+
+function srFinishSession() {
+  var elapsed = (Date.now() - srStartTime) / 60000;
+  var actualWpm = elapsed > 0 ? Math.round(srWordsRead / elapsed) : 0;
+  srHistory.push({
+    date: new Date().toISOString(),
+    words: srWordsRead,
+    time: Math.round(elapsed * 10) / 10,
+    wpm: actualWpm,
+    comp: null
+  });
+  saveJSON('sr_history', srHistory);
+}
+
+/* ===== HIGHLIGHT MODE ===== */
+function srHlInit() {
+  var text = (document.getElementById('srText').value || '').trim();
+  if (!text) { document.getElementById('srHighlightBox').innerHTML = 'Load text above first.'; return; }
+  hlWords = text.split(/\s+/);
+  hlIdx = 0;
+  srHlRender();
+}
+
+function srHlRender() {
+  var html = '';
+  for (var i = 0; i < hlWords.length; i++) {
+    if (i === hlIdx) html += '<span class="sr-hl-active">' + esc(hlWords[i]) + '</span> ';
+    else html += esc(hlWords[i]) + ' ';
+  }
+  document.getElementById('srHighlightBox').innerHTML = html;
+  // Scroll active into view
+  var active = document.querySelector('.sr-hl-active');
+  if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+  var pct = hlWords.length ? Math.round((hlIdx + 1) / hlWords.length * 100) : 0;
+  document.getElementById('srHlProgressFill').style.width = pct + '%';
+  document.getElementById('srHlWordPos').textContent = (hlIdx + 1) + ' / ' + hlWords.length;
+  var wpm = parseInt(document.getElementById('srWpm').value) || 250;
+  var remaining = hlWords.length - hlIdx - 1;
+  document.getElementById('srHlTimeLeft').textContent = 'ETA: ' + (remaining / wpm).toFixed(1) + ' min';
+}
+
+function srHlTogglePlay() {
+  if (hlPlaying) { srHlPause(); } else { srHlPlay(); }
+}
+
+function srHlPlay() {
+  if (hlPlaying) return;
+  if (!hlWords.length) srHlInit();
+  if (!hlWords.length) return;
+  hlPlaying = true;
+  document.getElementById('srHlPlayBtn').textContent = '\u23f8 Pause';
+  srHlStep();
+}
+
+function srHlStep() {
+  if (!hlPlaying || hlIdx >= hlWords.length) {
+    if (hlIdx >= hlWords.length) { srHlPause(); }
+    return;
+  }
+  srHlRender();
+  var wpm = parseInt(document.getElementById('srWpm').value) || 250;
+  var delay = 60000 / wpm;
+  if (document.getElementById('srPausePunc').checked) {
+    var lastChar = hlWords[hlIdx].slice(-1);
+    if ('.!?'.indexOf(lastChar) > -1) delay *= 2;
+    else if (',;:'.indexOf(lastChar) > -1) delay *= 1.3;
+  }
+  hlIdx++;
+  hlInterval = setTimeout(srHlStep, delay);
+}
+
+function srHlPause() {
+  hlPlaying = false;
+  clearTimeout(hlInterval);
+  document.getElementById('srHlPlayBtn').textContent = '\u25b6 Resume';
+}
+
+function srHlReset() {
+  srHlPause();
+  hlIdx = 0;
+  hlWords = [];
+  document.getElementById('srHighlightBox').innerHTML = 'Load text above, then press Play.';
+  document.getElementById('srHlProgressFill').style.width = '0%';
+  document.getElementById('srHlWordPos').textContent = '0 / 0';
+  document.getElementById('srHlTimeLeft').textContent = 'ETA: \u2014';
+  document.getElementById('srHlPlayBtn').textContent = '\u25b6 Play';
+}
+
+function srHlSeek(e) {
+  if (!hlWords.length) return;
+  var rect = e.currentTarget.getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  hlIdx = Math.max(0, Math.min(Math.floor(pct * hlWords.length), hlWords.length - 1));
+  srHlRender();
+}
+
+/* ===== COMPREHENSION ===== */
+var compAnswered = {};
+function renderComprehension() {
+  var area = document.getElementById('srQuizArea');
+  // Find passages with questions
+  var available = [];
+  PASSAGES.forEach(function(p, i) { if (p.questions) available.push(i); });
+
+  if (!available.length) { area.innerHTML = '<p class="info">No comprehension passages available.</p>'; return; }
+
+  if (srCurrentPassageIdx < 0 || !PASSAGES[srCurrentPassageIdx] || !PASSAGES[srCurrentPassageIdx].questions) {
+    area.innerHTML = '<p class="info">Select a comprehension passage from the dropdown above (passages marked "Comprehension:"), read it using RSVP or Highlight mode, then come here to test your understanding.</p>';
+    area.innerHTML += '<div style="margin-top:.5rem"><strong>Available:</strong><ul style="margin:.3rem 0 0 1.5rem">';
+    available.forEach(function(i) {
+      area.innerHTML += '<li>' + esc(PASSAGES[i].title) + '</li>';
+    });
+    area.innerHTML += '</ul></div>';
+    return;
+  }
+
+  var p = PASSAGES[srCurrentPassageIdx];
+  compAnswered = {};
+  var html = '<h3>' + esc(p.title) + ' \u2014 Comprehension Test</h3>';
+  html += '<p class="info">Answer the questions based on the passage you just read.</p>';
+
+  p.questions.forEach(function(qq, qi) {
+    html += '<div style="margin:1rem 0"><strong>Q' + (qi+1) + '. ' + esc(qq.q) + '</strong>';
+    qq.opts.forEach(function(opt, oi) {
+      html += '<div class="sr-quiz-opt" data-q="' + qi + '" data-o="' + oi + '" onclick="srCheckComp(' + qi + ',' + oi + ',this)">' + esc(opt) + '</div>';
+    });
+    html += '<div id="srCompFb' + qi + '"></div></div>';
+  });
+  html += '<div id="srCompScore" style="text-align:center;margin:1rem 0;font-size:1.1rem;font-weight:700"></div>';
+  area.innerHTML = html;
+}
+
+function srCheckComp(qi, oi, el) {
+  if (compAnswered[qi] !== undefined) return;
+  compAnswered[qi] = oi;
+  var p = PASSAGES[srCurrentPassageIdx];
+  var correct = p.questions[qi].ans;
+  var opts = document.querySelectorAll('[data-q="' + qi + '"]');
+  opts.forEach(function(o) {
+    if (parseInt(o.getAttribute('data-o')) === correct) o.classList.add('correct');
+  });
+  if (oi !== correct) el.classList.add('wrong');
+  var fb = document.getElementById('srCompFb' + qi);
+  fb.innerHTML = oi === correct ?
+    '<span style="color:#22c55e">\u2705 Correct!</span>' :
+    '<span style="color:#ef4444">\u274c Wrong</span>';
+
+  // Check if all answered
+  var totalQ = p.questions.length;
+  var answered = Object.keys(compAnswered).length;
+  if (answered === totalQ) {
+    var rightCount = 0;
+    Object.keys(compAnswered).forEach(function(k) {
+      if (compAnswered[k] === p.questions[parseInt(k)].ans) rightCount++;
+    });
+    var pct = Math.round(rightCount / totalQ * 100);
+    document.getElementById('srCompScore').innerHTML = 'Score: ' + rightCount + '/' + totalQ + ' (' + pct + '%)';
+    // Save to last history entry if exists
+    if (srHistory.length) {
+      srHistory[srHistory.length - 1].comp = pct;
+      saveJSON('sr_history', srHistory);
+    }
+  }
+}
+
+/* ===== HISTORY ===== */
+function renderHistory() {
+  var totalWords = 0, totalWpm = 0, totalComp = 0, compCount = 0;
+  srHistory.forEach(function(h) {
+    totalWords += h.words || 0;
+    totalWpm += h.wpm || 0;
+    if (h.comp !== null && h.comp !== undefined) { totalComp += h.comp; compCount++; }
+  });
+  document.getElementById('shTotalWords').textContent = totalWords;
+  document.getElementById('shSessions').textContent = srHistory.length;
+  document.getElementById('shAvgWpm').textContent = srHistory.length ? Math.round(totalWpm / srHistory.length) : 0;
+  document.getElementById('shAvgComp').textContent = compCount ? Math.round(totalComp / compCount) + '%' : '\u2014';
+
+  var html = '';
+  if (!srHistory.length) {
+    html = '<p class="info">No sessions recorded yet. Start reading!</p>';
+  } else {
+    var sorted = srHistory.slice().reverse();
+    sorted.forEach(function(h) {
+      var d = new Date(h.date);
+      html += '<div class="sr-history-item">';
+      html += '<span>' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</span>';
+      html += '<span>' + (h.words || 0) + ' words</span>';
+      html += '<span>' + (h.wpm || 0) + ' WPM</span>';
+      html += '<span>' + (h.time || 0) + ' min</span>';
+      html += '<span>' + (h.comp !== null && h.comp !== undefined ? h.comp + '% comp' : '\u2014') + '</span>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('srHistoryList').innerHTML = html;
+}
+
+/* ===== KEYBOARD SHORTCUTS ===== */
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (currentSrTab === 'rsvp') srTogglePlay();
+    else if (currentSrTab === 'highlight') srHlTogglePlay();
+  }
+  if (e.code === 'ArrowRight') { e.preventDefault(); srSkipSentence(1); }
+  if (e.code === 'ArrowLeft') { e.preventDefault(); srSkipSentence(-1); }
+  if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    if (currentSrTab === 'rsvp') srReset();
+    else if (currentSrTab === 'highlight') srHlReset();
+  }
+});
+
+/* ===== INIT ===== */
+srUpdateStats();
+</script>
+</body></html>

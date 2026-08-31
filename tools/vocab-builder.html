@@ -9,17 +9,119 @@
   <meta name="description" content="Learn 10 new English words daily with Hindi meanings. Build vocabulary for competitive exams. Track your progress!">
   <meta property="og:title" content="Vocabulary Builder - English Hindi Words Daily Quiz"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/vocab-builder"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/vocab-builder"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<style>
+.vb-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.vb-card{background:var(--card);border-radius:12px;padding:1.2rem;margin:.5rem 0;border:1px solid rgba(255,255,255,.06);transition:all .2s}
+.vb-card:hover{border-color:var(--accent)}
+.vb-word{font-size:1.1rem;font-weight:700;color:var(--accent)}
+.vb-hindi{color:var(--accent2);font-size:.95rem}
+.vb-pos{font-size:.75rem;background:rgba(99,102,241,.15);color:var(--accent);padding:2px 8px;border-radius:6px;display:inline-block}
+.vb-example{font-style:italic;color:var(--text2);font-size:.88rem;margin-top:.3rem}
+.vb-actions{display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap}
+.vb-actions button{background:none;border:1px solid rgba(255,255,255,.1);color:var(--text2);padding:3px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:all .2s}
+.vb-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.vb-fav{color:#f59e0b!important}
+.vb-flashcard{perspective:1000px;cursor:pointer;min-height:220px;margin:1rem 0}
+.vb-flashcard-inner{position:relative;width:100%;min-height:220px;transition:transform .5s;transform-style:preserve-3d}
+.vb-flashcard.flipped .vb-flashcard-inner{transform:rotateY(180deg)}
+.vb-flashcard-front,.vb-flashcard-back{position:absolute;inset:0;backface-visibility:hidden;background:var(--card);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;border:2px solid rgba(99,102,241,.15)}
+.vb-flashcard-back{transform:rotateY(180deg)}
+.vb-quiz-opt{background:var(--card);border:2px solid rgba(255,255,255,.08);border-radius:12px;padding:.8rem 1.2rem;cursor:pointer;transition:all .2s;text-align:left;width:100%;margin:.3rem 0}
+.vb-quiz-opt:hover{border-color:var(--accent)}
+.vb-quiz-opt.correct{border-color:#22c55e;background:rgba(34,197,94,.1)}
+.vb-quiz-opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.1)}
+.vb-progress-ring{width:80px;height:80px}
+.vb-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.7rem;margin:.8rem 0}
+.vb-stat{background:var(--card);border-radius:12px;padding:.8rem;text-align:center}
+.vb-stat-val{font-size:1.4rem;font-weight:800;color:var(--accent)}
+.vb-stat-label{font-size:.75rem;color:var(--text2)}
+.vb-filter-row{display:flex;gap:.5rem;margin:.5rem 0;flex-wrap:wrap;align-items:center}
+.vb-filter-row select,.vb-filter-row input[type=text]{flex:1;min-width:140px;padding:.5rem .8rem;font-size:.85rem}
+.vb-match-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin:1rem 0}
+.vb-match-card{background:var(--card);border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem;text-align:center;cursor:pointer;transition:all .2s;font-size:.9rem;min-height:60px;display:flex;align-items:center;justify-content:center}
+.vb-match-card.selected{border-color:var(--accent);background:rgba(99,102,241,.1)}
+.vb-match-card.matched{border-color:#22c55e;background:rgba(34,197,94,.1);pointer-events:none;opacity:.7}
+.vb-match-card.wrong-match{border-color:#ef4444;animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.vb-box-indicator{display:inline-block;width:18px;height:18px;border-radius:4px;text-align:center;font-size:.7rem;line-height:18px;color:#fff;font-weight:700}
+@media(max-width:600px){.vb-stats-grid{grid-template-columns:repeat(2,1fr)}.vb-match-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 📖 Vocabulary Builder</div><div class="tool-section">
       <h1>📖 Vocabulary Builder</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Learn new words daily. Add words, meanings, synonyms. Quiz yourself.</p>
-      <div class="tab-btns" style="display:flex;gap:6px;margin-bottom:1rem"><button class="btn" id="tabLearn" onclick="showTab('learn')">📚 Word Bank</button><button class="btn btn-outline" id="tabQuiz" onclick="showTab('quiz')">📝 Quiz</button><button class="btn btn-outline" id="tabAdd" onclick="showTab('add')">+ Add Word</button></div>
-      <div id="learn"><div id="wordList"></div></div>
-      <div id="quiz" style="display:none;text-align:center"><div id="quizCard" style="background:var(--card);padding:2rem;border-radius:12px;margin:1rem 0;min-height:150px"><div id="qWord" style="font-size:1.8rem;font-weight:700"></div><div id="qHint" class="info" style="margin:.5rem 0"></div><input type="text" id="qAnswer" placeholder="Type the meaning..." style="text-align:center;font-size:1.1rem" onkeydown="if(event.key==='Enter')checkAns()"><div id="qResult" style="margin-top:.5rem"></div></div><div class="row" style="justify-content:center"><button class="btn" onclick="checkAns()">Check</button><button class="btn btn-outline" onclick="nextWord()">Next →</button></div><div id="quizScore" style="margin-top:.5rem"></div></div>
-      <div id="add" style="display:none"><input type="text" id="newWord" placeholder="English word"><input type="text" id="newMeaning" placeholder="Hindi meaning"><input type="text" id="newSynonym" placeholder="Synonyms (optional)"><button class="btn" onclick="addWord()" style="width:100%;margin-top:.5rem">+ Add Word</button></div>
+      <p class="info">Learn new words daily with spaced repetition. Quiz yourself in multiple modes. Track streaks & progress.</p>
+
+      <!-- Stats Dashboard -->
+      <div id="vbDashboard" style="margin-bottom:1rem">
+        <div class="vb-stats-grid">
+          <div class="vb-stat"><div class="vb-stat-val" id="statLearned">0</div><div class="vb-stat-label">Words Learned</div></div>
+          <div class="vb-stat"><div class="vb-stat-val" id="statDue">0</div><div class="vb-stat-label">Due Today</div></div>
+          <div class="vb-stat"><div class="vb-stat-val" id="statAccuracy">0%</div><div class="vb-stat-label">Accuracy</div></div>
+          <div class="vb-stat"><div class="vb-stat-val" id="statStreak">0🔥</div><div class="vb-stat-label">Day Streak</div></div>
+        </div>
+        <div style="background:var(--card);border-radius:10px;padding:.6rem 1rem;margin-top:.4rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem">
+            <span>Daily Goal: <strong id="goalText">0/10</strong></span>
+            <span style="color:var(--text2);font-size:.78rem" id="goalLabel">Set goal in settings</span>
+          </div>
+          <div style="background:rgba(255,255,255,.08);border-radius:6px;height:8px;margin-top:.4rem;overflow:hidden">
+            <div id="goalBar" style="height:100%;background:var(--gradient);border-radius:6px;width:0%;transition:width .3s"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="vb-tabs">
+        <button class="btn" id="tabBank" onclick="showVTab('bank')">📚 Word Bank</button>
+        <button class="btn btn-outline" id="tabFlash" onclick="showVTab('flash')">🃏 Flashcards</button>
+        <button class="btn btn-outline" id="tabQuiz" onclick="showVTab('quiz')">📝 Quiz</button>
+        <button class="btn btn-outline" id="tabMatch" onclick="showVTab('match')">🔗 Match</button>
+        <button class="btn btn-outline" id="tabSpell" onclick="showVTab('spell')">✏️ Spell</button>
+        <button class="btn btn-outline" id="tabCustom" onclick="showVTab('custom')">➕ My Words</button>
+        <button class="btn btn-outline" id="tabSettings" onclick="showVTab('settings')">⚙️</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="vb-filter-row" id="filterRow">
+        <input type="text" id="vbSearch" placeholder="🔍 Search words..." oninput="renderCurrentTab()">
+        <select id="vbCatFilter" onchange="renderCurrentTab()">
+          <option value="all">All Categories</option>
+          <option value="ssc">SSC/CGL</option>
+          <option value="banking">Banking/IBPS</option>
+          <option value="upsc">UPSC</option>
+          <option value="gre">GRE</option>
+          <option value="idioms">Idioms & Phrases</option>
+          <option value="oneword">One-Word Substitutions</option>
+          <option value="antonym_synonym">Antonyms/Synonyms</option>
+          <option value="custom">My Custom Words</option>
+        </select>
+        <select id="vbBoxFilter" onchange="renderCurrentTab()">
+          <option value="all">All Boxes</option>
+          <option value="0">Box 1 (New)</option>
+          <option value="1">Box 2</option>
+          <option value="2">Box 3</option>
+          <option value="3">Box 4</option>
+          <option value="4">Box 5 (Mastered)</option>
+        </select>
+        <select id="vbExtraFilter" onchange="renderCurrentTab()">
+          <option value="all">All Words</option>
+          <option value="fav">⭐ Favourites</option>
+          <option value="due">Due Today</option>
+        </select>
+      </div>
+
+      <!-- Tab Content Panels -->
+      <div id="panelBank"></div>
+      <div id="panelFlash" style="display:none"></div>
+      <div id="panelQuiz" style="display:none"></div>
+      <div id="panelMatch" style="display:none"></div>
+      <div id="panelSpell" style="display:none"></div>
+      <div id="panelCustom" style="display:none"></div>
+      <div id="panelSettings" style="display:none"></div>
+
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">English weak hai? Daily 10 new words seekho. Meaning, example sentence, pronunciation — sab milega. GRE, CAT, IELTS — vocabulary strong toh score strong.</p>
@@ -78,14 +180,623 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>var defaultWords=[{w:"Ubiquitous",m:"सर्वव्यापी (present everywhere)",s:"omnipresent"},{w:"Ephemeral",m:"क्षणभंगुर (short-lived)",s:"transient, fleeting"},{w:"Pragmatic",m:"व्यावहारिक (practical)",s:"realistic, sensible"},{w:"Eloquent",m:"वाक्पटु (fluent speaker)",s:"articulate, expressive"},{w:"Resilient",m:"लचीला (recovers quickly)",s:"tough, adaptable"},{w:"Ambiguous",m:"अस्पष्ट (unclear)",s:"vague, unclear"},{w:"Benevolent",m:"परोपकारी (kind)",s:"generous, charitable"},{w:"Diligent",m:"परिश्रमी (hardworking)",s:"industrious, meticulous"},{w:"Inevitable",m:"अनिवार्य (unavoidable)",s:"certain, inescapable"},{w:"Meticulous",m:"सावधान (careful)",s:"thorough, precise"},{w:"Profound",m:"गहन (deep)",s:"deep, intense"},{w:"Tenacious",m:"दृढ़ (persistent)",s:"persistent, determined"},{w:"Candid",m:"स्पष्टवादी (honest)",s:"frank, straightforward"},{w:"Gregarious",m:"मिलनसार (sociable)",s:"outgoing, friendly"},{w:"Arduous",m:"कठिन (difficult)",s:"strenuous, tough"},{w:"Lucid",m:"स्पष्ट (clear)",s:"clear, intelligible"},{w:"Mundane",m:"सांसारिक (ordinary)",s:"routine, everyday"},{w:"Novice",m:"नौसिखिया (beginner)",s:"beginner, newcomer"},{w:"Obsolete",m:"अप्रचलित (outdated)",s:"outdated, archaic"},{w:"Plausible",m:"विश्वसनीय (believable)",s:"credible, reasonable"}];
-var words=JSON.parse(localStorage.getItem("vocabWords")||"null")||defaultWords;
-var qIdx=0,qScore={right:0,wrong:0};
-function save(){localStorage.setItem("vocabWords",JSON.stringify(words))}
-function showTab(t){document.getElementById("learn").style.display=t==="learn"?"":"none";document.getElementById("quiz").style.display=t==="quiz"?"":"none";document.getElementById("add").style.display=t==="add"?"":"none";document.getElementById("tabLearn").className=t==="learn"?"btn":"btn btn-outline";document.getElementById("tabQuiz").className=t==="quiz"?"btn":"btn btn-outline";document.getElementById("tabAdd").className=t==="add"?"btn":"btn btn-outline";if(t==="learn")renderWords();if(t==="quiz")nextWord()}
-function renderWords(){document.getElementById("wordList").innerHTML=words.map(function(w,i){return '<div style="background:var(--card);padding:.7rem 1rem;border-radius:8px;margin:.3rem 0"><strong style="color:var(--accent)">'+w.w+'</strong> — '+w.m+(w.s?' <span class="info">('+w.s+')</span>':"")+' <button onclick="words.splice('+i+',1);save();renderWords()" style="float:right;background:none;border:none;color:#f44336;cursor:pointer">×</button></div>'}).join("")}
-function addWord(){var w=document.getElementById("newWord").value.trim();var m=document.getElementById("newMeaning").value.trim();var s=document.getElementById("newSynonym").value.trim();if(!w||!m)return alert("Fill word and meaning");words.push({w:w,m:m,s:s});save();document.getElementById("newWord").value="";document.getElementById("newMeaning").value="";document.getElementById("newSynonym").value="";alert("Word added!")}
-function nextWord(){qIdx=Math.floor(Math.random()*words.length);document.getElementById("qWord").textContent=words[qIdx].w;document.getElementById("qHint").textContent=words[qIdx].s?"Synonyms: "+words[qIdx].s:"";document.getElementById("qAnswer").value="";document.getElementById("qResult").textContent="";document.getElementById("qAnswer").focus()}
-function checkAns(){var ans=document.getElementById("qAnswer").value.trim().toLowerCase();var correct=words[qIdx].m.toLowerCase();if(ans&&(correct.indexOf(ans)>-1||ans.indexOf(correct.split("(")[0].trim())>-1)){qScore.right++;document.getElementById("qResult").innerHTML='<span style="color:#4caf50">✅ Correct! '+words[qIdx].m+'</span>'}else{qScore.wrong++;document.getElementById("qResult").innerHTML='<span style="color:#f44336">❌ Answer: '+words[qIdx].m+'</span>'}document.getElementById("quizScore").textContent="Score: "+qScore.right+" correct, "+qScore.wrong+" wrong"}
-renderWords()</script>
+  <script>
+/* ===== WORD BANK DATABASE ===== */
+var WORD_BANK = [
+  /* --- SSC/CGL --- */
+  {w:"Abate",m:"कम होना (to reduce in intensity)",pos:"verb",cat:"ssc",ex:"The storm began to abate after midnight.",syn:"diminish, subside",ant:"intensify"},
+  {w:"Aberration",m:"विचलन (deviation from normal)",pos:"noun",cat:"ssc",ex:"The warm weather in December was an aberration.",syn:"anomaly, deviation",ant:"normality"},
+  {w:"Abscond",m:"फ़रार होना (to flee secretly)",pos:"verb",cat:"ssc",ex:"The thief absconded with the jewellery.",syn:"flee, escape",ant:"remain"},
+  {w:"Acumen",m:"कुशाग्र बुद्धि (sharp insight)",pos:"noun",cat:"ssc",ex:"Her business acumen helped the company grow.",syn:"shrewdness, insight",ant:"ignorance"},
+  {w:"Admonish",m:"चेतावनी देना (to warn firmly)",pos:"verb",cat:"ssc",ex:"The teacher admonished the students for being late.",syn:"reprimand, caution",ant:"praise"},
+  {w:"Alleviate",m:"कम करना (to make less severe)",pos:"verb",cat:"ssc",ex:"This medicine will alleviate your pain.",syn:"ease, relieve",ant:"aggravate"},
+  {w:"Amiable",m:"मिलनसार (friendly and pleasant)",pos:"adj",cat:"ssc",ex:"She has an amiable personality that everyone likes.",syn:"affable, genial",ant:"unfriendly"},
+  {w:"Austere",m:"कठोर / सादा (strict or plain)",pos:"adj",cat:"ssc",ex:"The monk led an austere life.",syn:"stern, spartan",ant:"luxurious"},
+  {w:"Benevolent",m:"परोपकारी (kind and generous)",pos:"adj",cat:"ssc",ex:"The benevolent king was loved by all.",syn:"charitable, altruistic",ant:"malevolent"},
+  /* --- Banking/IBPS --- */
+  {w:"Bolster",m:"सहारा देना (to support or strengthen)",pos:"verb",cat:"banking",ex:"The new policy will bolster economic growth.",syn:"reinforce, support",ant:"undermine"},
+  {w:"Buoyant",m:"उत्साही / तैरता (cheerful or able to float)",pos:"adj",cat:"banking",ex:"The stock market remained buoyant despite concerns.",syn:"cheerful, resilient",ant:"depressed"},
+  {w:"Consensus",m:"सहमति (general agreement)",pos:"noun",cat:"banking",ex:"The committee reached a consensus on the new rules.",syn:"agreement, accord",ant:"disagreement"},
+  {w:"Curtail",m:"कम करना (to reduce or cut short)",pos:"verb",cat:"banking",ex:"The bank curtailed lending during the recession.",syn:"reduce, trim",ant:"extend"},
+  {w:"Discrepancy",m:"विसंगति (difference between two things)",pos:"noun",cat:"banking",ex:"There was a discrepancy in the account balance.",syn:"inconsistency, variance",ant:"agreement"},
+  {w:"Exorbitant",m:"अत्यधिक (unreasonably high)",pos:"adj",cat:"banking",ex:"The interest rate was exorbitant.",syn:"excessive, steep",ant:"reasonable"},
+  {w:"Fiscal",m:"राजकोषीय (relating to government revenue)",pos:"adj",cat:"banking",ex:"The fiscal deficit widened this quarter.",syn:"financial, monetary",ant:""},
+  {w:"Impede",m:"बाधा डालना (to obstruct)",pos:"verb",cat:"banking",ex:"Red tape can impede business growth.",syn:"hinder, obstruct",ant:"facilitate"},
+  {w:"Prudent",m:"विवेकी (wise and careful)",pos:"adj",cat:"banking",ex:"It is prudent to save for emergencies.",syn:"cautious, sensible",ant:"reckless"},
+  /* --- UPSC --- */
+  {w:"Ameliorate",m:"सुधारना (to make better)",pos:"verb",cat:"upsc",ex:"Steps were taken to ameliorate living conditions.",syn:"improve, enhance",ant:"worsen"},
+  {w:"Belligerent",m:"लड़ाकू (hostile and aggressive)",pos:"adj",cat:"upsc",ex:"The belligerent nation refused to negotiate.",syn:"hostile, combative",ant:"peaceful"},
+  {w:"Clandestine",m:"गुप्त (done secretly)",pos:"adj",cat:"upsc",ex:"They held a clandestine meeting at midnight.",syn:"covert, secret",ant:"open"},
+  {w:"Demagogue",m:"भड़काऊ नेता (leader who appeals to emotions)",pos:"noun",cat:"upsc",ex:"The demagogue incited the crowd with fiery speech.",syn:"agitator, rabble-rouser",ant:""},
+  {w:"Egregious",m:"बहुत बुरा (outstandingly bad)",pos:"adj",cat:"upsc",ex:"The report highlighted egregious human rights violations.",syn:"shocking, appalling",ant:"excellent"},
+  {w:"Harbinger",m:"अग्रदूत (forerunner, sign of things to come)",pos:"noun",cat:"upsc",ex:"The robin is a harbinger of spring.",syn:"herald, precursor",ant:""},
+  {w:"Magnanimous",m:"उदार (generous in forgiving)",pos:"adj",cat:"upsc",ex:"The magnanimous leader pardoned his opponents.",syn:"generous, noble",ant:"petty"},
+  {w:"Pragmatic",m:"व्यावहारिक (practical, realistic)",pos:"adj",cat:"upsc",ex:"We need a pragmatic approach to solve this crisis.",syn:"realistic, sensible",ant:"idealistic"},
+  {w:"Recalcitrant",m:"ज़िद्दी (stubbornly resistant)",pos:"adj",cat:"upsc",ex:"The recalcitrant child refused to obey.",syn:"defiant, unruly",ant:"compliant"},
+  /* --- GRE --- */
+  {w:"Abrogate",m:"रद्द करना (to formally abolish)",pos:"verb",cat:"gre",ex:"The treaty was abrogated by both nations.",syn:"revoke, annul",ant:"establish"},
+  {w:"Cacophony",m:"कर्कश ध्वनि (harsh, discordant sound)",pos:"noun",cat:"gre",ex:"The cacophony of the traffic was unbearable.",syn:"din, discord",ant:"harmony"},
+  {w:"Ebullient",m:"उत्साही (cheerful and full of energy)",pos:"adj",cat:"gre",ex:"She was ebullient after receiving the good news.",syn:"exuberant, vivacious",ant:"lethargic"},
+  {w:"Ephemeral",m:"क्षणभंगुर (lasting a very short time)",pos:"adj",cat:"gre",ex:"Fame on social media is often ephemeral.",syn:"transient, fleeting",ant:"permanent"},
+  {w:"Garrulous",m:"बातूनी (excessively talkative)",pos:"adj",cat:"gre",ex:"The garrulous passenger talked throughout the flight.",syn:"loquacious, verbose",ant:"taciturn"},
+  {w:"Laconic",m:"संक्षिप्त (using very few words)",pos:"adj",cat:"gre",ex:"His laconic reply surprised everyone.",syn:"terse, concise",ant:"verbose"},
+  {w:"Obsequious",m:"चापलूस (excessively obedient or attentive)",pos:"adj",cat:"gre",ex:"The obsequious assistant agreed with everything.",syn:"fawning, servile",ant:"assertive"},
+  {w:"Perfunctory",m:"लापरवाही से किया (done without care)",pos:"adj",cat:"gre",ex:"He gave a perfunctory glance at the report.",syn:"cursory, superficial",ant:"thorough"},
+  {w:"Ubiquitous",m:"सर्वव्यापी (present everywhere)",pos:"adj",cat:"gre",ex:"Smartphones are ubiquitous in modern life.",syn:"omnipresent, pervasive",ant:"rare"},
+  {w:"Vacillate",m:"डगमगाना (to waver between options)",pos:"verb",cat:"gre",ex:"She vacillated between the two job offers.",syn:"hesitate, fluctuate",ant:"decide"},
+  /* --- Idioms & Phrases --- */
+  {w:"A blessing in disguise",m:"छुपा हुआ वरदान",pos:"idiom",cat:"idioms",ex:"Losing that job was a blessing in disguise.",syn:"",ant:""},
+  {w:"Beat around the bush",m:"बात को घुमाना (avoid the main topic)",pos:"idiom",cat:"idioms",ex:"Stop beating around the bush and tell the truth.",syn:"",ant:""},
+  {w:"Bite the bullet",m:"कठिनाई सहना (face a difficult situation bravely)",pos:"idiom",cat:"idioms",ex:"I decided to bite the bullet and take the exam.",syn:"",ant:""},
+  {w:"Break the ice",m:"बातचीत शुरू करना (start a conversation)",pos:"idiom",cat:"idioms",ex:"A joke can break the ice at a new gathering.",syn:"",ant:""},
+  {w:"Burn the midnight oil",m:"देर रात तक पढ़ना (work late into the night)",pos:"idiom",cat:"idioms",ex:"Students burn the midnight oil before exams.",syn:"",ant:""},
+  {w:"Hit the nail on the head",m:"बिल्कुल सही बात कहना",pos:"idiom",cat:"idioms",ex:"You hit the nail on the head with that analysis.",syn:"",ant:""},
+  {w:"Once in a blue moon",m:"बहुत कभी-कभार (very rarely)",pos:"idiom",cat:"idioms",ex:"He visits his hometown once in a blue moon.",syn:"",ant:""},
+  {w:"The ball is in your court",m:"अब तुम्हारी बारी है",pos:"idiom",cat:"idioms",ex:"I have made my offer; the ball is in your court.",syn:"",ant:""},
+  {w:"Under the weather",m:"तबीयत ख़राब (feeling ill)",pos:"idiom",cat:"idioms",ex:"She stayed home because she was under the weather.",syn:"",ant:""},
+  /* --- One-Word Substitutions --- */
+  {w:"Atheist",m:"नास्तिक — One who does not believe in God",pos:"noun",cat:"oneword",ex:"He declared himself an atheist at age 20.",syn:"",ant:"theist"},
+  {w:"Bibliophile",m:"पुस्तक प्रेमी — One who loves books",pos:"noun",cat:"oneword",ex:"As a bibliophile, she visits bookshops every week.",syn:"",ant:""},
+  {w:"Cynosure",m:"आकर्षण का केंद्र — Centre of attraction",pos:"noun",cat:"oneword",ex:"The bride was the cynosure of all eyes.",syn:"",ant:""},
+  {w:"Gregarious",m:"मिलनसार — One who enjoys the company of others",pos:"adj",cat:"oneword",ex:"He is very gregarious and loves parties.",syn:"sociable",ant:"reclusive"},
+  {w:"Inevitable",m:"अनिवार्य — Something that cannot be avoided",pos:"adj",cat:"oneword",ex:"Change is inevitable in life.",syn:"unavoidable",ant:"avoidable"},
+  {w:"Misanthrope",m:"मानवद्रोही — One who hates mankind",pos:"noun",cat:"oneword",ex:"The misanthrope preferred living alone in the hills.",syn:"",ant:"philanthropist"},
+  {w:"Omnivore",m:"सर्वभक्षी — One that eats both plants and animals",pos:"noun",cat:"oneword",ex:"Humans are omnivores by nature.",syn:"",ant:""},
+  {w:"Polyglot",m:"बहुभाषी — One who speaks many languages",pos:"noun",cat:"oneword",ex:"The diplomat was a polyglot fluent in six languages.",syn:"multilingual",ant:"monoglot"},
+  {w:"Somnambulism",m:"नींद में चलना — Walking in sleep",pos:"noun",cat:"oneword",ex:"Somnambulism can be dangerous if not treated.",syn:"sleepwalking",ant:""},
+  /* --- Antonyms/Synonyms Pairs --- */
+  {w:"Abundant",m:"प्रचुर (plentiful)",pos:"adj",cat:"antonym_synonym",ex:"The region has abundant natural resources.",syn:"plentiful, copious, ample",ant:"scarce, meagre, deficient"},
+  {w:"Benign",m:"सौम्य (gentle, not harmful)",pos:"adj",cat:"antonym_synonym",ex:"The tumour was benign and not cancerous.",syn:"gentle, harmless, mild",ant:"malignant, harmful, hostile"},
+  {w:"Candid",m:"स्पष्टवादी (frank and honest)",pos:"adj",cat:"antonym_synonym",ex:"She gave a candid interview about her struggles.",syn:"frank, open, straightforward",ant:"evasive, secretive, deceptive"},
+  {w:"Diligent",m:"परिश्रमी (hardworking)",pos:"adj",cat:"antonym_synonym",ex:"A diligent student always submits work on time.",syn:"industrious, assiduous, meticulous",ant:"lazy, negligent, idle"},
+  {w:"Eloquent",m:"वाक्पटु (fluent and persuasive)",pos:"adj",cat:"antonym_synonym",ex:"The lawyer made an eloquent argument in court.",syn:"articulate, expressive, fluent",ant:"inarticulate, tongue-tied"},
+  {w:"Frugal",m:"मितव्ययी (economical, thrifty)",pos:"adj",cat:"antonym_synonym",ex:"Her frugal habits helped her save a lot of money.",syn:"thrifty, economical, sparing",ant:"extravagant, wasteful, lavish"},
+  {w:"Lethargic",m:"सुस्त (lacking energy)",pos:"adj",cat:"antonym_synonym",ex:"The heat made everyone feel lethargic.",syn:"sluggish, listless, torpid",ant:"energetic, vigorous, active"},
+  {w:"Lucid",m:"स्पष्ट (clear, easy to understand)",pos:"adj",cat:"antonym_synonym",ex:"The professor gave a lucid explanation of the theory.",syn:"clear, coherent, intelligible",ant:"confusing, obscure, vague"},
+  {w:"Novice",m:"नौसिखिया (beginner)",pos:"noun",cat:"antonym_synonym",ex:"She is a novice at cooking but eager to learn.",syn:"beginner, newcomer, amateur",ant:"expert, veteran, master"},
+  {w:"Obsolete",m:"अप्रचलित (outdated, no longer used)",pos:"adj",cat:"antonym_synonym",ex:"Floppy disks are now obsolete.",syn:"outdated, archaic, antiquated",ant:"modern, current, contemporary"}
+];
+
+/* ===== STATE MANAGEMENT ===== */
+var BOX_INTERVALS = [0, 1, 3, 7, 14]; // days for boxes 1-5
+var LS_KEYS = {
+  srs: 'vb_srs_state',
+  custom: 'vb_custom_words',
+  favs: 'vb_favourites',
+  stats: 'vb_stats',
+  settings: 'vb_settings'
+};
+
+function loadJSON(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e) { return def; } }
+function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+// SRS state: { wordKey: { box: 0-4, nextReview: timestamp, lastSeen: timestamp } }
+var srsState = loadJSON(LS_KEYS.srs, {});
+var customWords = loadJSON(LS_KEYS.custom, []);
+var favourites = new Set(loadJSON(LS_KEYS.favs, []));
+var stats = loadJSON(LS_KEYS.stats, { totalRight: 0, totalWrong: 0, streak: 0, lastStudyDate: null, todayRight: 0, todayDate: null, wordsLearnedSet: [] });
+var settings = loadJSON(LS_KEYS.settings, { dailyGoal: 10 });
+
+function saveSRS() { saveJSON(LS_KEYS.srs, srsState); }
+function saveCustom() { saveJSON(LS_KEYS.custom, customWords); }
+function saveFavs() { saveJSON(LS_KEYS.favs, Array.from(favourites)); }
+function saveStats() { saveJSON(LS_KEYS.stats, stats); }
+function saveSettings() { saveJSON(LS_KEYS.settings, settings); }
+
+function wordKey(w) { return (w.w + '||' + w.cat).toLowerCase(); }
+
+function getAllWords() {
+  return WORD_BANK.concat(customWords.map(function(c) { return Object.assign({}, c, { cat: 'custom' }); }));
+}
+
+function getSRS(w) {
+  var k = wordKey(w);
+  if (!srsState[k]) srsState[k] = { box: 0, nextReview: Date.now(), lastSeen: 0 };
+  return srsState[k];
+}
+
+function isDueToday(w) {
+  var s = getSRS(w);
+  return s.nextReview <= Date.now();
+}
+
+function promoteWord(w) {
+  var s = getSRS(w);
+  if (s.box < 4) s.box++;
+  s.nextReview = Date.now() + BOX_INTERVALS[s.box] * 86400000;
+  s.lastSeen = Date.now();
+  saveSRS();
+}
+
+function demoteWord(w) {
+  var s = getSRS(w);
+  s.box = 0;
+  s.nextReview = Date.now();
+  s.lastSeen = Date.now();
+  saveSRS();
+}
+
+function recordCorrect(w) {
+  promoteWord(w);
+  stats.totalRight++;
+  checkTodayReset();
+  stats.todayRight++;
+  var k = wordKey(w);
+  if (stats.wordsLearnedSet.indexOf(k) === -1) stats.wordsLearnedSet.push(k);
+  updateStreak();
+  saveStats();
+  refreshDashboard();
+}
+
+function recordWrong(w) {
+  demoteWord(w);
+  stats.totalWrong++;
+  updateStreak();
+  saveStats();
+  refreshDashboard();
+}
+
+function checkTodayReset() {
+  var today = new Date().toDateString();
+  if (stats.todayDate !== today) {
+    stats.todayRight = 0;
+    stats.todayDate = today;
+  }
+}
+
+function updateStreak() {
+  var today = new Date().toDateString();
+  if (stats.lastStudyDate === today) return;
+  var yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (stats.lastStudyDate === yesterday) {
+    stats.streak++;
+  } else if (stats.lastStudyDate !== today) {
+    stats.streak = 1;
+  }
+  stats.lastStudyDate = today;
+}
+
+/* ===== FILTERING ===== */
+function getFilteredWords() {
+  var all = getAllWords();
+  var search = document.getElementById('vbSearch').value.toLowerCase();
+  var catF = document.getElementById('vbCatFilter').value;
+  var boxF = document.getElementById('vbBoxFilter').value;
+  var extraF = document.getElementById('vbExtraFilter').value;
+
+  return all.filter(function(w) {
+    if (search && w.w.toLowerCase().indexOf(search) === -1 && w.m.toLowerCase().indexOf(search) === -1 && (w.ex || '').toLowerCase().indexOf(search) === -1) return false;
+    if (catF !== 'all' && w.cat !== catF) return false;
+    if (boxF !== 'all' && getSRS(w).box !== parseInt(boxF)) return false;
+    if (extraF === 'fav' && !favourites.has(wordKey(w))) return false;
+    if (extraF === 'due' && !isDueToday(w)) return false;
+    return true;
+  });
+}
+
+/* ===== DASHBOARD ===== */
+function refreshDashboard() {
+  checkTodayReset();
+  var all = getAllWords();
+  var due = all.filter(isDueToday).length;
+  var total = stats.totalRight + stats.totalWrong;
+  var acc = total > 0 ? Math.round(stats.totalRight / total * 100) : 0;
+  document.getElementById('statLearned').textContent = stats.wordsLearnedSet.length;
+  document.getElementById('statDue').textContent = due;
+  document.getElementById('statAccuracy').textContent = acc + '%';
+  document.getElementById('statStreak').textContent = stats.streak + '🔥';
+  var pct = Math.min(100, Math.round(stats.todayRight / settings.dailyGoal * 100));
+  document.getElementById('goalText').textContent = stats.todayRight + '/' + settings.dailyGoal;
+  document.getElementById('goalBar').style.width = pct + '%';
+  document.getElementById('goalLabel').textContent = pct >= 100 ? '🎉 Goal reached!' : pct + '% done';
+}
+
+/* ===== PRONUNCIATION ===== */
+function speakWord(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+/* ===== TAB SWITCHING ===== */
+var currentVTab = 'bank';
+var tabIds = ['bank','flash','quiz','match','spell','custom','settings'];
+
+function showVTab(t) {
+  currentVTab = t;
+  tabIds.forEach(function(id) {
+    document.getElementById('panel' + id.charAt(0).toUpperCase() + id.slice(1)).style.display = id === t ? '' : 'none';
+    var btn = document.getElementById('tab' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (btn) btn.className = id === t ? 'btn' : 'btn btn-outline';
+  });
+  document.getElementById('filterRow').style.display = (t === 'settings' || t === 'custom') ? 'none' : '';
+  renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  switch(currentVTab) {
+    case 'bank': renderBank(); break;
+    case 'flash': renderFlashcard(); break;
+    case 'quiz': renderQuiz(); break;
+    case 'match': renderMatch(); break;
+    case 'spell': renderSpell(); break;
+    case 'custom': renderCustom(); break;
+    case 'settings': renderSettings(); break;
+  }
+}
+
+/* ===== BOX COLOR ===== */
+var boxColors = ['#ef4444','#f59e0b','#3b82f6','#22c55e','#6366f1'];
+function boxBadge(w) {
+  var b = getSRS(w).box;
+  return '<span class="vb-box-indicator" style="background:' + boxColors[b] + '" title="Box ' + (b+1) + '">' + (b+1) + '</span>';
+}
+
+/* ===== WORD BANK TAB ===== */
+function renderBank() {
+  var words = getFilteredWords();
+  if (!words.length) { document.getElementById('panelBank').innerHTML = '<p class="info">No words match your filters.</p>'; return; }
+  var html = '';
+  words.forEach(function(w) {
+    var k = wordKey(w);
+    var isFav = favourites.has(k);
+    html += '<div class="vb-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.3rem">' +
+      '<div><span class="vb-word">' + esc(w.w) + '</span> ' + boxBadge(w) +
+      (w.pos ? ' <span class="vb-pos">' + esc(w.pos) + '</span>' : '') +
+      '<br><span class="vb-hindi">' + esc(w.m) + '</span></div>' +
+      '<div class="vb-actions">' +
+      '<button onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')" title="Pronounce">🔊</button>' +
+      '<button onclick="toggleFav(\'' + esc(k).replace(/'/g,"\\'") + '\')" title="Favourite">' + (isFav ? '⭐' : '☆') + '</button>' +
+      '</div></div>';
+    if (w.syn) html += '<div style="font-size:.82rem;color:var(--text2);margin-top:.2rem"><strong>Syn:</strong> ' + esc(w.syn) + (w.ant ? ' | <strong>Ant:</strong> ' + esc(w.ant) : '') + '</div>';
+    if (w.ex) html += '<div class="vb-example">"' + esc(w.ex) + '"</div>';
+    html += '</div>';
+  });
+  document.getElementById('panelBank').innerHTML = '<div style="font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Showing ' + words.length + ' words</div>' + html;
+}
+
+function toggleFav(k) {
+  if (favourites.has(k)) favourites.delete(k); else favourites.add(k);
+  saveFavs();
+  renderCurrentTab();
+}
+
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+/* ===== FLASHCARD TAB ===== */
+var flashWords = [], flashIdx = 0;
+function renderFlashcard() {
+  flashWords = getFilteredWords();
+  if (!flashWords.length) { document.getElementById('panelFlash').innerHTML = '<p class="info">No words to review. Change filters.</p>'; return; }
+  if (flashIdx >= flashWords.length) flashIdx = 0;
+  showFlashcard();
+}
+
+function showFlashcard() {
+  var w = flashWords[flashIdx];
+  var html = '<div style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Card ' + (flashIdx+1) + ' / ' + flashWords.length + '</div>';
+  html += '<div class="vb-flashcard" id="flashcardEl" onclick="document.getElementById(\'flashcardEl\').classList.toggle(\'flipped\')">';
+  html += '<div class="vb-flashcard-inner">';
+  html += '<div class="vb-flashcard-front"><div style="font-size:2rem;font-weight:800;color:var(--accent)">' + esc(w.w) + '</div>';
+  html += (w.pos ? '<div class="vb-pos" style="margin:.5rem 0">' + esc(w.pos) + '</div>' : '');
+  html += '<div style="color:var(--text2);font-size:.85rem;margin-top:.5rem">Tap to flip</div></div>';
+  html += '<div class="vb-flashcard-back">';
+  html += '<div class="vb-hindi" style="font-size:1.3rem;margin-bottom:.4rem">' + esc(w.m) + '</div>';
+  if (w.syn) html += '<div style="font-size:.85rem;color:var(--text2)">Syn: ' + esc(w.syn) + '</div>';
+  if (w.ant) html += '<div style="font-size:.85rem;color:var(--text2)">Ant: ' + esc(w.ant) + '</div>';
+  if (w.ex) html += '<div class="vb-example" style="margin-top:.5rem">"' + esc(w.ex) + '"</div>';
+  html += '</div></div></div>';
+  html += '<div class="row" style="justify-content:center;margin-top:.5rem">';
+  html += '<button class="btn" style="background:#ef4444" onclick="flashAnswer(false)">❌ Didn\'t Know</button>';
+  html += '<button class="btn" onclick="flashAnswer(true)">✅ Knew It</button>';
+  html += '<button class="btn btn-outline" onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')">🔊</button>';
+  html += '</div>';
+  document.getElementById('panelFlash').innerHTML = html;
+}
+
+function flashAnswer(correct) {
+  var w = flashWords[flashIdx];
+  if (correct) recordCorrect(w); else recordWrong(w);
+  flashIdx++;
+  if (flashIdx >= flashWords.length) flashIdx = 0;
+  showFlashcard();
+}
+
+/* ===== QUIZ TAB (MCQ) ===== */
+var quizWords = [], quizIdx = 0, quizMode = 'meaning2word', quizAnswered = false;
+function renderQuiz() {
+  var filtered = getFilteredWords();
+  if (filtered.length < 4) { document.getElementById('panelQuiz').innerHTML = '<p class="info">Need at least 4 words. Change filters.</p>'; return; }
+  quizWords = filtered;
+  if (quizIdx >= quizWords.length) quizIdx = 0;
+  var html = '<div class="row" style="margin-bottom:.8rem"><label style="font-size:.85rem">Mode:</label>';
+  html += '<select id="quizModeSelect" onchange="quizMode=this.value;quizIdx=0;quizAnswered=false;showQuizQuestion()" style="flex:0 0 auto;min-width:180px">';
+  html += '<option value="meaning2word"' + (quizMode === 'meaning2word' ? ' selected' : '') + '>Meaning → Word</option>';
+  html += '<option value="word2meaning"' + (quizMode === 'word2meaning' ? ' selected' : '') + '>Word → Meaning</option>';
+  html += '</select></div>';
+  html += '<div id="quizContent"></div>';
+  document.getElementById('panelQuiz').innerHTML = html;
+  showQuizQuestion();
+}
+
+function showQuizQuestion() {
+  quizAnswered = false;
+  var w = quizWords[quizIdx];
+  var all = getAllWords();
+  var options = [w];
+  var safetyCount = 0;
+  while (options.length < 4 && safetyCount < 100) {
+    var r = all[Math.floor(Math.random() * all.length)];
+    if (options.every(function(o) { return wordKey(o) !== wordKey(r); })) options.push(r);
+    safetyCount++;
+  }
+  options.sort(function() { return Math.random() - 0.5; });
+
+  var html = '<div style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Question ' + (quizIdx+1) + ' / ' + quizWords.length + '</div>';
+  html += '<div style="background:var(--card);padding:1.5rem;border-radius:14px;text-align:center;margin-bottom:1rem">';
+  if (quizMode === 'meaning2word') {
+    html += '<div style="font-size:1.1rem;color:var(--text)">' + esc(w.m) + '</div>';
+    html += '<div style="font-size:.85rem;color:var(--text2);margin-top:.3rem">Which word matches this meaning?</div>';
+  } else {
+    html += '<div style="font-size:1.6rem;font-weight:700;color:var(--accent)">' + esc(w.w) + '</div>';
+    html += '<div style="font-size:.85rem;color:var(--text2);margin-top:.3rem">What is the meaning?</div>';
+  }
+  html += '</div>';
+
+  options.forEach(function(o, i) {
+    var label = quizMode === 'meaning2word' ? esc(o.w) : esc(o.m);
+    var isCorrect = wordKey(o) === wordKey(w);
+    html += '<div class="vb-quiz-opt" data-correct="' + isCorrect + '" onclick="handleQuizAnswer(this,' + isCorrect + ',' + i + ')">' + label + '</div>';
+  });
+
+  html += '<div id="quizFeedback" style="text-align:center;margin:.8rem 0"></div>';
+  html += '<div class="row" style="justify-content:center"><button class="btn btn-outline" onclick="quizIdx++;showQuizQuestion()">Next →</button>';
+  html += '<button class="btn btn-outline" onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')">🔊</button></div>';
+  document.getElementById('quizContent').innerHTML = html;
+}
+
+function handleQuizAnswer(el, isCorrect) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  var w = quizWords[quizIdx];
+  var opts = document.querySelectorAll('.vb-quiz-opt');
+  opts.forEach(function(o) {
+    if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
+  });
+  if (isCorrect) {
+    el.classList.add('correct');
+    recordCorrect(w);
+    document.getElementById('quizFeedback').innerHTML = '<span style="color:#22c55e;font-weight:600">✅ Correct!</span>';
+  } else {
+    el.classList.add('wrong');
+    recordWrong(w);
+    document.getElementById('quizFeedback').innerHTML = '<span style="color:#ef4444;font-weight:600">❌ Wrong! The answer is highlighted above.</span>';
+  }
+}
+
+/* ===== MATCH PAIRS TAB ===== */
+var matchCards = [], matchSelected = null, matchPairs = 0, matchTotal = 0;
+function renderMatch() {
+  var filtered = getFilteredWords();
+  if (filtered.length < 4) { document.getElementById('panelMatch').innerHTML = '<p class="info">Need at least 4 words. Change filters.</p>'; return; }
+  var pick = filtered.sort(function() { return Math.random() - 0.5; }).slice(0, 6);
+  matchTotal = pick.length;
+  matchPairs = 0;
+  matchCards = [];
+  pick.forEach(function(w) {
+    matchCards.push({ id: wordKey(w) + '_w', text: w.w, pairId: wordKey(w), type: 'word', wordRef: w });
+    matchCards.push({ id: wordKey(w) + '_m', text: w.m.split('(')[0].trim(), pairId: wordKey(w), type: 'meaning', wordRef: w });
+  });
+  matchCards.sort(function() { return Math.random() - 0.5; });
+  matchSelected = null;
+  showMatchGrid();
+}
+
+function showMatchGrid() {
+  var html = '<div style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Match words with their meanings (' + matchPairs + '/' + matchTotal + ' pairs)</div>';
+  html += '<div class="vb-match-grid">';
+  matchCards.forEach(function(c, i) {
+    var cls = c.matched ? ' matched' : '';
+    html += '<div class="vb-match-card' + cls + '" data-idx="' + i + '" onclick="handleMatch(' + i + ')">' + esc(c.text) + '</div>';
+  });
+  html += '</div>';
+  if (matchPairs === matchTotal) {
+    html += '<div style="text-align:center;margin:1rem 0;font-size:1.2rem;font-weight:700;color:#22c55e">🎉 All matched! Great job!</div>';
+    html += '<div class="row" style="justify-content:center"><button class="btn" onclick="renderMatch()">Play Again</button></div>';
+  }
+  document.getElementById('panelMatch').innerHTML = html;
+}
+
+function handleMatch(idx) {
+  var c = matchCards[idx];
+  if (c.matched) return;
+  var el = document.querySelectorAll('.vb-match-card')[idx];
+  if (!matchSelected) {
+    matchSelected = idx;
+    el.classList.add('selected');
+    return;
+  }
+  if (matchSelected === idx) {
+    el.classList.remove('selected');
+    matchSelected = null;
+    return;
+  }
+  var prev = matchCards[matchSelected];
+  if (prev.pairId === c.pairId && prev.type !== c.type) {
+    prev.matched = true;
+    c.matched = true;
+    matchPairs++;
+    recordCorrect(c.wordRef);
+    matchSelected = null;
+    showMatchGrid();
+  } else {
+    el.classList.add('wrong-match');
+    document.querySelectorAll('.vb-match-card')[matchSelected].classList.add('wrong-match');
+    recordWrong(c.wordRef);
+    var si = matchSelected;
+    matchSelected = null;
+    setTimeout(function() {
+      var allCards = document.querySelectorAll('.vb-match-card');
+      if (allCards[idx]) allCards[idx].classList.remove('wrong-match','selected');
+      if (allCards[si]) allCards[si].classList.remove('wrong-match','selected');
+    }, 400);
+  }
+}
+
+/* ===== SPELLING TAB ===== */
+var spellWords = [], spellIdx = 0;
+function renderSpell() {
+  spellWords = getFilteredWords();
+  if (!spellWords.length) { document.getElementById('panelSpell').innerHTML = '<p class="info">No words available. Change filters.</p>'; return; }
+  if (spellIdx >= spellWords.length) spellIdx = 0;
+  showSpellQuestion();
+}
+
+function showSpellQuestion() {
+  var w = spellWords[spellIdx];
+  var html = '<div style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Word ' + (spellIdx+1) + ' / ' + spellWords.length + '</div>';
+  html += '<div style="background:var(--card);padding:1.5rem;border-radius:14px;text-align:center;margin-bottom:1rem">';
+  html += '<div style="font-size:1.1rem;color:var(--text)">' + esc(w.m) + '</div>';
+  if (w.ex) {
+    var blanked = w.ex.replace(new RegExp(w.w, 'gi'), '_____');
+    html += '<div class="vb-example" style="margin-top:.5rem">"' + esc(blanked) + '"</div>';
+  }
+  html += '<div style="margin-top:.5rem"><button class="btn btn-outline" onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')" style="font-size:.8rem">🔊 Listen</button></div>';
+  html += '</div>';
+  html += '<input type="text" id="spellInput" placeholder="Type the word..." style="text-align:center;font-size:1.2rem" onkeydown="if(event.key===\'Enter\')checkSpell()">';
+  html += '<div id="spellFeedback" style="text-align:center;margin:.8rem 0"></div>';
+  html += '<div class="row" style="justify-content:center">';
+  html += '<button class="btn" onclick="checkSpell()">Check</button>';
+  html += '<button class="btn btn-outline" onclick="spellIdx++;showSpellQuestion()">Skip →</button></div>';
+  document.getElementById('panelSpell').innerHTML = html;
+  setTimeout(function() { var el = document.getElementById('spellInput'); if (el) el.focus(); }, 50);
+}
+
+function checkSpell() {
+  var w = spellWords[spellIdx];
+  var ans = (document.getElementById('spellInput').value || '').trim();
+  if (!ans) return;
+  if (ans.toLowerCase() === w.w.toLowerCase()) {
+    recordCorrect(w);
+    document.getElementById('spellFeedback').innerHTML = '<span style="color:#22c55e;font-weight:600">✅ Correct! "' + esc(w.w) + '"</span>';
+  } else {
+    recordWrong(w);
+    document.getElementById('spellFeedback').innerHTML = '<span style="color:#ef4444;font-weight:600">❌ The correct spelling is: <strong>' + esc(w.w) + '</strong></span>';
+  }
+}
+
+/* ===== CUSTOM WORDS TAB ===== */
+function renderCustom() {
+  var html = '<h3 style="margin-bottom:.8rem">➕ Add Custom Word</h3>';
+  html += '<input type="text" id="cwWord" placeholder="Word">';
+  html += '<input type="text" id="cwMeaning" placeholder="Meaning (Hindi/English)">';
+  html += '<input type="text" id="cwPos" placeholder="Part of speech (noun, verb, adj...)">';
+  html += '<input type="text" id="cwExample" placeholder="Example sentence (optional)">';
+  html += '<input type="text" id="cwSyn" placeholder="Synonyms (optional)">';
+  html += '<input type="text" id="cwAnt" placeholder="Antonyms (optional)">';
+  html += '<button class="btn" onclick="addCustomWord()" style="width:100%;margin:.5rem 0">+ Add Word</button>';
+
+  html += '<div class="row" style="margin:1rem 0">';
+  html += '<button class="btn btn-outline" onclick="exportCustom()">📤 Export JSON</button>';
+  html += '<button class="btn btn-outline" onclick="document.getElementById(\'importFile\').click()">📥 Import JSON</button>';
+  html += '<input type="file" id="importFile" accept=".json" style="display:none" onchange="importCustom(event)">';
+  html += '</div>';
+
+  if (customWords.length) {
+    html += '<h3 style="margin:.8rem 0">My Words (' + customWords.length + ')</h3>';
+    customWords.forEach(function(w, i) {
+      var k = wordKey(Object.assign({}, w, { cat: 'custom' }));
+      html += '<div class="vb-card"><div style="display:flex;justify-content:space-between;align-items:flex-start">';
+      html += '<div><span class="vb-word">' + esc(w.w) + '</span>';
+      if (w.pos) html += ' <span class="vb-pos">' + esc(w.pos) + '</span>';
+      html += '<br><span class="vb-hindi">' + esc(w.m) + '</span>';
+      if (w.ex) html += '<div class="vb-example">"' + esc(w.ex) + '"</div>';
+      html += '</div>';
+      html += '<button onclick="deleteCustomWord(' + i + ')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem" title="Delete">×</button>';
+      html += '</div></div>';
+    });
+  }
+  document.getElementById('panelCustom').innerHTML = html;
+}
+
+function addCustomWord() {
+  var w = (document.getElementById('cwWord').value || '').trim();
+  var m = (document.getElementById('cwMeaning').value || '').trim();
+  if (!w || !m) { alert('Fill word and meaning'); return; }
+  customWords.push({
+    w: w, m: m,
+    pos: (document.getElementById('cwPos').value || '').trim(),
+    ex: (document.getElementById('cwExample').value || '').trim(),
+    syn: (document.getElementById('cwSyn').value || '').trim(),
+    ant: (document.getElementById('cwAnt').value || '').trim()
+  });
+  saveCustom();
+  renderCustom();
+}
+
+function deleteCustomWord(i) {
+  customWords.splice(i, 1);
+  saveCustom();
+  renderCustom();
+}
+
+function exportCustom() {
+  var blob = new Blob([JSON.stringify(customWords, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vocab-custom-words.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importCustom(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var arr = JSON.parse(ev.target.result);
+      if (!Array.isArray(arr)) throw new Error('Not an array');
+      arr.forEach(function(item) {
+        if (item.w && item.m) customWords.push({ w: item.w, m: item.m, pos: item.pos || '', ex: item.ex || '', syn: item.syn || '', ant: item.ant || '' });
+      });
+      saveCustom();
+      renderCustom();
+      alert('Imported ' + arr.length + ' words!');
+    } catch(err) { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ===== SETTINGS TAB ===== */
+function renderSettings() {
+  var html = '<h3 style="margin-bottom:.8rem">⚙️ Settings</h3>';
+  html += '<div class="vb-card"><label>Daily Goal (words per day)</label>';
+  html += '<input type="number" id="goalInput" min="1" max="100" value="' + settings.dailyGoal + '" style="width:120px">';
+  html += '<button class="btn" onclick="settings.dailyGoal=parseInt(document.getElementById(\'goalInput\').value)||10;saveSettings();refreshDashboard();alert(\'Goal updated!\')" style="margin-left:.5rem">Save</button></div>';
+  html += '<div class="vb-card" style="margin-top:.5rem"><h4>Spaced Repetition Boxes</h4>';
+  html += '<p class="info">Box 1 = review now, Box 2 = 1 day, Box 3 = 3 days, Box 4 = 7 days, Box 5 = 14 days (mastered)</p>';
+  var all = getAllWords();
+  var boxCounts = [0,0,0,0,0];
+  all.forEach(function(w) { boxCounts[getSRS(w).box]++; });
+  html += '<div style="display:flex;gap:.5rem;margin-top:.5rem">';
+  for (var i = 0; i < 5; i++) {
+    html += '<div style="flex:1;text-align:center"><span class="vb-box-indicator" style="background:' + boxColors[i] + '">' + (i+1) + '</span><br><span style="font-size:.85rem">' + boxCounts[i] + '</span></div>';
+  }
+  html += '</div></div>';
+  html += '<div class="vb-card" style="margin-top:.5rem"><h4>Reset Data</h4>';
+  html += '<button class="btn btn-outline" onclick="if(confirm(\'Reset all progress? This cannot be undone.\')){localStorage.removeItem(LS_KEYS.srs);localStorage.removeItem(LS_KEYS.stats);localStorage.removeItem(LS_KEYS.favs);srsState={};stats={totalRight:0,totalWrong:0,streak:0,lastStudyDate:null,todayRight:0,todayDate:null,wordsLearnedSet:[]};favourites=new Set();saveStats();saveSRS();saveFavs();refreshDashboard();renderSettings();alert(\'Progress reset!\')}" style="border-color:#ef4444;color:#ef4444">Reset Progress</button>';
+  html += ' <button class="btn btn-outline" onclick="if(confirm(\'Delete all custom words?\')){customWords=[];saveCustom();renderSettings();alert(\'Custom words cleared!\')}" style="border-color:#ef4444;color:#ef4444">Clear Custom Words</button></div>';
+  document.getElementById('panelSettings').innerHTML = html;
+}
+
+/* ===== INIT ===== */
+refreshDashboard();
+renderBank();
+</script>
 </body></html>

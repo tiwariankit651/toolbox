@@ -20,18 +20,27 @@
     .tt-table .time-col{font-weight:600;cursor:default;min-width:60px;background:var(--card)}
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
     .modal-overlay.active{display:flex}
-    .modal{background:var(--bg,#fff);border-radius:12px;padding:1.5rem;max-width:360px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+    .modal{background:var(--bg,#fff);border-radius:12px;padding:1.5rem;max-width:400px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
     .modal h3{margin:0 0 1rem}
-    .modal input[type=text]{width:100%;padding:.5rem;border-radius:8px;border:1px solid var(--border,#ddd);margin-bottom:.8rem;font-size:1rem;background:var(--bg)}
+    .modal input[type=text],.modal input[type=number],.modal select{width:100%;padding:.5rem;border-radius:8px;border:1px solid var(--border,#ddd);margin-bottom:.8rem;font-size:1rem;background:var(--bg);box-sizing:border-box}
     .color-options{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
     .color-opt{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s}
     .color-opt:hover,.color-opt.active{transform:scale(1.2);border-color:var(--text,#333)}
     .tpl-btns{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
     .tpl-btns button{font-size:.75rem;padding:.3rem .6rem}
     .save-row{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
-    .save-row input{flex:1;min-width:120px}
-    .save-row select{flex:1;min-width:120px}
-    @media print{nav,footer,.no-print,.breadcrumb{display:none!important}.tt-table{font-size:9pt}.container{max-width:100%}}
+    .save-row input,.save-row select{flex:1;min-width:120px}
+    .sub-list{margin:.5rem 0}
+    .sub-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;background:var(--card);border-radius:8px;margin-bottom:.4rem;font-size:.85rem}
+    .sub-item .sub-color{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+    .sub-item .sub-name{flex:1}
+    .sub-item .sub-hrs{color:var(--text2);font-size:.8rem}
+    .sub-item button{background:none;border:none;cursor:pointer;color:#f44336;font-size:1rem;padding:0 .2rem}
+    .target-bar{height:6px;border-radius:3px;background:var(--border,#ddd);margin-top:2px;overflow:hidden}
+    .target-fill{height:100%;border-radius:3px;transition:width .3s}
+    .tabs-row{display:flex;gap:6px;margin-bottom:1rem}
+    .tabs-row button{flex:1;font-size:.85rem}
+    @media print{nav,footer,.no-print,.breadcrumb{display:none!important}.tt-table{font-size:9pt}.container{max-width:100%}body{background:#fff;color:#000}.tt-table th{background:#f0f0f0}}
   </style>
 </head>
 <body>
@@ -41,31 +50,82 @@
     <div class="tool-section">
       <h1>📅 Weekly Timetable Maker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Click cells to add subjects. Drag to select multiple cells. Color-code your schedule.</p>
+      <p class="info">Click cells to add subjects. Drag to select multiple cells. Manage subjects with colours and target hours. Auto-generate a balanced schedule.</p>
 
-      <div class="no-print">
-        <div class="tpl-btns">
-          <strong style="width:100%;margin-bottom:.3rem">Templates:</strong>
-          <button class="btn btn-outline" onclick="loadTemplate('school')">🏫 School</button>
-          <button class="btn btn-outline" onclick="loadTemplate('college')">🎓 College</button>
-          <button class="btn btn-outline" onclick="loadTemplate('work')">💼 Work</button>
-          <button class="btn btn-outline" onclick="loadTemplate('exam')">📝 Exam Prep</button>
-          <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button>
-        </div>
-        <div class="save-row">
-          <input type="text" id="ttName" placeholder="Timetable name...">
-          <button class="btn" onclick="saveTT()">💾 Save</button>
-          <select id="ttList" onchange="loadSaved()"><option value="">— Load Saved —</option></select>
-          <button class="btn btn-outline" onclick="deleteSaved()">🗑️</button>
-        </div>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
-          <button class="btn" onclick="exportPNG()">📷 Export PNG</button>
-          <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
-        </div>
+      <div class="no-print tabs-row">
+        <button class="btn" id="tabGrid" onclick="showTTTab('grid')">📅 Timetable</button>
+        <button class="btn btn-outline" id="tabSubjects" onclick="showTTTab('subjects')">📚 Subjects</button>
+        <button class="btn btn-outline" id="tabAuto" onclick="showTTTab('auto')">⚡ Auto-Generate</button>
       </div>
 
-      <div class="tt-wrap" id="ttWrap">
-        <table class="tt-table" id="ttTable"></table>
+      <!-- SUBJECTS TAB -->
+      <div id="subjectsTab" class="no-print" style="display:none">
+        <h3>Manage Subjects</h3>
+        <div class="row" style="gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap">
+          <input type="text" id="newSubName" placeholder="Subject name..." style="flex:2;min-width:140px">
+          <input type="number" id="newSubHrs" placeholder="Target hrs/week" min="0" step="0.5" style="flex:1;min-width:100px">
+          <input type="color" id="newSubColor" value="#6366f1" style="width:40px;height:38px;border:none;cursor:pointer;padding:0">
+          <button class="btn" onclick="addSubject()">+ Add</button>
+        </div>
+        <div id="subjectsList" class="sub-list"></div>
+        <p class="info" style="margin-top:.5rem">Add subjects here, then use them when filling the timetable. Target hours help track planned vs needed study time.</p>
+      </div>
+
+      <!-- AUTO-GENERATE TAB -->
+      <div id="autoTab" class="no-print" style="display:none">
+        <h3>⚡ Auto-Generate Schedule</h3>
+        <p class="info">Set available hours and break preferences. The tool will distribute your subjects across the week based on target hours.</p>
+        <div class="row" style="gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
+          <label style="min-width:100px">Start hour:</label>
+          <select id="autoStart" style="flex:1"><option value="6">6 AM</option><option value="7">7 AM</option><option value="8" selected>8 AM</option><option value="9">9 AM</option><option value="10">10 AM</option></select>
+          <label style="min-width:100px">End hour:</label>
+          <select id="autoEnd" style="flex:1"><option value="17">5 PM</option><option value="18">6 PM</option><option value="19">7 PM</option><option value="20" selected>8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option></select>
+        </div>
+        <div class="row" style="gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
+          <label style="min-width:150px">Break after every:</label>
+          <select id="autoBreakEvery" style="flex:1"><option value="2" selected>2 hours</option><option value="3">3 hours</option><option value="4">4 hours</option></select>
+          <label style="min-width:100px">Break length:</label>
+          <select id="autoBreakLen" style="flex:1"><option value="0">No break</option><option value="1" selected>1 hour</option><option value="2">2 hours</option></select>
+        </div>
+        <div class="row" style="gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
+          <label style="min-width:150px">Lunch hour:</label>
+          <select id="autoLunch" style="flex:1"><option value="12">12 PM</option><option value="13" selected>1 PM</option><option value="14">2 PM</option><option value="0">No lunch slot</option></select>
+          <label style="min-width:100px">Days:</label>
+          <select id="autoDays" style="flex:1"><option value="5">Mon-Fri</option><option value="6" selected>Mon-Sat</option><option value="7">All 7 days</option></select>
+        </div>
+        <button class="btn" onclick="autoGenerate()" style="margin-top:.5rem">⚡ Generate Schedule</button>
+        <p class="info" style="margin-top:.5rem">Add subjects with target hours in the Subjects tab first. The generator spreads them evenly, avoids same-subject runs longer than 2 hours, and inserts breaks.</p>
+      </div>
+
+      <!-- GRID TAB -->
+      <div id="gridTab">
+        <div class="no-print">
+          <div class="tpl-btns">
+            <strong style="width:100%;margin-bottom:.3rem">Templates:</strong>
+            <button class="btn btn-outline" onclick="loadTemplate('school')">🏫 School</button>
+            <button class="btn btn-outline" onclick="loadTemplate('college')">🎓 College</button>
+            <button class="btn btn-outline" onclick="loadTemplate('exam')">📝 Competitive Exam</button>
+            <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button>
+          </div>
+          <div class="save-row">
+            <input type="text" id="ttName" placeholder="Timetable name...">
+            <button class="btn" onclick="saveTT()">💾 Save</button>
+            <select id="ttList" onchange="loadSaved()"><option value="">— Load Saved —</option></select>
+            <button class="btn btn-outline" onclick="deleteSaved()">🗑️</button>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+            <button class="btn" onclick="exportPNG()">📷 Export PNG</button>
+            <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+            <button class="btn btn-outline" onclick="exportJSON()">📤 Export JSON</button>
+            <button class="btn btn-outline" onclick="document.getElementById('jsonImp').click()">📥 Import JSON</button>
+            <input type="file" id="jsonImp" accept=".json" style="display:none" onchange="importJSON(event)">
+          </div>
+          <!-- Planned vs Target summary -->
+          <div id="hoursSummary" style="margin-bottom:1rem"></div>
+        </div>
+        <div class="tt-wrap" id="ttWrap">
+          <table class="tt-table" id="ttTable"></table>
+        </div>
       </div>
     </div>
 
@@ -88,10 +148,10 @@
 </ul>
 </div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
-<p>The Weekly Timetable Maker is a powerful, free online scheduling tool designed to help students, professionals, and anyone who needs to organize their week efficiently. Whether you're managing school classes, university lectures, work shifts, or study sessions, this tool provides an intuitive visual interface to plan your entire week at a glance.</p>
+<p>The Weekly Timetable Maker is a powerful, free online scheduling tool designed to help students, professionals, and anyone who needs to organize their week efficiently. Whether you are managing school classes, university lectures, work shifts, or study sessions, this tool provides an intuitive visual interface to plan your entire week at a glance.</p>
 <p>Built entirely in your browser, this timetable creator requires no downloads, no signups, and no server uploads. Your schedule data stays private on your device using localStorage. The tool features a full 7-day grid covering 6 AM to 10 PM with one-hour time blocks, giving you complete flexibility to plan early mornings through late evenings.</p>
 <p>Color-coding makes it easy to distinguish between different subjects, activities, or priorities. Simply click any cell to add an activity and choose from a palette of vibrant colors, or let the tool auto-assign colors for you. Need to fill multiple time slots with the same activity? Just drag across cells to select a range and fill them all at once — perfect for double periods, long meetings, or extended study blocks.</p>
-<p>Save multiple timetables for different weeks or purposes, switch between them instantly, and export your finished schedule as a high-quality PNG image to share with classmates, colleagues, or print for your wall. The print-friendly view ensures your timetable looks great on paper too. Pre-made templates for School, College, Work, and Exam Prep give you a head start so you can customize rather than build from scratch.</p>
+<p>Save multiple timetables for different weeks or purposes, switch between them instantly, and export your finished schedule as a high-quality PNG image to share with classmates, colleagues, or print for your wall. The print-friendly view ensures your timetable looks great on paper too. Pre-made templates for School, College, and Competitive Exam give you a head start so you can customize rather than build from scratch.</p>
 
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -102,7 +162,7 @@
 <li><strong>Export as PNG</strong> — Download your timetable as an image to share or print</li>
 <li><strong>Drag to Fill</strong> — Quickly assign the same subject to multiple time slots</li>
 <li><strong>Color-Coded</strong> — Visually distinguish subjects and activities at a glance</li>
-<li><strong>Pre-Made Templates</strong> — Start with School, College, Work, or Exam Prep layouts</li>
+<li><strong>Pre-Made Templates</strong> — Start with School, College, or Exam Prep layouts</li>
 <li><strong>Print-Friendly</strong> — Clean print layout for physical copies</li>
 <li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
 </ul>
@@ -114,14 +174,15 @@
 <details><summary>How do I add a subject to multiple time slots at once?</summary><p>Click and drag across multiple cells to select them. When you release, a dialog will appear where you can enter the subject name and pick a color. All selected cells will be filled at once.</p></details>
 <details><summary>Can I export or share my timetable?</summary><p>Yes, click "Export PNG" to download your timetable as a high-quality image. You can share it via messaging apps, email, or social media. You can also use the Print button for a paper copy.</p></details>
 <details><summary>Does it work on mobile devices?</summary><p>Yes, the timetable works on all devices. On smaller screens, you can scroll horizontally to view the full week. All features including drag-select work on touch devices.</p></details>
-<details><summary>What are the pre-made templates?</summary><p>Templates give you a starting point: School (typical class schedule), College (lecture blocks with gaps), Work (9-5 with meetings), and Exam Prep (study blocks with breaks). You can customize any template after loading it.</p></details>
+<details><summary>What are the pre-made templates?</summary><p>Templates give you a starting point: School (typical class schedule), College (lecture blocks with gaps), and Competitive Exam (study blocks with breaks for SSC/UPSC prep). You can customize any template after loading it.</p></details>
 <details><summary>Can I change colors after adding a subject?</summary><p>Yes, simply click on any filled cell to open the editor. You can change the subject name, pick a new color, or clear the cell entirely.</p></details>
 </div>
   </div>
 
   <div class="modal-overlay" id="modal">
     <div class="modal">
-      <h3>Add Subject / Activity</h3>
+      <h3 id="modalTitle">Add Subject / Activity</h3>
+      <select id="subjectSelect" onchange="onSubjectSelect()" style="margin-bottom:.5rem"><option value="">— Pick a subject or type below —</option></select>
       <input type="text" id="subjectInput" placeholder="e.g. Mathematics, Lunch, Meeting...">
       <div class="color-options" id="colorOpts"></div>
       <div style="display:flex;gap:.5rem">
@@ -154,24 +215,96 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const HOURS=[];for(let h=6;h<=22;h++)HOURS.push(h);
-const COLORS=['#6366f1','#f44336','#4caf50','#ff9800','#9c27b0','#00bcd4','#e91e63','#8bc34a','#ff5722','#3f51b5','#009688','#ffc107'];
-let grid={},selectedCells=[],isDragging=false,colorIdx=0,subjectColors={};
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var HOURS=[];for(var h=6;h<=22;h++)HOURS.push(h);
+var COLORS=['#6366f1','#f44336','#4caf50','#ff9800','#9c27b0','#00bcd4','#e91e63','#8bc34a','#ff5722','#3f51b5','#009688','#ffc107'];
+var grid={},selectedCells=[],isDragging=false,colorIdx=0,subjectColors={};
+var subjects=JSON.parse(localStorage.getItem('tt_subjects')||'[]');
 
-function timeLabel(h){return(h>12?h-12:h)+(h>=12?' PM':' AM')}
+function timeLabel(h){return(h>12?h-12:h===0?12:h)+(h>=12?' PM':' AM')}
 
+function showTTTab(t){
+  document.getElementById('gridTab').style.display=t==='grid'?'':'none';
+  document.getElementById('subjectsTab').style.display=t==='subjects'?'':'none';
+  document.getElementById('autoTab').style.display=t==='auto'?'':'none';
+  document.getElementById('tabGrid').className=t==='grid'?'btn':'btn btn-outline';
+  document.getElementById('tabSubjects').className=t==='subjects'?'btn':'btn btn-outline';
+  document.getElementById('tabAuto').className=t==='auto'?'btn':'btn btn-outline';
+  if(t==='subjects')renderSubjectsList();
+  if(t==='grid')updateHoursSummary();
+}
+
+/* Subject Management */
+function addSubject(){
+  var name=document.getElementById('newSubName').value.trim();
+  var hrs=parseFloat(document.getElementById('newSubHrs').value)||0;
+  var color=document.getElementById('newSubColor').value;
+  if(!name){alert('Enter subject name');return}
+  var exists=subjects.find(function(s){return s.name.toLowerCase()===name.toLowerCase()});
+  if(exists){exists.targetHrs=hrs;exists.color=color}
+  else{subjects.push({name:name,targetHrs:hrs,color:color})}
+  subjectColors[name]=color;
+  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
+  document.getElementById('newSubName').value='';
+  document.getElementById('newSubHrs').value='';
+  renderSubjectsList();
+}
+
+function deleteSubject(i){
+  subjects.splice(i,1);
+  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
+  renderSubjectsList();
+}
+
+function getPlannedHours(name){
+  var count=0;
+  for(var k in grid){if(grid[k]&&grid[k].subject===name)count++}
+  return count;
+}
+
+function renderSubjectsList(){
+  var html='';
+  if(!subjects.length){html='<p class="info">No subjects added yet.</p>'}
+  subjects.forEach(function(s,i){
+    var planned=getPlannedHours(s.name);
+    var pct=s.targetHrs>0?Math.min(100,Math.round(planned/s.targetHrs*100)):0;
+    var barColor=planned>=s.targetHrs?'#4caf50':s.color;
+    html+='<div class="sub-item"><div class="sub-color" style="background:'+s.color+'"></div><span class="sub-name">'+s.name+'</span><span class="sub-hrs">'+planned+'/'+(s.targetHrs||'–')+' hrs';
+    if(s.targetHrs>0)html+=' ('+pct+'%)';
+    html+='</span><button onclick="deleteSubject('+i+')" title="Remove">×</button></div>';
+    if(s.targetHrs>0)html+='<div class="target-bar"><div class="target-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>';
+  });
+  document.getElementById('subjectsList').innerHTML=html;
+}
+
+function updateHoursSummary(){
+  if(!subjects.length){document.getElementById('hoursSummary').innerHTML='';return}
+  var html='<div style="font-size:.85rem;color:var(--text2)"><strong>Planned vs Target:</strong> ';
+  var parts=[];
+  subjects.forEach(function(s){
+    if(s.targetHrs>0){
+      var planned=getPlannedHours(s.name);
+      var status=planned>=s.targetHrs?'✅':'⚠️';
+      parts.push(status+' '+s.name+': '+planned+'/'+s.targetHrs+'h');
+    }
+  });
+  html+=parts.length?parts.join(' · '):'Add target hours in Subjects tab';
+  html+='</div>';
+  document.getElementById('hoursSummary').innerHTML=html;
+}
+
+/* Grid */
 function buildTable(){
-  const t=document.getElementById('ttTable');
-  let html='<thead><tr><th class="time-col">Time</th>';
-  DAYS.forEach(d=>{html+='<th>'+d+'</th>'});
+  var t=document.getElementById('ttTable');
+  var html='<thead><tr><th class="time-col">Time</th>';
+  DAYS.forEach(function(d){html+='<th>'+d+'</th>'});
   html+='</tr></thead><tbody>';
-  HOURS.forEach(h=>{
+  HOURS.forEach(function(h){
     html+='<tr><td class="time-col">'+timeLabel(h)+'</td>';
-    DAYS.forEach(d=>{
-      const key=d+'-'+h;
-      const cell=grid[key];
-      const bg=cell?'background:'+cell.color+';color:#fff':'';
+    DAYS.forEach(function(d){
+      var key=d+'-'+h;
+      var cell=grid[key];
+      var bg=cell?'background:'+cell.color+';color:#fff':'';
       html+='<td data-key="'+key+'" style="'+bg+'">'+(cell?cell.subject:'')+'</td>';
     });
     html+='</tr>';
@@ -179,18 +312,20 @@ function buildTable(){
   html+='</tbody>';
   t.innerHTML=html;
   attachEvents();
+  autoSave();
+  updateHoursSummary();
 }
 
 function attachEvents(){
-  const cells=document.querySelectorAll('#ttTable td:not(.time-col)');
-  cells.forEach(c=>{
-    c.addEventListener('mousedown',e=>{isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()});
-    c.addEventListener('mouseenter',()=>{if(isDragging)toggleSelect(c)});
-    c.addEventListener('touchstart',e=>{isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()},{passive:false});
-    c.addEventListener('touchmove',e=>{
-      const touch=e.touches[0];
-      const el=document.elementFromPoint(touch.clientX,touch.clientY);
-      if(el&&el.dataset.key&&!selectedCells.includes(el.dataset.key)){toggleSelect(el)}
+  var cells=document.querySelectorAll('#ttTable td:not(.time-col)');
+  cells.forEach(function(c){
+    c.addEventListener('mousedown',function(e){isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()});
+    c.addEventListener('mouseenter',function(){if(isDragging)toggleSelect(c)});
+    c.addEventListener('touchstart',function(e){isDragging=true;selectedCells=[];toggleSelect(c);e.preventDefault()},{passive:false});
+    c.addEventListener('touchmove',function(e){
+      var touch=e.touches[0];
+      var el=document.elementFromPoint(touch.clientX,touch.clientY);
+      if(el&&el.dataset&&el.dataset.key&&selectedCells.indexOf(el.dataset.key)===-1){toggleSelect(el)}
       e.preventDefault();
     },{passive:false});
   });
@@ -199,8 +334,8 @@ function attachEvents(){
 }
 
 function toggleSelect(c){
-  const key=c.dataset.key;
-  if(!selectedCells.includes(key)){selectedCells.push(key);c.classList.add('selected')}
+  var key=c.dataset.key;
+  if(selectedCells.indexOf(key)===-1){selectedCells.push(key);c.classList.add('selected')}
 }
 
 function endDrag(){
@@ -210,9 +345,11 @@ function endDrag(){
 }
 
 function openModal(){
-  const m=document.getElementById('modal');
-  m.classList.add('active');
-  const inp=document.getElementById('subjectInput');
+  document.getElementById('modal').classList.add('active');
+  var inp=document.getElementById('subjectInput');
+  var sel=document.getElementById('subjectSelect');
+  sel.innerHTML='<option value="">— Pick a subject or type below —</option>';
+  subjects.forEach(function(s){sel.innerHTML+='<option value="'+s.name+'" data-color="'+s.color+'">'+s.name+'</option>'});
   if(selectedCells.length===1&&grid[selectedCells[0]]){
     inp.value=grid[selectedCells[0]].subject;
     setActiveColor(grid[selectedCells[0]].color);
@@ -221,88 +358,131 @@ function openModal(){
   renderColors();
 }
 
+function onSubjectSelect(){
+  var sel=document.getElementById('subjectSelect');
+  if(sel.value){
+    document.getElementById('subjectInput').value=sel.value;
+    var opt=sel.options[sel.selectedIndex];
+    if(opt.dataset.color)setActiveColor(opt.dataset.color);
+    renderColors();
+  }
+}
+
 function closeModal(){
   document.getElementById('modal').classList.remove('active');
-  document.querySelectorAll('.selected').forEach(c=>c.classList.remove('selected'));
+  var els=document.querySelectorAll('.selected');
+  for(var i=0;i<els.length;i++)els[i].classList.remove('selected');
   selectedCells=[];
 }
 
 function renderColors(){
-  const wrap=document.getElementById('colorOpts');
-  wrap.innerHTML=COLORS.map(c=>'<div class="color-opt'+(c===activeColor?' active':'')+'" style="background:'+c+'" onclick="setActiveColor(\''+c+'\')"></div>').join('');
+  var wrap=document.getElementById('colorOpts');
+  wrap.innerHTML=COLORS.map(function(c){return'<div class="color-opt'+(c===activeColor?' active':'')+'" style="background:'+c+'" onclick="setActiveColor(\''+c+'\');renderColors()"></div>'}).join('');
 }
 
 var activeColor=COLORS[0];
-function setActiveColor(c){activeColor=c;renderColors()}
+function setActiveColor(c){activeColor=c}
 
 function applySubject(){
-  const subject=document.getElementById('subjectInput').value.trim();
+  var subject=document.getElementById('subjectInput').value.trim();
   if(!subject){closeModal();return}
   if(!subjectColors[subject])subjectColors[subject]=activeColor;
-  selectedCells.forEach(key=>{grid[key]={subject,color:activeColor}});
+  selectedCells.forEach(function(key){grid[key]={subject:subject,color:activeColor}});
   colorIdx++;
   closeModal();
   buildTable();
 }
 
 function clearCells(){
-  selectedCells.forEach(key=>{delete grid[key]});
+  selectedCells.forEach(function(key){delete grid[key]});
   closeModal();
   buildTable();
 }
 
 function clearAll(){if(confirm('Clear entire timetable?')){grid={};subjectColors={};buildTable()}}
 
-// Save/Load
+/* Autosave */
+function autoSave(){
+  localStorage.setItem('tt_autosave',JSON.stringify({grid:grid,subjectColors:subjectColors}));
+}
+function autoLoad(){
+  try{
+    var d=JSON.parse(localStorage.getItem('tt_autosave'));
+    if(d&&d.grid){grid=d.grid;subjectColors=d.subjectColors||{}}
+  }catch(e){}
+}
+
+/* Save/Load named */
 function saveTT(){
-  const name=document.getElementById('ttName').value.trim();
+  var name=document.getElementById('ttName').value.trim();
   if(!name){alert('Enter a name');return}
-  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
-  saved[name]={grid,subjectColors};
+  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  saved[name]={grid:grid,subjectColors:subjectColors,subjects:subjects};
   localStorage.setItem('tt_saved',JSON.stringify(saved));
   loadList();
   document.getElementById('ttName').value='';
 }
-
 function loadList(){
-  const sel=document.getElementById('ttList');
-  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  var sel=document.getElementById('ttList');
+  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
   sel.innerHTML='<option value="">— Load Saved —</option>';
-  Object.keys(saved).forEach(n=>{sel.innerHTML+='<option value="'+n+'">'+n+'</option>'});
+  Object.keys(saved).forEach(function(n){sel.innerHTML+='<option value="'+n+'">'+n+'</option>'});
 }
-
 function loadSaved(){
-  const name=document.getElementById('ttList').value;
+  var name=document.getElementById('ttList').value;
   if(!name)return;
-  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
-  if(saved[name]){grid=saved[name].grid||{};subjectColors=saved[name].subjectColors||{};buildTable()}
+  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  if(saved[name]){
+    grid=saved[name].grid||{};
+    subjectColors=saved[name].subjectColors||{};
+    if(saved[name].subjects){subjects=saved[name].subjects;localStorage.setItem('tt_subjects',JSON.stringify(subjects))}
+    buildTable();
+  }
 }
-
 function deleteSaved(){
-  const name=document.getElementById('ttList').value;
+  var name=document.getElementById('ttList').value;
   if(!name)return;
   if(!confirm('Delete "'+name+'"?'))return;
-  const saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
   delete saved[name];
   localStorage.setItem('tt_saved',JSON.stringify(saved));
   loadList();
 }
 
-// Export PNG
+/* JSON Export/Import */
+function exportJSON(){
+  var data={grid:grid,subjectColors:subjectColors,subjects:subjects};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='timetable.json';a.click();
+}
+function importJSON(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var d=JSON.parse(r.result);
+      if(d.grid){grid=d.grid;subjectColors=d.subjectColors||{};if(d.subjects){subjects=d.subjects;localStorage.setItem('tt_subjects',JSON.stringify(subjects))}buildTable();alert('Timetable imported!')}
+      else{alert('Invalid file')}
+    }catch(err){alert('Invalid JSON file')}
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+/* Export PNG */
 function exportPNG(){
-  const table=document.getElementById('ttTable');
-  const canvas=document.createElement('canvas');
-  const rows=table.rows;
-  const cols=rows[0].cells.length;
-  const cw=110,ch=36,pad=10;
+  var table=document.getElementById('ttTable');
+  var canvas=document.createElement('canvas');
+  var rows=table.rows;
+  var cols=rows[0].cells.length;
+  var cw=110,ch=36,pad=10;
   canvas.width=cols*cw+pad*2;
   canvas.height=rows.length*ch+pad*2;
-  const ctx=canvas.getContext('2d');
+  var ctx=canvas.getContext('2d');
   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-  for(let r=0;r<rows.length;r++){
-    for(let c=0;c<rows[r].cells.length;c++){
-      const cell=rows[r].cells[c];
-      const x=pad+c*cw,y=pad+r*ch;
+  for(var r=0;r<rows.length;r++){
+    for(var c=0;c<rows[r].cells.length;c++){
+      var cell=rows[r].cells[c];
+      var x=pad+c*cw,y=pad+r*ch;
       if(cell.style.background){ctx.fillStyle=cell.style.background;ctx.fillRect(x,y,cw,ch);ctx.fillStyle='#fff'}
       else if(r===0||c===0){ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y,cw,ch);ctx.fillStyle='#333'}
       else{ctx.fillStyle='#333'}
@@ -312,14 +492,14 @@ function exportPNG(){
       ctx.fillText(cell.textContent,x+cw/2,y+ch/2);
     }
   }
-  const link=document.createElement('a');
+  var link=document.createElement('a');
   link.download='timetable.png';
   link.href=canvas.toDataURL();
   link.click();
 }
 
-// Templates
-const TEMPLATES={
+/* Templates */
+var TEMPLATES={
   school:{
     'Mon-8':'Math','Mon-9':'English','Mon-10':'Science','Mon-11':'History','Mon-12':'Lunch','Mon-13':'Art','Mon-14':'PE',
     'Tue-8':'English','Tue-9':'Math','Tue-10':'Geography','Tue-11':'Science','Tue-12':'Lunch','Tue-13':'Music','Tue-14':'Library',
@@ -334,38 +514,111 @@ const TEMPLATES={
     'Thu-10':'Chemistry','Thu-11':'Chemistry','Thu-13':'Literature','Thu-15':'Programming','Thu-16':'Programming',
     'Fri-9':'Physics','Fri-10':'Physics','Fri-12':'Seminar','Fri-14':'Study Group'
   },
-  work:{
-    'Mon-9':'Standup','Mon-10':'Deep Work','Mon-11':'Deep Work','Mon-12':'Lunch','Mon-13':'Meetings','Mon-14':'Email','Mon-15':'Project A','Mon-16':'Project A',
-    'Tue-9':'Standup','Tue-10':'Project B','Tue-11':'Project B','Tue-12':'Lunch','Tue-13':'Deep Work','Tue-14':'Deep Work','Tue-15':'Review','Tue-16':'Planning',
-    'Wed-9':'Standup','Wed-10':'Deep Work','Wed-11':'Deep Work','Wed-12':'Team Lunch','Wed-13':'1:1s','Wed-14':'Project A','Wed-15':'Project A','Wed-16':'Admin',
-    'Thu-9':'Standup','Thu-10':'Project B','Thu-11':'Project B','Thu-12':'Lunch','Thu-13':'Deep Work','Thu-14':'Deep Work','Thu-15':'Meetings','Thu-16':'Email',
-    'Fri-9':'Standup','Fri-10':'Deep Work','Fri-11':'Deep Work','Fri-12':'Lunch','Fri-13':'Retro','Fri-14':'Learning','Fri-15':'Wrap-up'
-  },
   exam:{
-    'Mon-7':'Math','Mon-8':'Math','Mon-9':'Break','Mon-10':'Physics','Mon-11':'Physics','Mon-12':'Lunch','Mon-14':'Chemistry','Mon-15':'Chemistry','Mon-17':'Revision',
-    'Tue-7':'English','Tue-8':'English','Tue-9':'Break','Tue-10':'Biology','Tue-11':'Biology','Tue-12':'Lunch','Tue-14':'Math','Tue-15':'Math','Tue-17':'Practice Tests',
-    'Wed-7':'Physics','Wed-8':'Physics','Wed-9':'Break','Wed-10':'Chemistry','Wed-11':'Chemistry','Wed-12':'Lunch','Wed-14':'English','Wed-15':'English','Wed-17':'Revision',
-    'Thu-7':'Biology','Thu-8':'Biology','Thu-9':'Break','Thu-10':'Math','Thu-11':'Math','Thu-12':'Lunch','Thu-14':'Physics','Thu-15':'Physics','Thu-17':'Practice Tests',
-    'Sat-8':'Full Mock Test','Sat-9':'Full Mock Test','Sat-10':'Full Mock Test','Sat-11':'Full Mock Test','Sat-14':'Review Answers','Sat-15':'Review Answers',
-    'Sun-9':'Weak Topics','Sun-10':'Weak Topics','Sun-11':'Weak Topics','Sun-14':'Light Revision','Sun-15':'Light Revision'
+    'Mon-7':'GK & Current Affairs','Mon-8':'GK & Current Affairs','Mon-9':'Break','Mon-10':'Quantitative Aptitude','Mon-11':'Quantitative Aptitude','Mon-12':'Lunch','Mon-14':'Reasoning','Mon-15':'Reasoning','Mon-17':'English','Mon-18':'Revision',
+    'Tue-7':'Polity','Tue-8':'Polity','Tue-9':'Break','Tue-10':'Economy','Tue-11':'Economy','Tue-12':'Lunch','Tue-14':'Quantitative Aptitude','Tue-15':'Quantitative Aptitude','Tue-17':'GK & Current Affairs','Tue-18':'Mock Test Review',
+    'Wed-7':'History','Wed-8':'History','Wed-9':'Break','Wed-10':'Geography','Wed-11':'Geography','Wed-12':'Lunch','Wed-14':'English','Wed-15':'English','Wed-17':'Reasoning','Wed-18':'Revision',
+    'Thu-7':'Science','Thu-8':'Science','Thu-9':'Break','Thu-10':'Quantitative Aptitude','Thu-11':'Quantitative Aptitude','Thu-12':'Lunch','Thu-14':'Polity','Thu-15':'Economy','Thu-17':'GK & Current Affairs','Thu-18':'Mock Test Review',
+    'Fri-7':'Reasoning','Fri-8':'Reasoning','Fri-9':'Break','Fri-10':'English','Fri-11':'English','Fri-12':'Lunch','Fri-14':'History','Fri-15':'Geography','Fri-17':'Science','Fri-18':'Revision',
+    'Sat-8':'Full Mock Test','Sat-9':'Full Mock Test','Sat-10':'Full Mock Test','Sat-11':'Full Mock Test','Sat-14':'Review Answers','Sat-15':'Review Answers','Sat-16':'Weak Topics',
+    'Sun-9':'Weak Topics','Sun-10':'Weak Topics','Sun-11':'Newspaper Reading','Sun-14':'Light Revision','Sun-15':'Light Revision'
   }
 };
 
 function loadTemplate(name){
   if(Object.keys(grid).length>0&&!confirm('Load template? This will replace current timetable.'))return;
   grid={};subjectColors={};
-  const tpl=TEMPLATES[name];
-  const subjects=new Set(Object.values(tpl));
-  let ci=0;
-  subjects.forEach(s=>{subjectColors[s]=COLORS[ci%COLORS.length];ci++});
-  Object.entries(tpl).forEach(([key,subject])=>{grid[key]={subject,color:subjectColors[subject]}});
+  var tpl=TEMPLATES[name];
+  var subs={};
+  Object.keys(tpl).forEach(function(k){subs[tpl[k]]=true});
+  var ci=0;
+  Object.keys(subs).forEach(function(s){subjectColors[s]=COLORS[ci%COLORS.length];ci++});
+  Object.keys(tpl).forEach(function(key){grid[key]={subject:tpl[key],color:subjectColors[tpl[key]]}});
+  /* Also add template subjects to subject manager */
+  Object.keys(subs).forEach(function(s){
+    if(!subjects.find(function(x){return x.name===s})){
+      subjects.push({name:s,targetHrs:0,color:subjectColors[s]});
+    }
+  });
+  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
   buildTable();
 }
 
-// Init
+/* Auto-generate */
+function autoGenerate(){
+  if(!subjects.length||!subjects.some(function(s){return s.targetHrs>0})){
+    alert('Add subjects with target hours in the Subjects tab first.');return;
+  }
+  if(Object.keys(grid).length>0&&!confirm('This will replace the current timetable. Continue?'))return;
+  grid={};subjectColors={};
+  var startH=parseInt(document.getElementById('autoStart').value);
+  var endH=parseInt(document.getElementById('autoEnd').value);
+  var breakEvery=parseInt(document.getElementById('autoBreakEvery').value);
+  var breakLen=parseInt(document.getElementById('autoBreakLen').value);
+  var lunchH=parseInt(document.getElementById('autoLunch').value);
+  var numDays=parseInt(document.getElementById('autoDays').value);
+  var dayList=DAYS.slice(0,numDays);
+
+  /* Build list of subjects with remaining hours */
+  var pool=[];
+  subjects.forEach(function(s){
+    if(s.targetHrs>0){
+      subjectColors[s.name]=s.color;
+      pool.push({name:s.name,color:s.color,remaining:s.targetHrs});
+    }
+  });
+  if(!pool.length){alert('No subjects have target hours set.');return}
+
+  /* For each day, fill slots */
+  dayList.forEach(function(day){
+    var slotCount=0;
+    for(var h=startH;h<endH;h++){
+      /* Lunch */
+      if(lunchH>0&&h===lunchH){
+        grid[day+'-'+h]={subject:'Lunch',color:'#ff9800'};
+        slotCount=0;continue;
+      }
+      /* Break */
+      if(breakLen>0&&slotCount>0&&slotCount%breakEvery===0){
+        grid[day+'-'+h]={subject:'Break',color:'#9e9e9e'};
+        slotCount=0;continue;
+      }
+      /* Find subject: pick one with most remaining hours that is different from last 2 slots */
+      pool.sort(function(a,b){return b.remaining-a.remaining});
+      var prev1=grid[day+'-'+(h-1)];
+      var prev2=grid[day+'-'+(h-2)];
+      var chosen=null;
+      for(var p=0;p<pool.length;p++){
+        if(pool[p].remaining<=0)continue;
+        /* Allow same subject for 2 consecutive max */
+        if(prev1&&prev2&&prev1.subject===pool[p].name&&prev2.subject===pool[p].name)continue;
+        chosen=pool[p];break;
+      }
+      if(!chosen){
+        /* All subjects filled, use any with remaining */
+        for(var p2=0;p2<pool.length;p2++){if(pool[p2].remaining>0){chosen=pool[p2];break}}
+      }
+      if(chosen){
+        grid[day+'-'+h]={subject:chosen.name,color:chosen.color};
+        chosen.remaining--;
+        slotCount++;
+      }else{
+        slotCount++;
+      }
+    }
+  });
+  if(!subjectColors['Lunch'])subjectColors['Lunch']='#ff9800';
+  if(!subjectColors['Break'])subjectColors['Break']='#9e9e9e';
+  buildTable();
+  showTTTab('grid');
+}
+
+/* Init */
+autoLoad();
 buildTable();
 loadList();
-document.getElementById('subjectInput').addEventListener('keydown',e=>{if(e.key==='Enter')applySubject()});
+subjects.forEach(function(s){subjectColors[s.name]=s.color});
+document.getElementById('subjectInput').addEventListener('keydown',function(e){if(e.key==='Enter')applySubject()});
 </script>
 </body>
 </html>

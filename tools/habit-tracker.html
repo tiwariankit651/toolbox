@@ -17,6 +17,24 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/habit-tracker">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+  .ht-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.8rem 0}
+  .ht-tab{padding:.45rem 1rem;border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text2);transition:all .2s}
+  .ht-tab.active,.ht-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ht-panel{display:none}.ht-panel.active{display:block}
+  .ht-card{background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0}
+  .ht-hm{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}.ht-hm-week{display:flex;flex-direction:column;gap:2px}
+  .ht-hm-cell{width:100%;aspect-ratio:1;border-radius:3px;cursor:default}
+  .ht-badge{display:inline-block;font-size:.7rem;padding:.1rem .4rem;border-radius:4px;margin:.1rem}
+  .ht-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+  .ht-modal{background:var(--surface);border-radius:var(--radius);padding:1.5rem;max-width:440px;width:100%;max-height:85vh;overflow-y:auto}
+  .ht-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:.5rem 0}
+  .ht-cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:.75rem;cursor:pointer;background:var(--card)}
+  .ht-cal-cell.done{background:rgba(34,197,94,.3);color:#22c55e;font-weight:700}
+  .ht-cal-cell.today{border:2px solid var(--accent)}
+  .ht-cal-head{font-size:.65rem;font-weight:700;color:var(--text2);text-align:center;padding:.2rem 0}
+  @media(max-width:600px){.ht-hm-cell{border-radius:2px}}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -25,13 +43,30 @@
     <div class="tool-section">
       <h1>✅ Habit Tracker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Add habits, check them off daily, build streaks. Auto-saves to your browser.</p>
-      <div class="row"><input type="text" id="newHabit" placeholder="Add a new habit... (e.g. Study 2 hours)" style="flex:3"><button class="btn" onclick="addHabit()">+ Add</button></div>
-      <div id="today" style="margin:1rem 0;font-size:1.1rem;font-weight:600"></div>
-      <div id="habitList"></div>
-      <div id="heatmap" style="margin-top:1.5rem"></div>
-      <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-top:1.5rem"></div>
+      <p class="info">Track multiple habits with custom types, streaks, heatmaps, schedules & stats. All data saved in your browser.</p>
+
+      <div id="today" style="margin:.5rem 0;font-size:1.05rem;font-weight:600"></div>
+      <div id="quickStats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin:.8rem 0"></div>
+
+      <div class="ht-tabs">
+        <div class="ht-tab active" onclick="htSwitch('habits')">✅ Habits</div>
+        <div class="ht-tab" onclick="htSwitch('heatmap')">🟩 Heatmap</div>
+        <div class="ht-tab" onclick="htSwitch('calendar')">📅 Calendar</div>
+        <div class="ht-tab" onclick="htSwitch('stats')">📊 Stats</div>
+        <div class="ht-tab" onclick="htSwitch('data')">💾 Data</div>
+      </div>
+
+      <div id="panel-habits" class="ht-panel active">
+        <div class="row"><button class="btn" onclick="showAddHabit()">+ Add Habit</button></div>
+        <div id="habitList"></div>
+      </div>
+      <div id="panel-heatmap" class="ht-panel"><div id="heatmapContent"></div></div>
+      <div id="panel-calendar" class="ht-panel"><div id="calendarContent"></div></div>
+      <div id="panel-stats" class="ht-panel"><div id="statsContent"></div></div>
+      <div id="panel-data" class="ht-panel"><div id="dataContent"></div></div>
     </div>
+    <div id="htModal"></div>
+
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Roz exercise karna hai but bhool jaate ho? Streak banao yahan. Jab streak dikhega — todne ka mann nahi karega. Consistency is key, bhai.</p>
 <ol style="margin-left:1.5rem;line-height:2">
@@ -91,81 +126,304 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var habits=JSON.parse(localStorage.getItem("habits")||"[]");
-var today=new Date().toISOString().split("T")[0];
-document.getElementById("today").textContent="Today: "+new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-function save(){localStorage.setItem("habits",JSON.stringify(habits))}
-function addHabit(){
-  var name=document.getElementById("newHabit").value.trim();
-  if(!name)return;
-  habits.push({name:name,log:{},created:today});
-  document.getElementById("newHabit").value="";save();render();
+/* ===== HABIT TRACKER ADVANCED ===== */
+var HT_KEY='habit_tracker_v2';
+var TODAY=new Date().toISOString().split('T')[0];
+document.getElementById('today').textContent='Today: '+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+function migrateOld(){
+  var old=localStorage.getItem('habits');
+  if(old&&!localStorage.getItem(HT_KEY)){
+    try{
+      var oldH=JSON.parse(old);
+      var newH=oldH.map(function(h,i){return{id:'m'+i,name:h.name,emoji:'✅',color:'#6366f1',type:'yesno',target:1,schedule:'daily',days:[],timesPerWeek:7,reminderTime:'',log:h.log||{},created:h.created||TODAY};});
+      var data={habits:newH,version:2};
+      localStorage.setItem(HT_KEY,JSON.stringify(data));
+    }catch(e){}
+  }
 }
-function toggleHabit(i){
-  if(habits[i].log[today])delete habits[i].log[today];
-  else habits[i].log[today]=true;
-  save();render();
+migrateOld();
+
+function loadHT(){var d=localStorage.getItem(HT_KEY);if(d){try{return JSON.parse(d);}catch(e){}}return{habits:[],version:2};}
+var H=loadHT();
+function saveHT(){localStorage.setItem(HT_KEY,JSON.stringify(H));}
+function escH(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function htSwitch(t){
+  document.querySelectorAll('.ht-tab').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.ht-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('panel-'+t).classList.add('active');
+  document.querySelectorAll('.ht-tab').forEach(function(el){if(el.onclick&&el.onclick.toString().indexOf("'"+t+"'")>=0)el.classList.add('active');});
+  renderPanel(t);
 }
-function removeHabit(i){
-  if(confirm("Delete habit: "+habits[i].name+"?")){habits.splice(i,1);save();render()}
+function renderPanel(t){if(t==='habits')renderHabits();else if(t==='heatmap')renderHeatmap();else if(t==='calendar')renderCalendar();else if(t==='stats')renderStats();else if(t==='data')renderData();renderQuick();}
+
+function isScheduled(h,dateStr){
+  if(h.schedule==='daily')return true;
+  if(h.schedule==='weekdays'){var dow=new Date(dateStr).getDay();return(h.days||[]).indexOf(dow)>=0;}
+  if(h.schedule==='weekly'){
+    var weekStart=new Date(dateStr);weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+    var count=0;
+    for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var k=d.toISOString().split('T')[0];if(h.log&&h.log[k])count++;}
+    return count<(h.timesPerWeek||3);
+  }
+  return true;
 }
+function isDone(h,dateStr){
+  if(!h.log||!h.log[dateStr])return false;
+  if(h.type==='yesno')return!!h.log[dateStr];
+  return(h.log[dateStr]||0)>=(h.target||1);
+}
+function getVal(h,dateStr){if(!h.log||!h.log[dateStr])return 0;if(h.type==='yesno')return h.log[dateStr]?1:0;return h.log[dateStr]||0;}
 function getStreak(h){
-  var streak=0,d=new Date();
+  var streak=0;var d=new Date();
   for(var j=0;j<365;j++){
-    var key=d.toISOString().split("T")[0];
-    if(h.log[key])streak++;else if(j>0)break;
+    var key=d.toISOString().split('T')[0];
+    if(!isScheduled(h,key)){d.setDate(d.getDate()-1);continue;}
+    if(isDone(h,key))streak++;else if(j>0)break;
     d.setDate(d.getDate()-1);
   }
   return streak;
 }
 function getLongestStreak(h){
-  var keys=Object.keys(h.log).sort();
-  if(!keys.length)return 0;
-  var max=1,cur=1;
-  for(var i=1;i<keys.length;i++){
-    var prev=new Date(keys[i-1]),next=new Date(keys[i]);
-    if((next-prev)===86400000)cur++;else cur=1;
-    if(cur>max)max=cur;
-  }
+  var keys=Object.keys(h.log||{}).sort();if(!keys.length)return 0;
+  var max=0;var cur=0;var prev=null;
+  keys.forEach(function(k){
+    if(!isScheduled(h,k))return;
+    if(!isDone(h,k)){cur=0;prev=null;return;}
+    if(prev){var diff=(new Date(k)-new Date(prev))/86400000;var gap=false;for(var d=new Date(prev);;){d.setDate(d.getDate()+1);var dk=d.toISOString().split('T')[0];if(dk>=k)break;if(isScheduled(h,dk)){gap=true;break;}}if(gap)cur=1;else cur++;}
+    else cur=1;
+    if(cur>max)max=cur;prev=k;
+  });
   return max;
 }
-function render(){
-  var html="";
-  habits.forEach(function(h,i){
-    var done=h.log[today];
-    var streak=getStreak(h);
-    var totalDone=Object.keys(h.log).length;
-    var last7="";
-    for(var j=6;j>=0;j--){
-      var d=new Date();d.setDate(d.getDate()-j);
-      var key=d.toISOString().split("T")[0];
-      last7+='<span style="display:inline-block;width:20px;height:20px;border-radius:4px;margin:1px;background:'+(h.log[key]?"#4caf50":"var(--border)")+'"></span>';
-    }
-    html+='<div style="background:var(--card);padding:1rem;border-radius:12px;margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">';
-    html+='<button onclick="toggleHabit('+i+')" style="font-size:1.5rem;background:none;border:none;cursor:pointer">'+(done?"✅":"⬜")+'</button>';
-    html+='<div style="flex:2;min-width:120px"><strong style="'+(done?"text-decoration:line-through;opacity:.6":"")+'">'+h.name+'</strong><div style="margin-top:4px">'+last7+'</div></div>';
-    var longest=getLongestStreak(h);
-    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+streak+'</div><div class="info" style="font-size:.7rem">current streak</div></div>';
-    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700;color:#ff9800">'+longest+'</div><div class="info" style="font-size:.7rem">longest streak</div></div>';
-    html+='<div style="text-align:center;min-width:60px"><div style="font-size:1.2rem;font-weight:700">'+totalDone+'</div><div class="info" style="font-size:.7rem">total</div></div>';
-    html+='<button onclick="removeHabit('+i+')" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">×</button></div>';
-  });
-  document.getElementById("habitList").innerHTML=html||'<p class="info">No habits yet. Add one above to get started!</p>';
-  var completed=habits.filter(function(h){return h.log[today]}).length;
-  var pct=habits.length?Math.round(completed/habits.length*100):0;
-  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent)">'+habits.length+'</div><div class="info">Habits</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+completed+'</div><div class="info">Done Today</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700">'+pct+'%</div><div class="info">Completion</div></div>';
-  // Weekly report
-  var weekHtml='<div style="margin-top:1rem"><h3>📊 Weekly Report</h3><div style="display:flex;gap:3px;margin:.5rem 0">';
-  for(var d=6;d>=0;d--){var dt=new Date();dt.setDate(dt.getDate()-d);var key=dt.toISOString().split("T")[0];var dayDone=0;habits.forEach(function(h){if(h.log[key])dayDone++});var dayPct=habits.length?Math.round(dayDone/habits.length*100):0;var color=dayPct>=80?"#4caf50":dayPct>=50?"#ff9800":dayPct>0?"#f44336":"var(--border)";weekHtml+='<div style="flex:1;text-align:center"><div style="height:60px;background:var(--card);border-radius:4px;position:relative;overflow:hidden"><div style="position:absolute;bottom:0;width:100%;height:'+dayPct+'%;background:'+color+';border-radius:4px"></div></div><div style="font-size:.65rem;margin-top:2px">'+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()]+'</div></div>'}
-  weekHtml+='</div></div>';
-  document.getElementById("stats").innerHTML+=weekHtml;
-  // 30-day heatmap
-  var hmHtml='<div style="background:var(--card);padding:1rem;border-radius:12px"><h3 style="margin-bottom:.5rem">🟩 30-Day Heatmap</h3><div style="display:flex;gap:3px;flex-wrap:wrap">';
-  for(var d=29;d>=0;d--){var dt=new Date();dt.setDate(dt.getDate()-d);var key=dt.toISOString().split("T")[0];var count=0;habits.forEach(function(h){if(h.log[key])count++});var intensity=habits.length?count/habits.length:0;var bg=intensity===0?"var(--border)":intensity<=0.25?"#c6e48b":intensity<=0.5?"#7bc96f":intensity<=0.75?"#239a3b":"#196127";hmHtml+='<div title="'+key+': '+count+'/'+habits.length+'" style="width:18px;height:18px;border-radius:3px;background:'+bg+'"></div>'}
-  hmHtml+='</div><div style="display:flex;align-items:center;gap:4px;margin-top:.5rem;font-size:.7rem"><span>Less</span><span style="width:12px;height:12px;border-radius:2px;background:var(--border);display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#c6e48b;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#7bc96f;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#239a3b;display:inline-block"></span><span style="width:12px;height:12px;border-radius:2px;background:#196127;display:inline-block"></span><span>More</span></div></div>';
-  document.getElementById("heatmap").innerHTML=hmHtml;
+function getCompletionRate(h,days){
+  var scheduled=0;var done=0;
+  for(var i=0;i<days;i++){var d=new Date();d.setDate(d.getDate()-i);var k=d.toISOString().split('T')[0];
+    if(isScheduled(h,k)){scheduled++;if(isDone(h,k))done++;}
+  }
+  return scheduled?Math.round(done/scheduled*100):0;
 }
-render();
+
+/* ===== RENDER HABITS ===== */
+function renderHabits(){
+  var html='';
+  H.habits.forEach(function(h,i){
+    var done=isDone(h,TODAY);var val=getVal(h,TODAY);var streak=getStreak(h);var longest=getLongestStreak(h);
+    var totalDone=0;Object.keys(h.log||{}).forEach(function(k){if(isDone(h,k))totalDone++;});
+    var last7='';for(var j=6;j>=0;j--){var d=new Date();d.setDate(d.getDate()-j);var k=d.toISOString().split('T')[0];var c=isDone(h,k)?h.color||'#22c55e':'rgba(148,148,184,.2)';last7+='<span style="display:inline-block;width:18px;height:18px;border-radius:4px;margin:1px;background:'+c+'"></span>';}
+    html+='<div class="ht-card" style="border-left:4px solid '+(h.color||'#6366f1')+'">';
+    html+='<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">';
+    if(h.type==='yesno'){
+      html+='<button onclick="toggleHabit('+i+')" style="font-size:1.4rem;background:none;border:none;cursor:pointer">'+(done?'✅':'⬜')+'</button>';
+    }else{
+      html+='<div style="display:flex;align-items:center;gap:.3rem"><button onclick="changeVal('+i+',-1)" style="background:none;border:none;cursor:pointer;font-size:1.1rem">−</button><span style="font-weight:700;color:'+(done?'#22c55e':'var(--text)')+'">'+val+'/'+(h.target||1)+'</span><button onclick="changeVal('+i+',1)" style="background:none;border:none;cursor:pointer;font-size:1.1rem">+</button></div>';
+    }
+    html+='<div style="flex:1;min-width:100px"><strong style="'+(done?'opacity:.6':'')+'">'+escH(h.emoji||'✅')+' '+escH(h.name)+'</strong>';
+    html+='<div style="font-size:.7rem;color:var(--text2)">'+escH(h.type)+' | '+escH(h.schedule==='weekdays'?'Selected days':h.schedule==='weekly'?h.timesPerWeek+'x/week':'Daily')+'</div>';
+    html+='<div style="margin-top:3px">'+last7+'</div></div>';
+    html+='<div style="display:flex;gap:.8rem;flex-wrap:wrap;text-align:center">';
+    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--accent)">'+streak+'</div><div style="font-size:.65rem;color:var(--text2)">streak</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700;color:#f59e0b">'+longest+'</div><div style="font-size:.65rem;color:var(--text2)">best</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700">'+totalDone+'</div><div style="font-size:.65rem;color:var(--text2)">total</div></div>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:.3rem"><button onclick="showEditHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem" title="Edit">✏️</button><button onclick="removeHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#ef4444" title="Delete">🗑️</button></div>';
+    html+='</div></div>';
+  });
+  document.getElementById('habitList').innerHTML=html||'<p class="info" style="text-align:center;padding:1.5rem">No habits yet. Click "+ Add Habit" to get started!</p>';
+}
+function toggleHabit(i){var h=H.habits[i];if(!h.log)h.log={};if(h.log[TODAY])delete h.log[TODAY];else h.log[TODAY]=true;saveHT();renderHabits();renderQuick();}
+function changeVal(i,delta){var h=H.habits[i];if(!h.log)h.log={};var cur=h.log[TODAY]||0;var nv=Math.max(0,cur+delta);if(nv===0)delete h.log[TODAY];else h.log[TODAY]=nv;saveHT();renderHabits();renderQuick();}
+function removeHabit(i){if(confirm('Delete habit: '+H.habits[i].name+'?')){H.habits.splice(i,1);saveHT();renderHabits();renderQuick();}}
+
+/* ===== ADD/EDIT HABIT MODAL ===== */
+function showAddHabit(){showHabitModal(-1);}
+function showEditHabit(i){showHabitModal(i);}
+function showHabitModal(idx){
+  var h=idx>=0?H.habits[idx]:{name:'',emoji:'✅',color:'#6366f1',type:'yesno',target:1,schedule:'daily',days:[],timesPerWeek:7,reminderTime:''};
+  var title=idx>=0?'Edit Habit':'Add New Habit';
+  var daysChecks='';[0,1,2,3,4,5,6].forEach(function(d){var n=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d];daysChecks+='<label style="font-size:.8rem"><input type="checkbox" value="'+d+'" '+((h.days||[]).indexOf(d)>=0?'checked':'')+' class="hm-day-cb"> '+n+'</label> ';});
+  var html='<div class="ht-modal-overlay" onclick="if(event.target===this)closeHM()"><div class="ht-modal">';
+  html+='<div style="display:flex;justify-content:space-between;margin-bottom:.8rem"><h3>'+title+'</h3><button onclick="closeHM()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text)">✕</button></div>';
+  html+='<label style="font-size:.85rem;color:var(--text2)">Name</label><input type="text" id="hmName" value="'+escH(h.name)+'">';
+  html+='<div class="row"><div><label style="font-size:.85rem;color:var(--text2)">Emoji</label><input type="text" id="hmEmoji" value="'+escH(h.emoji||'✅')+'" maxlength="4"></div><div><label style="font-size:.85rem;color:var(--text2)">Color</label><input type="color" id="hmColor" value="'+(h.color||'#6366f1')+'" style="height:40px"></div></div>';
+  html+='<label style="font-size:.85rem;color:var(--text2)">Type</label><select id="hmType" onchange="hmTypeChange()"><option value="yesno" '+(h.type==='yesno'?'selected':'')+'>Yes/No</option><option value="count" '+(h.type==='count'?'selected':'')+'>Countable (e.g. glasses of water)</option><option value="time" '+(h.type==='time'?'selected':'')+'>Time-based (minutes)</option></select>';
+  html+='<div id="hmTargetRow" style="'+(h.type==='yesno'?'display:none':'')+'"><label style="font-size:.85rem;color:var(--text2)">Daily Target</label><input type="number" id="hmTarget" value="'+(h.target||1)+'" min="1"></div>';
+  html+='<label style="font-size:.85rem;color:var(--text2)">Schedule</label><select id="hmSchedule" onchange="hmSchedChange()"><option value="daily" '+(h.schedule==='daily'?'selected':'')+'>Every day</option><option value="weekdays" '+(h.schedule==='weekdays'?'selected':'')+'>Specific days</option><option value="weekly" '+(h.schedule==='weekly'?'selected':'')+'>X times per week</option></select>';
+  html+='<div id="hmDaysRow" style="'+(h.schedule==='weekdays'?'':'display:none')+'"><label style="font-size:.85rem;color:var(--text2)">Days</label><div>'+daysChecks+'</div></div>';
+  html+='<div id="hmWeeklyRow" style="'+(h.schedule==='weekly'?'':'display:none')+'"><label style="font-size:.85rem;color:var(--text2)">Times per week</label><input type="number" id="hmTPW" value="'+(h.timesPerWeek||3)+'" min="1" max="7"></div>';
+  html+='<label style="font-size:.85rem;color:var(--text2)">Reminder Time (optional)</label><input type="time" id="hmReminder" value="'+(h.reminderTime||'')+'">';
+  html+='<button class="btn" onclick="saveHabitModal('+idx+')" style="width:100%;margin-top:.8rem">'+(idx>=0?'Save Changes':'Add Habit')+'</button>';
+  html+='</div></div>';
+  document.getElementById('htModal').innerHTML=html;
+}
+function closeHM(){document.getElementById('htModal').innerHTML='';}
+function hmTypeChange(){var t=document.getElementById('hmType').value;document.getElementById('hmTargetRow').style.display=t==='yesno'?'none':'';}
+function hmSchedChange(){var s=document.getElementById('hmSchedule').value;document.getElementById('hmDaysRow').style.display=s==='weekdays'?'':'none';document.getElementById('hmWeeklyRow').style.display=s==='weekly'?'':'none';}
+function saveHabitModal(idx){
+  var name=document.getElementById('hmName').value.trim();if(!name){alert('Enter a name.');return;}
+  var days=[];document.querySelectorAll('.hm-day-cb:checked').forEach(function(cb){days.push(parseInt(cb.value));});
+  var obj={id:idx>=0?H.habits[idx].id:Date.now().toString(36),name:name,emoji:document.getElementById('hmEmoji').value||'✅',color:document.getElementById('hmColor').value,type:document.getElementById('hmType').value,target:parseInt(document.getElementById('hmTarget').value)||1,schedule:document.getElementById('hmSchedule').value,days:days,timesPerWeek:parseInt(document.getElementById('hmTPW').value)||3,reminderTime:document.getElementById('hmReminder').value||'',log:idx>=0?H.habits[idx].log:{},created:idx>=0?H.habits[idx].created:TODAY};
+  if(idx>=0)H.habits[idx]=obj;else H.habits.push(obj);
+  saveHT();closeHM();renderHabits();renderQuick();scheduleReminders();
+}
+
+/* ===== HEATMAP ===== */
+function renderHeatmap(){
+  var html='<h3>🟩 12-Week Contribution Heatmap</h3>';
+  if(!H.habits.length){document.getElementById('heatmapContent').innerHTML='<p class="info">Add habits first.</p>';return;}
+  html+='<p class="info">All habits combined</p>';
+  html+=buildHeatmapHTML(null);
+  H.habits.forEach(function(h){
+    html+='<h4 style="margin-top:1rem">'+escH(h.emoji)+' '+escH(h.name)+'</h4>';
+    html+=buildHeatmapHTML(h);
+  });
+  html+='<div style="display:flex;align-items:center;gap:4px;margin-top:.5rem;font-size:.7rem"><span>Less</span>';
+  ['rgba(148,148,184,.15)','#c6e48b','#7bc96f','#239a3b','#196127'].forEach(function(c){html+='<span style="width:12px;height:12px;border-radius:2px;background:'+c+';display:inline-block"></span>';});
+  html+='<span>More</span></div>';
+  document.getElementById('heatmapContent').innerHTML=html;
+}
+function buildHeatmapHTML(habit){
+  var html='<div style="display:flex;gap:2px">';
+  for(var w=11;w>=0;w--){
+    html+='<div style="display:flex;flex-direction:column;gap:2px;flex:1">';
+    for(var d=0;d<7;d++){
+      var dt=new Date();dt.setDate(dt.getDate()-(w*7+(6-d)));
+      var key=dt.toISOString().split('T')[0];
+      var intensity=0;
+      if(habit){intensity=isDone(habit,key)?1:getVal(habit,key)>0?0.5:0;}
+      else{var total=H.habits.length;if(total){var doneCount=0;H.habits.forEach(function(h){if(isDone(h,key))doneCount++;});intensity=doneCount/total;}}
+      var bg=intensity===0?'rgba(148,148,184,.15)':intensity<=0.25?'#c6e48b':intensity<=0.5?'#7bc96f':intensity<=0.75?'#239a3b':'#196127';
+      html+='<div class="ht-hm-cell" style="background:'+bg+'" title="'+key+'"></div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';return html;
+}
+
+/* ===== CALENDAR ===== */
+var calHabitIdx=0;var calY=new Date().getFullYear();var calM=new Date().getMonth();
+function renderCalendar(){
+  if(!H.habits.length){document.getElementById('calendarContent').innerHTML='<p class="info">Add habits first.</p>';return;}
+  var html='<div class="row" style="margin-bottom:.5rem"><select id="calHabitSel" onchange="calHabitIdx=this.selectedIndex;renderCalendar()" style="flex:2">';
+  H.habits.forEach(function(h,i){html+='<option '+(i===calHabitIdx?'selected':'')+'>'+escH(h.emoji)+' '+escH(h.name)+'</option>';});
+  html+='</select><button class="btn" onclick="calM--;if(calM<0){calM=11;calY--;}renderCalendar()" style="flex:none;padding:.3rem .7rem">◀</button>';
+  html+='<strong id="calLabel">'+new Date(calY,calM).toLocaleDateString('en-IN',{month:'long',year:'numeric'})+'</strong>';
+  html+='<button class="btn" onclick="calM++;if(calM>11){calM=0;calY++;}renderCalendar()" style="flex:none;padding:.3rem .7rem">▶</button></div>';
+  var h=H.habits[calHabitIdx];
+  var first=new Date(calY,calM,1);var last=new Date(calY,calM+1,0);
+  var startDow=first.getDay();var totalDays=last.getDate();
+  var todayStr=new Date().toISOString().split('T')[0];
+  html+='<div class="ht-cal-grid">';
+  ['S','M','T','W','T','F','S'].forEach(function(d){html+='<div class="ht-cal-head">'+d+'</div>';});
+  for(var i=0;i<startDow;i++)html+='<div></div>';
+  for(var d=1;d<=totalDays;d++){
+    var dt=new Date(calY,calM,d);var k=dt.toISOString().split('T')[0];
+    var done=isDone(h,k);var isT=k===todayStr;
+    html+='<div class="ht-cal-cell'+(done?' done':'')+(isT?' today':'')+'" onclick="toggleCalDay('+calHabitIdx+',\''+k+'\')" title="'+k+'">'+d+'</div>';
+  }
+  html+='</div>';
+  document.getElementById('calendarContent').innerHTML=html;
+}
+function toggleCalDay(hi,dateStr){
+  var h=H.habits[hi];if(!h.log)h.log={};
+  if(h.type==='yesno'){if(h.log[dateStr])delete h.log[dateStr];else h.log[dateStr]=true;}
+  else{var cur=h.log[dateStr]||0;if(cur>=(h.target||1))delete h.log[dateStr];else h.log[dateStr]=(h.target||1);}
+  saveHT();renderCalendar();renderQuick();
+}
+
+/* ===== STATS ===== */
+function renderStats(){
+  if(!H.habits.length){document.getElementById('statsContent').innerHTML='<p class="info">Add habits first.</p>';return;}
+  var html='<h3>📊 Stats Dashboard</h3>';
+  /* Best day of week */
+  var dowCounts=[0,0,0,0,0,0,0];var dowTotal=[0,0,0,0,0,0,0];
+  for(var i=0;i<90;i++){var d=new Date();d.setDate(d.getDate()-i);var k=d.toISOString().split('T')[0];var dow=d.getDay();
+    H.habits.forEach(function(h){if(isScheduled(h,k)){dowTotal[dow]++;if(isDone(h,k))dowCounts[dow]++;}});
+  }
+  var bestDow=0;var bestPct=0;dowCounts.forEach(function(c,i){var p=dowTotal[i]?c/dowTotal[i]*100:0;if(p>bestPct){bestPct=p;bestDow=i;}});
+  html+='<div class="ht-card"><strong>Best Day:</strong> '+['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][bestDow]+' ('+Math.round(bestPct)+'% completion)</div>';
+  /* Weekly chart */
+  html+='<h4 style="margin:1rem 0 .3rem">Weekly Completion</h4><canvas id="htWeekChart" width="700" height="180" style="width:100%;max-height:180px;background:var(--card);border-radius:12px"></canvas>';
+  /* Per-habit table */
+  html+='<h4 style="margin:1rem 0 .3rem">Per-Habit Summary</h4><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">';
+  html+='<tr style="border-bottom:1px solid rgba(255,255,255,.1)"><th style="text-align:left;padding:.5rem">Habit</th><th>Streak</th><th>Best</th><th>7d</th><th>30d</th><th>Total</th></tr>';
+  H.habits.forEach(function(h){
+    var total=0;Object.keys(h.log||{}).forEach(function(k){if(isDone(h,k))total++;});
+    html+='<tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:.4rem">'+escH(h.emoji)+' '+escH(h.name)+'</td><td style="text-align:center;color:var(--accent);font-weight:700">'+getStreak(h)+'</td><td style="text-align:center;color:#f59e0b;font-weight:700">'+getLongestStreak(h)+'</td><td style="text-align:center">'+getCompletionRate(h,7)+'%</td><td style="text-align:center">'+getCompletionRate(h,30)+'%</td><td style="text-align:center">'+total+'</td></tr>';
+  });
+  html+='</table></div>';
+  document.getElementById('statsContent').innerHTML=html;
+  drawWeekChart();
+}
+function drawWeekChart(){
+  var canvas=document.getElementById('htWeekChart');if(!canvas)return;
+  var ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth*2;canvas.height=360;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
+  var vals=days.map(function(day){var sched=0;var done=0;H.habits.forEach(function(h){if(isScheduled(h,day)){sched++;if(isDone(h,day))done++;}});return sched?Math.round(done/sched*100):0;});
+  var barW=canvas.width/9;var padB=40;var padT=20;var cH=canvas.height-padB-padT;
+  days.forEach(function(day,i){
+    var x=barW*(i+1);var h=vals[i]/100*cH;
+    var grad=ctx.createLinearGradient(x,canvas.height-padB-h,x,canvas.height-padB);
+    grad.addColorStop(0,'#6366f1');grad.addColorStop(1,'#8b5cf6');
+    ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect(x-barW*0.3,canvas.height-padB-h,barW*0.6,h,8);ctx.fill();
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text2')||'#9494b8';ctx.font='20px sans-serif';ctx.textAlign='center';
+    ctx.fillText(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(day).getDay()],x,canvas.height-10);
+    if(vals[i]>0)ctx.fillText(vals[i]+'%',x,canvas.height-padB-h-8);
+  });
+}
+
+/* ===== DATA ===== */
+function renderData(){
+  var html='<h3>💾 Data Management</h3>';
+  html+='<div class="row"><button class="btn" onclick="exportHT()">📥 Export JSON</button><button class="btn" onclick="document.getElementById(\'htImport\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">📤 Import JSON</button><button class="btn" onclick="resetHT()" style="background:transparent;border:2px solid #ef4444;color:#ef4444">🗑️ Reset All</button></div>';
+  html+='<input type="file" id="htImport" accept=".json" style="display:none" onchange="importHT(event)">';
+  html+='<p class="info" style="margin-top:1rem">Export saves all habits, logs, and settings. Import will replace current data.</p>';
+  document.getElementById('dataContent').innerHTML=html;
+}
+function exportHT(){
+  var blob=new Blob([JSON.stringify(H,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='habit-tracker-'+TODAY+'.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importHT(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();reader.onload=function(ev){
+    try{var data=JSON.parse(ev.target.result);if(data.habits){H=data;saveHT();alert('Imported successfully!');renderHabits();renderQuick();}else alert('Invalid file.');}catch(err){alert('Error: '+err.message);}
+  };reader.readAsText(file);e.target.value='';
+}
+function resetHT(){if(confirm('Delete ALL habit data? This cannot be undone.')){H={habits:[],version:2};saveHT();renderHabits();renderQuick();}}
+
+/* ===== QUICK STATS ===== */
+function renderQuick(){
+  var total=H.habits.length;var completed=0;
+  H.habits.forEach(function(h){if(isDone(h,TODAY))completed++;});
+  var pct=total?Math.round(completed/total*100):0;
+  document.getElementById('quickStats').innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+total+'</div><div class="info" style="font-size:.7rem">Habits</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#22c55e">'+completed+'</div><div class="info" style="font-size:.7rem">Done Today</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700">'+pct+'%</div><div class="info" style="font-size:.7rem">Completion</div></div>';
+}
+
+/* ===== REMINDERS ===== */
+function scheduleReminders(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default'){
+    var hasReminder=H.habits.some(function(h){return!!h.reminderTime;});
+    if(hasReminder)Notification.requestPermission();
+  }
+}
+function checkReminders(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  var now=new Date();var hhmm=(now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  H.habits.forEach(function(h){
+    if(h.reminderTime===hhmm&&isScheduled(h,TODAY)&&!isDone(h,TODAY)){
+      new Notification('Habit Reminder',{body:h.emoji+' '+h.name+' — time to do it!',icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">✅</text></svg>'});
+    }
+  });
+}
+setInterval(checkReminders,60000);
+scheduleReminders();
+
+/* INIT */
+renderHabits();renderQuick();
   </script>
 </body>
 </html>

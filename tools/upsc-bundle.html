@@ -9,85 +9,62 @@
   <meta name="description" content="All UPSC exam tools in one dashboard — study streak, daily planner, quiz stats, exam countdown. Your complete preparation companion!">
   <meta property="og:title" content="UPSC Study Bundle — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/upsc-bundle"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/upsc-bundle"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+  .ub-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+  .ub-tab{padding:.5rem 1rem;border-radius:10px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text2);transition:all .2s}
+  .ub-tab.active,.ub-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ub-panel{display:none}.ub-panel.active{display:block}
+  .ub-tree summary{cursor:pointer;padding:.4rem .6rem;border-radius:8px;font-weight:600;margin:.2rem 0}
+  .ub-tree summary:hover{background:rgba(99,102,241,.1)}
+  .ub-tree details{margin-left:.8rem}
+  .ub-check{display:flex;align-items:center;gap:.5rem;padding:.3rem .6rem;border-radius:6px;font-size:.88rem}
+  .ub-check:hover{background:rgba(99,102,241,.06)}
+  .ub-check input{accent-color:var(--accent);width:16px;height:16px}
+  .ub-pbar{height:6px;background:var(--card);border-radius:4px;overflow:hidden;margin:.3rem 0}
+  .ub-pbar div{height:100%;background:var(--gradient);border-radius:4px;transition:width .3s}
+  .ub-card{background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0}
+  .ub-fc{min-height:140px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;border-radius:12px;background:var(--card);padding:1.5rem;font-size:1rem;border:2px solid transparent;transition:all .2s;user-select:none}
+  .ub-fc:hover{border-color:var(--accent)}
+  .ub-badge{display:inline-block;font-size:.65rem;padding:.15rem .45rem;border-radius:4px;background:rgba(99,102,241,.15);color:var(--accent);margin:.1rem}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🎯 UPSC Study Bundle</div>
     <div class="tool-section">
-      <h1>🎯 UPSC / SSC / Banking — Study Dashboard</h1>
+      <h1>🎯 UPSC Civil Services — Complete Preparation Hub</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Your complete exam preparation command center. Track progress, plan daily goals, and access all tools from one place.</p>
+      <p class="info">Your complete UPSC preparation hub — syllabus tracker, answer writing, current affairs, revision checklist, study timer, flashcards, and more. All data saved locally.</p>
 
-      <!-- Quote of the Day -->
       <div id="quoteBox" style="background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;padding:1.2rem 1.5rem;border-radius:12px;margin:1.5rem 0;text-align:center;font-style:italic"></div>
 
-      <!-- Quick Stats -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin:1.5rem 0">
-        <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:2rem" id="statStreak">0</div><small>🔥 Day Streak</small></div>
-        <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:2rem" id="statQuizzes">0</div><small>📝 Quizzes Taken</small></div>
-        <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:2rem" id="statFlashcards">0</div><small>📚 Cards Reviewed</small></div>
-        <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:2rem" id="statWPM">0</div><small>⌨️ Best WPM</small></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.8rem;margin:1rem 0">
+        <div style="background:var(--card);padding:.8rem;border-radius:12px;text-align:center"><div style="font-size:1.8rem;font-weight:700" id="statStreak">0</div><small>🔥 Streak</small></div>
+        <div style="background:var(--card);padding:.8rem;border-radius:12px;text-align:center"><div style="font-size:1.8rem;font-weight:700" id="statSyllabus">0%</div><small>📋 Syllabus</small></div>
+        <div style="background:var(--card);padding:.8rem;border-radius:12px;text-align:center"><div style="font-size:1.8rem;font-weight:700" id="statAnswers">0</div><small>✍️ Answers</small></div>
+        <div style="background:var(--card);padding:.8rem;border-radius:12px;text-align:center"><div style="font-size:1.8rem;font-weight:700" id="statHours">0</div><small>⏱️ Hours</small></div>
       </div>
 
-      <!-- Exam Countdown -->
-      <div style="background:var(--card);padding:1.2rem;border-radius:12px;margin:1.5rem 0">
-        <h3 style="margin:0 0 .8rem">⏳ Exam Countdown</h3>
-        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center">
-          <select id="examSelect" onchange="updateCountdown()" style="padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);flex:1;min-width:200px">
-            <option value="2025-05-25">UPSC Prelims 2025 (May 25)</option>
-            <option value="2025-09-21">UPSC Mains 2025 (Sep 21)</option>
-            <option value="2025-06-15">SSC CGL 2025 (Jun 15)</option>
-            <option value="2025-03-30">SSC CHSL 2025 (Mar 30)</option>
-            <option value="2025-04-20">IBPS PO 2025 (Apr 20)</option>
-            <option value="2025-08-10">RRB NTPC 2025 (Aug 10)</option>
-          </select>
-          <div id="countdownDisplay" style="font-size:1.5rem;font-weight:bold;color:var(--accent)"></div>
-        </div>
+      <div class="ub-tabs">
+        <div class="ub-tab active" onclick="switchTab('syllabus')">📋 Syllabus</div>
+        <div class="ub-tab" onclick="switchTab('answer')">✍️ Answer Writing</div>
+        <div class="ub-tab" onclick="switchTab('current')">📰 Current Affairs</div>
+        <div class="ub-tab" onclick="switchTab('revision')">📚 Revision</div>
+        <div class="ub-tab" onclick="switchTab('timer')">⏱️ Study Timer</div>
+        <div class="ub-tab" onclick="switchTab('flash')">🃏 Flashcards</div>
+        <div class="ub-tab" onclick="switchTab('backup')">💾 Backup</div>
       </div>
 
-      <!-- Daily Study Planner -->
-      <div style="background:var(--card);padding:1.2rem;border-radius:12px;margin:1.5rem 0">
-        <h3 style="margin:0 0 .8rem">📋 Today's Goals</h3>
-        <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
-          <input id="goalInput" type="text" placeholder="Add a goal for today..." style="flex:1;padding:.5rem .8rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)" onkeydown="if(event.key==='Enter')addGoal()">
-          <button onclick="addGoal()" style="padding:.5rem 1rem;border-radius:8px;background:var(--accent);color:#fff;border:none;cursor:pointer">Add</button>
-        </div>
-        <ul id="goalList" style="list-style:none;padding:0;margin:0"></ul>
-      </div>
-
-      <!-- Tool Categories -->
-      <h2>📚 Study Tools</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:0 0 1.5rem">
-        <a href="/tools/flashcards" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📚 Flashcards</strong><br><small>250+ cards — History, Polity, Geography, Economy</small></a>
-        <a href="/tools/quiz-maker" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📝 Quiz</strong><br><small>201 MCQs — PYQ, Current Affairs, 19 subjects</small></a>
-        <a href="/tools/speed-reader" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📖 Speed Reader</strong><br><small>Read current affairs faster — chunk mode</small></a>
-        <a href="/tools/vocab-builder" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📖 Vocab Builder</strong><br><small>English-Hindi words with quiz mode</small></a>
-        <a href="/tools/formula-sheet" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📐 Formula Sheet</strong><br><small>111 formulas — Math, Physics, Chemistry</small></a>
-      </div>
-
-      <h2>🏋️ Practice</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:0 0 1.5rem">
-        <a href="/tools/typing-test" class="tool-card" style="text-align:left;padding:1.2rem"><strong>⌨️ Typing Test</strong><br><small>Hindi + English — SSC typing prep</small></a>
-        <a href="/tools/quiz-maker" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📄 Previous Year Questions</strong><br><small>Practice PYQs from past exams</small></a>
-        <a href="/tools/quiz-maker" class="tool-card" style="text-align:left;padding:1.2rem"><strong>🎯 Mock Tests</strong><br><small>Full-length timed practice tests</small></a>
-      </div>
-
-      <h2>📅 Planning</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:0 0 1.5rem">
-        <a href="/tools/syllabus-tracker" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📋 Syllabus Tracker</strong><br><small>UPSC/SSC/Banking — track completion %</small></a>
-        <a href="/tools/timetable" class="tool-card" style="text-align:left;padding:1.2rem"><strong>🗓️ Timetable</strong><br><small>Weekly study schedule planner</small></a>
-        <a href="/tools/pomodoro" class="tool-card" style="text-align:left;padding:1.2rem"><strong>⏱️ Pomodoro</strong><br><small>25 min focus sessions + task list</small></a>
-        <a href="/tools/exam-calendar" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📅 Exam Calendar</strong><br><small>25 upcoming exams with countdown</small></a>
-      </div>
-
-      <h2>📂 Resources</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:0 0 1.5rem">
-        <a href="/tools/essay-outline" class="tool-card" style="text-align:left;padding:1.2rem"><strong>📝 Essay Outline</strong><br><small>UPSC mains structure builder</small></a>
-        <a href="/tools/handwriting-maker" class="tool-card" style="text-align:left;padding:1.2rem"><strong>✍️ Handwriting Maker</strong><br><small>Convert text to handwritten pages</small></a>
-        <a href="/tools/notes" class="tool-card" style="text-align:left;padding:1.2rem"><strong>🗒️ Notes</strong><br><small>Quick notes with auto-save</small></a>
-      </div>
+      <div id="panel-syllabus" class="ub-panel active"><div id="syllabusContent"></div></div>
+      <div id="panel-answer" class="ub-panel"><div id="answerContent"></div></div>
+      <div id="panel-current" class="ub-panel"><div id="currentContent"></div></div>
+      <div id="panel-revision" class="ub-panel"><div id="revisionContent"></div></div>
+      <div id="panel-timer" class="ub-panel"><div id="timerContent"></div></div>
+      <div id="panel-flash" class="ub-panel"><div id="flashContent"></div></div>
+      <div id="panel-backup" class="ub-panel"><div id="backupContent"></div></div>
     </div>
+
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">UPSC prep ke saare tools ek dashboard pe? Yahan hai. Current affairs, subject notes, quiz, PYQs — sab organized. Daily thoda thoda karo — consistency hi key hai UPSC mein.</p>
 <ol style="margin-left:1.5rem;line-height:2">
@@ -137,29 +114,323 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-  const quotes=["Success is not final, failure is not fatal — it is the courage to continue that counts.","The only way to do great work is to love what you do.","Hard work beats talent when talent doesn't work hard.","Dream is not that which you see while sleeping, it is something that does not let you sleep.","Discipline is the bridge between goals and accomplishment.","Don't watch the clock; do what it does. Keep going.","The future belongs to those who believe in the beauty of their dreams.","It does not matter how slowly you go as long as you do not stop.","Believe you can and you're halfway there.","Education is the most powerful weapon to change the world."];
-  document.getElementById('quoteBox').textContent='💬 "'+quotes[new Date().getDate()%quotes.length]+'"';
+/* ===== UPSC BUNDLE ADVANCED ===== */
+var UB_KEY='upsc_bundle_v2';
+function loadData(){var d=localStorage.getItem(UB_KEY);if(d){try{return JSON.parse(d)}catch(e){}}return{syllabus:{},answers:[],current:[],revision:{},timerLog:{},version:2};}
+var D=loadData();
+function save(){localStorage.setItem(UB_KEY,JSON.stringify(D));}
 
-  // Streak
-  function getStreak(){const d=JSON.parse(localStorage.getItem('upsc_streak')||'{"count":0,"last":""}');const today=new Date().toDateString();if(d.last===today)return d.count;const yesterday=new Date(Date.now()-864e5).toDateString();if(d.last===yesterday){d.count++;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}if(d.last!==today){d.count=1;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}return d.count;}
-  document.getElementById('statStreak').textContent=getStreak();
+/* Quote */
+var quotes=["Success is not final, failure is not fatal — it is the courage to continue that counts.","The only way to do great work is to love what you do.","Hard work beats talent when talent doesn't work hard.","Dream is not that which you see while sleeping, it is something that does not let you sleep.","Discipline is the bridge between goals and accomplishment.","Don't watch the clock; do what it does. Keep going.","The future belongs to those who believe in the beauty of their dreams.","It does not matter how slowly you go as long as you do not stop.","Believe you can and you're halfway there.","Education is the most powerful weapon to change the world."];
+document.getElementById('quoteBox').textContent='\uD83D\uDCAC "'+quotes[new Date().getDate()%quotes.length]+'"';
 
-  // Stats from other tools
-  document.getElementById('statQuizzes').textContent=localStorage.getItem('quizzesTaken')||localStorage.getItem('quiz_total')||'0';
-  document.getElementById('statFlashcards').textContent=localStorage.getItem('flashcardsReviewed')||localStorage.getItem('fc_reviewed')||'0';
-  document.getElementById('statWPM').textContent=localStorage.getItem('typingBestWPM')||localStorage.getItem('bestWPM')||'0';
+/* Streak */
+function getStreak(){var d=JSON.parse(localStorage.getItem('upsc_streak')||'{"count":0,"last":""}');var today=new Date().toDateString();if(d.last===today)return d.count;var yesterday=new Date(Date.now()-864e5).toDateString();if(d.last===yesterday){d.count++;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}d.count=1;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}
+document.getElementById('statStreak').textContent=getStreak();
 
-  // Countdown
-  function updateCountdown(){const sel=document.getElementById('examSelect');const diff=Math.ceil((new Date(sel.value)-new Date())/(1000*60*60*24));document.getElementById('countdownDisplay').textContent=diff>0?diff+' days left':'Exam passed';}
-  updateCountdown();
+function escH(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function switchTab(t){document.querySelectorAll('.ub-tab').forEach(function(el,i){el.classList.remove('active');});document.querySelectorAll('.ub-panel').forEach(function(p){p.classList.remove('active');});document.getElementById('panel-'+t).classList.add('active');document.querySelectorAll('.ub-tab').forEach(function(el){if(el.textContent.toLowerCase().indexOf(t.substring(0,4))>=0||el.onclick.toString().indexOf("'"+t+"'")>=0)el.classList.add('active');});renderTab(t);}
+function renderTab(t){if(t==='syllabus')renderSyllabus();else if(t==='answer')renderAnswer();else if(t==='current')renderCurrent();else if(t==='revision')renderRevision();else if(t==='timer')renderTimer();else if(t==='flash')renderFlash();else if(t==='backup')renderBackup();updateStats();}
 
-  // Daily Goals
-  const GOAL_KEY='upsc_goals_'+new Date().toISOString().slice(0,10);
-  function loadGoals(){const goals=JSON.parse(localStorage.getItem(GOAL_KEY)||'[]');const ul=document.getElementById('goalList');ul.innerHTML='';goals.forEach((g,i)=>{const li=document.createElement('li');li.style.cssText='padding:.5rem .8rem;background:var(--bg);border-radius:8px;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem';li.innerHTML='<input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGoal('+i+')"><span style="flex:1;'+(g.done?'text-decoration:line-through;opacity:.6':'')+'">'+ g.text+'</span><button onclick="removeGoal('+i+')" style="background:none;border:none;cursor:pointer;color:var(--text2)">✕</button>';ul.appendChild(li);});}
-  function addGoal(){const inp=document.getElementById('goalInput');if(!inp.value.trim())return;const goals=JSON.parse(localStorage.getItem(GOAL_KEY)||'[]');goals.push({text:inp.value.trim(),done:false});localStorage.setItem(GOAL_KEY,JSON.stringify(goals));inp.value='';loadGoals();}
-  function toggleGoal(i){const goals=JSON.parse(localStorage.getItem(GOAL_KEY)||'[]');goals[i].done=!goals[i].done;localStorage.setItem(GOAL_KEY,JSON.stringify(goals));loadGoals();}
-  function removeGoal(i){const goals=JSON.parse(localStorage.getItem(GOAL_KEY)||'[]');goals.splice(i,1);localStorage.setItem(GOAL_KEY,JSON.stringify(goals));loadGoals();}
-  loadGoals();
+/* ===== SYLLABUS DATA ===== */
+var SYLLABUS={
+'Prelims GS Paper I':{
+  'History':['Ancient India','Medieval India','Modern India — 1857 to Independence','Art & Culture','World History basics'],
+  'Geography':['Physical Geography','Indian Geography','World Geography','Climatology','Oceanography'],
+  'Polity':['Constitution — Historical Background','Preamble & Features','Fundamental Rights & DPSP','Union & State Executive','Parliament & State Legislature','Judiciary','Local Governance — Panchayats & Municipalities','Constitutional Bodies','Statutory & Quasi-judicial Bodies'],
+  'Economy':['National Income & GDP','Money & Banking','Fiscal Policy & Budgeting','Agriculture & Food Processing','Industry & Infrastructure','External Sector — Trade & BOP','Poverty, Unemployment & Inclusive Growth'],
+  'Science & Tech':['Physics basics','Chemistry basics','Biology basics','Space Technology — ISRO','Defence Technology','IT & Computers','Biotechnology','Environmental Science'],
+  'Environment':['Ecology & Ecosystem','Biodiversity','Climate Change','Environmental Legislation','Pollution & Waste Management'],
+  'Current Affairs':['National','International','Awards & Honours','Reports & Indices','Government Schemes']
+},
+'Prelims CSAT Paper II':{
+  'Comprehension':['Reading Comprehension','Interpersonal Skills & Communication'],
+  'Logical Reasoning':['Analytical Ability','Logical Reasoning','Puzzles & Seating','Syllogisms','Data Sufficiency'],
+  'Quantitative':['Number System','Algebra','Geometry & Mensuration','Data Interpretation','Ratio, Percentage & Averages']
+},
+'Mains — Essay':{
+  'Essay':['Philosophical/Abstract Topics','Socio-Economic Issues','Political/Governance','Science & Technology','International Relations','Culture & Society']
+},
+'Mains GS Paper I':{
+  'Indian Heritage & Culture':['Salient aspects of Art Forms','Literature','Architecture','Modern Indian History','Freedom Struggle','Post-independence Consolidation'],
+  'World History':['Industrial Revolution','World Wars','Colonization & Decolonization','Political Philosophies — Communism, Capitalism, Socialism'],
+  'Society':['Salient features of Indian Society','Role of Women','Population & Associated Issues','Poverty & Development','Urbanization','Globalization & its effects'],
+  'Geography':['Salient features of Physical Geography','Geophysical Phenomena — Earthquakes, Tsunamis, Volcanoes','Geographical features & Flora/Fauna','Resource Distribution','Critical Geographical features']
+},
+'Mains GS Paper II':{
+  'Governance & Constitution':['Indian Constitution — Evolution, Features, Amendments','Functions & Responsibilities of Union & States','Separation of Powers','Dispute Redressal Mechanisms','Statutory & Regulatory Bodies','Govt policies for development','Welfare Schemes & their effectiveness','Issues related to governance, transparency & accountability'],
+  'Social Justice':['Centre-State Relations','E-governance','Role of Civil Services','SHGs & NGOs','Pressure Groups','Important aspects of governance'],
+  'International Relations':['India & its Neighbourhood','Bilateral & Multilateral Relations','International Organizations — UN, WTO, ASEAN, BRICS','Effect of foreign country policies on India','Indian Diaspora']
+},
+'Mains GS Paper III':{
+  'Economy':['Indian Economy — Planning, Mobilization of Resources','Inclusive Growth & Budgeting','Agriculture — MSP, PDS, Food Security','Major Crops & Irrigation','Effects of Liberalization','Infrastructure — Energy, Ports, Roads, Airports','Investment Models'],
+  'Science & Tech':['Developments & Applications','Indigenization of Technology','Achievements of Indians in S&T','Awareness in IT, Space, Computers, Robotics','Bio-technology & issues'],
+  'Environment':['Conservation & Environmental Pollution','EIA','Disaster Management'],
+  'Internal Security':['Internal Security Challenges','Linkages of Organized Crime with Terrorism','Role of external state & non-state actors','Security Forces & their mandate','Cyber Security','Money Laundering','Border Management']
+},
+'Mains GS Paper IV (Ethics)':{
+  'Ethics & Human Interface':['Essence, Determinants & Consequences of Ethics','Ethics in private & public relationships','Human Values — Lessons from leaders','Role of Family, Society & Educational Institutions','Attitude — Content, Structure, Function','Moral & Political Attitudes','Social Influence & Persuasion'],
+  'Aptitude & Foundational Values':['Aptitude & Foundational Values for Civil Service','Integrity, Impartiality, Non-partisanship','Objectivity, Dedication to Public Service','Empathy, Tolerance, Compassion'],
+  'Emotional Intelligence':['Concept & Utility','Application in Administration & Governance'],
+  'Public Administration Ethics':['Ethical issues in International Relations','Corporate Governance','Probity in Governance','Philosophical basis of Governance','Information Sharing & Transparency','Code of Ethics & Code of Conduct','Citizens Charters','Work Culture','Utilization of Public Funds','Corruption — Challenges']
+}
+};
+
+function renderSyllabus(){
+  var html='<p class="info" style="margin-bottom:1rem">Track your UPSC syllabus coverage. Check topics as you complete them.</p>';
+  var totalTopics=0,checkedTopics=0;
+  Object.keys(SYLLABUS).forEach(function(paper){
+    var paperChecked=0,paperTotal=0;
+    Object.keys(SYLLABUS[paper]).forEach(function(sec){
+      SYLLABUS[paper][sec].forEach(function(t){paperTotal++;totalTopics++;var k=paper+'|'+sec+'|'+t;if(D.syllabus[k]){paperChecked++;checkedTopics++;}});
+    });
+    var pct=paperTotal?Math.round(paperChecked/paperTotal*100):0;
+    html+='<details class="ub-tree" style="margin:.5rem 0;background:var(--card);border-radius:12px;padding:.5rem"><summary style="font-size:1rem"><strong>'+escH(paper)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent)">'+pct+'% ('+paperChecked+'/'+paperTotal+')</span></summary>';
+    html+='<div class="ub-pbar"><div style="width:'+pct+'%"></div></div>';
+    Object.keys(SYLLABUS[paper]).forEach(function(sec){
+      var secChecked=0;SYLLABUS[paper][sec].forEach(function(t){if(D.syllabus[paper+'|'+sec+'|'+t])secChecked++;});
+      html+='<details class="ub-tree"><summary>'+escH(sec)+' ('+secChecked+'/'+SYLLABUS[paper][sec].length+')</summary>';
+      SYLLABUS[paper][sec].forEach(function(t){
+        var k=paper+'|'+sec+'|'+t;
+        html+='<div class="ub-check"><input type="checkbox" '+(D.syllabus[k]?'checked':'')+' onchange="toggleSyl(\''+k.replace(/'/g,"\\'")+'\')""><span>'+escH(t)+'</span></div>';
+      });
+      html+='</details>';
+    });
+    html+='</details>';
+  });
+  var overallPct=totalTopics?Math.round(checkedTopics/totalTopics*100):0;
+  html='<div class="ub-card" style="text-align:center;margin-bottom:1rem"><strong>Overall Syllabus Progress: '+overallPct+'%</strong> ('+checkedTopics+'/'+totalTopics+' topics)<div class="ub-pbar" style="margin-top:.5rem"><div style="width:'+overallPct+'%"></div></div></div>'+html;
+  document.getElementById('syllabusContent').innerHTML=html;
+}
+function toggleSyl(k){if(D.syllabus[k])delete D.syllabus[k];else D.syllabus[k]=true;save();renderSyllabus();updateStats();}
+
+/* ===== ANSWER WRITING ===== */
+function renderAnswer(){
+  var html='<p class="info">Practice UPSC Mains answer writing with word limit awareness.</p>';
+  html+='<div class="ub-card"><label><strong>Question:</strong></label><textarea id="awQuestion" rows="2" placeholder="Type or paste the question here..."></textarea>';
+  html+='<div class="row" style="margin:.5rem 0"><label>Word Limit:</label><select id="awLimit"><option value="150">150 words</option><option value="250">250 words</option></select><button class="btn" onclick="startAWTimer()" style="flex:none">Start Timer</button></div>';
+  html+='<div id="awTimerDisplay" style="font-size:1.3rem;font-weight:700;color:var(--accent);margin:.3rem 0"></div>';
+  html+='<p class="info" style="font-size:.75rem;margin:.3rem 0">💡 Structure: <strong>Introduction</strong> (define/context, 1-2 lines) → <strong>Body</strong> (points with examples) → <strong>Conclusion</strong> (way forward/summary)</p>';
+  html+='<textarea id="awEditor" rows="10" placeholder="Write your answer here..." oninput="updateAWCount()"></textarea>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin:.3rem 0"><span id="awWordCount" style="font-weight:600">0 words</span><button class="btn" onclick="saveAnswer()">Save Answer</button></div></div>';
+  html+='<h3 style="margin-top:1rem">Saved Answers ('+D.answers.length+')</h3>';
+  D.answers.slice().reverse().forEach(function(a,ri){
+    var i=D.answers.length-1-ri;
+    html+='<div class="ub-card"><strong>Q:</strong> '+escH(a.question)+'<br><span class="info">'+a.date+' | '+a.wordCount+' words (limit: '+a.limit+')</span><details><summary style="cursor:pointer;color:var(--accent);font-size:.85rem">View Answer</summary><p style="white-space:pre-wrap;margin-top:.5rem;font-size:.9rem">'+escH(a.answer)+'</p></details><button onclick="deleteAnswer('+i+')" style="font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer;margin-top:.3rem">Delete</button></div>';
+  });
+  document.getElementById('answerContent').innerHTML=html;
+}
+var awTimerInterval=null;var awSeconds=0;
+function startAWTimer(){clearInterval(awTimerInterval);var limit=parseInt(document.getElementById('awLimit').value);awSeconds=0;var maxTime=limit===150?420:600;awTimerInterval=setInterval(function(){awSeconds++;var m=Math.floor(awSeconds/60);var s=awSeconds%60;var el=document.getElementById('awTimerDisplay');if(el){el.textContent=m+':'+(s<10?'0':'')+s;el.style.color=awSeconds>maxTime?'#ef4444':'var(--accent)';}},1000);}
+function updateAWCount(){var text=document.getElementById('awEditor').value.trim();var words=text?text.split(/\s+/).length:0;var limit=parseInt(document.getElementById('awLimit').value);var el=document.getElementById('awWordCount');if(el){el.textContent=words+' / '+limit+' words';el.style.color=words>limit?'#ef4444':words>=limit*0.8?'#f59e0b':'var(--text)';}}
+function saveAnswer(){var q=document.getElementById('awQuestion').value.trim();var a=document.getElementById('awEditor').value.trim();if(!q||!a){alert('Enter both question and answer.');return;}var words=a.split(/\s+/).length;D.answers.push({question:q,answer:a,wordCount:words,limit:parseInt(document.getElementById('awLimit').value),date:new Date().toLocaleDateString('en-IN')});save();clearInterval(awTimerInterval);renderAnswer();}
+function deleteAnswer(i){if(confirm('Delete this answer?')){D.answers.splice(i,1);save();renderAnswer();}}
+
+/* ===== CURRENT AFFAIRS ===== */
+var CA_TAGS=['Polity','Economy','IR','Environment','Sci-Tech','Society','Culture','Defence','Sports'];
+function renderCurrent(){
+  var html='<p class="info">Add dated current affairs notes with tags. Search & filter anytime.</p>';
+  html+='<div class="ub-card"><div class="row"><input type="date" id="caDate" style="flex:1"><select id="caTag" style="flex:1">';
+  CA_TAGS.forEach(function(t){html+='<option value="'+t+'">'+t+'</option>';});
+  html+='</select></div><input type="text" id="caTitle" placeholder="Headline / Title"><textarea id="caNote" rows="3" placeholder="Brief note..."></textarea><button class="btn" onclick="addCA()">Add Note</button></div>';
+  html+='<div class="row" style="margin:.5rem 0"><input type="text" id="caSearch" placeholder="🔍 Search notes..." oninput="renderCAList()" style="flex:2"><select id="caFilterTag" onchange="renderCAList()" style="flex:1"><option value="all">All Tags</option>';
+  CA_TAGS.forEach(function(t){html+='<option value="'+t+'">'+t+'</option>';});
+  html+='</select></div><div class="row"><button class="btn" onclick="exportCA(\'json\')" style="flex:none;font-size:.8rem;padding:.4rem .8rem">Export JSON</button><button class="btn" onclick="exportCA(\'text\')" style="flex:none;font-size:.8rem;padding:.4rem .8rem">Export Text</button></div>';
+  html+='<div id="caList"></div>';
+  document.getElementById('currentContent').innerHTML=html;
+  document.getElementById('caDate').value=new Date().toISOString().split('T')[0];
+  renderCAList();
+}
+function renderCAList(){
+  var q=(document.getElementById('caSearch')||{}).value||'';q=q.toLowerCase();
+  var tag=(document.getElementById('caFilterTag')||{}).value||'all';
+  var filtered=D.current.filter(function(c){if(tag!=='all'&&c.tag!==tag)return false;if(q&&(c.title+' '+c.note+' '+c.tag).toLowerCase().indexOf(q)===-1)return false;return true;});
+  filtered.sort(function(a,b){return b.date.localeCompare(a.date);});
+  var html='<h3 style="margin:.8rem 0">Notes ('+filtered.length+')</h3>';
+  filtered.forEach(function(c,i){
+    var origIdx=D.current.indexOf(c);
+    html+='<div class="ub-card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap"><strong>'+escH(c.title)+'</strong><span class="ub-badge">'+escH(c.tag)+'</span></div><p class="info" style="font-size:.8rem">'+c.date+'</p><p style="font-size:.9rem;white-space:pre-wrap">'+escH(c.note)+'</p><button onclick="deleteCA('+origIdx+')" style="font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer">Delete</button></div>';
+  });
+  var el=document.getElementById('caList');if(el)el.innerHTML=html;
+}
+function addCA(){var date=document.getElementById('caDate').value;var tag=document.getElementById('caTag').value;var title=document.getElementById('caTitle').value.trim();var note=document.getElementById('caNote').value.trim();if(!title){alert('Enter a title.');return;}D.current.push({date:date,tag:tag,title:title,note:note});save();document.getElementById('caTitle').value='';document.getElementById('caNote').value='';renderCAList();}
+function deleteCA(i){if(confirm('Delete this note?')){D.current.splice(i,1);save();renderCAList();}}
+function exportCA(fmt){if(!D.current.length){alert('No notes to export.');return;}var blob;if(fmt==='json'){blob=new Blob([JSON.stringify(D.current,null,2)],{type:'application/json'});}else{var text=D.current.map(function(c){return '['+c.date+'] ['+c.tag+'] '+c.title+'\n'+c.note;}).join('\n\n---\n\n');blob=new Blob([text],{type:'text/plain'});}var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-current-affairs.'+fmt;a.click();URL.revokeObjectURL(a.href);}
+
+/* ===== REVISION CHECKLIST ===== */
+var REVISION_LIST={
+  'History':['NCERT Class 6-12 (Old & New)','Spectrum — Modern India (Rajiv Ahir)','Tamil Nadu Board History','India\'s Struggle for Independence — Bipan Chandra','Art & Culture — Nitin Singhania'],
+  'Polity':['Indian Polity — M. Laxmikanth','NCERT Class 11-12 Political Science','DD Basu — Introduction to Constitution','Important SC Judgments compilation'],
+  'Geography':['NCERT Class 6-12 Geography','Certificate Physical & Human Geography — GC Leong','Oxford Atlas','Geography of India — Majid Husain'],
+  'Economy':['Indian Economy — Ramesh Singh','NCERT Class 11-12 Economics','Economic Survey (latest)','Budget highlights','Sriram IAS Economy notes'],
+  'Environment':['Shankar IAS Environment','NCERT Biology chapters on Ecology','India State of Forest Report','Down to Earth Magazine compilation'],
+  'Science & Tech':['NCERT Science 6-10','Science Reporter Magazine','PIB compilation on S&T','TMH General Studies Manual — S&T section'],
+  'Ethics':['Lexicon for Ethics — Subba Rao & PN Roy Chowdhury','Ethics, Integrity & Aptitude — G Subba Rao','IGNOU BA Ethics Material','Case Studies practice'],
+  'Current Affairs':['The Hindu / Indian Express — Daily newspaper','Yojana Magazine','Kurukshetra Magazine','PRS Legislative Research','PIB daily updates','Monthly CA compilations']
+};
+function renderRevision(){
+  if(!D.revision)D.revision={};
+  var html='<p class="info">Standard book and source list for UPSC preparation. Check off as you complete.</p>';
+  var totalItems=0,checkedItems=0;
+  Object.keys(REVISION_LIST).forEach(function(sub){
+    var subChecked=0;
+    REVISION_LIST[sub].forEach(function(item){totalItems++;var k=sub+'|'+item;if(D.revision[k]){subChecked++;checkedItems++;}});
+    var pct=REVISION_LIST[sub].length?Math.round(subChecked/REVISION_LIST[sub].length*100):0;
+    html+='<details class="ub-tree" style="margin:.4rem 0;background:var(--card);border-radius:10px;padding:.5rem"><summary><strong>'+escH(sub)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent)">'+pct+'%</span></summary>';
+    html+='<div class="ub-pbar"><div style="width:'+pct+'%"></div></div>';
+    REVISION_LIST[sub].forEach(function(item){
+      var k=sub+'|'+item;
+      html+='<div class="ub-check"><input type="checkbox" '+(D.revision[k]?'checked':'')+' onchange="toggleRev(\''+k.replace(/'/g,"\\'")+'\')""><span>'+escH(item)+'</span></div>';
+    });
+    html+='</details>';
+  });
+  var oPct=totalItems?Math.round(checkedItems/totalItems*100):0;
+  html='<div class="ub-card" style="text-align:center"><strong>Revision Progress: '+oPct+'%</strong> ('+checkedItems+'/'+totalItems+')<div class="ub-pbar" style="margin-top:.5rem"><div style="width:'+oPct+'%"></div></div></div>'+html;
+  document.getElementById('revisionContent').innerHTML=html;
+}
+function toggleRev(k){if(D.revision[k])delete D.revision[k];else D.revision[k]=true;save();renderRevision();}
+
+/* ===== STUDY TIMER ===== */
+var timerRunning=false;var timerStart=0;var timerElapsed=0;var timerInterval=null;
+function renderTimer(){
+  if(!D.timerLog)D.timerLog={};
+  var html='<p class="info">Log study hours by subject. See weekly progress.</p>';
+  html+='<div class="ub-card" style="text-align:center"><div id="timerDisplay" style="font-size:2.5rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">00:00:00</div>';
+  html+='<select id="timerSubject" style="margin:.5rem 0;max-width:200px"><option>History</option><option>Polity</option><option>Geography</option><option>Economy</option><option>Science & Tech</option><option>Environment</option><option>Ethics</option><option>Current Affairs</option><option>CSAT</option><option>Essay</option><option>Optional</option></select>';
+  html+='<div class="row" style="justify-content:center;margin-top:.5rem"><button class="btn" id="timerBtn" onclick="toggleTimer()">▶ Start</button><button class="btn" onclick="resetTimer()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">Reset</button><button class="btn" onclick="logTime()" style="flex:none">Log Session</button></div></div>';
+  html+='<h3 style="margin:1rem 0 .5rem">📊 This Week</h3><canvas id="timerChart" width="700" height="200" style="width:100%;max-height:200px;background:var(--card);border-radius:12px"></canvas>';
+  html+='<h3 style="margin:1rem 0 .5rem">Recent Logs</h3>';
+  var keys=Object.keys(D.timerLog).sort().reverse().slice(0,14);
+  keys.forEach(function(day){
+    var entries=D.timerLog[day];
+    var totalMin=0;entries.forEach(function(e){totalMin+=e.minutes;});
+    html+='<div class="ub-card"><strong>'+day+'</strong> — <span style="color:var(--accent)">'+Math.round(totalMin)+' min</span>';
+    entries.forEach(function(e){html+='<br><span class="ub-badge">'+escH(e.subject)+'</span> '+e.minutes+' min';});
+    html+='</div>';
+  });
+  document.getElementById('timerContent').innerHTML=html;
+  drawTimerChart();
+  if(timerRunning)tickTimer();
+}
+function toggleTimer(){
+  if(timerRunning){clearInterval(timerInterval);timerElapsed+=(Date.now()-timerStart);timerRunning=false;var btn=document.getElementById('timerBtn');if(btn)btn.textContent='▶ Start';}
+  else{timerStart=Date.now();timerRunning=true;var btn=document.getElementById('timerBtn');if(btn)btn.textContent='⏸ Pause';timerInterval=setInterval(tickTimer,1000);}
+}
+function tickTimer(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var s=Math.floor(total/1000);var h=Math.floor(s/3600);var m=Math.floor((s%3600)/60);var sec=s%60;var el=document.getElementById('timerDisplay');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;}
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerElapsed=0;timerStart=0;var el=document.getElementById('timerDisplay');if(el)el.textContent='00:00:00';var btn=document.getElementById('timerBtn');if(btn)btn.textContent='▶ Start';}
+function logTime(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var minutes=Math.round(total/60000);if(minutes<1){alert('Timer too short to log.');return;}var subject=document.getElementById('timerSubject').value;var today=new Date().toISOString().split('T')[0];if(!D.timerLog[today])D.timerLog[today]=[];D.timerLog[today].push({subject:subject,minutes:minutes});save();resetTimer();renderTimer();}
+function drawTimerChart(){
+  var canvas=document.getElementById('timerChart');if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth*2;canvas.height=400;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
+  var vals=days.map(function(day){var entries=D.timerLog[day]||[];var total=0;entries.forEach(function(e){total+=e.minutes;});return total;});
+  var maxVal=Math.max.apply(null,vals.concat([60]));
+  var barW=canvas.width/9;var padBottom=40;var padTop=20;var chartH=canvas.height-padBottom-padTop;
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text2')||'#9494b8';ctx.font='20px sans-serif';ctx.textAlign='center';
+  days.forEach(function(day,i){
+    var x=barW*(i+1);var h=vals[i]/maxVal*chartH;
+    var grad=ctx.createLinearGradient(x,canvas.height-padBottom-h,x,canvas.height-padBottom);
+    grad.addColorStop(0,'#6366f1');grad.addColorStop(1,'#8b5cf6');
+    ctx.fillStyle=grad;
+    ctx.beginPath();ctx.roundRect(x-barW*0.3,canvas.height-padBottom-h,barW*0.6,h,8);ctx.fill();
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text2')||'#9494b8';
+    var label=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(day).getDay()];
+    ctx.fillText(label,x,canvas.height-10);
+    if(vals[i]>0)ctx.fillText(vals[i]+'m',x,canvas.height-padBottom-h-8);
+  });
+}
+
+/* ===== FLASHCARDS ===== */
+var FLASHCARDS=[
+  {q:'Article 1',a:'Name and territory of the Union — "India, that is Bharat, shall be a Union of States"'},
+  {q:'Article 14',a:'Equality before law — The State shall not deny to any person equality before the law or equal protection of the laws'},
+  {q:'Article 15',a:'Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth'},
+  {q:'Article 16',a:'Equality of opportunity in matters of public employment'},
+  {q:'Article 17',a:'Abolition of Untouchability'},
+  {q:'Article 19',a:'Protection of 6 rights — speech, assembly, association, movement, residence, profession'},
+  {q:'Article 21',a:'Protection of life and personal liberty — No person shall be deprived of his life or personal liberty except according to procedure established by law'},
+  {q:'Article 21A',a:'Right to Education — Free and compulsory education for children aged 6-14 (added by 86th Amendment, 2002)'},
+  {q:'Article 32',a:'Right to Constitutional Remedies — Dr. Ambedkar called it "the heart and soul of the Constitution"'},
+  {q:'Article 44',a:'Uniform Civil Code — The State shall endeavour to secure a UCC for citizens throughout India'},
+  {q:'Article 51A',a:'Fundamental Duties of citizens (added by 42nd Amendment, 1976) — originally 10, now 11'},
+  {q:'Article 72',a:'Power of President to grant pardons, reprieves, respites, remissions, or commute sentences'},
+  {q:'Article 110',a:'Definition of Money Bill'},
+  {q:'Article 123',a:'Power of President to promulgate Ordinances during recess of Parliament'},
+  {q:'Article 143',a:'Power of President to consult Supreme Court (Advisory Jurisdiction)'},
+  {q:'Article 200',a:'Governor\'s assent to Bills — may assent, withhold, return, or reserve for President'},
+  {q:'Article 226',a:'Power of High Courts to issue writs for enforcement of Fundamental Rights and other purposes'},
+  {q:'Article 243',a:'Panchayati Raj — Gram Sabha, 3-tier system (added by 73rd Amendment, 1992)'},
+  {q:'Article 280',a:'Finance Commission — constituted by President every 5 years'},
+  {q:'Article 300A',a:'Right to Property — No person shall be deprived of property save by authority of law (44th Amendment made it legal right, not fundamental)'},
+  {q:'Article 312',a:'All India Services — Rajya Sabha can create new All India Services by 2/3 majority'},
+  {q:'Article 324',a:'Election Commission — Superintendence, direction & control of elections'},
+  {q:'Article 352',a:'National Emergency — President can proclaim on written advice of Cabinet'},
+  {q:'Article 356',a:'President\'s Rule in States (State Emergency)'},
+  {q:'Article 360',a:'Financial Emergency — never imposed so far'},
+  {q:'Article 368',a:'Power of Parliament to amend the Constitution'},
+  {q:'Article 370',a:'Special provisions for J&K — effectively abrogated in August 2019'},
+  {q:'1st Schedule',a:'Names of States and Union Territories — currently 28 States and 8 UTs'},
+  {q:'7th Schedule',a:'Union List (98), State List (59), Concurrent List (52) — division of powers'},
+  {q:'8th Schedule',a:'22 scheduled languages recognized by the Constitution'},
+  {q:'9th Schedule',a:'Acts placed here are immune from judicial review (added by 1st Amendment, 1951)'},
+  {q:'10th Schedule',a:'Anti-defection provisions (added by 52nd Amendment, 1985)'},
+  {q:'12th Schedule',a:'Powers of Municipalities (added by 74th Amendment, 1992)'},
+  {q:'42nd Amendment (1976)',a:'Called "Mini Constitution" — added DPSP, Fundamental Duties, changed Preamble (Socialist, Secular, Integrity)'},
+  {q:'44th Amendment (1978)',a:'Reversed many 42nd Amendment changes — Right to Property removed from FRs, internal emergency only on armed rebellion'},
+  {q:'73rd Amendment (1992)',a:'Constitutional status to Panchayati Raj — 3-tier system, 1/3 reservation for women, 5-year term'},
+  {q:'74th Amendment (1992)',a:'Constitutional status to Urban Local Bodies — Municipalities, Nagar Panchayats, Municipal Corporations'},
+  {q:'86th Amendment (2002)',a:'Right to Education — Article 21A, free and compulsory education for 6-14 age group'},
+  {q:'101st Amendment (2016)',a:'Goods and Services Tax (GST) — One Nation One Tax'},
+  {q:'103rd Amendment (2019)',a:'10% EWS reservation in education and government jobs'}
+];
+var fcIndex=0;var fcFlipped=false;
+function renderFlash(){
+  var card=FLASHCARDS[fcIndex];
+  var html='<p class="info">Polity flashcards — Articles, Schedules & Amendments. Click to flip.</p>';
+  html+='<div style="text-align:center;margin:.5rem 0"><span style="color:var(--accent);font-weight:600">'+(fcIndex+1)+' / '+FLASHCARDS.length+'</span></div>';
+  html+='<div class="ub-fc" onclick="flipFC()" id="fcCard"><div style="font-size:1.2rem;font-weight:700">'+(fcFlipped?escH(card.a):'❓ '+escH(card.q))+'</div></div>';
+  html+='<div class="row" style="justify-content:center;margin-top:.8rem"><button class="btn" onclick="prevFC()">◀ Prev</button><button class="btn" onclick="flipFC()">🔄 Flip</button><button class="btn" onclick="nextFC()">Next ▶</button></div>';
+  html+='<div style="text-align:center;margin-top:.5rem"><button class="btn" onclick="shuffleFC()" style="background:transparent;border:2px solid var(--accent);color:var(--accent);font-size:.8rem">🔀 Shuffle</button></div>';
+  document.getElementById('flashContent').innerHTML=html;
+}
+function flipFC(){fcFlipped=!fcFlipped;renderFlash();}
+function nextFC(){fcIndex=(fcIndex+1)%FLASHCARDS.length;fcFlipped=false;renderFlash();}
+function prevFC(){fcIndex=(fcIndex-1+FLASHCARDS.length)%FLASHCARDS.length;fcFlipped=false;renderFlash();}
+function shuffleFC(){for(var i=FLASHCARDS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=FLASHCARDS[i];FLASHCARDS[i]=FLASHCARDS[j];FLASHCARDS[j]=t;}fcIndex=0;fcFlipped=false;renderFlash();}
+
+/* ===== BACKUP ===== */
+function renderBackup(){
+  var html='<p class="info">Export or import all your UPSC bundle data as a single JSON file.</p>';
+  html+='<div class="row"><button class="btn" onclick="exportAll()">📥 Export All Data</button><button class="btn" onclick="document.getElementById(\'importFile\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">📤 Import Data</button></div>';
+  html+='<input type="file" id="importFile" accept=".json" style="display:none" onchange="importAll(event)">';
+  html+='<p class="info" style="margin-top:1rem">Data includes: syllabus progress, saved answers, current affairs notes, revision checklist, and study timer logs.</p>';
+  document.getElementById('backupContent').innerHTML=html;
+}
+function exportAll(){
+  var blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-bundle-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importAll(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();reader.onload=function(ev){
+    try{var imported=JSON.parse(ev.target.result);if(typeof imported.syllabus==='object'){D=imported;save();alert('Data imported successfully!');renderTab('syllabus');switchTab('syllabus');}else{alert('Invalid backup file.');}}catch(err){alert('Error reading file: '+err.message);}
+  };reader.readAsText(file);e.target.value='';
+}
+
+/* ===== STATS ===== */
+function updateStats(){
+  var totalTopics=0,checkedTopics=0;
+  Object.keys(SYLLABUS).forEach(function(p){Object.keys(SYLLABUS[p]).forEach(function(s){SYLLABUS[p][s].forEach(function(t){totalTopics++;if(D.syllabus[p+'|'+s+'|'+t])checkedTopics++;});});});
+  document.getElementById('statSyllabus').textContent=totalTopics?Math.round(checkedTopics/totalTopics*100)+'%':'0%';
+  document.getElementById('statAnswers').textContent=D.answers.length;
+  var totalMin=0;Object.keys(D.timerLog||{}).forEach(function(day){(D.timerLog[day]||[]).forEach(function(e){totalMin+=e.minutes;});});
+  document.getElementById('statHours').textContent=Math.round(totalMin/60);
+}
+
+/* INIT */
+renderSyllabus();updateStats();
   </script>
 </body>
 </html>

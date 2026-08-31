@@ -9,24 +9,70 @@
   <meta name="description" content="All Math, Physics & Chemistry formulas in one place. Searchable, organized by topic. Bookmark for exam day. No more forgetting formulas!">
   <meta property="og:title" content="Formula Sheet — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/formula-sheet"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/formula-sheet"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<style>
+.fs-formula{background:var(--card);padding:.7rem 1rem;border-radius:10px;margin:.35rem 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem;border:1px solid rgba(255,255,255,.04);transition:border-color .2s}
+.fs-formula:hover{border-color:var(--accent)}
+.fs-formula-name{font-weight:600;flex:1;min-width:120px}
+.fs-formula-expr{font-family:'Cascadia Code','Fira Code',monospace;color:var(--accent);flex:2;min-width:150px;text-align:right;line-height:1.6;word-break:break-word}
+.fs-actions{display:flex;gap:.3rem;flex-shrink:0}
+.fs-actions button{background:none;border:1px solid rgba(255,255,255,.1);color:var(--text2);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:.75rem;transition:all .2s}
+.fs-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.fs-section{margin-bottom:.5rem}
+.fs-section-header{background:var(--surface);padding:.6rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,.04);transition:all .2s;user-select:none}
+.fs-section-header:hover{border-color:var(--accent)}
+.fs-section-header h3{margin:0;font-size:1rem;font-weight:600}
+.fs-section-body{overflow:hidden;transition:max-height .3s ease}
+.fs-tabs{display:flex;gap:6px;margin-bottom:.8rem;flex-wrap:wrap}
+.fs-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px}
+.fs-frac-num{border-bottom:1.5px solid var(--accent);padding:0 4px 2px;font-size:.85em}
+.fs-frac-den{padding:2px 4px 0;font-size:.85em}
+.fs-fotd{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:1.2rem;margin-bottom:1rem;text-align:center}
+.fs-fotd-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;margin-bottom:.4rem}
+.fs-highlight{background:rgba(99,102,241,.2);border-radius:3px;padding:0 2px}
+@media print{
+  nav,#themeToggle,.fs-actions button:not(.fs-print-show),.fs-tabs,.btn,footer,.breadcrumb,.tool-section:not(.fs-main),.info,.fs-fotd,#fsSearch,.tools-grid,#fsBookmarkView,details{display:none!important}
+  .fs-formula{break-inside:avoid;border:1px solid #ccc!important;background:#fff!important;color:#000!important}
+  .fs-formula-expr{color:#333!important}
+  .fs-section-header{background:#f5f5f5!important;color:#000!important;break-after:avoid}
+  body{background:#fff!important;color:#000!important}
+  .tool-section{box-shadow:none!important;border:none!important;background:#fff!important}
+  .fs-section-body{max-height:none!important;display:block!important}
+}
+</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 📐 Formula Sheet</div>
-    <div class="tool-section">
+    <div class="tool-section fs-main">
       <h1>📐 Formula Sheet & Quick Reference</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Search formulas for Math, Physics, Chemistry. Bookmark this page for quick revision!</p>
-      <input type="text" id="search" placeholder="🔍 Search formulas... (e.g. area, velocity, pH)" oninput="filter()" style="margin-bottom:.5rem">
-      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap">
-        <button class="btn" onclick="show('all')">All</button>
-        <button class="btn btn-outline" onclick="show('math')">📐 Math</button>
-        <button class="btn btn-outline" onclick="show('physics')">⚡ Physics</button>
-        <button class="btn btn-outline" onclick="show('chemistry')">🧪 Chemistry</button>
+      <p class="info">Search formulas for Math, Physics, Chemistry & Aptitude. Bookmark favourites. Print for revision!</p>
+
+      <!-- Formula of the Day -->
+      <div class="fs-fotd" id="fsFotd"></div>
+
+      <!-- Search -->
+      <input type="text" id="fsSearch" placeholder="🔍 Search formulas... (e.g. quadratic, velocity, pH, profit)" oninput="fsFilter()" style="margin-bottom:.5rem">
+
+      <!-- Subject Tabs -->
+      <div class="fs-tabs">
+        <button class="btn" id="tabAll" onclick="fsShowSub('all')">All</button>
+        <button class="btn btn-outline" id="tabMath" onclick="fsShowSub('math')">📐 Math</button>
+        <button class="btn btn-outline" id="tabPhysics" onclick="fsShowSub('physics')">⚡ Physics</button>
+        <button class="btn btn-outline" id="tabChemistry" onclick="fsShowSub('chemistry')">🧪 Chemistry</button>
+        <button class="btn btn-outline" id="tabAptitude" onclick="fsShowSub('aptitude')">🧠 Aptitude</button>
+        <button class="btn btn-outline" id="tabBookmarks" onclick="fsShowSub('bookmarks')">⭐ Bookmarks</button>
       </div>
-      <div id="formulas"></div>
-      <div class="row" style="margin-top:1rem"><button class="btn btn-outline" onclick="window.print()">🖨️ Print This Page</button></div>
+
+      <!-- Formulas Container -->
+      <div id="fsFormulas"></div>
+
+      <!-- Print Options -->
+      <div class="row" style="margin-top:1rem">
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Print All</button>
+        <button class="btn btn-outline" onclick="fsPrintBookmarks()">🖨️ Print Bookmarks Only</button>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Exam mein formula bhool gaye? Sab ek jagah dekho. Physics, Chemistry, Maths — topic wise organized. Last minute revision ke liye perfect hai.</p>
@@ -87,41 +133,473 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var data=[
-{s:"math",t:"Algebra",f:[["Quadratic Formula","x = (-b ± √(b²-4ac)) / 2a"],["(a+b)²","a² + 2ab + b²"],["(a-b)²","a² - 2ab + b²"],["a²-b²","(a+b)(a-b)"],["(a+b)³","a³ + 3a²b + 3ab² + b³"],["Sum of AP","S = n/2 × (2a + (n-1)d)"],["Sum of GP","S = a(rⁿ-1)/(r-1)"],["nth term AP","aₙ = a + (n-1)d"],["Logarithm","log(ab) = log a + log b"],["log(a/b)","log a - log b"]]},
-{s:"math",t:"Geometry",f:[["Area of Circle","A = πr²"],["Circumference","C = 2πr"],["Area of Triangle","A = ½ × base × height"],["Heron's Formula","A = √(s(s-a)(s-b)(s-c))"],["Area of Rectangle","A = length × width"],["Area of Trapezium","A = ½(a+b) × h"],["Volume of Sphere","V = 4/3 × πr³"],["Volume of Cylinder","V = πr²h"],["Volume of Cone","V = 1/3 × πr²h"],["Pythagoras","a² + b² = c²"]]},
-{s:"math",t:"Trigonometry",f:[["sin²θ + cos²θ","= 1"],["1 + tan²θ","= sec²θ"],["1 + cot²θ","= cosec²θ"],["sin(A+B)","sinA cosB + cosA sinB"],["cos(A+B)","cosA cosB - sinA sinB"],["sin 2A","2 sinA cosA"],["cos 2A","cos²A - sin²A"],["tan 2A","2tanA / (1-tan²A)"]]},
-{s:"physics",t:"Mechanics",f:[["Velocity","v = u + at"],["Displacement","s = ut + ½at²"],["v² - u²","= 2as"],["Force","F = ma"],["Momentum","p = mv"],["Work","W = F × d × cosθ"],["Kinetic Energy","KE = ½mv²"],["Potential Energy","PE = mgh"],["Power","P = W/t"],["Gravitational Force","F = Gm₁m₂/r²"]]},
-{s:"physics",t:"Electricity",f:[["Ohm's Law","V = IR"],["Power","P = VI = I²R = V²/R"],["Resistance in Series","R = R₁ + R₂ + R₃"],["Resistance in Parallel","1/R = 1/R₁ + 1/R₂"],["Coulomb's Law","F = kq₁q₂/r²"],["Electric Field","E = F/q = kQ/r²"],["Capacitance","C = Q/V"],["Energy in Capacitor","E = ½CV²"]]},
-{s:"physics",t:"Waves & Optics",f:[["Wave Speed","v = fλ"],["Snell's Law","n₁ sinθ₁ = n₂ sinθ₂"],["Mirror Formula","1/f = 1/v + 1/u"],["Lens Formula","1/f = 1/v - 1/u"],["Magnification","m = -v/u = h'/h"],["Speed of Light","c = 3 × 10⁸ m/s"]]},
-{s:"chemistry",t:"General Chemistry",f:[["Moles","n = mass / molar mass"],["Ideal Gas Law","PV = nRT"],["Molarity","M = moles / volume(L)"],["pH","pH = -log[H⁺]"],["pOH","pOH = -log[OH⁻]"],["pH + pOH","= 14"],["Density","ρ = mass / volume"],["Avogadro's Number","6.022 × 10²³"]]},
-{s:"chemistry",t:"Electrochemistry",f:[["Nernst Equation","E = E° - (RT/nF)lnQ"],["Faraday's Law","m = (M × I × t)/(n × F)"],["Faraday Constant","F = 96485 C/mol"]]},
-{s:"chemistry",t:"Thermodynamics",f:[["First Law","ΔU = q + w"],["Enthalpy","H = U + PV"],["Gibbs Free Energy","ΔG = ΔH - TΔS"],["If ΔG < 0","Reaction is spontaneous"],["Hess's Law","ΔH(total) = Σ ΔH(steps)"]]}
-,
-{s:"math",t:"Calculus",f:[["Derivative of xⁿ","nxⁿ⁻¹"],["Derivative of sin x","cos x"],["Derivative of cos x","-sin x"],["Derivative of eˣ","eˣ"],["Derivative of ln x","1/x"],["∫xⁿ dx","xⁿ⁺¹/(n+1) + C"],["∫sin x dx","-cos x + C"],["∫cos x dx","sin x + C"],["∫eˣ dx","eˣ + C"],["∫1/x dx","ln|x| + C"],["Chain Rule","d/dx[f(g(x))] = f'(g(x)) × g'(x)"],["Product Rule","d/dx[uv] = u'v + uv'"]]},
-{s:"math",t:"Statistics",f:[["Mean","Sum of values / Number of values"],["Median","Middle value when sorted"],["Mode","Most frequent value"],["Variance","Σ(x - mean)² / n"],["Standard Deviation","√Variance"],["Range","Max - Min"]]},
-{s:"physics",t:"Modern Physics",f:[["E = mc²","Energy-mass equivalence"],["E = hf","Photon energy (h = Planck constant)"],["de Broglie wavelength","λ = h/mv"],["Radioactive decay","N = N₀ × e^(-λt)"],["Half-life","t½ = 0.693/λ"],["Photoelectric: KE","KE = hf - φ (work function)"]]},
-{s:"physics",t:"Thermodynamics",f:[["PV = nRT","Ideal gas law"],["Q = mcΔT","Heat energy"],["Efficiency","η = W/Q × 100%"],["Carnot efficiency","η = 1 - T₂/T₁"],["Entropy change","ΔS = Q/T"]]},
-{s:"chemistry",t:"Organic Chemistry",f:[["Methane","CH₄"],["Ethanol","C₂H₅OH"],["Acetic Acid","CH₃COOH"],["Glucose","C₆H₁₂O₆"],["Benzene","C₆H₆"],["General Alkane","CₙH₂ₙ₊₂"],["General Alkene","CₙH₂ₙ"],["General Alkyne","CₙH₂ₙ₋₂"]]},
-{s:"chemistry",t:"Atomic Structure",f:[["Atomic number (Z)","Number of protons"],["Mass number (A)","Protons + Neutrons"],["Isotopes","Same Z, different A"],["Electron config order","1s 2s 2p 3s 3p 4s 3d 4p 5s 4d 5p 6s"],["Max electrons in shell","2n²"],["Heisenberg Uncertainty","Δx × Δp ≥ h/4π"]]}
+/* ===== FORMULA DATABASE ===== */
+var DB = [
+/* ---- MATH: Algebra ---- */
+{s:"math",t:"Algebra",n:"Quadratic Formula",f:"x = (-b \u00b1 \u221a(b\u00b2\u22124ac)) / 2a"},
+{s:"math",t:"Algebra",n:"(a+b)\u00b2",f:"a\u00b2 + 2ab + b\u00b2"},
+{s:"math",t:"Algebra",n:"(a\u2212b)\u00b2",f:"a\u00b2 \u2212 2ab + b\u00b2"},
+{s:"math",t:"Algebra",n:"a\u00b2 \u2212 b\u00b2",f:"(a+b)(a\u2212b)"},
+{s:"math",t:"Algebra",n:"(a+b)\u00b3",f:"a\u00b3 + 3a\u00b2b + 3ab\u00b2 + b\u00b3"},
+{s:"math",t:"Algebra",n:"(a\u2212b)\u00b3",f:"a\u00b3 \u2212 3a\u00b2b + 3ab\u00b2 \u2212 b\u00b3"},
+{s:"math",t:"Algebra",n:"a\u00b3 + b\u00b3",f:"(a+b)(a\u00b2 \u2212 ab + b\u00b2)"},
+{s:"math",t:"Algebra",n:"a\u00b3 \u2212 b\u00b3",f:"(a\u2212b)(a\u00b2 + ab + b\u00b2)"},
+{s:"math",t:"Algebra",n:"Discriminant",f:"D = b\u00b2 \u2212 4ac"},
+{s:"math",t:"Algebra",n:"Sum of roots",f:"\u2212b/a"},
+{s:"math",t:"Algebra",n:"Product of roots",f:"c/a"},
+{s:"math",t:"Algebra",n:"Logarithm: log(ab)",f:"log a + log b"},
+{s:"math",t:"Algebra",n:"Logarithm: log(a/b)",f:"log a \u2212 log b"},
+{s:"math",t:"Algebra",n:"log(a\u207f)",f:"n \u00d7 log a"},
+{s:"math",t:"Algebra",n:"Change of Base",f:"log\u2090b = log b / log a"},
+
+/* ---- MATH: Progressions ---- */
+{s:"math",t:"Progressions (AP/GP)",n:"nth term of AP",f:"a\u2099 = a + (n\u22121)d"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of AP",f:"S\u2099 = n/2 \u00d7 (2a + (n\u22121)d)"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of AP (first & last)",f:"S\u2099 = n/2 \u00d7 (a + l)"},
+{s:"math",t:"Progressions (AP/GP)",n:"nth term of GP",f:"a\u2099 = ar\u207f\u207b\u00b9"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of GP (r\u22601)",f:"S\u2099 = a(r\u207f \u2212 1)/(r \u2212 1)"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of infinite GP (|r|<1)",f:"S = a/(1 \u2212 r)"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of first n naturals",f:"n(n+1)/2"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of squares",f:"n(n+1)(2n+1)/6"},
+{s:"math",t:"Progressions (AP/GP)",n:"Sum of cubes",f:"[n(n+1)/2]\u00b2"},
+
+/* ---- MATH: Mensuration 2D ---- */
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Circle",f:"\u03c0r\u00b2"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Circumference of Circle",f:"2\u03c0r"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Triangle",f:"\u00bd \u00d7 base \u00d7 height"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Heron\u2019s Formula",f:"\u221a(s(s\u2212a)(s\u2212b)(s\u2212c)), s=(a+b+c)/2"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Equilateral Triangle",f:"(\u221a3/4) \u00d7 a\u00b2"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Rectangle",f:"length \u00d7 width"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Parallelogram",f:"base \u00d7 height"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Trapezium",f:"\u00bd(a+b) \u00d7 h"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Area of Rhombus",f:"\u00bd \u00d7 d\u2081 \u00d7 d\u2082"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Sector Area",f:"(\u03b8/360) \u00d7 \u03c0r\u00b2"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Arc Length",f:"(\u03b8/360) \u00d7 2\u03c0r"},
+{s:"math",t:"Mensuration \u2014 2D",n:"Pythagoras Theorem",f:"a\u00b2 + b\u00b2 = c\u00b2"},
+
+/* ---- MATH: Mensuration 3D ---- */
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Sphere",f:"(4/3)\u03c0r\u00b3"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Surface Area of Sphere",f:"4\u03c0r\u00b2"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Cylinder",f:"\u03c0r\u00b2h"},
+{s:"math",t:"Mensuration \u2014 3D",n:"TSA of Cylinder",f:"2\u03c0r(r+h)"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Cone",f:"(1/3)\u03c0r\u00b2h"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Slant Height of Cone",f:"l = \u221a(r\u00b2 + h\u00b2)"},
+{s:"math",t:"Mensuration \u2014 3D",n:"CSA of Cone",f:"\u03c0rl"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Cube",f:"a\u00b3"},
+{s:"math",t:"Mensuration \u2014 3D",n:"TSA of Cube",f:"6a\u00b2"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Cuboid",f:"l \u00d7 b \u00d7 h"},
+{s:"math",t:"Mensuration \u2014 3D",n:"TSA of Cuboid",f:"2(lb + bh + lh)"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Volume of Hemisphere",f:"(2/3)\u03c0r\u00b3"},
+{s:"math",t:"Mensuration \u2014 3D",n:"Frustum Volume",f:"(\u03c0h/3)(R\u00b2 + r\u00b2 + Rr)"},
+
+/* ---- MATH: Trigonometry ---- */
+{s:"math",t:"Trigonometry",n:"sin\u00b2\u03b8 + cos\u00b2\u03b8",f:"= 1"},
+{s:"math",t:"Trigonometry",n:"1 + tan\u00b2\u03b8",f:"= sec\u00b2\u03b8"},
+{s:"math",t:"Trigonometry",n:"1 + cot\u00b2\u03b8",f:"= cosec\u00b2\u03b8"},
+{s:"math",t:"Trigonometry",n:"sin(A+B)",f:"sinA cosB + cosA sinB"},
+{s:"math",t:"Trigonometry",n:"cos(A+B)",f:"cosA cosB \u2212 sinA sinB"},
+{s:"math",t:"Trigonometry",n:"sin 2A",f:"2 sinA cosA"},
+{s:"math",t:"Trigonometry",n:"cos 2A",f:"cos\u00b2A \u2212 sin\u00b2A = 2cos\u00b2A \u2212 1"},
+{s:"math",t:"Trigonometry",n:"tan 2A",f:"2tanA / (1 \u2212 tan\u00b2A)"},
+{s:"math",t:"Trigonometry",n:"sin(90\u00b0\u2212\u03b8)",f:"cos\u03b8"},
+{s:"math",t:"Trigonometry",n:"cosA cosB",f:"\u00bd[cos(A\u2212B) + cos(A+B)]"},
+
+/* ---- MATH: Coordinate Geometry ---- */
+{s:"math",t:"Coordinate Geometry",n:"Distance Formula",f:"\u221a[(x\u2082\u2212x\u2081)\u00b2 + (y\u2082\u2212y\u2081)\u00b2]"},
+{s:"math",t:"Coordinate Geometry",n:"Midpoint",f:"((x\u2081+x\u2082)/2, (y\u2081+y\u2082)/2)"},
+{s:"math",t:"Coordinate Geometry",n:"Section Formula (m:n)",f:"(mx\u2082+nx\u2081)/(m+n), (my\u2082+ny\u2081)/(m+n)"},
+{s:"math",t:"Coordinate Geometry",n:"Slope",f:"m = (y\u2082\u2212y\u2081)/(x\u2082\u2212x\u2081)"},
+{s:"math",t:"Coordinate Geometry",n:"Equation of Line",f:"y \u2212 y\u2081 = m(x \u2212 x\u2081)"},
+{s:"math",t:"Coordinate Geometry",n:"Slope-Intercept Form",f:"y = mx + c"},
+{s:"math",t:"Coordinate Geometry",n:"Area of Triangle (vertices)",f:"\u00bd|x\u2081(y\u2082\u2212y\u2083) + x\u2082(y\u2083\u2212y\u2081) + x\u2083(y\u2081\u2212y\u2082)|"},
+
+/* ---- MATH: P&C / Probability ---- */
+{s:"math",t:"Permutations & Combinations",n:"nPr (Permutation)",f:"n! / (n\u2212r)!"},
+{s:"math",t:"Permutations & Combinations",n:"nCr (Combination)",f:"n! / [r!(n\u2212r)!]"},
+{s:"math",t:"Permutations & Combinations",n:"nCr = nC(n\u2212r)",f:"Symmetry property"},
+{s:"math",t:"Permutations & Combinations",n:"Probability of Event",f:"P(E) = Favourable / Total"},
+{s:"math",t:"Permutations & Combinations",n:"P(A or B)",f:"P(A) + P(B) \u2212 P(A\u2229B)"},
+{s:"math",t:"Permutations & Combinations",n:"P(A and B) independent",f:"P(A) \u00d7 P(B)"},
+{s:"math",t:"Permutations & Combinations",n:"Conditional Probability",f:"P(A|B) = P(A\u2229B)/P(B)"},
+{s:"math",t:"Permutations & Combinations",n:"Bayes\u2019 Theorem",f:"P(A|B) = P(B|A)\u00b7P(A)/P(B)"},
+
+/* ---- MATH: Calculus ---- */
+{s:"math",t:"Calculus",n:"d/dx (x\u207f)",f:"nx\u207f\u207b\u00b9"},
+{s:"math",t:"Calculus",n:"d/dx (sin x)",f:"cos x"},
+{s:"math",t:"Calculus",n:"d/dx (cos x)",f:"\u2212sin x"},
+{s:"math",t:"Calculus",n:"d/dx (e\u02e3)",f:"e\u02e3"},
+{s:"math",t:"Calculus",n:"d/dx (ln x)",f:"1/x"},
+{s:"math",t:"Calculus",n:"d/dx (tan x)",f:"sec\u00b2x"},
+{s:"math",t:"Calculus",n:"Chain Rule",f:"d/dx[f(g(x))] = f\u2032(g(x)) \u00d7 g\u2032(x)"},
+{s:"math",t:"Calculus",n:"Product Rule",f:"d/dx[uv] = u\u2032v + uv\u2032"},
+{s:"math",t:"Calculus",n:"\u222bx\u207f dx",f:"x\u207f\u207a\u00b9/(n+1) + C"},
+{s:"math",t:"Calculus",n:"\u222bsin x dx",f:"\u2212cos x + C"},
+{s:"math",t:"Calculus",n:"\u222bcos x dx",f:"sin x + C"},
+{s:"math",t:"Calculus",n:"\u222be\u02e3 dx",f:"e\u02e3 + C"},
+{s:"math",t:"Calculus",n:"\u222b1/x dx",f:"ln|x| + C"},
+
+/* ---- MATH: Statistics ---- */
+{s:"math",t:"Statistics",n:"Mean",f:"\u03a3x\u1d62 / n"},
+{s:"math",t:"Statistics",n:"Median (odd n)",f:"Middle value when sorted"},
+{s:"math",t:"Statistics",n:"Mode",f:"Most frequent value"},
+{s:"math",t:"Statistics",n:"Variance",f:"\u03a3(x\u1d62 \u2212 x\u0304)\u00b2 / n"},
+{s:"math",t:"Statistics",n:"Standard Deviation",f:"\u221aVariance"},
+{s:"math",t:"Statistics",n:"Range",f:"Max \u2212 Min"},
+
+/* ===== PHYSICS: Motion ===== */
+{s:"physics",t:"Motion (Kinematics)",n:"v = u + at",f:"First equation of motion"},
+{s:"physics",t:"Motion (Kinematics)",n:"s = ut + \u00bdat\u00b2",f:"Second equation of motion"},
+{s:"physics",t:"Motion (Kinematics)",n:"v\u00b2 = u\u00b2 + 2as",f:"Third equation of motion"},
+{s:"physics",t:"Motion (Kinematics)",n:"Average Velocity",f:"(u + v)/2"},
+{s:"physics",t:"Motion (Kinematics)",n:"Relative Velocity",f:"v\u2090\u2095 = v\u2090 \u2212 v\u2095"},
+{s:"physics",t:"Motion (Kinematics)",n:"Projectile Range",f:"R = u\u00b2sin2\u03b8/g"},
+{s:"physics",t:"Motion (Kinematics)",n:"Max Height (Projectile)",f:"H = u\u00b2sin\u00b2\u03b8/(2g)"},
+{s:"physics",t:"Motion (Kinematics)",n:"Time of Flight",f:"T = 2usin\u03b8/g"},
+
+/* ---- PHYSICS: Laws & Forces ---- */
+{s:"physics",t:"Laws of Motion & Forces",n:"Newton\u2019s 2nd Law",f:"F = ma"},
+{s:"physics",t:"Laws of Motion & Forces",n:"Momentum",f:"p = mv"},
+{s:"physics",t:"Laws of Motion & Forces",n:"Impulse",f:"J = F\u00b7\u0394t = \u0394p"},
+{s:"physics",t:"Laws of Motion & Forces",n:"Friction Force",f:"f = \u03bcN"},
+{s:"physics",t:"Laws of Motion & Forces",n:"Centripetal Force",f:"F = mv\u00b2/r"},
+{s:"physics",t:"Laws of Motion & Forces",n:"Centripetal Acceleration",f:"a = v\u00b2/r"},
+
+/* ---- PHYSICS: Work-Energy-Power ---- */
+{s:"physics",t:"Work, Energy & Power",n:"Work",f:"W = F \u00d7 d \u00d7 cos\u03b8"},
+{s:"physics",t:"Work, Energy & Power",n:"Kinetic Energy",f:"KE = \u00bdmv\u00b2"},
+{s:"physics",t:"Work, Energy & Power",n:"Potential Energy",f:"PE = mgh"},
+{s:"physics",t:"Work, Energy & Power",n:"Power",f:"P = W/t = Fv"},
+{s:"physics",t:"Work, Energy & Power",n:"Work-Energy Theorem",f:"W\u2099\u2091\u209c = \u0394KE"},
+{s:"physics",t:"Work, Energy & Power",n:"Spring PE",f:"U = \u00bdkx\u00b2"},
+
+/* ---- PHYSICS: Gravitation ---- */
+{s:"physics",t:"Gravitation",n:"Newton\u2019s Law of Gravitation",f:"F = Gm\u2081m\u2082/r\u00b2"},
+{s:"physics",t:"Gravitation",n:"g on surface",f:"g = GM/R\u00b2"},
+{s:"physics",t:"Gravitation",n:"Orbital Velocity",f:"v\u2092 = \u221a(GM/r)"},
+{s:"physics",t:"Gravitation",n:"Escape Velocity",f:"v\u2091 = \u221a(2GM/R)"},
+{s:"physics",t:"Gravitation",n:"Kepler\u2019s 3rd Law",f:"T\u00b2 \u221d r\u00b3"},
+
+/* ---- PHYSICS: SHM ---- */
+{s:"physics",t:"Simple Harmonic Motion",n:"Displacement",f:"x = A sin(\u03c9t + \u03c6)"},
+{s:"physics",t:"Simple Harmonic Motion",n:"Time Period (spring)",f:"T = 2\u03c0\u221a(m/k)"},
+{s:"physics",t:"Simple Harmonic Motion",n:"Time Period (pendulum)",f:"T = 2\u03c0\u221a(l/g)"},
+{s:"physics",t:"Simple Harmonic Motion",n:"\u03c9 (angular freq)",f:"\u03c9 = 2\u03c0/T = 2\u03c0f"},
+{s:"physics",t:"Simple Harmonic Motion",n:"Max velocity in SHM",f:"v\u2098\u2090\u2093 = A\u03c9"},
+
+/* ---- PHYSICS: Waves ---- */
+{s:"physics",t:"Waves & Sound",n:"Wave Speed",f:"v = f\u03bb"},
+{s:"physics",t:"Waves & Sound",n:"Speed of Sound in air",f:"\u2248343 m/s at 20\u00b0C"},
+{s:"physics",t:"Waves & Sound",n:"Doppler Effect (approaching)",f:"f\u2032 = f(v+v\u2092)/(v\u2212v\u209b)"},
+{s:"physics",t:"Waves & Sound",n:"Beat Frequency",f:"f\u2095\u2091\u2090\u209c = |f\u2081 \u2212 f\u2082|"},
+{s:"physics",t:"Waves & Sound",n:"Resonance (closed pipe)",f:"f = nv/(4L), n = 1,3,5..."},
+
+/* ---- PHYSICS: Thermodynamics ---- */
+{s:"physics",t:"Thermodynamics",n:"PV = nRT",f:"Ideal Gas Law (R = 8.314 J/mol\u00b7K)"},
+{s:"physics",t:"Thermodynamics",n:"Q = mc\u0394T",f:"Heat energy (specific heat)"},
+{s:"physics",t:"Thermodynamics",n:"First Law",f:"\u0394U = Q \u2212 W"},
+{s:"physics",t:"Thermodynamics",n:"Efficiency",f:"\u03b7 = W/Q\u2081 \u00d7 100%"},
+{s:"physics",t:"Thermodynamics",n:"Carnot Efficiency",f:"\u03b7 = 1 \u2212 T\u2082/T\u2081"},
+{s:"physics",t:"Thermodynamics",n:"Entropy Change",f:"\u0394S = Q/T"},
+{s:"physics",t:"Thermodynamics",n:"Stefan-Boltzmann Law",f:"P = \u03b5\u03c3AT\u2074"},
+
+/* ---- PHYSICS: Electrostatics ---- */
+{s:"physics",t:"Electrostatics",n:"Coulomb\u2019s Law",f:"F = kq\u2081q\u2082/r\u00b2 (k = 9\u00d710\u2079)"},
+{s:"physics",t:"Electrostatics",n:"Electric Field",f:"E = F/q = kQ/r\u00b2"},
+{s:"physics",t:"Electrostatics",n:"Electric Potential",f:"V = kQ/r"},
+{s:"physics",t:"Electrostatics",n:"Capacitance",f:"C = Q/V"},
+{s:"physics",t:"Electrostatics",n:"Energy in Capacitor",f:"U = \u00bdCV\u00b2 = \u00bdQV"},
+{s:"physics",t:"Electrostatics",n:"Parallel Plate Capacitor",f:"C = \u03b5\u2080A/d"},
+{s:"physics",t:"Electrostatics",n:"Capacitors in Series",f:"1/C = 1/C\u2081 + 1/C\u2082"},
+{s:"physics",t:"Electrostatics",n:"Capacitors in Parallel",f:"C = C\u2081 + C\u2082"},
+
+/* ---- PHYSICS: Current Electricity ---- */
+{s:"physics",t:"Current Electricity",n:"Ohm\u2019s Law",f:"V = IR"},
+{s:"physics",t:"Current Electricity",n:"Power",f:"P = VI = I\u00b2R = V\u00b2/R"},
+{s:"physics",t:"Current Electricity",n:"Resistance in Series",f:"R = R\u2081 + R\u2082 + R\u2083"},
+{s:"physics",t:"Current Electricity",n:"Resistance in Parallel",f:"1/R = 1/R\u2081 + 1/R\u2082"},
+{s:"physics",t:"Current Electricity",n:"Kirchhoff\u2019s Voltage Law",f:"\u03a3V = 0 (closed loop)"},
+{s:"physics",t:"Current Electricity",n:"Kirchhoff\u2019s Current Law",f:"\u03a3I\u1d62\u2099 = \u03a3I\u2092\u1d64\u209c (at junction)"},
+{s:"physics",t:"Current Electricity",n:"EMF of Cell",f:"\u03b5 = V + Ir (internal resistance)"},
+{s:"physics",t:"Current Electricity",n:"Wheatstone Bridge",f:"P/Q = R/S (balanced)"},
+
+/* ---- PHYSICS: Magnetism ---- */
+{s:"physics",t:"Magnetism",n:"Force on moving charge",f:"F = qvB sin\u03b8"},
+{s:"physics",t:"Magnetism",n:"Force on current wire",f:"F = BIl sin\u03b8"},
+{s:"physics",t:"Magnetism",n:"Magnetic field (long wire)",f:"B = \u03bc\u2080I/(2\u03c0r)"},
+{s:"physics",t:"Magnetism",n:"Solenoid field",f:"B = \u03bc\u2080nI"},
+{s:"physics",t:"Magnetism",n:"Faraday\u2019s Law (EMF)",f:"\u03b5 = \u2212d\u03a6/dt"},
+
+/* ---- PHYSICS: Optics ---- */
+{s:"physics",t:"Optics",n:"Snell\u2019s Law",f:"n\u2081 sin\u03b8\u2081 = n\u2082 sin\u03b8\u2082"},
+{s:"physics",t:"Optics",n:"Mirror Formula",f:"1/f = 1/v + 1/u"},
+{s:"physics",t:"Optics",n:"Lens Formula",f:"1/f = 1/v \u2212 1/u"},
+{s:"physics",t:"Optics",n:"Magnification (mirror)",f:"m = \u2212v/u"},
+{s:"physics",t:"Optics",n:"Power of Lens",f:"P = 1/f (in metres, unit: Dioptre)"},
+{s:"physics",t:"Optics",n:"Critical Angle",f:"sin C = n\u2082/n\u2081 (n\u2082 < n\u2081)"},
+{s:"physics",t:"Optics",n:"Speed of Light",f:"c = 3 \u00d7 10\u2078 m/s"},
+
+/* ---- PHYSICS: Modern Physics ---- */
+{s:"physics",t:"Modern Physics",n:"E = mc\u00b2",f:"Energy-mass equivalence"},
+{s:"physics",t:"Modern Physics",n:"E = hf",f:"Photon energy (h = 6.626\u00d710\u207b\u00b3\u2074 J\u00b7s)"},
+{s:"physics",t:"Modern Physics",n:"de Broglie wavelength",f:"\u03bb = h/mv"},
+{s:"physics",t:"Modern Physics",n:"Photoelectric: KE",f:"KE\u2098\u2090\u2093 = hf \u2212 \u03c6"},
+{s:"physics",t:"Modern Physics",n:"Radioactive Decay",f:"N = N\u2080 e^(\u2212\u03bbt)"},
+{s:"physics",t:"Modern Physics",n:"Half-life",f:"t\u00bd = 0.693/\u03bb"},
+{s:"physics",t:"Modern Physics",n:"Heisenberg Uncertainty",f:"\u0394x \u00d7 \u0394p \u2265 h/(4\u03c0)"},
+
+/* ===== CHEMISTRY: Mole Concept ===== */
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Moles",f:"n = mass / molar mass"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Avogadro\u2019s Number",f:"N\u2090 = 6.022 \u00d7 10\u00b2\u00b3"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Molarity",f:"M = moles of solute / volume(L)"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Molality",f:"m = moles of solute / mass of solvent(kg)"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Normality",f:"N = equivalents / volume(L)"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Mole Fraction",f:"\u03c7\u2090 = n\u2090 / (n\u2090 + n\u2095)"},
+{s:"chemistry",t:"Mole Concept & Stoichiometry",n:"Density",f:"\u03c1 = mass / volume"},
+
+/* ---- CHEMISTRY: Gas Laws ---- */
+{s:"chemistry",t:"Gas Laws",n:"Ideal Gas Law",f:"PV = nRT (R=8.314 J/mol\u00b7K)"},
+{s:"chemistry",t:"Gas Laws",n:"Boyle\u2019s Law",f:"P\u2081V\u2081 = P\u2082V\u2082 (const T)"},
+{s:"chemistry",t:"Gas Laws",n:"Charles\u2019 Law",f:"V\u2081/T\u2081 = V\u2082/T\u2082 (const P)"},
+{s:"chemistry",t:"Gas Laws",n:"Dalton\u2019s Law",f:"P\u209c\u2092\u209c\u2090\u2097 = P\u2081 + P\u2082 + P\u2083 + ..."},
+{s:"chemistry",t:"Gas Laws",n:"Graham\u2019s Law",f:"r\u2081/r\u2082 = \u221a(M\u2082/M\u2081)"},
+{s:"chemistry",t:"Gas Laws",n:"Van der Waals",f:"(P + an\u00b2/V\u00b2)(V \u2212 nb) = nRT"},
+
+/* ---- CHEMISTRY: Thermochemistry ---- */
+{s:"chemistry",t:"Thermochemistry",n:"First Law",f:"\u0394U = q + w"},
+{s:"chemistry",t:"Thermochemistry",n:"Enthalpy",f:"H = U + PV"},
+{s:"chemistry",t:"Thermochemistry",n:"Hess\u2019s Law",f:"\u0394H\u209c\u2092\u209c\u2090\u2097 = \u03a3\u0394H(steps)"},
+{s:"chemistry",t:"Thermochemistry",n:"Gibbs Free Energy",f:"\u0394G = \u0394H \u2212 T\u0394S"},
+{s:"chemistry",t:"Thermochemistry",n:"Spontaneity",f:"If \u0394G < 0, reaction is spontaneous"},
+{s:"chemistry",t:"Thermochemistry",n:"Bond Energy",f:"\u0394H = \u03a3(bonds broken) \u2212 \u03a3(bonds formed)"},
+
+/* ---- CHEMISTRY: Equilibrium ---- */
+{s:"chemistry",t:"Chemical Equilibrium",n:"Equilibrium Constant",f:"K\u1d04 = [Products]/[Reactants]"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"K\u209a relation",f:"K\u209a = K\u1d04(RT)\u1d6e\u207f"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"pH",f:"pH = \u2212log[H\u207a]"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"pOH",f:"pOH = \u2212log[OH\u207b]"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"pH + pOH",f:"= 14 (at 25\u00b0C)"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"Henderson-Hasselbalch",f:"pH = pK\u2090 + log([A\u207b]/[HA])"},
+{s:"chemistry",t:"Chemical Equilibrium",n:"Solubility Product",f:"K\u209b\u209a = [ions] raised to stoichiometric powers"},
+
+/* ---- CHEMISTRY: Electrochemistry ---- */
+{s:"chemistry",t:"Electrochemistry",n:"Nernst Equation",f:"E = E\u00b0 \u2212 (RT/nF) ln Q"},
+{s:"chemistry",t:"Electrochemistry",n:"Faraday\u2019s 1st Law",f:"m = (M \u00d7 I \u00d7 t)/(n \u00d7 F)"},
+{s:"chemistry",t:"Electrochemistry",n:"Faraday Constant",f:"F = 96485 C/mol"},
+{s:"chemistry",t:"Electrochemistry",n:"Cell EMF",f:"E\u00b0\u1d9c\u2091\u2097\u2097 = E\u00b0cathode \u2212 E\u00b0anode"},
+{s:"chemistry",t:"Electrochemistry",n:"\u0394G and E",f:"\u0394G = \u2212nFE"},
+
+/* ---- CHEMISTRY: Solutions ---- */
+{s:"chemistry",t:"Solutions",n:"Raoult\u2019s Law",f:"P = \u03c7\u2090P\u00b0\u2090"},
+{s:"chemistry",t:"Solutions",n:"Boiling Point Elevation",f:"\u0394T\u2095 = K\u2095 \u00d7 m \u00d7 i"},
+{s:"chemistry",t:"Solutions",n:"Freezing Point Depression",f:"\u0394T\u1da0 = K\u1da0 \u00d7 m \u00d7 i"},
+{s:"chemistry",t:"Solutions",n:"Osmotic Pressure",f:"\u03c0 = iMRT"},
+{s:"chemistry",t:"Solutions",n:"Van\u2019t Hoff Factor",f:"i = observed property / calculated property"},
+
+/* ---- CHEMISTRY: Kinetics ---- */
+{s:"chemistry",t:"Chemical Kinetics",n:"Rate Law",f:"Rate = k[A]\u207f[B]\u1d50"},
+{s:"chemistry",t:"Chemical Kinetics",n:"First Order Half-life",f:"t\u00bd = 0.693/k"},
+{s:"chemistry",t:"Chemical Kinetics",n:"First Order Integrated",f:"ln[A] = ln[A\u2080] \u2212 kt"},
+{s:"chemistry",t:"Chemical Kinetics",n:"Second Order Integrated",f:"1/[A] = 1/[A\u2080] + kt"},
+{s:"chemistry",t:"Chemical Kinetics",n:"Arrhenius Equation",f:"k = A e^(\u2212E\u2090/RT)"},
+
+/* ===== APTITUDE SHORTCUTS ===== */
+{s:"aptitude",t:"Percentage",n:"Percentage",f:"(Part/Whole) \u00d7 100"},
+{s:"aptitude",t:"Percentage",n:"% Increase",f:"(Increase/Original) \u00d7 100"},
+{s:"aptitude",t:"Percentage",n:"Successive % change",f:"a + b + ab/100"},
+{s:"aptitude",t:"Percentage",n:"If A is x% more than B",f:"B is (x/(100+x))\u00d7100 % less than A"},
+
+{s:"aptitude",t:"Profit, Loss & Discount",n:"Profit %",f:"(Profit/CP) \u00d7 100"},
+{s:"aptitude",t:"Profit, Loss & Discount",n:"Loss %",f:"(Loss/CP) \u00d7 100"},
+{s:"aptitude",t:"Profit, Loss & Discount",n:"SP = CP(1 + P%/100)",f:"When profit"},
+{s:"aptitude",t:"Profit, Loss & Discount",n:"SP = CP(1 \u2212 L%/100)",f:"When loss"},
+{s:"aptitude",t:"Profit, Loss & Discount",n:"Discount",f:"Discount = MP \u2212 SP"},
+{s:"aptitude",t:"Profit, Loss & Discount",n:"Successive Discounts",f:"Single discount = a + b \u2212 ab/100"},
+
+{s:"aptitude",t:"Simple & Compound Interest",n:"Simple Interest",f:"SI = PRT/100"},
+{s:"aptitude",t:"Simple & Compound Interest",n:"Amount (SI)",f:"A = P + PRT/100"},
+{s:"aptitude",t:"Simple & Compound Interest",n:"Compound Interest",f:"A = P(1 + R/100)\u207f"},
+{s:"aptitude",t:"Simple & Compound Interest",n:"CI = A \u2212 P",f:"P[(1 + R/100)\u207f \u2212 1]"},
+{s:"aptitude",t:"Simple & Compound Interest",n:"Half-yearly CI",f:"A = P(1 + R/200)\u00b2\u207f"},
+
+{s:"aptitude",t:"Time, Speed & Distance",n:"Speed",f:"Distance / Time"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"Average Speed (two equal dist)",f:"2ab/(a+b)"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"Relative Speed (same dir)",f:"|a \u2212 b|"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"Relative Speed (opposite dir)",f:"a + b"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"km/h to m/s",f:"Multiply by 5/18"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"Train crossing pole",f:"Time = Length of train / Speed"},
+{s:"aptitude",t:"Time, Speed & Distance",n:"Train crossing platform",f:"Time = (Train + Platform) / Speed"},
+
+{s:"aptitude",t:"Time & Work",n:"Work Formula",f:"If A does work in \u2018a\u2019 days, 1 day = 1/a"},
+{s:"aptitude",t:"Time & Work",n:"A+B together",f:"1/a + 1/b = (a+b)/ab ; Time = ab/(a+b)"},
+{s:"aptitude",t:"Time & Work",n:"Efficiency method",f:"LCM of days = total work; efficiency = total/days"},
+{s:"aptitude",t:"Time & Work",n:"Pipes: filling + draining",f:"Net rate = 1/fill \u2212 1/drain"},
+
+{s:"aptitude",t:"Ratio, Average & Partnership",n:"Ratio a:b means",f:"a/(a+b) and b/(a+b) of total"},
+{s:"aptitude",t:"Ratio, Average & Partnership",n:"Average",f:"Sum / Count"},
+{s:"aptitude",t:"Ratio, Average & Partnership",n:"Weighted Average",f:"(w\u2081x\u2081+w\u2082x\u2082)/(w\u2081+w\u2082)"},
+{s:"aptitude",t:"Ratio, Average & Partnership",n:"Partnership Profit",f:"Divide in ratio of Capital \u00d7 Time"},
+{s:"aptitude",t:"Ratio, Average & Partnership",n:"Alligation",f:"(d\u2082\u2212m)/(m\u2212d\u2081) = ratio of quantities"},
+
+{s:"aptitude",t:"Boats & Streams",n:"Downstream Speed",f:"Boat + Stream = (u + v)"},
+{s:"aptitude",t:"Boats & Streams",n:"Upstream Speed",f:"Boat \u2212 Stream = (u \u2212 v)"},
+{s:"aptitude",t:"Boats & Streams",n:"Speed of Boat",f:"(Downstream + Upstream)/2"},
+{s:"aptitude",t:"Boats & Streams",n:"Speed of Stream",f:"(Downstream \u2212 Upstream)/2"},
+
+{s:"aptitude",t:"Pipes & Cisterns",n:"Pipe fills in x hrs, rate",f:"1/x per hour"},
+{s:"aptitude",t:"Pipes & Cisterns",n:"Two pipes filling",f:"Together = 1/a + 1/b"},
+{s:"aptitude",t:"Pipes & Cisterns",n:"Pipe fills + leak drains",f:"Net = 1/fill \u2212 1/leak"}
 ];
-var currentSub="all";
-function show(s){currentSub=s;filter()}
-function filter(){
-  var q=document.getElementById("search").value.toLowerCase();
-  var html="";
-  data.forEach(function(section){
-    if(currentSub!=="all"&&section.s!==currentSub)return;
-    var filtered=section.f.filter(function(f){return f[0].toLowerCase().indexOf(q)>-1||f[1].toLowerCase().indexOf(q)>-1||section.t.toLowerCase().indexOf(q)>-1});
-    if(!filtered.length)return;
-    var icon=section.s==="math"?"📐":section.s==="physics"?"⚡":"🧪";
-    html+='<h3 style="margin:1rem 0 .5rem">'+icon+" "+section.t+'</h3>';
-    filtered.forEach(function(f){
-      html+='<div style="background:var(--card);padding:.6rem 1rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap"><strong>'+f[0]+'</strong><span style="font-family:monospace;color:var(--accent)">'+f[1]+'</span></div>';
-    });
+
+/* ===== STATE ===== */
+var bookmarks = new Set(loadJSON('fs_bookmarks', []));
+var currentSub = 'all';
+var collapsedSections = {};
+function loadJSON(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } }
+function saveBookmarks() { localStorage.setItem('fs_bookmarks', JSON.stringify(Array.from(bookmarks))); }
+function fKey(item) { return (item.s + '|' + item.t + '|' + item.n).toLowerCase(); }
+
+/* ===== TAB SWITCHING ===== */
+function fsShowSub(s) {
+  currentSub = s;
+  var tabs = ['All','Math','Physics','Chemistry','Aptitude','Bookmarks'];
+  var ids = ['all','math','physics','chemistry','aptitude','bookmarks'];
+  ids.forEach(function(id, i) {
+    var btn = document.getElementById('tab' + tabs[i]);
+    if (btn) btn.className = id === s ? 'btn' : 'btn btn-outline';
   });
-  document.getElementById("formulas").innerHTML=html||'<p class="info">No formulas found. Try a different search.</p>';
+  fsFilter();
 }
-filter();
-  </script>
+
+/* ===== FILTERING & RENDERING ===== */
+function fsFilter() {
+  var q = (document.getElementById('fsSearch').value || '').toLowerCase();
+  var container = document.getElementById('fsFormulas');
+
+  // Group by topic
+  var groups = {};
+  DB.forEach(function(item) {
+    if (currentSub === 'bookmarks') {
+      if (!bookmarks.has(fKey(item))) return;
+    } else if (currentSub !== 'all' && item.s !== currentSub) return;
+
+    if (q) {
+      var match = item.n.toLowerCase().indexOf(q) > -1 || item.f.toLowerCase().indexOf(q) > -1 || item.t.toLowerCase().indexOf(q) > -1;
+      if (!match) return;
+    }
+
+    var gKey = item.s + '|' + item.t;
+    if (!groups[gKey]) groups[gKey] = { s: item.s, t: item.t, items: [] };
+    groups[gKey].items.push(item);
+  });
+
+  var keys = Object.keys(groups);
+  if (!keys.length) {
+    container.innerHTML = '<p class="info">No formulas found. Try a different search.</p>';
+    return;
+  }
+
+  var html = '';
+  var icons = { math: '\ud83d\udcd0', physics: '\u26a1', chemistry: '\ud83e\uddea', aptitude: '\ud83e\udde0' };
+
+  keys.forEach(function(gKey) {
+    var g = groups[gKey];
+    var icon = icons[g.s] || '';
+    var isCollapsed = collapsedSections[gKey] && !q; // don't collapse during search
+    html += '<div class="fs-section">';
+    html += '<div class="fs-section-header" onclick="toggleSection(\'' + gKey.replace(/'/g, "\\'") + '\')">';
+    html += '<h3>' + icon + ' ' + esc(g.t) + ' <span style="font-size:.8rem;color:var(--text2);font-weight:400">(' + g.items.length + ')</span></h3>';
+    html += '<span style="font-size:1.2rem">' + (isCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
+    html += '<div class="fs-section-body" style="' + (isCollapsed ? 'max-height:0;overflow:hidden' : '') + '">';
+
+    g.items.forEach(function(item) {
+      var k = fKey(item);
+      var isBookmarked = bookmarks.has(k);
+      var nameHtml = q ? highlight(item.n, q) : esc(item.n);
+      var exprHtml = q ? highlight(item.f, q) : esc(item.f);
+
+      html += '<div class="fs-formula">';
+      html += '<span class="fs-formula-name">' + nameHtml + '</span>';
+      html += '<span class="fs-formula-expr">' + exprHtml + '</span>';
+      html += '<span class="fs-actions">';
+      html += '<button onclick="toggleBookmark(\'' + k.replace(/'/g, "\\'") + '\')" title="Bookmark">' + (isBookmarked ? '\u2b50' : '\u2606') + '</button>';
+      html += '<button onclick="copyFormula(\'' + esc(item.n).replace(/'/g, "\\'") + ': ' + esc(item.f).replace(/'/g, "\\'") + '\')" title="Copy">\ud83d\udccb</button>';
+      html += '</span></div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleSection(gKey) {
+  collapsedSections[gKey] = !collapsedSections[gKey];
+  fsFilter();
+}
+
+function toggleBookmark(k) {
+  if (bookmarks.has(k)) bookmarks.delete(k); else bookmarks.add(k);
+  saveBookmarks();
+  fsFilter();
+}
+
+function copyFormula(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied to clipboard!');
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied!');
+  });
+}
+
+function showToast(msg) {
+  var existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  var d = document.createElement('div');
+  d.className = 'toast';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function() { d.remove(); }, 2000);
+}
+
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function highlight(text, q) {
+  var escaped = esc(text);
+  if (!q) return escaped;
+  var regex = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return escaped.replace(regex, '<span class="fs-highlight">$1</span>');
+}
+
+/* ===== PRINT BOOKMARKS ONLY ===== */
+function fsPrintBookmarks() {
+  if (!bookmarks.size) { alert('No bookmarks saved yet!'); return; }
+  // Temporarily switch to bookmarks view and print
+  var prevSub = currentSub;
+  fsShowSub('bookmarks');
+  setTimeout(function() { window.print(); fsShowSub(prevSub); }, 200);
+}
+
+/* ===== FORMULA OF THE DAY ===== */
+function showFOTD() {
+  var dayIndex = Math.floor(Date.now() / 86400000) % DB.length;
+  var f = DB[dayIndex];
+  var icon = { math: '\ud83d\udcd0', physics: '\u26a1', chemistry: '\ud83e\uddea', aptitude: '\ud83e\udde0' };
+  var html = '<div class="fs-fotd-label">\u2728 Formula of the Day</div>';
+  html += '<div style="font-weight:700;font-size:1.1rem">' + (icon[f.s] || '') + ' ' + esc(f.n) + '</div>';
+  html += '<div style="font-family:monospace;color:var(--accent);font-size:1.15rem;margin-top:.3rem">' + esc(f.f) + '</div>';
+  html += '<div style="font-size:.8rem;color:var(--text2);margin-top:.3rem">' + esc(f.t) + '</div>';
+  document.getElementById('fsFotd').innerHTML = html;
+}
+
+/* ===== INIT ===== */
+showFOTD();
+fsFilter();
+</script>
 </body></html>
