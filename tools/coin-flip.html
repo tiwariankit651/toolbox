@@ -38,24 +38,37 @@
       <h1>🪙 Coin Flip</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
       <div style="text-align:center">
-        <div id="coin" style="font-size:6rem;padding:1rem;transition:transform .5s">🪙</div>
+        <div class="row" style="justify-content:center;margin-bottom:.6rem">
+          <label>Coins:</label>
+          <select id="coinCount"><option>1</option><option>2</option><option>3</option><option>5</option><option>10</option></select>
+          <button class="btn btn-outline" onclick="toggleMute()" id="muteBtn" style="font-size:.85rem">🔊 Sound: On</button>
+        </div>
+        <div id="coinArea" style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;min-height:5rem;align-items:center"><div class="coin3d" style="font-size:5rem">🪙</div></div>
         <div id="coinResult" style="font-size:1.5rem;font-weight:700;min-height:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
         <div class="row" style="justify-content:center;margin-top:.8rem">
           <button class="btn" onclick="flipCoin()">Flip Coin</button>
           <button class="btn btn-outline" onclick="resetCoin()">Reset Stats</button>
         </div>
         <div id="coinStats" style="margin-top:.8rem" class="info"></div>
-        <div id="coinPct" style="font-size:.8rem;color:var(--muted)"></div>
+        <div id="coinPct" style="font-size:.8rem;color:var(--text2)"></div>
+        <p style="font-size:.78rem;color:var(--text2);margin-top:.4rem">A fair coin converges toward 50/50 over many flips — the more you flip, the closer the percentages get. A great way to see the law of large numbers in action.</p>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1rem">
       <h1>🎲 Dice Roller</h1>
       <div style="text-align:center">
-        <div class="row" style="justify-content:center;margin-bottom:.8rem">
+        <div class="row" style="justify-content:center;margin-bottom:.8rem;flex-wrap:wrap">
           <label>Number of dice:</label>
           <select id="diceCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
           <label>Sides:</label>
-          <select id="diceSides"><option value="6">D6</option><option value="4">D4</option><option value="8">D8</option><option value="10">D10</option><option value="12">D12</option><option value="20">D20</option></select>
+          <select id="diceSides"><option value="6">D6</option><option value="4">D4</option><option value="8">D8</option><option value="10">D10</option><option value="12">D12</option><option value="20">D20</option><option value="100">D100</option></select>
+          <label>Modifier:</label>
+          <input type="number" id="diceMod" value="0" style="width:70px">
+        </div>
+        <p style="font-size:.78rem;color:var(--text2)">Or type dice notation like <strong>3d6+2</strong>:</p>
+        <div class="row" style="justify-content:center;margin-bottom:.6rem">
+          <input type="text" id="diceNotation" placeholder="e.g. 3d6+2" style="width:140px;text-align:center">
+          <button class="btn btn-outline" onclick="rollNotation()" style="font-size:.85rem">Roll notation</button>
         </div>
         <div id="diceDisplay" style="font-size:4rem;padding:1rem;min-height:5rem"></div>
         <div id="diceTotal" style="font-size:1.3rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
@@ -66,12 +79,21 @@
     <div class="tool-section" style="margin-top:1rem">
       <h1>🔢 Random Number Generator</h1>
       <div style="text-align:center">
-        <div class="row" style="justify-content:center;margin-bottom:.8rem">
+        <div class="row" style="justify-content:center;margin-bottom:.8rem;flex-wrap:wrap">
           <label>Min:</label><input type="number" id="rngMin" value="1" style="width:80px">
           <label>Max:</label><input type="number" id="rngMax" value="100" style="width:80px">
+          <label>Count:</label><input type="number" id="rngCount" value="1" min="1" style="width:70px">
+          <label style="font-size:.85rem"><input type="checkbox" id="rngDup" checked> Allow duplicates</label>
         </div>
-        <div id="rngResult" style="font-size:3rem;font-weight:700;padding:1rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+        <div id="rngResult" style="font-size:2.4rem;font-weight:700;padding:1rem;word-break:break-word;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
         <button class="btn" onclick="genRng()">🎯 Generate</button>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1rem">
+      <h1>🤔 Yes / No / Maybe</h1>
+      <div style="text-align:center">
+        <div id="ynmResult" style="font-size:2.5rem;font-weight:700;padding:1rem;min-height:3rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">?</div>
+        <button class="btn" onclick="decideYNM()">🎱 Decide for me</button>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1rem">
@@ -85,6 +107,25 @@ Tacos</textarea>
         <div id="wheelResult" style="font-size:1.5rem;font-weight:700;margin:.5rem 0;min-height:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
         <button class="btn" onclick="spinWheel()">🎡 Spin!</button>
       </div>
+    </div>
+    <div class="tool-section" style="margin-top:1rem">
+      <h1>📊 Statistics</h1>
+      <p class="info">Distribution of this session's coin flips and dice rolls — compare observed frequency against the expected (fair) frequency.</p>
+      <div style="text-align:center">
+        <label style="font-size:.85rem">Show:</label>
+        <select id="statChoice" onchange="drawStats()"><option value="coin">Coin flips</option><option value="dice">Dice rolls</option></select>
+        <canvas id="statCanvas" width="360" height="220" style="max-width:100%;margin:.5rem auto;display:block"></canvas>
+        <div id="statInfo" style="font-size:.82rem;color:var(--text2)"></div>
+      </div>
+    </div>
+    <div class="tool-section" style="margin-top:1rem">
+      <h1>🕓 Session History</h1>
+      <div class="row" style="gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="copyHistory(this)" style="font-size:.85rem">📋 Copy results</button>
+        <button class="btn btn-outline" onclick="clearAllHistory()" style="font-size:.85rem">🗑️ Clear history</button>
+      </div>
+      <div id="sessionHistory" style="margin-top:.6rem"></div>
+      <p style="font-size:.78rem;color:var(--text2);margin-top:.6rem">🔐 All randomness uses <code>crypto.getRandomValues</code> — a cryptographically secure generator. Unlike <code>Math.random</code>, its output is unpredictable and not seedable, so results are fairer and can't be reverse-engineered from earlier values.</p>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -104,7 +145,7 @@ Tacos</textarea>
 <li>Running random selection experiments for school projects</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Flip a virtual coin or roll dice with cryptographically fair random results. The coin flip uses your browser's secure random number generator (crypto.getRandomValues) for truly unbiased results. Track heads vs tails statistics over multiple flips. The dice roller supports multiple dice types (D4, D6, D8, D10, D12, D20) and multiple dice at once. Keeps a history of rolls. Perfect for board games, making decisions, classroom activities, probability experiments, and tabletop RPGs.</p>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A complete random decision toolkit with cryptographically fair results. Flip one or many coins with a 3D animation and track heads-vs-tails statistics that converge toward 50/50 over many flips. Roll dice (D4, D6, D8, D10, D12, D20, D100), multiple at once, with modifiers and dice-notation support like 3d6+2. Generate random numbers with min, max, count and an allow-duplicates toggle. Use the Yes/No/Maybe decider or spin a custom-options wheel. Every random value comes from your browser's secure generator (crypto.getRandomValues), which is fairer and less predictable than Math.random. A statistics view charts the observed distribution against the expected (fair) frequency — handy for teaching probability and the law of large numbers. Includes optional Web Audio sound effects with a mute toggle, plus a session history you can copy or clear.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
@@ -143,70 +184,231 @@ Tacos</textarea>
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <style>@keyframes coinspin{0%{transform:rotateY(0)}100%{transform:rotateY(1800deg)}}.coin3d{display:inline-block}.coin3d.flipping{animation:coinspin .6s ease-out}</style>
   <script src="../js/common.js"></script>
   <script>
-let heads=0,tails=0;
-const diceEmoji=['','⚀','⚁','⚂','⚃','⚄','⚅'];
-let diceHist=[];
+// ---- crypto random helpers ----
+function randInt(max){ // 0..max-1 unbiased
+  var range=max;var maxUint=4294967296;var limit=maxUint-(maxUint%range);
+  var v;do{v=crypto.getRandomValues(new Uint32Array(1))[0];}while(v>=limit);
+  return v%range;
+}
+
+// ---- session state ----
+var session=JSON.parse(localStorage.getItem("coinSession")||'{"coins":{"h":0,"t":0},"dice":{},"history":[]}');
+if(!session.dice)session.dice={};
+function saveSession(){localStorage.setItem("coinSession",JSON.stringify(session));}
+function logHistory(text){session.history.unshift({t:text,ts:Date.now()});session.history=session.history.slice(0,50);saveSession();renderHistory();}
+
+// ---- sound (Web Audio) ----
+var muted=localStorage.getItem("coinMuted")==="1";
+var audioCtx=null;
+function beep(freq,dur,type){
+  if(muted)return;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    var o=audioCtx.createOscillator();var g=audioCtx.createGain();
+    o.type=type||"sine";o.frequency.value=freq;
+    o.connect(g);g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(.15,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+    o.start();o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function toggleMute(){
+  muted=!muted;localStorage.setItem("coinMuted",muted?"1":"0");
+  document.getElementById("muteBtn").textContent=muted?"🔇 Sound: Off":"🔊 Sound: On";
+}
+document.getElementById("muteBtn").textContent=muted?"🔇 Sound: Off":"🔊 Sound: On";
+
+// ---- Coin ----
 function flipCoin(){
-  const el=document.getElementById('coin');
-  el.style.transform='rotateY(720deg)';
-  setTimeout(()=>{
-    const r=crypto.getRandomValues(new Uint8Array(1))[0]%2;
-    el.style.transform='';
-    if(r===0){heads++;el.textContent='🪙';document.getElementById('coinResult').textContent='HEADS!'}
-    else{tails++;el.textContent='🪙';document.getElementById('coinResult').textContent='TAILS!'}
-    var total=heads+tails;
-    document.getElementById('coinStats').textContent='Heads: '+heads+' | Tails: '+tails+' | Total: '+total;
-    document.getElementById('coinPct').textContent='Heads: '+(total?(heads/total*100).toFixed(1):0)+'% | Tails: '+(total?(tails/total*100).toFixed(1):0)+'%';
-  },500);
+  var n=+document.getElementById("coinCount").value;
+  var area=document.getElementById("coinArea");
+  area.innerHTML="";
+  var coins=[];
+  for(var i=0;i<n;i++){var d=document.createElement("div");d.className="coin3d flipping";d.style.fontSize=(n>3?"3rem":"5rem");d.textContent="🪙";area.appendChild(d);coins.push(d);}
+  beep(600,.15,"triangle");
+  setTimeout(function(){
+    var hThis=0,tThis=0,faces=[];
+    for(var i=0;i<n;i++){
+      var r=randInt(2);
+      if(r===0){session.coins.h++;hThis++;faces.push("H");}
+      else{session.coins.t++;tThis++;faces.push("T");}
+      coins[i].classList.remove("flipping");
+    }
+    beep(880,.1,"sine");
+    var msg=n===1?(faces[0]==="H"?"HEADS!":"TAILS!"):(hThis+" Heads, "+tThis+" Tails");
+    document.getElementById("coinResult").textContent=msg;
+    var total=session.coins.h+session.coins.t;
+    document.getElementById("coinStats").textContent="Heads: "+session.coins.h+" | Tails: "+session.coins.t+" | Total: "+total;
+    document.getElementById("coinPct").textContent="Heads: "+(total?(session.coins.h/total*100).toFixed(1):0)+"% | Tails: "+(total?(session.coins.t/total*100).toFixed(1):0)+"%";
+    logHistory("Coin: "+msg);
+    saveSession();drawStats();
+  },600);
 }
-function resetCoin(){heads=0;tails=0;document.getElementById('coinResult').textContent='';document.getElementById('coinStats').textContent='';document.getElementById('coinPct').textContent='';document.getElementById('coin').textContent='🪙'}
+function resetCoin(){
+  session.coins={h:0,t:0};saveSession();
+  document.getElementById("coinResult").textContent="";
+  document.getElementById("coinStats").textContent="";
+  document.getElementById("coinPct").textContent="";
+  document.getElementById("coinArea").innerHTML='<div class="coin3d" style="font-size:5rem">🪙</div>';
+  drawStats();
+}
+
+// ---- Dice ----
+var diceEmoji=['','⚀','⚁','⚂','⚃','⚄','⚅'];
+function rollN(n,sides,mod){
+  var results=[];
+  for(var i=0;i<n;i++)results.push(randInt(sides)+1);
+  var total=results.reduce(function(a,b){return a+b;},0)+(mod||0);
+  // track distribution
+  var key="d"+sides;session.dice[key]=session.dice[key]||{};
+  results.forEach(function(r){session.dice[key][r]=(session.dice[key][r]||0)+1;});
+  return {results:results,total:total};
+}
+function displayDice(res,sides,mod,label){
+  document.getElementById("diceDisplay").textContent=res.results.map(function(r){return sides===6&&diceEmoji[r]?diceEmoji[r]:r;}).join(' ');
+  var modStr=mod?(mod>0?" +"+mod:" "+mod):"";
+  document.getElementById("diceTotal").textContent=(res.results.length>1||mod)?"Total: "+res.total+modStr:"Result: "+res.total;
+  beep(300,.12,"square");
+  logHistory((label||(res.results.length+"d"+sides+modStr))+" → "+res.results.join(", ")+(res.results.length>1||mod?" = "+res.total:""));
+  saveSession();drawStats();
+}
 function rollDice(){
-  const n=+document.getElementById('diceCount').value;
-  const sides=+document.getElementById('diceSides').value;
-  const results=[];
-  const bytes=crypto.getRandomValues(new Uint8Array(n));
-  for(let i=0;i<n;i++)results.push((bytes[i]%sides)+1);
-  const total=results.reduce((a,b)=>a+b,0);
-  document.getElementById('diceDisplay').textContent=results.map(r=>sides===6&&diceEmoji[r]?diceEmoji[r]:r).join(' ');
-  document.getElementById('diceTotal').textContent=n>1?'Total: '+total:'Result: '+total;
-  diceHist.unshift(results.join(', ')+(n>1?' = '+total:''));
-  document.getElementById('diceHistory').innerHTML=diceHist.slice(0,8).map(h=>'<div style="padding:.2rem .5rem;color:var(--muted);font-size:.85rem">'+h+'</div>').join('');
+  var n=+document.getElementById("diceCount").value;
+  var sides=+document.getElementById("diceSides").value;
+  var mod=+document.getElementById("diceMod").value||0;
+  displayDice(rollN(n,sides,mod),sides,mod);
 }
+function rollNotation(){
+  var s=document.getElementById("diceNotation").value.trim().toLowerCase();
+  var m=s.match(/^(\d+)d(\d+)([+-]\d+)?$/);
+  if(!m)return alert("Use notation like 3d6+2");
+  var n=+m[1],sides=+m[2],mod=m[3]?+m[3]:0;
+  if(n<1||n>100||sides<2||sides>1000)return alert("Keep dice 1-100 and sides 2-1000");
+  displayDice(rollN(n,sides,mod),sides,mod,s);
+}
+
+// ---- RNG ----
 function genRng(){
-  var min=+document.getElementById('rngMin').value,max=+document.getElementById('rngMax').value;
-  if(min>max){var t=min;min=max;max=t}
+  var min=+document.getElementById("rngMin").value,max=+document.getElementById("rngMax").value;
+  var count=Math.max(1,+document.getElementById("rngCount").value||1);
+  var dup=document.getElementById("rngDup").checked;
+  if(min>max){var t=min;min=max;max=t;}
   var range=max-min+1;
-  var r=crypto.getRandomValues(new Uint32Array(1))[0]%range+min;
-  document.getElementById('rngResult').textContent=r;
+  var out=[];
+  if(!dup){
+    if(count>range)return alert("Not enough unique numbers in that range for "+count+" values.");
+    var pool=[];for(var i=min;i<=max;i++)pool.push(i);
+    for(var k=0;k<count;k++){var idx=randInt(pool.length);out.push(pool.splice(idx,1)[0]);}
+  }else{
+    for(var j=0;j<count;j++)out.push(randInt(range)+min);
+  }
+  document.getElementById("rngResult").textContent=out.join(", ");
+  logHistory("Random["+min+"-"+max+"]: "+out.join(", "));
+  beep(500,.1,"sine");
 }
+
+// ---- Yes/No/Maybe ----
+function decideYNM(){
+  var opts=["YES ✅","NO ❌","MAYBE 🤷"];
+  var r=opts[randInt(3)];
+  document.getElementById("ynmResult").textContent=r;
+  beep(700,.12,"triangle");
+  logHistory("Decide: "+r);
+}
+
+// ---- Wheel ----
 var spinning=false;
 function spinWheel(){
   if(spinning)return;
-  var entries=document.getElementById('wheelEntries').value.trim().split('\n').filter(e=>e.trim());
+  var entries=document.getElementById("wheelEntries").value.trim().split('\n').filter(function(e){return e.trim();});
   if(entries.length<2)return alert('Add at least 2 entries');
   spinning=true;
   var canvas=document.getElementById('wheelCanvas');var ctx=canvas.getContext('2d');
-  var colors=['#6366f1','#8b5cf6','#f59e0b','#10b981','#ef4444','#ec4899','#06b6d4','#84cc16'];
+  var colors=['#6366f1','#8b5cf6','#ec4899','#06b6d4','#10b981','#f59e0b','#ef4444','#84cc16'];
   var arc=2*Math.PI/entries.length;
-  var angle=0,speed=Math.random()*20+20,decel=0.97;
+  var angle=0,speed=(randInt(2000)/100)+20,decel=0.97;
   function draw(){
     ctx.clearRect(0,0,300,300);
     for(var i=0;i<entries.length;i++){
       ctx.beginPath();ctx.moveTo(150,150);ctx.arc(150,150,140,angle+i*arc,angle+(i+1)*arc);ctx.fillStyle=colors[i%colors.length];ctx.fill();ctx.stroke();
       ctx.save();ctx.translate(150,150);ctx.rotate(angle+(i+0.5)*arc);ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(entries[i].substring(0,12),40,4);ctx.restore();
     }
-    ctx.beginPath();ctx.moveTo(150,5);ctx.lineTo(145,20);ctx.lineTo(155,20);ctx.fillStyle='#e74c3c';ctx.fill();
+    ctx.beginPath();ctx.moveTo(150,5);ctx.lineTo(145,20);ctx.lineTo(155,20);ctx.fillStyle='#ec4899';ctx.fill();
   }
   function animate(){
     angle+=speed*0.01;speed*=decel;draw();
-    if(speed>0.5){requestAnimationFrame(animate)}
-    else{spinning=false;var idx=Math.floor(((2*Math.PI-(angle%(2*Math.PI)))%(2*Math.PI))/arc)%entries.length;document.getElementById('wheelResult').textContent='🎉 '+entries[idx]}
+    if(speed>0.5){requestAnimationFrame(animate);}
+    else{spinning=false;var idx=Math.floor(((2*Math.PI-(angle%(2*Math.PI)))%(2*Math.PI))/arc)%entries.length;document.getElementById('wheelResult').textContent='🎉 '+entries[idx];beep(880,.15,"sine");logHistory("Wheel: "+entries[idx]);}
   }
   animate();
 }
-(function(){var c=document.getElementById('wheelCanvas').getContext('2d');c.fillStyle='var(--card)';c.fillRect(0,0,300,300);c.fillStyle='#888';c.font='14px sans-serif';c.textAlign='center';c.fillText('Click Spin to start',150,155)})();
+
+// ---- Statistics chart ----
+function drawStats(){
+  var choice=document.getElementById("statChoice").value;
+  var c=document.getElementById("statCanvas");var ctx=c.getContext("2d");
+  ctx.clearRect(0,0,360,220);
+  var labels=[],observed=[],total=0;
+  if(choice==="coin"){
+    labels=["Heads","Tails"];observed=[session.coins.h,session.coins.t];
+    total=session.coins.h+session.coins.t;
+  }else{
+    // use most-used die type; default d6
+    var keys=Object.keys(session.dice);
+    var key=keys.length?keys.sort(function(a,b){return sumObj(session.dice[b])-sumObj(session.dice[a]);})[0]:"d6";
+    var sides=+key.slice(1);
+    var dist=session.dice[key]||{};
+    for(var i=1;i<=sides;i++){labels.push(""+i);observed.push(dist[i]||0);total+=(dist[i]||0);}
+  }
+  var expectedFreq=total/labels.length;
+  var maxV=Math.max.apply(null,observed.concat([expectedFreq,1]));
+  var w=360,h=220,padL=30,padB=30,barW=(w-padL-10)/labels.length;
+  // expected line
+  var eY=h-padB-(expectedFreq/maxV)*(h-padB-20);
+  ctx.strokeStyle="rgba(139,92,246,.8)";ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(padL,eY);ctx.lineTo(w-10,eY);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#8b5cf6";ctx.font="9px sans-serif";ctx.textAlign="left";ctx.fillText("expected",w-60,eY-3);
+  // bars
+  for(var b=0;b<labels.length;b++){
+    var bh=(observed[b]/maxV)*(h-padB-20);
+    var x=padL+b*barW+2;
+    ctx.fillStyle="#6366f1";ctx.fillRect(x,h-padB-bh,barW-4,bh);
+    ctx.fillStyle="#9494b8";ctx.font="9px sans-serif";ctx.textAlign="center";
+    if(labels.length<=12)ctx.fillText(labels[b],x+(barW-4)/2,h-padB+12);
+    ctx.fillText(observed[b],x+(barW-4)/2,h-padB-bh-3);
+  }
+  var infoTxt="Trials: "+total;
+  if(total>0)infoTxt+=" · expected per outcome: "+expectedFreq.toFixed(1);
+  document.getElementById("statInfo").textContent=infoTxt;
+}
+function sumObj(o){var s=0;for(var k in o)s+=o[k];return s;}
+
+// ---- History UI ----
+function renderHistory(){
+  var box=document.getElementById("sessionHistory");
+  if(!session.history.length){box.innerHTML='<p class="info">No results yet this session.</p>';return;}
+  box.innerHTML=session.history.slice(0,20).map(function(h){return '<div style="padding:.25rem .5rem;color:var(--text2);font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.06)">'+h.t+'</div>';}).join("");
+}
+function copyHistory(btn){
+  var txt=session.history.map(function(h){return h.t;}).join("\n");
+  navigator.clipboard.writeText(txt);btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy results";},1000);
+}
+function clearAllHistory(){
+  session={coins:{h:0,t:0},dice:{},history:[]};saveSession();
+  renderHistory();resetCoin();drawStats();
+  document.getElementById("diceHistory").innerHTML="";
+}
+
+// restore coin stats display
+(function(){
+  var total=session.coins.h+session.coins.t;
+  if(total){document.getElementById("coinStats").textContent="Heads: "+session.coins.h+" | Tails: "+session.coins.t+" | Total: "+total;document.getElementById("coinPct").textContent="Heads: "+(session.coins.h/total*100).toFixed(1)+"% | Tails: "+(session.coins.t/total*100).toFixed(1)+"%";}
+})();
+renderHistory();
+drawStats();
+(function(){var c=document.getElementById('wheelCanvas').getContext('2d');c.fillStyle='#888';c.font='14px sans-serif';c.textAlign='center';c.fillText('Click Spin to start',150,155);})();
   </script>
 </body>
 </html>

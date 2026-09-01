@@ -18,9 +18,40 @@
     <div class="tool-section">
       <h1>✨ Instagram Font Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Type your text and copy fancy fonts for Instagram bio, Twitter, Facebook, WhatsApp.</p>
+      <p class="info">Type your text and copy 30+ fancy font styles for Instagram bio, Twitter/X, Facebook, WhatsApp and Discord.</p>
       <input type="text" id="input" placeholder="Type your text here..." oninput="generate()" value="FreeToolHubs" style="font-size:1.2rem;text-align:center">
+      <div class="row" style="justify-content:center;gap:.5rem;margin-top:.6rem;flex-wrap:wrap">
+        <input type="text" id="styleSearch" placeholder="🔍 Search styles by name..." oninput="generate()" style="max-width:260px">
+        <button class="btn btn-outline" onclick="toggleFavOnly()" id="favOnlyBtn" style="font-size:.85rem">⭐ Favourites only: Off</button>
+      </div>
+      <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:12px;padding:.7rem 1rem;margin-top:.8rem;font-size:.82rem;color:var(--text2);text-align:left">
+        ⚠️ <strong>Compatibility &amp; accessibility note:</strong> These are Unicode characters, not real fonts. They work in most Instagram bios, WhatsApp, Twitter/X and Discord, but may not display on every device or app. They can break screen readers (bad for accessibility), and text made of them is usually <em>not searchable</em>. Use sparingly.
+      </div>
       <div id="fonts" style="margin-top:1rem"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>🎀 Decoration Builder</h2>
+      <p class="info">Wrap your text with symbol borders, add ornaments and dividers.</p>
+      <input type="text" id="decoInput" placeholder="Text to decorate..." oninput="buildDeco()" value="FreeToolHubs">
+      <div class="row" style="gap:.5rem;margin-top:.6rem;flex-wrap:wrap">
+        <label style="font-size:.85rem">Lead: <input type="text" id="decoLead" value="✧" oninput="buildDeco()" style="width:70px;text-align:center"></label>
+        <label style="font-size:.85rem">Trail: <input type="text" id="decoTrail" value="✧" oninput="buildDeco()" style="width:70px;text-align:center"></label>
+        <label style="font-size:.85rem"><input type="checkbox" id="decoDivider" onchange="buildDeco()"> Add divider line</label>
+      </div>
+      <div id="symbolLib" style="margin-top:.8rem"></div>
+      <div style="background:var(--card);border-radius:10px;padding:1rem;margin-top:.8rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+        <div id="decoOut" style="flex:1;min-width:180px;font-size:1.15rem;word-break:break-all;white-space:pre-wrap"></div>
+        <button class="btn btn-outline" onclick="copyDeco(this)" style="font-size:.85rem">📋 Copy</button>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>📸 Instagram Bio Builder</h2>
+      <p class="info">Build a multi-line bio. Instagram bios have a 150-character limit — styled Unicode characters can count differently, so watch the counter.</p>
+      <textarea id="bioBuilder" rows="4" placeholder="Write your bio here (use the copy buttons above to paste styled text)..." oninput="bioCount()"></textarea>
+      <div id="bioCounter" style="font-size:.85rem;color:var(--text2);margin-top:.3rem">0 / 150 characters</div>
+      <button class="btn btn-outline" onclick="copyBio(this)" style="font-size:.85rem;margin-top:.4rem">📋 Copy Bio</button>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Instagram bio mein cool fonts chahiye? Normal text type karo — 14 alag styles mein convert ho jayega. Copy-paste karo kahi bhi.</p>
@@ -80,32 +111,197 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+// ---- Unicode style helpers ----
+function upperOff(o){return o>=65&&o<=90;}
+function lowerOff(o){return o>=97&&o<=122;}
+function digitOff(o){return o>=48&&o<=57;}
+// Contiguous mathematical alphanumeric block mapper (upper, lower, optional digit base)
+function mkMath(upBase,loBase,digBase){return function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(upBase+o-65);if(lowerOff(o))return String.fromCodePoint(loBase+o-97);if(digBase!==undefined&&digitOff(o))return String.fromCodePoint(digBase+o-48);return c;};}
+// Combining-mark styles
+function mkCombine(mark){return function(c){return c+mark;};}
+// Char-map style: pass full a-z string (and optionally A-Z + 0-9)
+function mkMap(lo,up,dg){return function(c){var o=c.charCodeAt(0);if(upperOff(o))return (up&&up[o-65])||(lo&&lo[o-65])||c;if(lowerOff(o))return (lo&&lo[o-97])||c;if(dg&&digitOff(o))return dg[o-48]||c;return c;};}
+
+var smallCaps="ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ";
+var superMap={a:"ᵃ",b:"ᵇ",c:"ᶜ",d:"ᵈ",e:"ᵉ",f:"ᶠ",g:"ᵍ",h:"ʰ",i:"ⁱ",j:"ʲ",k:"ᵏ",l:"ˡ",m:"ᵐ",n:"ⁿ",o:"ᵒ",p:"ᵖ",q:"۹",r:"ʳ",s:"ˢ",t:"ᵗ",u:"ᵘ",v:"ᵛ",w:"ʷ",x:"ˣ",y:"ʸ",z:"ᶻ","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+var subMap={a:"ₐ",e:"ₑ",h:"ₕ",i:"ᵢ",j:"ⱼ",k:"ₖ",l:"ₗ",m:"ₘ",n:"ₙ",o:"ₒ",p:"ₚ",r:"ᵣ",s:"ₛ",t:"ₜ",u:"ᵤ",v:"ᵥ",x:"ₓ","0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉"};
+var flipMap="ɐqɔpǝɟƃɥᴉɾʞlɯuodbɹsʇnʌʍxʎz";
+var flipUpMap={A:"∀",B:"𐐒",C:"Ɔ",D:"ᗡ",E:"Ǝ",F:"Ⅎ",G:"⅁",H:"H",I:"I",J:"ſ",K:"ʞ",L:"˥",M:"W",N:"N",O:"O",P:"Ԁ",Q:"Ò",R:"ᴚ",S:"S",T:"⊥",U:"∩",V:"Λ",W:"M",X:"X",Y:"⅄",Z:"Z"};
+
+function flip(c){var o=c.charCodeAt(0);if(lowerOff(o))return flipMap[o-97];if(upperOff(o))return flipUpMap[c]||c;if(c===".")return"˙";if(c===",")return"'";if(c==="?")return"¿";if(c==="!")return"¡";if(c==="(")return")";if(c===")")return"(";return c;}
+
+// Mirrored (horizontal) approximate map
+var mirrorMap={a:"ɒ",b:"d",c:"ɔ",d:"b",e:"ɘ",f:"ꟻ",g:"g",h:"ʜ",i:"i",j:"ꞁ",k:"ʞ",l:"|",m:"m",n:"n",o:"o",p:"q",q:"p",r:"ɿ",s:"ꙅ",t:"ƚ",u:"u",v:"v",w:"w",x:"x",y:"y",z:"z"};
+function mirror(c){var o=c.charCodeAt(0);if(lowerOff(o))return mirrorMap[c]||c;if(upperOff(o))return mirrorMap[c.toLowerCase()]?mirrorMap[c.toLowerCase()].toUpperCase():c;return c;}
+
+// styles: object of name -> {fn, reverse:bool, wrap:fn}
 var styles={
-"𝗕𝗼𝗹𝗱":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D5D4+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D5EE+o-97);if(o>=48&&o<=57)return String.fromCodePoint(0x1D7EC+o-48);return c},
-"𝘐𝘵𝘢𝘭𝘪𝘤":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D608+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D622+o-97);return c},
-"𝘽𝙤𝙡𝙙 𝙄𝙩𝙖𝙡𝙞𝙘":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D63C+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D656+o-97);return c},
-"𝙼𝚘𝚗𝚘𝚜𝚙𝚊𝚌𝚎":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D670+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D68A+o-97);if(o>=48&&o<=57)return String.fromCodePoint(0x1D7F6+o-48);return c},
-"𝒮𝒸𝓇𝒾𝓅𝓉":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D49C+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D4B6+o-97);return c},
-"𝓑𝓸𝓵𝓭 𝓢𝓬𝓻𝓲𝓹𝓽":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D4D0+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D4EA+o-97);return c},
-"𝔉𝔯𝔞𝔨𝔱𝔲𝔯":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1D504+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1D51E+o-97);return c},
-"🅱🅾🆁🅳🅴🆁":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x1F170+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x1F170+o-97);return c},
-"Ⓒⓘⓡⓒⓛⓔⓓ":function(c){var o=c.charCodeAt(0);if(o>=65&&o<=90)return String.fromCodePoint(0x24B6+o-65);if(o>=97&&o<=122)return String.fromCodePoint(0x24D0+o-97);if(o>=48&&o<=57)return o===48?String.fromCodePoint(0x24EA):String.fromCodePoint(0x2460+o-49);return c},
-"U̲n̲d̲e̲r̲l̲i̲n̲e̲":function(c){return c+"\u0332"},
-"S̶t̶r̶i̶k̶e̶":function(c){return c+"\u0336"},
-"ꜱᴍᴀʟʟ ᴄᴀᴘꜱ":function(c){var map="ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ";var o=c.charCodeAt(0);if(o>=65&&o<=90)return map[o-65];if(o>=97&&o<=122)return map[o-97];return c},
-"ᵗⁱⁿʸ":function(c){var map={a:"ᵃ",b:"ᵇ",c:"ᶜ",d:"ᵈ",e:"ᵉ",f:"ᶠ",g:"ᵍ",h:"ʰ",i:"ⁱ",j:"ʲ",k:"ᵏ",l:"ˡ",m:"ᵐ",n:"ⁿ",o:"ᵒ",p:"ᵖ",r:"ʳ",s:"ˢ",t:"ᵗ",u:"ᵘ",v:"ᵛ",w:"ʷ",x:"ˣ",y:"ʸ",z:"ᶻ"};return map[c.toLowerCase()]||c},
-"ɟlᴉd":function(c){var map="ɐqɔpǝɟƃɥᴉɾʞlɯuodbɹsʇnʌʍxʎz";var o=c.charCodeAt(0);if(o>=97&&o<=122)return map[o-97];if(o>=65&&o<=90)return map[o-65];return c}
+"Bold Serif":{fn:mkMath(0x1D400,0x1D41A,0x1D7CE)},
+"Italic Serif":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D434+o-65);if(lowerOff(o))return o===104?"ℎ":String.fromCodePoint(0x1D44E+o-97);return c;}},
+"Bold Italic Serif":{fn:mkMath(0x1D468,0x1D482)},
+"Bold Sans":{fn:mkMath(0x1D5D4,0x1D5EE,0x1D7EC)},
+"Italic Sans":{fn:mkMath(0x1D608,0x1D622)},
+"Bold Italic Sans":{fn:mkMath(0x1D63C,0x1D656)},
+"Script":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D49C+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D4B6+o-97);return c;}},
+"Bold Script":{fn:mkMath(0x1D4D0,0x1D4EA)},
+"Fraktur":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D504+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D51E+o-97);return c;}},
+"Bold Fraktur":{fn:mkMath(0x1D56C,0x1D586)},
+"Double-Struck":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D538+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D552+o-97);if(digitOff(o))return String.fromCodePoint(0x1D7D8+o-48);return c;}},
+"Monospace":{fn:mkMath(0x1D670,0x1D68A,0x1D7F6)},
+"Circled":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x24B6+o-65);if(lowerOff(o))return String.fromCodePoint(0x24D0+o-97);if(digitOff(o))return o===48?"⓪":String.fromCodePoint(0x2460+o-49);return c;}},
+"Negative Circled":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1F150+o-65);if(lowerOff(o))return String.fromCodePoint(0x1F150+o-97);if(o===48)return"⓿";if(o>=49&&o<=57)return String.fromCodePoint(0x2776+o-49);return c;}},
+"Squared":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1F130+o-65);if(lowerOff(o))return String.fromCodePoint(0x1F130+o-97);return c;}},
+"Negative Squared":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1F170+o-65);if(lowerOff(o))return String.fromCodePoint(0x1F170+o-97);return c;}},
+"Parenthesised":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1F110+o-65);if(lowerOff(o))return String.fromCodePoint(0x249C+o-97);if(o>=49&&o<=57)return String.fromCodePoint(0x2474+o-49);return c;}},
+"Fullwidth":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0xFF21+o-65);if(lowerOff(o))return String.fromCodePoint(0xFF41+o-97);if(digitOff(o))return String.fromCodePoint(0xFF10+o-48);if(c===" ")return"　";return c;}},
+"Small Caps":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return smallCaps[o-65];if(lowerOff(o))return smallCaps[o-97];return c;}},
+"Superscript":{fn:function(c){return superMap[c.toLowerCase()]||c;}},
+"Subscript":{fn:function(c){return subMap[c.toLowerCase()]||c;}},
+"Upside Down":{fn:flip,reverse:true},
+"Mirrored":{fn:mirror},
+"Strikethrough":{fn:mkCombine("\u0336")},
+"Underline":{fn:mkCombine("\u0332")},
+"Double Underline":{fn:mkCombine("\u0333")},
+"Wavy Underline":{fn:mkCombine("\u0330")},
+"Spaced Out":{fn:function(c){return c+" ";}},
+"Bubble Text":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x24B6+o-65);if(lowerOff(o))return String.fromCodePoint(0x24D0+o-97);if(digitOff(o))return o===48?"⓪":String.fromCodePoint(0x2460+o-49);return c;}},
+"Stars ✦text✦":{fn:mkMath(0x1D5D4,0x1D5EE,0x1D7EC),wrap:function(s){return"✦ "+s+" ✦";}},
+"Hearts ♥text♥":{fn:mkMath(0x1D49C,0x1D4B6),wrap:function(s){return"♥ "+s+" ♥";}},
+"Sparkles ⋆text⋆":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D538+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D552+o-97);return c;},wrap:function(s){return"⋆｡°✩ "+s+" ✩°｡⋆";}},
+"Arrows »text«":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return smallCaps[o-65];if(lowerOff(o))return smallCaps[o-97];return c;},wrap:function(s){return"»»————— "+s+" —————««";}}
 };
+
+function convert(text,def){
+  var chars=text.split("").map(def.fn);
+  if(def.reverse)chars=chars.reverse();
+  var out=chars.join("");
+  if(def.wrap)out=def.wrap(out);
+  return out;
+}
+
+// ---- Favourites & copy counts ----
+function getFavs(){try{return JSON.parse(localStorage.getItem("ffFavs")||"[]");}catch(e){return [];}}
+function setFavs(f){localStorage.setItem("ffFavs",JSON.stringify(f));}
+function getCounts(){try{return JSON.parse(localStorage.getItem("ffCounts")||"{}");}catch(e){return {};}}
+function setCounts(c){localStorage.setItem("ffCounts",JSON.stringify(c));}
+var favOnly=false;
+
+function toggleFav(name){
+  var favs=getFavs();var i=favs.indexOf(name);
+  if(i>-1)favs.splice(i,1);else favs.unshift(name);
+  setFavs(favs);generate();
+}
+function toggleFavOnly(){
+  favOnly=!favOnly;
+  document.getElementById("favOnlyBtn").textContent="⭐ Favourites only: "+(favOnly?"On":"Off");
+  generate();
+}
+function copyStyle(name,text,btn){
+  navigator.clipboard.writeText(text);
+  var counts=getCounts();counts[name]=(counts[name]||0)+1;setCounts(counts);
+  btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy";},1000);
+  var badge=document.getElementById("cnt-"+cssId(name));
+  if(badge)badge.textContent="used "+counts[name]+"×";
+}
+function cssId(name){return name.replace(/[^a-zA-Z0-9]/g,"_");}
+
+function styleCard(name,converted){
+  var counts=getCounts();var favs=getFavs();
+  var fav=favs.indexOf(name)>-1;
+  var used=counts[name]?'used '+counts[name]+'×':'';
+  return '<div style="background:var(--card);padding:.7rem 1rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">'
+    +'<div style="flex:1;min-width:180px"><div style="font-size:.72rem;color:var(--text2);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'+name+' <span id="cnt-'+cssId(name)+'" style="color:var(--accent2)">'+used+'</span></div>'
+    +'<div style="font-size:1.1rem;word-break:break-all;margin-top:.15rem">'+converted+'</div></div>'
+    +'<div style="display:flex;gap:.3rem;white-space:nowrap">'
+    +'<button onclick="toggleFav(this.dataset.n)" data-n="'+name.replace(/"/g,"&quot;")+'" style="padding:.4rem .55rem;border:1px solid rgba(139,92,246,.4);border-radius:6px;background:none;cursor:pointer;font-size:.85rem">'+(fav?"⭐":"☆")+'</button>'
+    +'<button onclick="copyStyle(this.dataset.n,this.dataset.t,this)" data-n="'+name.replace(/"/g,"&quot;")+'" data-t="'+converted.replace(/"/g,"&quot;")+'" style="padding:.4rem .8rem;border:1px solid rgba(99,102,241,.4);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:.8rem">📋 Copy</button>'
+    +'</div></div>';
+}
+
 function generate(){
   var text=document.getElementById("input").value;
-  if(!text){document.getElementById("fonts").innerHTML="";return}
+  var out=document.getElementById("fonts");
+  if(!text){out.innerHTML="";return;}
+  var q=(document.getElementById("styleSearch").value||"").toLowerCase();
+  var favs=getFavs();
+  var names=Object.keys(styles);
+  // Filter by search
+  if(q)names=names.filter(function(n){return n.toLowerCase().indexOf(q)>-1;});
+  // Split favourites to top
+  var favNames=names.filter(function(n){return favs.indexOf(n)>-1;});
+  var restNames=names.filter(function(n){return favs.indexOf(n)<0;});
   var html="";
-  for(var name in styles){
-    var converted=text.split("").map(styles[name]).join("");
-    html+='<div style="background:var(--card);padding:.8rem 1rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px;font-size:1.1rem;word-break:break-all">'+converted+'</div><button onclick="navigator.clipboard.writeText(this.dataset.t);this.textContent=\'Copied!\';setTimeout(()=>this.textContent=\'📋 Copy\',1000)" data-t="'+converted.replace(/"/g,"&quot;")+'" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:.8rem;white-space:nowrap">📋 Copy</button></div>';
+  if(favOnly){
+    if(!favNames.length){out.innerHTML='<p class="info">No favourites yet — tap ☆ on a style to pin it.</p>';return;}
+    favNames.forEach(function(n){html+=styleCard(n,convert(text,styles[n]));});
+  }else{
+    if(favNames.length)html+='<div style="font-size:.8rem;color:var(--accent2);margin:.3rem 0">⭐ Favourites</div>';
+    favNames.forEach(function(n){html+=styleCard(n,convert(text,styles[n]));});
+    if(favNames.length)html+='<div style="font-size:.8rem;color:var(--text2);margin:.6rem 0 .3rem">All styles</div>';
+    restNames.forEach(function(n){html+=styleCard(n,convert(text,styles[n]));});
   }
-  document.getElementById("fonts").innerHTML=html;
+  if(!html)html='<p class="info">No styles match your search.</p>';
+  out.innerHTML=html;
 }
+
+// ---- Decoration builder ----
+var symbolLib={
+  "Stars":["★","☆","✦","✧","✩","✪","⋆","✫","✬","✭"],
+  "Hearts":["♥","♡","❤","💕","💖","💗","💓","❥","ღ","❦"],
+  "Arrows":["➤","➜","➔","⟶","»","«","↠","↞","➵","➸"],
+  "Lines":["─","━","═","▬","╌","┅","•┈","═══","─═─","≡"],
+  "Brackets":["「」","『』","【】","〖〗","《》","〔〕","⟦⟧","⌜⌟","｢｣","⟨⟩"],
+  "Flowers":["✿","❀","❁","✾","⚘","❃","❋","✽","⁂","❉"],
+  "Sparkles":["✨","⁺","˚","｡","°","·","∘","⊹","⋅","⭒"]
+};
+var chosenSymbol="✧";
+function renderSymbolLib(){
+  var html="";
+  Object.keys(symbolLib).forEach(function(cat){
+    html+='<div style="margin:.3rem 0"><span style="font-size:.75rem;color:var(--text2);display:inline-block;width:70px">'+cat+':</span>';
+    symbolLib[cat].forEach(function(s){
+      html+='<button onclick="pickSymbol(this.dataset.s)" data-s="'+s.replace(/"/g,"&quot;")+'" style="border:1px solid rgba(99,102,241,.3);background:none;color:var(--text);border-radius:6px;padding:.25rem .5rem;margin:.15rem;cursor:pointer;font-size:1rem">'+s+'</button>';
+    });
+    html+='</div>';
+  });
+  document.getElementById("symbolLib").innerHTML=html;
+}
+function pickSymbol(s){
+  chosenSymbol=s;
+  document.getElementById("decoLead").value=s;
+  document.getElementById("decoTrail").value=s;
+  buildDeco();
+}
+function buildDeco(){
+  var t=document.getElementById("decoInput").value;
+  var lead=document.getElementById("decoLead").value;
+  var trail=document.getElementById("decoTrail").value;
+  var divider=document.getElementById("decoDivider").checked;
+  var out=(lead?lead+" ":"")+t+(trail?" "+trail:"");
+  if(divider)out=out+"\n"+"─────";
+  document.getElementById("decoOut").textContent=out;
+}
+function copyDeco(btn){
+  navigator.clipboard.writeText(document.getElementById("decoOut").textContent);
+  btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy";},1000);
+}
+
+// ---- Instagram bio builder ----
+function bioCount(){
+  var v=document.getElementById("bioBuilder").value;
+  var len=[].concat.apply([],[...v]).length; // count code points
+  var el=document.getElementById("bioCounter");
+  el.textContent=len+" / 150 characters"+(len>150?" ⚠️ over the limit!":"");
+  el.style.color=len>150?"#ec4899":"var(--text2)";
+}
+function copyBio(btn){
+  navigator.clipboard.writeText(document.getElementById("bioBuilder").value);
+  btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy Bio";},1000);
+}
+
+renderSymbolLib();
+buildDeco();
+bioCount();
 generate();
   </script>
 </body>

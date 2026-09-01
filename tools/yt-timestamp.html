@@ -17,25 +17,79 @@
     <div class="breadcrumb"><a href="../">Home</a> → YT Timestamp</div>
     <div class="tool-section"><h1>🔗 YouTube Timestamp Link Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
-      <p class="info">Paste a YouTube URL and time to create a shareable timestamp link. Also create chapter markers!</p>
-<input type="text" id="url" placeholder="YouTube URL (e.g. https://youtube.com/watch?v=abc123)">
-<div class="row"><div><label>Hours</label><input type="number" id="h" value="0" min="0" style="width:60px"></div><div><label>Minutes</label><input type="number" id="m" value="1" min="0" max="59" style="width:60px"></div><div><label>Seconds</label><input type="number" id="s" value="30" min="0" max="59" style="width:60px"></div></div>
-<button class="btn" onclick="gen()" style="width:100%;margin-top:.5rem">🔗 Generate Link</button>
-<div id="result" style="margin-top:1rem"></div>
+      <p class="info">Build timestamped YouTube links, craft description chapters that pass YouTube's rules, and generate embed codes — all in your browser.</p>
 
-<h2 style="margin-top:1.5rem">📑 Chapter Maker</h2>
-<p class="info">Add multiple timestamps with labels to create YouTube chapters.</p>
+<style>
+.ts-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+.ts-tab{padding:.5rem 1rem;border:1px solid rgba(99,102,241,.35);border-radius:10px;background:var(--bg2);color:var(--text);cursor:pointer;font-size:.85rem;font-weight:600}
+.ts-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+.ts-panel{display:none}.ts-panel.active{display:block}
+.ts-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:1rem;margin-top:1rem}
+.ts-card code,.ts-card input[readonly]{word-break:break-all}
+.ch-row{display:flex;gap:.5rem;align-items:center;margin-top:.4rem}
+.ch-row input.ch-time{width:90px}
+.ch-row .ch-label{flex:1;min-width:120px}
+.ch-row button{font-size:.75rem;padding:.35rem .5rem;border-radius:8px;border:1px solid rgba(99,102,241,.4);background:transparent;color:var(--accent);cursor:pointer}
+.ch-row button:hover{background:var(--accent);color:#fff}
+.rule{display:flex;align-items:center;gap:.5rem;font-size:.85rem;padding:.25rem 0}
+.rule .icon{font-weight:700}
+.rule.pass{color:#4caf50}.rule.fail{color:#e74c3c}
+.ts-readonly{width:100%;margin-top:.4rem;padding:.5rem;border-radius:8px;border:1px solid rgba(99,102,241,.35);background:var(--bg2);color:var(--text);font-size:.85rem}
+</style>
+
+<div class="ts-tabs">
+<button class="ts-tab active" onclick="tsSwitch('link')">🔗 Timestamp Link</button>
+<button class="ts-tab" onclick="tsSwitch('chapters')">📑 Chapter Builder</button>
+<button class="ts-tab" onclick="tsSwitch('embed')">🖥️ Embed Code</button>
+</div>
+
+<!-- Timestamp Link -->
+<div id="ts-link" class="ts-panel active">
+<input type="text" id="url" placeholder="YouTube URL (e.g. https://youtube.com/watch?v=abc123)" style="width:100%">
+<div class="row" style="margin-top:.5rem"><div><label>Hours</label><input type="number" id="h" value="0" min="0" style="width:70px"></div><div><label>Minutes</label><input type="number" id="m" value="1" min="0" max="59" style="width:70px"></div><div><label>Seconds</label><input type="number" id="s" value="30" min="0" max="59" style="width:70px"></div><div><label>…or type a time</label><input type="text" id="timeText" placeholder="1:23:45" style="width:100px" oninput="syncFromTimeText()"></div></div>
+<button class="btn" onclick="gen()" style="width:100%;margin-top:.5rem">🔗 Generate Links</button>
+<div id="result"></div>
+</div>
+
+<!-- Chapter Builder -->
+<div id="ts-chapters" class="ts-panel">
+<p class="info">Add timestamp + title rows. YouTube requires: first chapter at 00:00, at least 3 chapters, each ≥ 10 seconds.</p>
 <div id="chapters"></div>
-<button class="btn btn-outline" onclick="addRow()" style="margin-top:.5rem">+ Add Timestamp</button>
 <div class="row" style="margin-top:.5rem">
-<button class="btn" onclick="exportChapters()">📋 Export as Description</button>
-<button class="btn btn-outline" onclick="document.getElementById('importBox').style.display=document.getElementById('importBox').style.display==='none'?'block':'none'">📥 Import Timestamps</button>
+<button class="btn btn-outline" onclick="addRow()">+ Add Chapter</button>
+<button class="btn btn-outline" onclick="sortChapters()">↕️ Sort by Time</button>
+</div>
+<div class="row" style="margin-top:.5rem">
+<div><label>Offset (± seconds) for all</label><input type="number" id="offset" value="0" style="width:100px"></div>
+<button class="btn btn-outline" onclick="applyOffset()">Apply Offset</button>
+</div>
+<div id="ruleCheck" class="ts-card"></div>
+<div class="row" style="margin-top:.5rem">
+<button class="btn" onclick="copyChapters(this)">📋 Copy Chapters</button>
+<button class="btn btn-outline" onclick="downloadChapters()">💾 Download .txt</button>
+<button class="btn btn-outline" onclick="toggleImport()">📥 Paste-Parse</button>
 </div>
 <div id="importBox" style="display:none;margin-top:.5rem">
-<textarea id="importText" rows="4" placeholder="Paste timestamps like:&#10;00:00 Intro&#10;01:30 Topic 1&#10;05:00 Conclusion"></textarea>
-<button class="btn" onclick="importChapters()" style="margin-top:.3rem">Import</button>
+<textarea id="importText" rows="4" placeholder="Paste a description or rough list like:&#10;00:00 Intro&#10;1:30 Topic 1&#10;5:00 Conclusion"></textarea>
+<button class="btn" onclick="importChapters()" style="margin-top:.3rem">Parse into Rows</button>
 </div>
-<div id="preview" style="margin-top:1rem"></div>
+<div id="preview"></div>
+</div>
+
+<!-- Embed Code -->
+<div id="ts-embed" class="ts-panel">
+<input type="text" id="embedUrl" placeholder="YouTube URL" style="width:100%">
+<div class="row" style="margin-top:.5rem">
+<div><label>Start (s or mm:ss)</label><input type="text" id="embStart" placeholder="0" style="width:100px"></div>
+<div><label>End (s or mm:ss)</label><input type="text" id="embEnd" placeholder="optional" style="width:100px"></div>
+</div>
+<div class="sep-options" style="margin:.5rem 0">
+<label><input type="checkbox" id="embAutoplay"> Autoplay</label>
+<label style="margin-left:1rem"><input type="checkbox" id="embMute"> Mute</label>
+</div>
+<button class="btn" onclick="genEmbed()" style="width:100%">🖥️ Generate Embed Code</button>
+<div id="embedResult"></div>
+</div>
 </div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Video mein chapters banana hai? Timestamps add karo description mein — viewers directly jump kar sakte hain. Yahan format karo easily.</p>
@@ -94,15 +148,220 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function gen(){var url=document.getElementById("url").value.trim();if(!url)return alert("Enter YouTube URL");var h=+document.getElementById("h").value,m=+document.getElementById("m").value,s=+document.getElementById("s").value;var total=h*3600+m*60+s;var vid="";var match=url.match(/[?&]v=([^&]+)/)||url.match(/youtu\.be\/([^?]+)/);if(match)vid=match[1];else return alert("Invalid YouTube URL");var link="https://youtube.com/watch?v="+vid+"&t="+total+"s";var display=h>0?h+"h "+m+"m "+s+"s":m+"m "+s+"s";document.getElementById("result").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><p class="info">Timestamp: '+display+'</p><input type="text" value="'+link+'" readonly style="width:100%;margin:.5rem 0" onclick="this.select()"><div class="row"><button class="btn" onclick="navigator.clipboard.writeText(\''+link+'\');this.textContent=\'Copied!\'">📋 Copy Link</button><a href="'+link+'" target="_blank" class="btn btn-outline" style="text-decoration:none">▶ Open</a></div></div>'}
+  <script>
+var CH_STORE='yt_ts_chapters';
+
+function tsSwitch(id){
+  document.querySelectorAll('.ts-panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.ts-tab').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('ts-'+id).classList.add('active');
+  document.querySelector('[onclick="tsSwitch(\''+id+'\')"]').classList.add('active');
+}
+
 function pad(n){return n<10?"0"+n:""+n}
-function secToTime(t){var h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return h>0?pad(h)+":"+pad(m)+":"+pad(s):pad(m)+":"+pad(s)}
-function addRow(time,label){var div=document.getElementById("chapters");var row=document.createElement("div");row.className="row";row.style.marginTop=".3rem";row.innerHTML='<input type="text" class="ch-time" placeholder="00:00" value="'+(time||"")+'" style="width:80px"><input type="text" class="ch-label" placeholder="Label" value="'+(label||"")+'" style="flex:1"><button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .5rem" onclick="this.parentElement.remove();renderPreview()">✕</button>';div.appendChild(row);row.querySelectorAll("input").forEach(function(i){i.addEventListener("input",renderPreview)})}
-function getChapterText(){var rows=document.querySelectorAll("#chapters .row");var lines=[];rows.forEach(function(r){var t=r.querySelector(".ch-time").value.trim();var l=r.querySelector(".ch-label").value.trim();if(t&&l)lines.push(t+" "+l)});return lines.join("\n")}
-function renderPreview(){var text=getChapterText();var el=document.getElementById("preview");if(!text){el.innerHTML="";return}el.innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>Preview:</strong><pre style="white-space:pre-wrap;margin-top:.5rem;font-size:.85rem">'+text+"</pre></div>"}
-function exportChapters(){var text=getChapterText();if(!text)return alert("Add at least one timestamp");navigator.clipboard.writeText(text);document.getElementById("preview").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><p class="info" style="color:#4caf50">✅ Copied to clipboard!</p><pre style="white-space:pre-wrap;margin-top:.5rem;font-size:.85rem">'+text+"</pre></div>"}
-function importChapters(){var text=document.getElementById("importText").value.trim();if(!text)return;document.getElementById("chapters").innerHTML="";text.split("\n").forEach(function(line){var match=line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)/);if(match)addRow(match[1],match[2])});document.getElementById("importBox").style.display="none";renderPreview()}
-addRow("00:00","Intro");
+function secToTime(t){t=Math.max(0,Math.floor(t));var h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return h>0?pad(h)+":"+pad(m)+":"+pad(s):pad(m)+":"+pad(s)}
+function secToCompact(t){t=Math.max(0,Math.floor(t));var h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;var out="";if(h)out+=h+"h";if(m)out+=m+"m";if(s||!out)out+=s+"s";return out}
+// Parse "1:23:45", "23:45", "45", or plain seconds
+function timeToSec(str){
+  if(str==null)return null;
+  str=(""+str).trim();
+  if(!str)return null;
+  if(/^\d+$/.test(str))return parseInt(str,10);
+  var parts=str.split(":").map(function(p){return p.trim()});
+  if(parts.some(function(p){return p===""||!/^\d+$/.test(p)}))return null;
+  var sec=0;
+  for(var i=0;i<parts.length;i++){sec=sec*60+parseInt(parts[i],10)}
+  return sec;
+}
+
+function extractVid(url){
+  if(!url)return null;
+  var m=url.match(/[?&]v=([a-zA-Z0-9_-]{11})/)||url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||url.match(/embed\/([a-zA-Z0-9_-]{11})/)||url.match(/shorts\/([a-zA-Z0-9_-]{11})/)||url.match(/live\/([a-zA-Z0-9_-]{11})/);
+  if(m)return m[1];
+  if(/^[a-zA-Z0-9_-]{11}$/.test(url.trim()))return url.trim();
+  return null;
+}
+
+function syncFromTimeText(){
+  var sec=timeToSec(document.getElementById("timeText").value);
+  if(sec==null)return;
+  document.getElementById("h").value=Math.floor(sec/3600);
+  document.getElementById("m").value=Math.floor((sec%3600)/60);
+  document.getElementById("s").value=sec%60;
+}
+
+function gen(){
+  var url=document.getElementById("url").value.trim();
+  if(!url)return alert("Enter a YouTube URL");
+  var vid=extractVid(url);
+  if(!vid)return alert("Invalid YouTube URL");
+  var h=+document.getElementById("h").value||0,m=+document.getElementById("m").value||0,s=+document.getElementById("s").value||0;
+  var total=h*3600+m*60+s;
+  var compact=secToCompact(total);
+  var watchSec="https://www.youtube.com/watch?v="+vid+"&t="+total+"s";
+  var watchH="https://www.youtube.com/watch?v="+vid+"&t="+compact;
+  var shortLink="https://youtu.be/"+vid+"?t="+total;
+  var embedLink="https://www.youtube.com/embed/"+vid+"?start="+total;
+  var rows=[
+    ["Watch (t=seconds)",watchSec],
+    ["Watch (t=1h2m3s)",watchH],
+    ["Short link (youtu.be)",shortLink],
+    ["Embed (start=)",embedLink]
+  ];
+  var html='<div class="ts-card"><p class="info">Timestamp: '+secToTime(total)+' ('+total+'s)</p>';
+  rows.forEach(function(r){
+    html+='<div style="margin-top:.5rem"><label style="font-size:.8rem;color:var(--text2)">'+r[0]+'</label>'+
+      '<input class="ts-readonly" type="text" readonly value="'+r[1]+'" onclick="this.select()">'+
+      '<button type="button" class="btn btn-outline" style="font-size:.75rem;padding:.3rem .6rem;margin-top:.3rem" onclick="copyBtn(\''+r[1]+'\',this)">📋 Copy</button></div>';
+  });
+  html+='<a href="'+watchSec+'" target="_blank" rel="noopener" class="btn" style="text-decoration:none;display:inline-block;margin-top:.6rem">▶ Open</a></div>';
+  document.getElementById("result").innerHTML=html;
+}
+
+function copyBtn(text,btn){navigator.clipboard.writeText(text);var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200)}
+
+// ---- Chapter Builder ----
+function addRow(time,label){
+  var div=document.getElementById("chapters");
+  var row=document.createElement("div");row.className="ch-row";
+  row.innerHTML='<input type="text" class="ch-time" placeholder="00:00" value="'+(time||"")+'">'+
+    '<input type="text" class="ch-label" placeholder="Chapter title" value="'+(label?label.replace(/"/g,"&quot;"):"")+'">'+
+    '<button type="button" title="Move up">↑</button>'+
+    '<button type="button" title="Move down">↓</button>'+
+    '<button type="button" title="Remove">✕</button>';
+  var btns=row.querySelectorAll("button");
+  btns[0].onclick=function(){var p=row.previousElementSibling;if(p)div.insertBefore(row,p);refresh()};
+  btns[1].onclick=function(){var n=row.nextElementSibling;if(n)div.insertBefore(n,row);refresh()};
+  btns[2].onclick=function(){row.remove();refresh()};
+  div.appendChild(row);
+  row.querySelectorAll("input").forEach(function(i){i.addEventListener("input",refresh)});
+  refresh();
+}
+
+function getChapters(){
+  var rows=document.querySelectorAll("#chapters .ch-row");
+  var list=[];
+  rows.forEach(function(r){
+    var t=r.querySelector(".ch-time").value.trim();
+    var l=r.querySelector(".ch-label").value.trim();
+    list.push({time:t,label:l,sec:timeToSec(t)});
+  });
+  return list;
+}
+
+function getChapterText(){
+  return getChapters().filter(function(c){return c.time&&c.label}).map(function(c){return c.time+" "+c.label}).join("\n");
+}
+
+function renderPreview(){
+  var text=getChapterText();
+  var el=document.getElementById("preview");
+  if(!text){el.innerHTML="";return}
+  el.innerHTML='<div class="ts-card"><strong>Description preview:</strong><pre style="white-space:pre-wrap;margin-top:.5rem;font-size:.85rem">'+escapeHtml(text)+"</pre></div>";
+}
+
+function checkRules(){
+  var list=getChapters().filter(function(c){return c.time&&c.label});
+  var el=document.getElementById("ruleCheck");
+  if(!list.length){el.innerHTML='<p class="info">Add chapters to see YouTube rule validation.</p>';return}
+  var valid=list.filter(function(c){return c.sec!=null});
+  var sorted=valid.slice().sort(function(a,b){return a.sec-b.sec});
+  var firstZero=valid.length&&valid[0].sec===0;
+  var atLeast3=list.length>=3;
+  var allValidTime=valid.length===list.length;
+  var minGapOk=true;
+  for(var i=1;i<sorted.length;i++){if(sorted[i].sec-sorted[i-1].sec<10){minGapOk=false;break}}
+  function rule(ok,txt){return '<div class="rule '+(ok?"pass":"fail")+'"><span class="icon">'+(ok?"✅":"❌")+'</span>'+txt+'</div>'}
+  el.innerHTML='<strong>YouTube chapter rules</strong>'+
+    rule(firstZero,"First chapter starts at 00:00")+
+    rule(atLeast3,"At least 3 chapters ("+list.length+" added)")+
+    rule(minGapOk,"Each chapter is at least 10 seconds long")+
+    rule(allValidTime,"All timestamps are valid");
+}
+
+function refresh(){renderPreview();checkRules();saveChapters()}
+
+function sortChapters(){
+  var list=getChapters().filter(function(c){return c.time&&c.label&&c.sec!=null}).sort(function(a,b){return a.sec-b.sec});
+  document.getElementById("chapters").innerHTML="";
+  list.forEach(function(c){addRow(c.time,c.label)});
+}
+
+function applyOffset(){
+  var off=parseInt(document.getElementById("offset").value,10)||0;
+  var list=getChapters();
+  document.getElementById("chapters").innerHTML="";
+  list.forEach(function(c){
+    var sec=c.sec!=null?Math.max(0,c.sec+off):null;
+    addRow(sec!=null?secToTime(sec):c.time,c.label);
+  });
+}
+
+function copyChapters(btn){
+  var text=getChapterText();
+  if(!text)return alert("Add at least one chapter");
+  navigator.clipboard.writeText(text);
+  var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200);
+}
+
+function downloadChapters(){
+  var text=getChapterText();
+  if(!text)return alert("Add at least one chapter");
+  download(new Blob([text],{type:"text/plain"}),"youtube-chapters.txt");
+}
+
+function toggleImport(){
+  var b=document.getElementById("importBox");
+  b.style.display=b.style.display==="none"?"block":"none";
+}
+
+function importChapters(){
+  var text=document.getElementById("importText").value.trim();
+  if(!text)return;
+  document.getElementById("chapters").innerHTML="";
+  text.split("\n").forEach(function(line){
+    var match=line.match(/(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–—:.)]?\s*(.+)/);
+    if(match)addRow(match[1].trim(),match[2].trim());
+  });
+  document.getElementById("importBox").style.display="none";
+  refresh();
+}
+
+function saveChapters(){
+  try{localStorage.setItem(CH_STORE,JSON.stringify(getChapters().map(function(c){return{time:c.time,label:c.label}})))}catch(e){}
+}
+function loadChapters(){
+  try{
+    var data=JSON.parse(localStorage.getItem(CH_STORE)||"null");
+    if(data&&data.length){data.forEach(function(c){addRow(c.time,c.label)});return true}
+  }catch(e){}
+  return false;
+}
+
+// ---- Embed generator ----
+function genEmbed(){
+  var url=document.getElementById("embedUrl").value.trim();
+  var vid=extractVid(url);
+  var el=document.getElementById("embedResult");
+  if(!vid){el.innerHTML='<p style="color:#e74c3c;margin-top:.5rem">Invalid YouTube URL.</p>';return}
+  var params=[];
+  var start=timeToSec(document.getElementById("embStart").value);
+  var end=timeToSec(document.getElementById("embEnd").value);
+  if(start!=null&&start>0)params.push("start="+start);
+  if(end!=null&&end>0)params.push("end="+end);
+  if(document.getElementById("embAutoplay").checked)params.push("autoplay=1");
+  if(document.getElementById("embMute").checked)params.push("mute=1");
+  var src="https://www.youtube.com/embed/"+vid+(params.length?"?"+params.join("&"):"");
+  var code='<iframe width="560" height="315" src="'+src+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+  el.innerHTML='<div class="ts-card"><textarea class="ts-readonly" rows="3" readonly onclick="this.select()">'+code.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</textarea>'+
+    '<button type="button" class="btn" style="margin-top:.4rem" onclick="copyBtn(this.getAttribute(\'data-code\'),this)" data-code="'+code.replace(/"/g,"&quot;")+'">📋 Copy Embed Code</button></div>';
+}
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+// Init
+if(!loadChapters()){addRow("00:00","Intro")}
+refresh();
 </script>
 </body>
 </html>

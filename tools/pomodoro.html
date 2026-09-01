@@ -29,11 +29,35 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
-    .timer-display{font-size:5rem;font-weight:800;text-align:center;margin:2rem 0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
-    .timer-controls{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-    .mode-btns{display:flex;gap:.5rem;justify-content:center;margin:1rem 0}
+    .timer-display{font-size:3rem;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+    .timer-controls{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1rem 0}
+    .mode-btns{display:flex;gap:.5rem;justify-content:center;margin:1rem 0;flex-wrap:wrap}
     .mode-btns button{padding:.5rem 1.2rem;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:.9rem}
     .mode-btns button.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .ring-wrap{position:relative;width:260px;height:260px;margin:1.5rem auto;max-width:80vw}
+    .ring-wrap canvas{width:100%;height:100%}
+    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+    .phase-pill{display:inline-block;padding:.35rem 1rem;border-radius:20px;font-weight:700;font-size:.9rem;margin-bottom:.4rem}
+    .phase-focus{background:rgba(99,102,241,.18);color:var(--accent)}
+    .phase-short{background:rgba(139,92,246,.18);color:var(--accent2)}
+    .phase-long{background:rgba(236,72,153,.15);color:var(--accent3)}
+    .preset-btns{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin:1rem 0}
+    .preset-btns button{padding:.4rem .9rem;border-radius:20px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.08);color:var(--text);cursor:pointer;font-size:.82rem}
+    .preset-btns button.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .cfg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;max-width:420px;margin:1rem auto}
+    .cfg-grid label{font-size:.8rem;font-weight:600;text-align:left;display:block}
+    .stat-card{background:var(--card);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,.06);text-align:center}
+    .stat-card .n{font-size:1.6rem;font-weight:700}
+    .task-item{background:var(--card);padding:.5rem .7rem;border-radius:8px;margin:.3rem 0;display:flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.06)}
+    .task-item.current{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-glow)}
+    .distraction-item{background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);padding:.4rem .7rem;border-radius:8px;margin:.25rem 0;font-size:.85rem;display:flex;justify-content:space-between;gap:.5rem}
+    .kbd{display:inline-block;background:var(--card);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:.1rem .5rem;font-family:monospace;font-size:.8rem}
+    .fs-mode{position:fixed;inset:0;background:var(--bg);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .fs-mode.on{display:flex}
+    .fs-mode .fs-time{font-size:min(22vw,14rem);font-weight:800;font-variant-numeric:tabular-nums;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+    .vol-row{display:flex;align-items:center;gap:.5rem;justify-content:center;flex-wrap:wrap;margin:.6rem 0}
+    .switch-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:.6rem 0;font-size:.85rem}
+    .bar-chart{display:flex;align-items:flex-end;gap:.4rem;height:120px;justify-content:center;margin-top:.5rem}
   </style>
 </head>
 <body>
@@ -44,37 +68,108 @@
     <div class="tool-section" style="text-align:center">
       <h1>⏱️ Pomodoro Timer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Focus for 25 minutes, then take a 5-minute break. Repeat!</p>
-      <div class="mode-btns">
-        <button class="active" onclick="setMode(25,'Focus',this)">🎯 Focus (25m)</button>
-        <button onclick="setMode(5,'Short Break',this)">☕ Short Break (5m)</button>
-        <button onclick="setMode(15,'Long Break',this)">🌴 Long Break (15m)</button>
-        <button onclick="setMode(null,'Custom',this)">⚙️ Custom</button>
+      <p class="info">Focus for 25 minutes, then take a 5-minute break. Cycle through focus and break phases automatically. All data stays in your browser.</p>
+
+      <div class="preset-btns" id="presetBtns">
+        <button data-p="classic" class="active" onclick="applyPreset('classic',this)">📚 Classic 25/5</button>
+        <button data-p="deep" onclick="applyPreset('deep',this)">🧠 Deep Work 50/10</button>
+        <button data-p="short" onclick="applyPreset('short',this)">⚡ Short Bursts 15/3</button>
+        <button data-p="exam" onclick="applyPreset('exam',this)">🎓 Exam Sprint 45/15</button>
+        <button data-p="custom" onclick="applyPreset('custom',this)">⚙️ Custom</button>
       </div>
-      <div id="customRow" style="display:none;margin:1rem auto;max-width:200px">
-        <input type="number" id="customMin" value="25" min="1" max="120" placeholder="Minutes">
+
+      <div id="cfgBox" style="display:none">
+        <div class="cfg-grid">
+          <div><label>Focus (min)</label><input type="number" id="cfgFocus" min="1" max="180" value="25" oninput="onCfgChange()"></div>
+          <div><label>Short break (min)</label><input type="number" id="cfgShort" min="1" max="60" value="5" oninput="onCfgChange()"></div>
+          <div><label>Long break (min)</label><input type="number" id="cfgLong" min="1" max="120" value="15" oninput="onCfgChange()"></div>
+          <div><label>Focus sessions before long break</label><input type="number" id="cfgCount" min="1" max="12" value="4" oninput="onCfgChange()"></div>
+        </div>
       </div>
-      <div class="timer-display" id="display">25:00</div>
-      <p class="info" id="label">🎯 Focus Time</p>
+
+      <div class="ring-wrap">
+        <canvas id="ring" width="260" height="260"></canvas>
+        <div class="ring-center">
+          <span class="phase-pill phase-focus" id="phasePill">🎯 Focus</span>
+          <div class="timer-display" id="display">25:00</div>
+          <span class="info" id="cycleInfo" style="margin:0"></span>
+        </div>
+      </div>
+
       <p class="info" id="currentTask" style="font-weight:600;margin:.5rem 0"></p>
+
       <div class="timer-controls">
         <button class="btn" onclick="startTimer()" id="startBtn">▶ Start</button>
         <button class="btn btn-outline" onclick="pauseTimer()">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="skipPhase()">⏭ Skip</button>
         <button class="btn btn-outline" onclick="resetTimer()">↺ Reset</button>
-        <a href="ambient-noise" target="_blank" class="btn btn-outline" style="text-decoration:none">🎵 Play Focus Sounds</a>
+        <button class="btn btn-outline" onclick="logDistraction()">🚫 Distraction</button>
+        <button class="btn btn-outline" onclick="enterFullscreen()">⛶ Focus Mode</button>
+        <a href="/tools/ambient-noise" target="_blank" class="btn btn-outline" style="text-decoration:none">🎵 Focus Sounds</a>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:2rem 0;max-width:400px;margin-left:auto;margin-right:auto" id="stats">
-        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="sessions">0</div><div class="info">Sessions</div></div>
-        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="totalMin">0</div><div class="info">Minutes</div></div>
-        <div style="background:var(--card);padding:1rem;border-radius:12px"><div style="font-size:1.5rem;font-weight:700" id="streak">0</div><div class="info">Today's Streak</div></div>
+
+      <div class="switch-row">
+        <label><input type="checkbox" id="autoStart" style="width:auto" onchange="saveSettings()"> Auto-start next phase</label>
+        <label><input type="checkbox" id="notifyChk" style="width:auto" onchange="toggleNotify()"> Browser notifications</label>
       </div>
-      <div style="background:var(--card);padding:1rem;border-radius:12px;max-width:400px;margin:1rem auto" id="weeklyStats"></div>
-      <div style="max-width:400px;margin:0 auto">
-        <h3>📝 Task List</h3>
+      <div class="vol-row">
+        <label style="font-size:.85rem"><input type="checkbox" id="muteChk" style="width:auto" onchange="saveSettings()"> 🔇 Mute</label>
+        <span style="font-size:.85rem">🔊 Volume</span>
+        <input type="range" id="volRange" min="0" max="100" value="60" style="width:140px" oninput="saveSettings()">
+        <button class="btn btn-outline" style="padding:.3rem .8rem;font-size:.8rem" onclick="testSound()">Test</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:1.5rem auto;max-width:520px">
+        <div class="stat-card"><div class="n" id="statToday">0</div><div class="info">Today</div></div>
+        <div class="stat-card"><div class="n" id="statWeek">0</div><div class="info">This Week</div></div>
+        <div class="stat-card"><div class="n" id="statStreak">0</div><div class="info">Day Streak 🔥</div></div>
+        <div class="stat-card"><div class="n" id="statTotalMin">0</div><div class="info">Focus Minutes</div></div>
+        <div class="stat-card"><div class="n" id="statTotal">0</div><div class="info">All-Time</div></div>
+        <div class="stat-card"><div class="n" id="statTasks">0</div><div class="info">Tasks Done</div></div>
+      </div>
+
+      <div class="stat-card" style="max-width:520px;margin:1rem auto">
+        <strong>📊 Last 7 Days</strong>
+        <canvas id="weekChart" width="480" height="150" style="width:100%;max-width:480px;margin-top:.5rem"></canvas>
+      </div>
+
+      <div style="max-width:520px;margin:1.5rem auto;text-align:left">
+        <h3>📝 Tasks</h3>
         <div class="row"><input type="text" id="pomTask" placeholder="What are you working on?" style="flex:3" onkeydown="if(event.key==='Enter')addPomTask()"><button class="btn" onclick="addPomTask()">+</button></div>
         <div id="pomTasks" style="margin-top:.5rem"></div>
       </div>
+
+      <div style="max-width:520px;margin:1.5rem auto;text-align:left">
+        <h3>🚫 Distraction Log</h3>
+        <p class="info">Tap the Distraction button whenever you get interrupted, then review here.</p>
+        <div id="distractionLog"></div>
+        <button class="btn btn-outline" style="padding:.3rem .8rem;font-size:.8rem;margin-top:.4rem" onclick="clearDistractions()">Clear log</button>
+      </div>
+
+      <div style="max-width:520px;margin:1rem auto;text-align:left" class="info">
+        <strong>⌨️ Keyboard shortcuts:</strong>
+        <span class="kbd">Space</span> start/pause ·
+        <span class="kbd">R</span> reset ·
+        <span class="kbd">S</span> skip ·
+        <span class="kbd">D</span> distraction ·
+        <span class="kbd">F</span> focus mode ·
+        <span class="kbd">Esc</span> exit focus mode
+      </div>
+
     </div>
+
+    <div class="fs-mode" id="fsMode">
+      <span class="phase-pill phase-focus" id="fsPill">🎯 Focus</span>
+      <div class="fs-time" id="fsTime">25:00</div>
+      <p class="info" id="fsTask"></p>
+      <div class="timer-controls">
+        <button class="btn" onclick="startTimer()">▶ Start</button>
+        <button class="btn btn-outline" onclick="pauseTimer()">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="exitFullscreen()">✕ Exit</button>
+      </div>
+      <p class="info">Press <span class="kbd">Esc</span> to exit</p>
+    </div>
+
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -136,45 +231,297 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-let mins=25,secs=0,interval=null,mode='Focus',sessions=0,totalMin=0;
-function pad(n){return n<10?'0'+n:n}
-function render(){document.getElementById('display').textContent=pad(mins)+':'+pad(secs)}
-function todayKey(){return new Date().toISOString().slice(0,10)}
-function getHistory(){return JSON.parse(localStorage.getItem('pomHistory')||'{}')}
-function saveSession(){var h=getHistory();var k=todayKey();h[k]=(h[k]||0)+1;localStorage.setItem('pomHistory',JSON.stringify(h));renderWeekly()}
-function renderWeekly(){var h=getHistory(),today=new Date(),days=[],total=0;for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);var k=d.toISOString().slice(0,10);var c=h[k]||0;total+=c;days.push(d.toLocaleDateString('en',{weekday:'short'})+': '+c)}document.getElementById('weeklyStats').innerHTML='<strong>📊 Weekly Stats</strong><div style="margin-top:.5rem;font-size:.9rem">Today: <strong>'+(h[todayKey()]||0)+'</strong> pomodoros | Week: <strong>'+total+'</strong></div><div style="font-size:.8rem;color:var(--text2);margin-top:.3rem">'+days.join(' · ')+'</div>'}
-function showCurrentTask(){var t=pomTasks.find(function(x){return!x.done});document.getElementById('currentTask').textContent=t?'📌 Working on: '+t.text:''}
-function setMode(m,label,btn){
-  clearInterval(interval);interval=null;
-  document.querySelectorAll('.mode-btns button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('customRow').style.display=m===null?'block':'none';
-  mode=label;mins=m||(+document.getElementById('customMin').value)||25;secs=0;
-  document.getElementById('label').textContent=(label==='Focus'?'🎯':label==='Short Break'?'☕':label==='Long Break'?'🌴':'⚙️')+' '+label;
-  render();
+/* ===== Pomodoro Advanced ===== */
+var PRESETS={classic:{focus:25,short:5,long:15,count:4},deep:{focus:50,short:10,long:15,count:4},short:{focus:15,short:3,long:15,count:4},exam:{focus:45,short:15,long:20,count:3}};
+var cfg={preset:'classic',focus:25,short:5,long:15,count:4,autoStart:false,mute:false,vol:60,notify:false};
+var phase='focus';
+var focusDone=0;
+var remaining=25*60;
+var endAt=null;
+var running=false;
+var tickTimer=null;
+var pomTasks=[];
+var currentTaskId=null;
+var distractions=[];
+var audioCtx=null;
+
+function pad(n){return n<10?'0'+n:''+n}
+function fmt(s){s=Math.max(0,Math.round(s));return pad(Math.floor(s/60))+':'+pad(s%60)}
+function phaseMins(){return phase==='focus'?cfg.focus:phase==='short'?cfg.short:cfg.long}
+function phaseLabel(){return phase==='focus'?'🎯 Focus':phase==='short'?'☕ Short Break':'🌴 Long Break';}
+function phaseClass(){return phase==='focus'?'phase-focus':phase==='short'?'phase-short':'phase-long';}
+
+function loadSettings(){
+  try{var s=JSON.parse(localStorage.getItem('pomCfg')||'null');if(s)cfg=Object.assign(cfg,s);}catch(e){}
+  document.getElementById('cfgFocus').value=cfg.focus;
+  document.getElementById('cfgShort').value=cfg.short;
+  document.getElementById('cfgLong').value=cfg.long;
+  document.getElementById('cfgCount').value=cfg.count;
+  document.getElementById('autoStart').checked=!!cfg.autoStart;
+  document.getElementById('muteChk').checked=!!cfg.mute;
+  document.getElementById('volRange').value=cfg.vol;
+  document.getElementById('notifyChk').checked=!!cfg.notify;
+  document.querySelectorAll('#presetBtns button').forEach(function(b){b.classList.toggle('active',b.dataset.p===cfg.preset)});
+  document.getElementById('cfgBox').style.display=cfg.preset==='custom'?'block':'none';
+}
+function saveSettings(){
+  cfg.autoStart=document.getElementById('autoStart').checked;
+  cfg.mute=document.getElementById('muteChk').checked;
+  cfg.vol=+document.getElementById('volRange').value;
+  localStorage.setItem('pomCfg',JSON.stringify(cfg));
+}
+function applyPreset(p,btn){
+  document.querySelectorAll('#presetBtns button').forEach(function(b){b.classList.remove('active')});
+  if(btn)btn.classList.add('active');
+  cfg.preset=p;
+  if(p!=='custom'){var pr=PRESETS[p];cfg.focus=pr.focus;cfg.short=pr.short;cfg.long=pr.long;cfg.count=pr.count;
+    document.getElementById('cfgFocus').value=cfg.focus;
+    document.getElementById('cfgShort').value=cfg.short;
+    document.getElementById('cfgLong').value=cfg.long;
+    document.getElementById('cfgCount').value=cfg.count;
+    document.getElementById('cfgBox').style.display='none';
+  } else {
+    document.getElementById('cfgBox').style.display='block';
+  }
+  resetTimer();
+  saveSettings();
+}
+function onCfgChange(){
+  cfg.focus=Math.max(1,+document.getElementById('cfgFocus').value||25);
+  cfg.short=Math.max(1,+document.getElementById('cfgShort').value||5);
+  cfg.long=Math.max(1,+document.getElementById('cfgLong').value||15);
+  cfg.count=Math.max(1,+document.getElementById('cfgCount').value||4);
+  cfg.preset='custom';
+  resetTimer();
+  saveSettings();
+}
+
+function currentRemaining(){
+  if(running&&endAt!=null)return Math.max(0,(endAt-Date.now())/1000);
+  return remaining;
 }
 function startTimer(){
-  if(interval)return;
-  if(document.getElementById('customRow').style.display!=='none')mins=+document.getElementById('customMin').value||25;
-  showCurrentTask();
-  interval=setInterval(()=>{
-    if(secs===0){if(mins===0){clearInterval(interval);interval=null;sessions++;totalMin+=mode==='Focus'?25:5;
-      document.getElementById('sessions').textContent=sessions;document.getElementById('totalMin').textContent=totalMin;document.getElementById('streak').textContent=sessions;
-      if(mode==='Focus')saveSession();
-      try{new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Mj4yGe3J3gIeLjIqFfXZ1fIKIi4uIhH15eX6Dh4qKiIV/e3l8gYaJioiGgn56eX2BhYiJiIaCf3t5fIGFiImIhoJ+e3l8gYWIiYiGgn57eXyBhYiJiIaCfnt5fIGFiImIhoJ+e3l8gYWIiYiGgn57eQ==').play()}catch(e){}
-      alert((mode==='Focus'?'🎯 Focus session complete! Take a break.':'☕ Break over! Time to focus.'));return}mins--;secs=59}
-    else secs--;render()
-  },1000);
+  if(running)return;
+  initAudio();
+  running=true;
+  endAt=Date.now()+remaining*1000;
+  document.getElementById('startBtn').textContent='▶ Running';
+  if(tickTimer)clearInterval(tickTimer);
+  tickTimer=setInterval(tick,250);
+  tick();
 }
-function pauseTimer(){clearInterval(interval);interval=null}
-function resetTimer(){clearInterval(interval);interval=null;mins=25;secs=0;render()}
-var pomTasks=JSON.parse(localStorage.getItem("pomTasks")||"[]");
-function addPomTask(){var t=document.getElementById("pomTask").value.trim();if(!t)return;pomTasks.push({text:t,done:false});document.getElementById("pomTask").value="";savePomTasks();renderPomTasks();showCurrentTask()}
-function togglePomTask(i){pomTasks[i].done=!pomTasks[i].done;savePomTasks();renderPomTasks();showCurrentTask()}
-function removePomTask(i){pomTasks.splice(i,1);savePomTasks();renderPomTasks();showCurrentTask()}
-function savePomTasks(){localStorage.setItem("pomTasks",JSON.stringify(pomTasks))}
-function renderPomTasks(){document.getElementById("pomTasks").innerHTML=pomTasks.map(function(t,i){return '<div style="background:var(--card);padding:.4rem .6rem;border-radius:6px;margin:.2rem 0;display:flex;align-items:center;gap:.5rem;'+(t.done?"opacity:.5":"")+'"><span onclick="togglePomTask('+i+')" style="cursor:pointer;font-size:1.1rem">'+(t.done?"✅":"⬜")+'</span><span style="flex:1;'+(t.done?"text-decoration:line-through":"")+'">'+t.text+'</span><button onclick="removePomTask('+i+')" style="background:none;border:none;color:#f44336;cursor:pointer">×</button></div>'}).join("")||'<p class="info">No tasks yet</p>'}
-renderPomTasks();render();showCurrentTask();renderWeekly();
+function pauseTimer(){
+  if(!running)return;
+  remaining=currentRemaining();
+  running=false;endAt=null;
+  clearInterval(tickTimer);tickTimer=null;
+  document.getElementById('startBtn').textContent='▶ Start';
+  render();
+}
+function resetTimer(){
+  running=false;endAt=null;
+  clearInterval(tickTimer);tickTimer=null;
+  remaining=phaseMins()*60;
+  document.getElementById('startBtn').textContent='▶ Start';
+  render();
+}
+function skipPhase(){
+  running=false;endAt=null;clearInterval(tickTimer);tickTimer=null;
+  advancePhase(false);
+}
+function tick(){
+  var r=currentRemaining();
+  remaining=r;
+  render();
+  if(r<=0){
+    running=false;endAt=null;clearInterval(tickTimer);tickTimer=null;
+    onPhaseComplete();
+  }
+}
+function onPhaseComplete(){
+  if(phase==='focus'){
+    recordFocusComplete();
+    playSound('focus');
+    notify('🎯 Focus done!','Time for a break.');
+  } else {
+    playSound('break');
+    notify('☕ Break over!','Back to focus.');
+  }
+  advancePhase(true);
+}
+function advancePhase(auto){
+  if(phase==='focus'){
+    focusDone++;
+    phase=(focusDone%cfg.count===0)?'long':'short';
+  } else {
+    phase='focus';
+  }
+  remaining=phaseMins()*60;
+  render();
+  if(auto&&cfg.autoStart){startTimer();}
+}
+
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function getStats(){try{return JSON.parse(localStorage.getItem('pomStats')||'{}')}catch(e){return{}}}
+function saveStats(s){localStorage.setItem('pomStats',JSON.stringify(s))}
+function recordFocusComplete(){
+  var s=getStats();var k=todayKey();
+  s[k]=s[k]||{count:0,min:0};
+  s[k].count++;s[k].min+=cfg.focus;
+  saveStats(s);
+  if(currentTaskId!=null){var t=pomTasks.find(function(x){return x.id===currentTaskId});if(t){t.poms=(t.poms||0)+1;savePomTasks();renderPomTasks();}}
+  renderStats();
+}
+function computeStreak(s){
+  var streak=0,d=new Date();
+  for(var i=0;i<400;i++){var k=d.toISOString().slice(0,10);if(s[k]&&s[k].count>0){streak++;d.setDate(d.getDate()-1);}else{break;}}
+  return streak;
+}
+function renderStats(){
+  var s=getStats();var today=new Date();var week=0,total=0,totalMin=0;
+  for(var k in s){total+=s[k].count;totalMin+=s[k].min||0;}
+  for(var i=0;i<7;i++){var d=new Date(today);d.setDate(d.getDate()-i);var kk=d.toISOString().slice(0,10);if(s[kk])week+=s[kk].count;}
+  document.getElementById('statToday').textContent=(s[todayKey()]&&s[todayKey()].count)||0;
+  document.getElementById('statWeek').textContent=week;
+  document.getElementById('statTotalMin').textContent=totalMin;
+  document.getElementById('statStreak').textContent=computeStreak(s);
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statTasks').textContent=pomTasks.filter(function(t){return t.done}).length;
+  drawWeekChart(s);
+}
+function drawWeekChart(s){
+  var c=document.getElementById('weekChart');if(!c)return;var ctx=c.getContext('2d');
+  var w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+  var today=new Date();var vals=[],labels=[];
+  for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);var k=d.toISOString().slice(0,10);vals.push((s[k]&&s[k].count)||0);labels.push(d.toLocaleDateString('en',{weekday:'short'}));}
+  var max=Math.max(1,Math.max.apply(null,vals));
+  var bw=w/7,padx=14;
+  var grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,'#8b5cf6');grad.addColorStop(1,'#6366f1');
+  ctx.font='11px sans-serif';ctx.textAlign='center';
+  var txt=getComputedStyle(document.body).getPropertyValue('--text2')||'#999';
+  for(var j=0;j<7;j++){
+    var bh=(vals[j]/max)*(h-46);var x=j*bw+padx/2;var y=h-24-bh;
+    ctx.fillStyle=grad;ctx.beginPath();
+    var rw=bw-padx;var rad=6;
+    ctx.moveTo(x,y+rad);ctx.arcTo(x,y,x+rad,y,rad);ctx.arcTo(x+rw,y,x+rw,y+rad,rad);ctx.lineTo(x+rw,h-24);ctx.lineTo(x,h-24);ctx.closePath();ctx.fill();
+    ctx.fillStyle=txt;ctx.fillText(labels[j],x+rw/2,h-8);
+    if(vals[j]>0){ctx.fillStyle='#8b5cf6';ctx.fillText(vals[j],x+rw/2,y-4);}
+  }
+}
+
+function drawRing(){
+  var c=document.getElementById('ring');if(!c)return;var ctx=c.getContext('2d');
+  var w=c.width,h=c.height,cx=w/2,cy=h/2,r=w/2-16;
+  ctx.clearRect(0,0,w,h);
+  ctx.lineWidth=14;ctx.lineCap='round';
+  ctx.strokeStyle='rgba(255,255,255,.08)';
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  var totalSec=phaseMins()*60;var frac=totalSec?currentRemaining()/totalSec:0;frac=Math.max(0,Math.min(1,frac));
+  var grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'#6366f1');grad.addColorStop(1,'#8b5cf6');
+  ctx.strokeStyle=grad;
+  var start=-Math.PI/2;var end=start+Math.PI*2*frac;
+  ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.stroke();
+}
+
+function render(){
+  var r=currentRemaining();
+  document.getElementById('display').textContent=fmt(r);
+  var pill=document.getElementById('phasePill');
+  pill.textContent=phaseLabel();pill.className='phase-pill '+phaseClass();
+  document.getElementById('cycleInfo').textContent='Cycle '+((focusDone%cfg.count)+(phase==='focus'?1:0))+' / '+cfg.count;
+  drawRing();
+  document.title=fmt(r)+' · '+phaseLabel()+' — Pomodoro';
+  var fsp=document.getElementById('fsPill');fsp.textContent=phaseLabel();fsp.className='phase-pill '+phaseClass();
+  document.getElementById('fsTime').textContent=fmt(r);
+}
+
+function initAudio(){if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
+function beep(freq,when,dur){
+  if(!audioCtx)return;
+  var o=audioCtx.createOscillator();var g=audioCtx.createGain();
+  o.frequency.value=freq;o.type='sine';
+  var v=(cfg.mute?0:(cfg.vol/100))*0.4;
+  g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(v,when+0.02);g.gain.exponentialRampToValueAtTime(0.0001,when+dur);
+  o.connect(g);g.connect(audioCtx.destination);o.start(when);o.stop(when+dur);
+}
+function playSound(kind){
+  initAudio();if(!audioCtx||cfg.mute)return;var t=audioCtx.currentTime;
+  if(kind==='focus'){beep(880,t,0.25);beep(660,t+0.28,0.35);}
+  else{beep(523,t,0.2);beep(784,t+0.22,0.2);beep(1046,t+0.44,0.3);}
+}
+function testSound(){initAudio();playSound(phase==='focus'?'focus':'break');}
+
+function toggleNotify(){
+  var chk=document.getElementById('notifyChk');
+  if(chk.checked){
+    if(!('Notification' in window)){alert('Notifications are not supported in this browser.');chk.checked=false;cfg.notify=false;saveSettings();return;}
+    Notification.requestPermission().then(function(p){cfg.notify=(p==='granted');chk.checked=cfg.notify;if(p==='denied')alert('Notifications were blocked. You can re-enable them in your browser settings.');saveSettings();});
+  } else {cfg.notify=false;saveSettings();}
+}
+function notify(title,body){
+  if(cfg.notify&&('Notification' in window)&&Notification.permission==='granted'){try{new Notification(title,{body:body});}catch(e){}}
+}
+
+function loadPomTasks(){try{pomTasks=JSON.parse(localStorage.getItem('pomTasksV2')||'null')||[];}catch(e){pomTasks=[];}
+  if(!pomTasks.length){try{var old=JSON.parse(localStorage.getItem('pomTasks')||'[]');if(old.length){pomTasks=old.map(function(t){return{id:Date.now()+Math.random(),text:t.text,done:!!t.done,poms:0}});savePomTasks();}}catch(e){}}
+}
+function savePomTasks(){localStorage.setItem('pomTasksV2',JSON.stringify(pomTasks))}
+function addPomTask(){var i=document.getElementById('pomTask');var t=i.value.trim();if(!t)return;pomTasks.push({id:Date.now()+Math.random(),text:t,done:false,poms:0});i.value='';savePomTasks();renderPomTasks();renderStats();}
+function togglePomTask(id){var t=pomTasks.find(function(x){return x.id===id});if(t){t.done=!t.done;savePomTasks();renderPomTasks();renderStats();}}
+function removePomTask(id){pomTasks=pomTasks.filter(function(x){return x.id!==id});if(currentTaskId===id)currentTaskId=null;savePomTasks();renderPomTasks();showCurrentTask();}
+function selectTask(id){currentTaskId=(currentTaskId===id?null:id);renderPomTasks();showCurrentTask();}
+function renderPomTasks(){
+  var el=document.getElementById('pomTasks');
+  el.innerHTML=pomTasks.map(function(t){
+    return '<div class="task-item'+(t.id===currentTaskId?' current':'')+'" style="'+(t.done?'opacity:.5':'')+'">'+
+      '<span onclick="togglePomTask('+JSON.stringify(t.id)+')" style="cursor:pointer;font-size:1.1rem">'+(t.done?'✅':'⬜')+'</span>'+
+      '<span style="flex:1;'+(t.done?'text-decoration:line-through':'')+'">'+escapeHtml(t.text)+'</span>'+
+      '<span class="info" style="margin:0">🍅 '+(t.poms||0)+'</span>'+
+      '<button onclick="selectTask('+JSON.stringify(t.id)+')" title="Set as current" style="background:none;border:none;color:var(--accent);cursor:pointer">📌</button>'+
+      '<button onclick="removePomTask('+JSON.stringify(t.id)+')" style="background:none;border:none;color:#f44336;cursor:pointer">×</button></div>';
+  }).join('')||'<p class="info">No tasks yet.</p>';
+}
+function showCurrentTask(){
+  var t=currentTaskId!=null?pomTasks.find(function(x){return x.id===currentTaskId}):null;
+  var txt=t?'📌 Working on: '+t.text:'';
+  document.getElementById('currentTask').textContent=txt;
+  document.getElementById('fsTask').textContent=txt;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+function loadDistractions(){try{distractions=JSON.parse(localStorage.getItem('pomDistractions')||'[]');}catch(e){distractions=[];}}
+function saveDistractions(){localStorage.setItem('pomDistractions',JSON.stringify(distractions))}
+function logDistraction(){var note=prompt('Note the interruption (optional):','');if(note===null)return;distractions.unshift({t:Date.now(),note:note||'(interruption)'});saveDistractions();renderDistractions();}
+function clearDistractions(){if(confirm('Clear distraction log?')){distractions=[];saveDistractions();renderDistractions();}}
+function renderDistractions(){
+  document.getElementById('distractionLog').innerHTML=distractions.slice(0,50).map(function(d){
+    return '<div class="distraction-item"><span>'+escapeHtml(d.note)+'</span><span class="info" style="margin:0">'+new Date(d.t).toLocaleString()+'</span></div>';
+  }).join('')||'<p class="info">No distractions logged.</p>';
+}
+
+function enterFullscreen(){document.getElementById('fsMode').classList.add('on');render();}
+function exitFullscreen(){document.getElementById('fsMode').classList.remove('on');}
+
+document.addEventListener('keydown',function(e){
+  if(/input|textarea|select/i.test((e.target.tagName||'')))return;
+  var k=e.key.toLowerCase();
+  if(e.key===' '||e.code==='Space'){e.preventDefault();running?pauseTimer():startTimer();}
+  else if(k==='r'){resetTimer();}
+  else if(k==='s'){skipPhase();}
+  else if(k==='d'){logDistraction();}
+  else if(k==='f'){enterFullscreen();}
+  else if(k==='escape'){exitFullscreen();}
+});
+
+loadSettings();
+loadPomTasks();
+loadDistractions();
+remaining=cfg.focus*60;
+renderPomTasks();
+showCurrentTask();
+renderDistractions();
+renderStats();
+render();
   </script>
 </body>
 </html>

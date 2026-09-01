@@ -9,40 +9,130 @@
   <meta name="description" content="Don't know what to study? Add topics, set weights, spin & pick randomly! Elimination mode, timer per topic. End decision paralysis!">
   <meta property="og:title" content="Random Study Topic Picker - What to Study Today"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/topic-picker"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/topic-picker"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .tp-tabs{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin:1rem 0}
+    .tp-tabs button{padding:.5rem 1rem;border-radius:10px;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.08);color:var(--text);cursor:pointer;font-size:.85rem}
+    .tp-tabs button.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .tp-panel{display:none}
+    .tp-panel.active{display:block}
+    .tp-controls{display:flex;gap:.5rem;justify-content:center;align-items:center;flex-wrap:wrap;margin:.6rem 0}
+    .tp-result{font-size:1.4rem;font-weight:700;padding:1.5rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:60px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(99,102,241,.2)}
+    .tp-list{text-align:left;max-width:600px;margin:0 auto}
+    .tp-list .item{background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.06)}
+    .starter-box{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:1rem;margin:1rem auto;max-width:600px;text-align:left}
+    .starter-box h4{margin:.3rem 0}
+    .starter-box ul{margin:.3rem 0 .3rem 1.2rem;line-height:1.8}
+    .practice-timer{font-size:3rem;font-weight:800;font-variant-numeric:tabular-nums;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.5rem 0}
+    .practice-phase{display:inline-block;padding:.3rem 1rem;border-radius:20px;font-weight:700;margin-bottom:.5rem}
+    .phase-prep{background:rgba(245,158,11,.15);color:#f59e0b}
+    .phase-speak{background:rgba(16,185,129,.15);color:#10b981}
+    .phase-done{background:rgba(139,92,246,.15);color:var(--accent2)}
+    .hist-item{background:var(--card);padding:.6rem .8rem;border-radius:8px;margin:.3rem 0;border:1px solid rgba(255,255,255,.06);text-align:left}
+    .hist-item .meta{font-size:.75rem;color:var(--text2)}
+    .stars{cursor:pointer;font-size:1.1rem;letter-spacing:2px}
+    .tp-badges{display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin:.3rem 0}
+    .tp-badge{font-size:.7rem;padding:.15rem .5rem;border-radius:6px;background:rgba(99,102,241,.15);color:var(--accent)}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 🎲 Topic Picker</div><div class="tool-section" style="text-align:center">
       <h1>🎲 Random Study Topic Picker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Confused about what to study? Click the button and get a random topic!</p>
-      <div class="row" style="justify-content:center;margin:1rem 0;flex-wrap:wrap;gap:.5rem">
-        <label>Subject:</label><select id="subject"><option value="all">All Subjects</option><option value="history">History</option><option value="polity">Polity</option><option value="geography">Geography</option><option value="economy">Economy</option><option value="science">Science</option><option value="essay">Essay Topics</option></select>
-        <label>Mode:</label><select id="mode"><option value="normal">Normal</option><option value="elimination">Elimination (remove picked)</option></select>
-      </div>
-      <div style="display:flex;gap:.5rem;justify-content:center;align-items:center;margin:.5rem 0;flex-wrap:wrap">
-        <label>Timer:</label><input type="number" id="timer" min="1" max="120" placeholder="min" style="width:70px">
-        <span style="font-size:.85rem;color:var(--muted)">minutes per topic</span>
-      </div>
-      <button class="btn" onclick="pick()" style="font-size:1.2rem;padding:1rem 2rem;margin:1rem 0">🎲 Pick a Topic!</button>
-      <div id="timerDisplay" style="display:none;font-size:1.5rem;font-weight:700;color:var(--accent);margin:.5rem 0"></div>
-      <div id="result" style="font-size:1.5rem;font-weight:700;padding:1.5rem;background:var(--card);border-radius:12px;margin:1rem 0;min-height:60px;display:flex;align-items:center;justify-content:center"></div>
-      <div id="poolInfo" style="font-size:.85rem;color:var(--muted);margin:.5rem 0"></div>
-      <div id="history" style="margin-top:1rem"></div>
+      <p class="info">A big built-in library of debate, GD, essay, JAM/extempore, presentation, project, blog and creative-writing topics — plus random pick, practice mode, and your own custom lists.</p>
 
-      <hr style="margin:2rem 0;border-color:var(--border)">
-      <h2>📂 Custom Topic Lists & Categories</h2>
-      <div style="text-align:left;max-width:500px;margin:0 auto">
-        <div class="row" style="gap:.5rem;margin:.5rem 0"><input type="text" id="catName" placeholder="Category name (e.g. Math)"><button class="btn btn-outline" onclick="addCategory()">+ Category</button></div>
-        <div class="row" style="gap:.5rem;margin:.5rem 0">
-          <select id="catSelect"><option value="">Select category</option></select>
-          <input type="text" id="newTopic" placeholder="Topic name">
-          <input type="number" id="topicWeight" min="1" max="5" value="3" style="width:60px" title="Priority 1-5">
-          <button class="btn btn-outline" onclick="addTopic()">+ Add</button>
-        </div>
-        <div id="customList" style="margin-top:1rem"></div>
-        <div class="row" style="gap:.5rem;margin-top:1rem"><button class="btn btn-outline" onclick="saveCustom()">💾 Save List</button><button class="btn btn-outline" onclick="loadCustom()">📂 Load List</button><button class="btn btn-outline" onclick="clearCustom()">🗑️ Clear</button></div>
+      <div class="tp-tabs" id="tpTabs">
+        <button class="active" data-t="pick" onclick="tpTab('pick',this)">🎲 Pick</button>
+        <button data-t="practice" onclick="tpTab('practice',this)">🎤 Practice</button>
+        <button data-t="custom" onclick="tpTab('custom',this)">📂 Custom Lists</button>
+        <button data-t="history" onclick="tpTab('history',this)">📜 History</button>
       </div>
+
+      <!-- PICK -->
+      <div class="tp-panel active" id="panel-pick">
+        <div class="tp-controls">
+          <label>Category:</label>
+          <select id="category" onchange="onCategoryChange()"></select>
+        </div>
+        <div class="tp-controls">
+          <label>Difficulty:</label>
+          <select id="difficulty"><option value="all">All</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+          <label>Mode:</label>
+          <select id="mode"><option value="normal">Normal</option><option value="norepeat">No repeats (exclusion list)</option></select>
+        </div>
+        <div class="tp-controls">
+          <label>Pick count:</label>
+          <input type="number" id="pickN" value="1" min="1" max="20" style="width:70px">
+          <button class="btn" onclick="clearExclusions()" style="padding:.4rem .9rem;font-size:.82rem">↺ Reset exclusions</button>
+        </div>
+        <button class="btn" onclick="pick()" style="font-size:1.2rem;padding:1rem 2rem;margin:1rem 0">🎲 Pick Topic(s)!</button>
+        <div id="result" class="tp-result">Click to pick a topic</div>
+        <div id="poolInfo" class="info"></div>
+        <div class="tp-controls">
+          <button class="btn btn-outline" onclick="copyResult()" style="font-size:.82rem">📋 Copy</button>
+          <button class="btn btn-outline" onclick="practiceThis()" style="font-size:.82rem">🎤 Practice this</button>
+          <button class="btn btn-outline" onclick="saveToHistory()" style="font-size:.82rem">💾 Log to history</button>
+        </div>
+        <div id="starter"></div>
+      </div>
+
+      <!-- PRACTICE -->
+      <div class="tp-panel" id="panel-practice">
+        <p class="info">JAM/GD style: prep time to think, then speaking time — with audible cues.</p>
+        <div class="tp-result" id="practiceTopic">No topic selected — pick one first, or type below.</div>
+        <div class="tp-controls">
+          <input type="text" id="practiceCustomTopic" placeholder="Or type a topic to practise" style="max-width:320px">
+          <button class="btn btn-outline" onclick="setPracticeTopic()" style="font-size:.82rem">Set</button>
+        </div>
+        <div class="tp-controls">
+          <label>Prep (sec):</label><input type="number" id="prepSec" value="60" min="0" max="600" style="width:80px">
+          <label>Speak (sec):</label><input type="number" id="speakSec" value="120" min="10" max="1800" style="width:80px">
+        </div>
+        <div class="practice-phase phase-prep" id="practicePhase">Ready</div>
+        <div class="practice-timer" id="practiceTimer">00:00</div>
+        <div class="tp-controls">
+          <button class="btn" onclick="startPractice()">▶ Start</button>
+          <button class="btn btn-outline" onclick="stopPractice()">⏹ Stop</button>
+        </div>
+        <div id="practiceStarter"></div>
+      </div>
+
+      <!-- CUSTOM -->
+      <div class="tp-panel" id="panel-custom">
+        <p class="info">Paste or add your own topics, name the list, save and reuse. Export/import as JSON.</p>
+        <div class="tp-controls" style="justify-content:flex-start">
+          <input type="text" id="listName" placeholder="List name (e.g. My GD Set)" style="max-width:260px">
+        </div>
+        <textarea id="pasteBox" placeholder="Paste topics here, one per line..." style="width:100%;min-height:100px"></textarea>
+        <div class="tp-controls" style="justify-content:flex-start">
+          <button class="btn btn-outline" onclick="loadFromPaste()">Load from paste</button>
+          <input type="text" id="singleTopic" placeholder="Add one topic" style="max-width:240px">
+          <button class="btn btn-outline" onclick="addSingle()">+ Add</button>
+        </div>
+        <div id="customList" class="tp-list"></div>
+        <div class="tp-controls" style="justify-content:flex-start">
+          <button class="btn btn-outline" onclick="saveCustom()">💾 Save List</button>
+          <select id="savedListSelect" onchange="loadCustom()"><option value="">Load saved list…</option></select>
+          <button class="btn btn-outline" onclick="deleteSavedList()">🗑️ Delete saved</button>
+          <button class="btn btn-outline" onclick="exportLists()">📥 Export JSON</button>
+          <button class="btn btn-outline" onclick="document.getElementById('importLists').click()">📤 Import JSON</button>
+          <input type="file" id="importLists" accept="application/json,.json" style="display:none" onchange="importListsFile(event)">
+          <button class="btn btn-outline" onclick="clearCustom()">Clear current</button>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="tp-panel" id="panel-history">
+        <p class="info">Topics you practised, with date, self-rating and notes.</p>
+        <div id="historyList"></div>
+        <div class="tp-controls">
+          <button class="btn btn-outline" onclick="downloadTxt()">⬇️ Download set (.txt)</button>
+          <button class="btn btn-outline" onclick="printSheet()">🖨️ Printable practice sheet</button>
+          <button class="btn btn-outline" onclick="clearHistory()">🗑️ Clear history</button>
+        </div>
+      </div>
+
+      <p class="info" style="margin-top:1rem">Related: <a href="/tools/essay-outline">Essay Outline</a> · <a href="/tools/presentation-timer">Presentation Timer</a> · <a href="/tools/speed-reader">Speed Reader</a></p>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Kya padhu aaj? Random topic pick karo — no more confusion. Jab sab subjects pending hain aur decide nahi ho raha — let the tool decide. Fair aur random.</p>
@@ -102,125 +192,432 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var topics={history:["Indus Valley Civilization","Vedic Period","Maurya Empire","Gupta Dynasty","Delhi Sultanate","Mughal Empire","Maratha Empire","1857 Revolt","Indian National Congress","Gandhian Movements","Partition of India","Ancient Indian Art","Buddhist Architecture","Bhakti Movement","Social Reform Movements"],polity:["Fundamental Rights","Directive Principles","Parliament Structure","Supreme Court","Election Commission","Panchayati Raj","Constitutional Amendments","Emergency Provisions","Centre-State Relations","Citizenship","Governor Powers","CAG","UPSC","Finance Commission","Anti-Defection Law"],geography:["Indian Monsoon","Himalayan Rivers","Peninsular Rivers","Indian Soil Types","Natural Vegetation","Indian Climate","Mineral Resources","Agriculture in India","Indian Ocean Currents","Earthquake Zones","Western Ghats","Thar Desert","Coastal Plains","Island Groups","Major Dams"],economy:["Five Year Plans","NITI Aayog","GST","RBI Functions","Fiscal Policy","Monetary Policy","Inflation Types","Banking System","Foreign Trade","Budget Process","Poverty Measures","Green Revolution","MSME Sector","Digital Economy","Financial Inclusion"],science:["Cell Biology","Human Digestive System","Nervous System","Genetics Basics","Newton Laws","Electromagnetic Spectrum","Periodic Table Groups","Acids and Bases","Carbon Compounds","Space Technology ISRO","Nuclear Energy","Biotechnology","Environmental Pollution","Biodiversity","Climate Change"],essay:["Role of Youth in Nation Building","Digital India: Achievements and Challenges","Women Empowerment in Modern India","Climate Change and India","Education System Reform","Rural Development","Corruption: Causes and Solutions","Social Media Impact on Society","Artificial Intelligence and Employment","Water Crisis in India","Farmer Issues in India","Healthcare System in India","Urbanization Challenges","Cultural Diversity of India","India in 2047"]};
-var hist=[];
-var eliminated=[];
-var customTopics=[];// [{name,category,weight}]
-var timerInterval=null;
+/* ===== Topic Picker Advanced ===== */
+/* Large built-in library grouped by purpose. Each category is a flat list of topics. */
+var LIB={
+  debate_school:{label:'🏫 Debate (School)',topics:[
+    'Homework should be banned','Exams are not the true test of intelligence','Social media does more harm than good for students',
+    'School uniforms should be compulsory','Mobile phones should be allowed in schools','Online classes are better than offline classes',
+    'Junk food should be banned in school canteens','Students should grade their teachers','Sports are as important as studies',
+    'Television is a bad influence on children','Video games make students more violent','Every student should learn coding',
+    'Boarding schools are better than day schools','Corporal punishment should be abolished','Homework builds discipline',
+    'English should be the medium of instruction','Group study is better than individual study','School should start later in the morning',
+    'Field trips are a waste of time','Reading books is better than watching movies','Competition improves performance',
+    'Zoos should be closed','Plastic should be completely banned','Cooking should be taught in schools',
+    'Failure is a better teacher than success','Money can buy happiness','Technology makes us lazy',
+    'Homework causes unnecessary stress','Girls and boys should study in separate schools','A picture is worth a thousand words',
+    'Board exams should be scrapped','Handwriting still matters in the digital age','Pets should be allowed in classrooms',
+    'Learning a second language should be mandatory','Students should choose their own subjects'
+  ]},
+  debate_comp:{label:'🏆 Debate (Competitive)',topics:[
+    'Artificial Intelligence is a threat to employment','Death penalty should be abolished','Democracy is the best form of government',
+    'Globalisation has done more good than harm','Freedom of speech should have limits','Nuclear energy is the future',
+    'Space exploration is a waste of resources','Privacy is dead in the digital age','Universal Basic Income is the way forward',
+    'Social media platforms should be regulated by governments','Animal testing is justified for medical research','Capitalism has failed the poor',
+    'Reservation policies should be based on economic status','The internet should be a fundamental right','Cryptocurrency should be banned',
+    'Renewable energy can fully replace fossil fuels','Cancel culture harms free expression','Genetic engineering of humans is ethical',
+    'A cashless economy benefits society','Mandatory military service builds better citizens','Censorship of art is ever justified',
+    'The two-party system is outdated','Automation will create more jobs than it destroys','Developed nations owe climate reparations',
+    'Standardised testing should be abolished nationwide','Big tech monopolies should be broken up','Voting should be compulsory',
+    'Online anonymity does more harm than good','Wealth inequality is the biggest threat to democracy','Science and religion are incompatible',
+    'Whistleblowers are heroes, not traitors','Zoos serve conservation, not cruelty','A four-day work week benefits the economy',
+    'Nationalism is a threat to global peace','Free markets solve social problems better than governments'
+  ]},
+  gd_placement:{label:'💼 GD (Placements)',topics:[
+    'Work from home vs work from office','Is India ready for a cashless economy','Impact of AI on the job market',
+    'Should freshers focus on money or learning','Startups vs corporate jobs','Is a college degree still relevant',
+    'Social media as a recruitment tool','Ethics vs profit in business','Remote work and team productivity',
+    'The gig economy: boon or bane','Is multitasking a myth','Should companies monitor employee social media',
+    'Automation and the future of manufacturing in India','Data privacy in the age of big data','Is failure necessary for success',
+    'Diversity and inclusion at the workplace','The importance of soft skills','Is customer always right',
+    'Should performance be measured by hours or output','Digital marketing vs traditional marketing','Is job hopping good for a career',
+    'Effect of globalisation on Indian startups','Should salary be transparent within a company','The role of internships in employability',
+    'Is entrepreneurship overrated','Impact of 5G on Indian industries','Is work-life balance a myth',
+    'Should AI make hiring decisions','Sustainability vs profitability','The future of e-commerce in India',
+    'Is coding a must-have skill for everyone','Brand loyalty in the digital era','Should employees have a right to disconnect',
+    'Upskilling vs experience','Are appraisals fair'
+  ]},
+  gd_mba:{label:'🎓 GD (MBA Interviews)',topics:[
+    'Is GDP the right measure of economic growth','Make in India: successes and challenges','Demonetisation: was it worth it',
+    'The role of RBI in controlling inflation','FDI in retail: good for India','GST: one nation one tax reality',
+    'Is India’s demographic dividend a myth','Privatisation of public sector banks','Startup India: hype vs reality',
+    'The NPA crisis in Indian banks','Should agriculture be taxed','Universal healthcare in India: feasible',
+    'The impact of crude oil prices on India','Digital rupee and the future of money','Is the Indian education system industry-ready',
+    'Ease of doing business in India','The informal economy and formalisation','Should India pursue free trade agreements',
+    'Climate change and Indian business','Women in leadership roles','The ethics of aggressive marketing',
+    'Corporate social responsibility: genuine or PR','The role of unicorns in the economy','Is fiscal deficit always bad',
+    'Should luxury goods be taxed higher','Public vs private in higher education','The rural-urban divide in India',
+    'Is protectionism good for developing nations','Behavioural economics in decision-making','Should India invest more in defence or welfare',
+    'The future of the Indian rupee','Monetary vs fiscal policy effectiveness','Impact of remittances on the Indian economy',
+    'Is a services-led economy sustainable','The role of MSMEs in employment'
+  ]},
+  upsc_essay:{label:'📝 UPSC Essay',topics:[
+    'Education is the most powerful weapon to change the world','Values are not what humanity is, but what humanity ought to be',
+    'A ship in harbour is safe, but that is not what ships are built for','Technology as the silent factor in international relations',
+    'Wisdom finds truth','Water disputes between States in a federal India','Farming has lost the ability to be a source of subsistence',
+    'Culture is what we are, civilisation is what we have','Reality does not conform to the ideal but confirms it',
+    'Courage to accept and dedication to improve are two keys to success','Poverty anywhere is a threat to prosperity everywhere',
+    'Ships don’t sink because of the water around them; they sink because of the water that gets in',
+    'Social media is inherently a selfish medium','Fulfilment of new woman in India is a myth',
+    'Neglect of primary healthcare and education is the biggest impediment to development',
+    'Digital economy: a leveller or a source of economic inequality','Rise of artificial intelligence: the threat of jobless future',
+    'Biased media is a real threat to Indian democracy','Customary morality cannot be a guide to modern life',
+    'Patriarchy is the least noticed yet the most significant structure of social inequality',
+    'Values are not just for practising but for infusing','Life is long journey between human being and being humane',
+    'A good life is one inspired by love and guided by knowledge','Mindful manifesto is the catalyst to a tranquil self',
+    'Ships do not sink because of water around them','Philosophy of wantlessness is utopian while materialism is a chimera',
+    'The best way to enjoy your job is to imagine yourself without one','History is a series of victories won by the scientific man over the romantic man',
+    'Cyberspace and internet: blessing or curse to human civilisation','Simplicity is the ultimate sophistication',
+    'Not all who wander are lost','Truth is lived, not taught','Alternative technologies for a climate-change-resilient India',
+    'Has the non-alignment movement lost its relevance in a multipolar world','South Asian societies are woven not around the state but around their plural cultures'
+  ]},
+  jam:{label:'🎤 JAM / Extempore (1-min)',topics:[
+    'If I had a superpower','The best gift I ever received','My favourite childhood memory','A day without a phone',
+    'The person who inspires me most','My dream vacation','If money grew on trees','The last book I read',
+    'What success means to me','My biggest fear','A skill I want to learn','The importance of a smile',
+    'If I were invisible for a day','My role model','The best advice I ever got','A world without internet',
+    'My favourite festival','If animals could talk','The value of time','My idea of a perfect day',
+    'What I would change about the world','My greatest achievement','A lesson failure taught me','The magic of music',
+    'If I could meet a historical figure','My comfort food','The city I want to live in','What friendship means to me',
+    'If I ruled the country for a day','The power of kindness','My favourite season and why','A moment that changed my life',
+    'The gadget I cannot live without','Why reading matters','If I could time travel'
+  ]},
+  pres_science:{label:'🔬 Presentation: Science',topics:[
+    'CRISPR gene editing','Black holes and event horizons','The human microbiome','Quantum computing basics',
+    'Vaccines and how they work','Renewable energy technologies','The theory of relativity simplified','Antibiotic resistance',
+    'Nanotechnology in medicine','The science of sleep','Climate models and prediction','Dark matter and dark energy',
+    'Stem cells and regenerative medicine','The physics of flight','Ocean acidification','Neuroplasticity',
+    'The Higgs boson','Photosynthesis and artificial leaves','Genetics of ageing','How mRNA technology works'
+  ]},
+  pres_tech:{label:'💻 Presentation: Technology',topics:[
+    'Generative AI and large language models','Blockchain beyond cryptocurrency','The Internet of Things','5G and 6G networks',
+    'Cybersecurity threats and defence','Augmented and virtual reality','Cloud computing explained','Edge computing',
+    'Autonomous vehicles','Quantum cryptography','Deepfakes and detection','The metaverse',
+    'Robotics in daily life','Digital twins','Green computing','Ethical hacking',
+    'Wearable technology','Smart cities','The future of work with automation','Data centres and their energy use'
+  ]},
+  pres_commerce:{label:'📈 Presentation: Commerce',topics:[
+    'The Indian stock market explained','Mutual funds vs fixed deposits','GST and its impact on business','Startup funding stages',
+    'Cryptocurrency and regulation','Behavioural finance','Digital payments in India','Supply chain management',
+    'Brand building strategies','E-commerce business models','Financial literacy for youth','The gig economy',
+    'Marketing in the age of social media','Corporate governance','Inflation and its causes','The unicorn phenomenon',
+    'Insurance basics','Personal budgeting','International trade basics','ESG investing'
+  ]},
+  pres_arts:{label:'🎨 Presentation: Arts & Humanities',topics:[
+    'The influence of Indian classical music','Evolution of Indian cinema','Street art as social commentary','The Renaissance and its impact',
+    'Folk traditions of India','The power of storytelling','Photography as an art form','Architecture through the ages',
+    'Mythology in modern media','The history of theatre','Language and identity','Poetry that changed the world',
+    'The role of museums','Fashion as cultural expression','Calligraphy and typography','The philosophy of happiness',
+    'Cultural festivals of the world','The art of translation','Music and mental health','Dance forms of India'
+  ]},
+  pres_env:{label:'🌱 Presentation: Environment',topics:[
+    'Climate change and India','Plastic pollution and solutions','Renewable energy adoption','Water conservation techniques',
+    'Deforestation and biodiversity loss','Sustainable agriculture','Air quality in Indian cities','Waste management and recycling',
+    'The circular economy','Electric vehicles and the grid','Wildlife conservation in India','Carbon footprint reduction',
+    'Rivers of India and pollution','Green building design','Urban heat islands','Ocean plastic',
+    'Reforestation projects','Solar power in rural India','Environmental laws in India','The role of youth in climate action'
+  ]},
+  pres_social:{label:'🤝 Presentation: Social Issues',topics:[
+    'Gender equality in India','Child labour and education','Mental health awareness','Digital divide',
+    'Poverty and inequality','Women’s safety','Caste and social justice','Access to clean water',
+    'Elderly care in modern society','Disability rights','Freedom of the press','Fake news and misinformation',
+    'Cyberbullying','Migrant workers','Public health infrastructure','Sanitation and hygiene',
+    'Youth unemployment','Communal harmony','Human trafficking','Right to education'
+  ]},
+  projects:{label:'🛠️ Project Ideas (by stream)',topics:[
+    'CSE: Smart attendance using face recognition','CSE: Chatbot for college FAQs','CSE: Fake news detector',
+    'CSE: Personal expense tracker app','CSE: IoT-based home automation','ECE: Smart irrigation system',
+    'ECE: Gesture-controlled robot','ECE: Air quality monitoring device','Mechanical: Solar-powered water pump',
+    'Mechanical: Automatic braking system model','Civil: Earthquake-resistant structure model','Civil: Rainwater harvesting design',
+    'Commerce: Financial literacy survey among students','Commerce: Impact of GST on local shops','Biology: Effect of music on plant growth',
+    'Chemistry: Natural indicators for pH','Physics: Working model of a hydraulic lift','Arts: Documentary on a local craft',
+    'Data Science: Predicting exam scores from study hours','App: Menstrual health tracker','App: Blood donor connect platform',
+    'Web: Community skill-sharing portal','AI: Handwriting recognition','Robotics: Line-following robot',
+    'Environment: Plastic waste audit of campus','Social: Digital literacy for senior citizens','Health: BMI and diet planner',
+    'Agri: Low-cost soil moisture sensor','Energy: Home energy consumption dashboard','Education: Gamified learning app'
+  ]},
+  blog:{label:'✍️ Blog & Content Ideas',topics:[
+    '10 productivity apps every student needs','How I overcame procrastination','A beginner’s guide to investing',
+    'Budget travel tips for students','My morning routine for focus','Book recommendations that changed my life',
+    'How to build a personal brand online','The truth about work-life balance','Learning a new language: my journey',
+    'Common interview mistakes and fixes','How to start freelancing as a student','Habits of highly organised people',
+    'Best free tools for online learning','How to take better notes','A week of eating on a tight budget',
+    'Digital detox: what I learned','How to network as an introvert','Resume tips that actually work',
+    'The science of habit building','My favourite side hustles for beginners','How to read more books',
+    'Time management for busy people','What no one tells you about college','How to stay motivated',
+    'Beginner mistakes in personal finance','How to build a study schedule','The art of saying no',
+    'Sustainable living on a budget','How to prepare for group discussions','From zero to first internship'
+  ]},
+  creative:{label:'🖋️ Creative Writing Prompts',topics:[
+    'The last message on Earth','A door that only opens once a year','Write about a colour that no longer exists',
+    'The day the rain stopped forever','A letter to your future self','The clock that runs backwards',
+    'You wake up with someone else’s memories','A city built entirely underwater','The shop that sells forgotten dreams',
+    'Two strangers stuck in a lift','A photograph that changes every day','The last tree on the planet',
+    'A world where lies turn into butterflies','The map that leads to yourself','A song that everyone hears differently',
+    'The library of unwritten books','You can hear plants think','The mirror shows your future',
+    'A festival celebrated only by robots','The staircase that never ends','Write from the point of view of the sea',
+    'The stranger who knows your name','A gift that must be given away by midnight','The town where no one sleeps',
+    'A conversation between the sun and the moon','The suitcase left at the station','You find a diary that predicts tomorrow',
+    'A world without shadows','The last human friend of a machine','The garden that grows memories'
+  ]}
+};
 
-function getPool(){
-  var sub=document.getElementById("subject").value;
-  var pool;
-  if(sub==="custom"){
-    pool=[];
-    customTopics.forEach(function(t){for(var i=0;i<t.weight;i++)pool.push(t.name)});
+/* difficulty: heuristic by category; competitive/upsc/mba = hard, gd/pres = medium, school/jam/blog/creative = easy */
+var CAT_DIFF={debate_school:'easy',debate_comp:'hard',gd_placement:'medium',gd_mba:'hard',upsc_essay:'hard',jam:'easy',pres_science:'medium',pres_tech:'medium',pres_commerce:'medium',pres_arts:'easy',pres_env:'medium',pres_social:'medium',projects:'medium',blog:'easy',creative:'easy'};
+
+/* Starter structures: generic angle prompts per category type */
+function starterFor(topic,catKey){
+  var kind=(catKey||'').indexOf('debate')===0||(catKey||'').indexOf('gd')===0?'debate':
+           (catKey||'')==='upsc_essay'?'essay':
+           (catKey||'').indexOf('pres')===0?'presentation':
+           (catKey||'')==='jam'?'jam':
+           (catKey||'')==='creative'?'creative':'general';
+  var points;
+  if(kind==='debate'){
+    points={For:['Economic / practical benefit','Fairness or rights angle','Long-term positive impact','Real-world example that supports it'],
+      Against:['Cost or feasibility concern','Unintended consequences','A group that gets harmed','A counter-example']};
+  } else if(kind==='essay'){
+    points={Angles:['Define the key term(s) in your own words','Historical / philosophical background','Arguments supporting the statement','Counter-view and its limits','Indian & global examples','A balanced, forward-looking conclusion']};
+  } else if(kind==='presentation'){
+    points={Structure:['Hook: a surprising fact or question','What it is (simple definition)','How it works / key components','Real-world applications & examples','Challenges or limitations','Future outlook + takeaway']};
+  } else if(kind==='jam'){
+    points={'1-min plan':['Open with one clear sentence (your stance/memory)','Give 2 quick supporting points or a short story','End with a takeaway line','Speak slowly — pauses are fine']};
+  } else if(kind==='creative'){
+    points={Prompts:['Who is your narrator and what do they want?','Establish the strange rule of this world early','Introduce a conflict or turning point','End with an image or twist, not an explanation']};
   } else {
-    pool=sub==="all"?Object.values(topics).flat():topics[sub]||[];
+    points={Consider:['Cause and effect','Different stakeholders’ views','Pros and cons','A concrete example','Your own reasoned opinion']};
   }
-  if(document.getElementById("mode").value==="elimination"){
-    pool=pool.filter(function(t){return eliminated.indexOf(t)===-1});
+  var html='<div class="starter-box"><h4>💡 Starter structure — balanced points</h4>';
+  for(var k in points){html+='<strong>'+k+':</strong><ul>'+points[k].map(function(p){return '<li>'+p+'</li>';}).join('')+'</ul>';}
+  html+='</div>';
+  return html;
+}
+
+/* ---- state ---- */
+var excluded=[];         // topics excluded in no-repeat mode
+var lastPicked=[];       // last picked topics (array)
+var customTopics=[];     // current working custom list [strings]
+var history=[];          // [{topic,date,rating,note}]
+var practiceTopic='';
+var pracTimer=null;
+var pracAudio=null;
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* ---- init dropdowns ---- */
+function fillCategorySelect(){
+  var sel=document.getElementById('category');
+  var opts='<option value="all">🎲 All categories</option>';
+  for(var k in LIB){opts+='<option value="'+k+'">'+LIB[k].label+'</option>';}
+  if(customTopics.length)opts+='<option value="__custom">⭐ My Custom List</option>';
+  sel.innerHTML=opts;
+}
+function onCategoryChange(){document.getElementById('starter').innerHTML='';}
+
+/* ---- pool + pick ---- */
+function getPool(){
+  var cat=document.getElementById('category').value;
+  var diff=document.getElementById('difficulty').value;
+  var pool=[];
+  if(cat==='__custom'){pool=customTopics.slice();}
+  else if(cat==='all'){
+    for(var k in LIB){if(diff==='all'||CAT_DIFF[k]===diff)pool=pool.concat(LIB[k].topics);}
+  } else {
+    if(diff==='all'||CAT_DIFF[cat]===diff)pool=LIB[cat].topics.slice();
+  }
+  if(document.getElementById('mode').value==='norepeat'){
+    pool=pool.filter(function(t){return excluded.indexOf(t)===-1;});
   }
   return pool;
 }
-
 function pick(){
   var pool=getPool();
-  if(!pool.length)return alert("No topics left! Reset elimination or switch mode.");
-  var topic=pool[Math.floor(Math.random()*pool.length)];
-  document.getElementById("result").textContent=topic;
-  hist.unshift(topic);
-  if(document.getElementById("mode").value==="elimination") eliminated.push(topic);
-  document.getElementById("poolInfo").textContent="Remaining in pool: "+getPool().length;
-  document.getElementById("history").innerHTML="<h3>Previous Picks</h3>"+hist.slice(0,8).map(function(t,i){return '<div style="padding:.3rem .5rem;color:var(--muted);font-size:.85rem">'+(i+1)+". "+t+"</div>"}).join("");
-  startTimer();
-}
-
-function startTimer(){
-  var mins=parseInt(document.getElementById("timer").value);
-  if(!mins)return document.getElementById("timerDisplay").style.display="none";
-  clearInterval(timerInterval);
-  var secs=mins*60;
-  var el=document.getElementById("timerDisplay");
-  el.style.display="block";
-  function tick(){
-    var m=Math.floor(secs/60),s=secs%60;
-    el.textContent="⏱️ "+m+":"+(s<10?"0":"")+s;
-    if(secs<=0){clearInterval(timerInterval);el.textContent="⏱️ Time's up!";return}
-    secs--;
+  var n=Math.max(1,Math.min(20,+document.getElementById('pickN').value||1));
+  if(!pool.length){alert('No topics available. Reset exclusions, change filters, or add a custom list.');return;}
+  var chosen=[];var copy=pool.slice();
+  for(var i=0;i<n&&copy.length;i++){
+    var idx=Math.floor(Math.random()*copy.length);
+    chosen.push(copy[idx]);copy.splice(idx,1);
   }
-  tick();timerInterval=setInterval(tick,1000);
+  lastPicked=chosen;
+  if(document.getElementById('mode').value==='norepeat'){chosen.forEach(function(t){if(excluded.indexOf(t)===-1)excluded.push(t);});}
+  var res=document.getElementById('result');
+  res.innerHTML=chosen.length===1?escapeHtml(chosen[0]):('<ol style="text-align:left;margin:0 0 0 1.2rem;line-height:1.9">'+chosen.map(function(t){return '<li>'+escapeHtml(t)+'</li>';}).join('')+'</ol>');
+  document.getElementById('poolInfo').textContent='Pool size: '+pool.length+(excluded.length?(' · Excluded so far: '+excluded.length):'');
+  var cat=document.getElementById('category').value;
+  document.getElementById('starter').innerHTML=chosen.length===1?starterFor(chosen[0],cat):'';
+}
+function clearExclusions(){excluded=[];document.getElementById('poolInfo').textContent='Exclusions reset.';}
+function copyResult(){
+  if(!lastPicked.length){alert('Pick a topic first.');return;}
+  var text=lastPicked.join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){alert('Copied!');},function(){prompt('Copy:',text);});
+  else prompt('Copy:',text);
 }
 
-// Custom topics & categories
-function addCategory(){
-  var name=document.getElementById("catName").value.trim();
-  if(!name)return;
-  var sel=document.getElementById("catSelect");
-  var opt=document.createElement("option");opt.value=name;opt.textContent=name;
-  sel.appendChild(opt);
-  // Also add to subject dropdown
-  var subSel=document.getElementById("subject");
-  if(!subSel.querySelector('option[value="custom"]')){
-    var co=document.createElement("option");co.value="custom";co.textContent="⭐ Custom Topics";
-    subSel.appendChild(co);
+/* ---- practice mode ---- */
+function practiceThis(){
+  if(!lastPicked.length){alert('Pick a topic first.');return;}
+  practiceTopic=lastPicked[0];
+  tpTab('practice',document.querySelector('#tpTabs button[data-t="practice"]'));
+  updatePracticeTopic();
+}
+function setPracticeTopic(){
+  var t=document.getElementById('practiceCustomTopic').value.trim();
+  if(t){practiceTopic=t;updatePracticeTopic();}
+}
+function updatePracticeTopic(){
+  document.getElementById('practiceTopic').textContent=practiceTopic||'No topic selected — pick one first, or type below.';
+  document.getElementById('practiceStarter').innerHTML=practiceTopic?starterFor(practiceTopic,''):'';
+}
+function initPracAudio(){if(!pracAudio){try{pracAudio=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(pracAudio&&pracAudio.state==='suspended')pracAudio.resume();}
+function cue(freq,count){
+  initPracAudio();if(!pracAudio)return;var t=pracAudio.currentTime;
+  for(var i=0;i<(count||1);i++){
+    var o=pracAudio.createOscillator();var g=pracAudio.createGain();o.frequency.value=freq;o.type='sine';
+    var st=t+i*0.25;g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(0.3,st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,st+0.2);
+    o.connect(g);g.connect(pracAudio.destination);o.start(st);o.stop(st+0.2);
   }
-  document.getElementById("catName").value="";
-  renderCustom();
 }
-
-function addTopic(){
-  var cat=document.getElementById("catSelect").value;
-  var name=document.getElementById("newTopic").value.trim();
-  var weight=parseInt(document.getElementById("topicWeight").value)||3;
-  if(!name)return alert("Enter topic name");
-  if(!cat)return alert("Select a category first");
-  customTopics.push({name:name,category:cat,weight:Math.min(5,Math.max(1,weight))});
-  document.getElementById("newTopic").value="";
-  renderCustom();
-}
-
-function removeTopic(i){customTopics.splice(i,1);renderCustom();}
-
-function renderCustom(){
-  var cats={};
-  customTopics.forEach(function(t,i){if(!cats[t.category])cats[t.category]=[];cats[t.category].push({t:t,i:i})});
-  var html="";
-  for(var c in cats){
-    html+='<div style="margin:.5rem 0"><strong>'+c+'</strong>';
-    cats[c].forEach(function(item){
-      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:.2rem .5rem;font-size:.85rem"><span>'+item.t.name+' <span style="color:var(--muted)">(⭐'+item.t.weight+')</span></span><button onclick="removeTopic('+item.i+')" style="border:none;background:none;cursor:pointer;color:red">✕</button></div>';
-    });
-    html+='</div>';
+function fmtT(s){s=Math.max(0,s);return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);}
+function startPractice(){
+  if(!practiceTopic){var t=document.getElementById('practiceCustomTopic').value.trim();if(t){practiceTopic=t;updatePracticeTopic();}else{alert('Set a topic first.');return;}}
+  initPracAudio();
+  clearInterval(pracTimer);
+  var prep=Math.max(0,+document.getElementById('prepSec').value||0);
+  var speak=Math.max(1,+document.getElementById('speakSec').value||120);
+  var phase=prep>0?'prep':'speak';
+  var remaining=prep>0?prep:speak;
+  var pill=document.getElementById('practicePhase');
+  function setPill(){
+    pill.textContent=phase==='prep'?'🧠 Prep time':phase==='speak'?'🎤 Speaking':'✅ Done';
+    pill.className='practice-phase '+(phase==='prep'?'phase-prep':phase==='speak'?'phase-speak':'phase-done');
   }
-  document.getElementById("customList").innerHTML=html;
+  setPill();
+  cue(660,1);
+  document.getElementById('practiceTimer').textContent=fmtT(remaining);
+  pracTimer=setInterval(function(){
+    remaining--;
+    if(remaining<0){
+      if(phase==='prep'){phase='speak';remaining=speak;setPill();cue(880,2);}
+      else{phase='done';setPill();cue(523,3);clearInterval(pracTimer);pracTimer=null;document.getElementById('practiceTimer').textContent='00:00';
+        // auto-log to history
+        logHistory(practiceTopic);return;}
+    }
+    document.getElementById('practiceTimer').textContent=fmtT(remaining);
+  },1000);
+}
+function stopPractice(){clearInterval(pracTimer);pracTimer=null;document.getElementById('practicePhase').textContent='⏹ Stopped';document.getElementById('practicePhase').className='practice-phase phase-done';}
+
+/* ---- history ---- */
+function loadHistory(){try{history=JSON.parse(localStorage.getItem('tp_history')||'[]');}catch(e){history=[];}}
+function saveHistory(){localStorage.setItem('tp_history',JSON.stringify(history));}
+function logHistory(topic){history.unshift({id:Date.now(),topic:topic,date:new Date().toLocaleString(),rating:0,note:''});saveHistory();renderHistory();}
+function saveToHistory(){if(!lastPicked.length){alert('Pick a topic first.');return;}logHistory(lastPicked[0]);tpTab('history',document.querySelector('#tpTabs button[data-t="history"]'));}
+function rateHistory(id,r){var h=history.find(function(x){return x.id===id;});if(h){h.rating=r;saveHistory();renderHistory();}}
+function noteHistory(id,val){var h=history.find(function(x){return x.id===id;});if(h){h.note=val;saveHistory();}}
+function removeHistory(id){history=history.filter(function(x){return x.id!==id;});saveHistory();renderHistory();}
+function clearHistory(){if(confirm('Clear all history?')){history=[];saveHistory();renderHistory();}}
+function starsHtml(id,rating){var s='';for(var i=1;i<=5;i++){s+='<span onclick="rateHistory('+id+','+i+')">'+(i<=rating?'★':'☆')+'</span>';}return '<span class="stars">'+s+'</span>';}
+function renderHistory(){
+  document.getElementById('historyList').innerHTML=history.length?history.map(function(h){
+    return '<div class="hist-item"><strong>'+escapeHtml(h.topic)+'</strong> <button onclick="removeHistory('+h.id+')" style="float:right;background:none;border:none;color:#ef4444;cursor:pointer">×</button>'+
+      '<div class="meta">'+h.date+'</div>'+starsHtml(h.id,h.rating||0)+
+      '<input type="text" placeholder="Notes..." value="'+escapeHtml(h.note||'')+'" oninput="noteHistory('+h.id+',this.value)" style="margin-top:.3rem;font-size:.85rem"></div>';
+  }).join(''):'<p class="info">No practised topics yet.</p>';
 }
 
+/* ---- custom lists ---- */
+function renderCustomWorking(){
+  document.getElementById('customList').innerHTML=customTopics.length?customTopics.map(function(t,i){
+    return '<div class="item"><span>'+escapeHtml(t)+'</span><button onclick="removeCustom('+i+')" style="background:none;border:none;color:#ef4444;cursor:pointer">×</button></div>';
+  }).join(''):'<p class="info">No topics in the current list.</p>';
+  fillCategorySelect();
+}
+function loadFromPaste(){
+  var lines=document.getElementById('pasteBox').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  if(!lines.length){alert('Paste some topics first (one per line).');return;}
+  customTopics=customTopics.concat(lines);
+  document.getElementById('pasteBox').value='';
+  renderCustomWorking();
+}
+function addSingle(){var t=document.getElementById('singleTopic').value.trim();if(!t)return;customTopics.push(t);document.getElementById('singleTopic').value='';renderCustomWorking();}
+function removeCustom(i){customTopics.splice(i,1);renderCustomWorking();}
+function clearCustom(){customTopics=[];renderCustomWorking();}
+function getSavedLists(){try{return JSON.parse(localStorage.getItem('tp_lists')||'{}');}catch(e){return{};}}
+function setSavedLists(o){localStorage.setItem('tp_lists',JSON.stringify(o));}
+function fillSavedListSelect(){
+  var lists=getSavedLists();var sel=document.getElementById('savedListSelect');
+  sel.innerHTML='<option value="">Load saved list…</option>'+Object.keys(lists).map(function(n){return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+' ('+lists[n].length+')</option>';}).join('');
+}
 function saveCustom(){
-  localStorage.setItem("tp_custom",JSON.stringify(customTopics));
-  var cats=[];document.getElementById("catSelect").querySelectorAll("option").forEach(function(o){if(o.value)cats.push(o.value)});
-  localStorage.setItem("tp_cats",JSON.stringify(cats));
-  alert("Saved!");
+  var name=document.getElementById('listName').value.trim();
+  if(!name){alert('Give the list a name.');return;}
+  if(!customTopics.length){alert('Add some topics first.');return;}
+  var lists=getSavedLists();lists[name]=customTopics.slice();setSavedLists(lists);fillSavedListSelect();
+  alert('Saved list "'+name+'".');
 }
-
 function loadCustom(){
-  var d=localStorage.getItem("tp_custom");
-  var c=localStorage.getItem("tp_cats");
-  if(!d)return alert("No saved list found");
-  customTopics=JSON.parse(d);
-  var cats=JSON.parse(c||"[]");
-  var sel=document.getElementById("catSelect");
-  sel.innerHTML='<option value="">Select category</option>';
-  cats.forEach(function(name){var o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o)});
-  var subSel=document.getElementById("subject");
-  if(!subSel.querySelector('option[value="custom"]')){
-    var co=document.createElement("option");co.value="custom";co.textContent="⭐ Custom Topics";
-    subSel.appendChild(co);
-  }
-  renderCustom();
+  var name=document.getElementById('savedListSelect').value;if(!name)return;
+  var lists=getSavedLists();if(lists[name]){customTopics=lists[name].slice();document.getElementById('listName').value=name;renderCustomWorking();}
+}
+function deleteSavedList(){
+  var name=document.getElementById('savedListSelect').value;if(!name){alert('Select a saved list first.');return;}
+  if(!confirm('Delete saved list "'+name+'"?'))return;
+  var lists=getSavedLists();delete lists[name];setSavedLists(lists);fillSavedListSelect();
+}
+function exportLists(){
+  var data={lists:getSavedLists(),current:customTopics};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='topic-lists.json';a.click();
+}
+function importListsFile(ev){
+  var f=ev.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){
+    try{var d=JSON.parse(r.result);
+      if(d.lists){var lists=getSavedLists();for(var k in d.lists){lists[k]=d.lists[k];}setSavedLists(lists);}
+      if(Array.isArray(d.current))customTopics=d.current.slice();
+      else if(Array.isArray(d)){customTopics=d.slice();}
+      fillSavedListSelect();renderCustomWorking();alert('Imported lists.');
+    }catch(e){alert('Invalid JSON file.');}
+    ev.target.value='';
+  };
+  r.readAsText(f);
 }
 
-function clearCustom(){customTopics=[];document.getElementById("customList").innerHTML="";eliminated=[];document.getElementById("poolInfo").textContent="";}
-// Auto-load on page load
-(function(){var d=localStorage.getItem("tp_custom");if(d){loadCustom();}})();
+/* ---- download / print ---- */
+function downloadTxt(){
+  var pool=getPool();
+  var lines=lastPicked.length?lastPicked:(customTopics.length?customTopics:pool.slice(0,50));
+  if(!lines.length){alert('Nothing to download.');return;}
+  var blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='topics.txt';a.click();
+}
+function printSheet(){
+  var items=history.length?history.map(function(h){return h.topic;}):(customTopics.length?customTopics:getPool().slice(0,20));
+  var w=window.open('','_blank');
+  var html='<html><head><title>Practice Sheet</title><style>body{font-family:sans-serif;padding:24px;color:#111}h1{font-size:20px}li{margin:14px 0;list-style:decimal}.line{border-bottom:1px solid #ccc;height:22px;margin:6px 0}</style></head><body><h1>🎤 Practice Sheet</h1><p>Date: '+new Date().toLocaleDateString()+'</p><ol>';
+  items.forEach(function(t){html+='<li><strong>'+t.replace(/</g,'&lt;')+'</strong><div class="line"></div><div class="line"></div></li>';});
+  html+='</ol></body></html>';
+  w.document.write(html);w.document.close();w.focus();w.print();
+}
+
+/* ---- tabs ---- */
+function tpTab(t,btn){
+  document.querySelectorAll('#tpTabs button').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.tp-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='practice')updatePracticeTopic();
+}
+
+/* ---- init ---- */
+loadHistory();
+// migrate old tp_custom (array of {name,category,weight}) into a working list
+(function(){try{var old=JSON.parse(localStorage.getItem('tp_custom')||'null');if(old&&old.length&&!customTopics.length){customTopics=old.map(function(x){return x.name||x;});}}catch(e){}})();
+fillCategorySelect();
+fillSavedListSelect();
+renderCustomWorking();
+renderHistory();
 </script>
 </body></html>

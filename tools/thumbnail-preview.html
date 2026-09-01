@@ -17,38 +17,41 @@
     <div class="breadcrumb"><a href="../">Home</a> → Thumbnail Preview</div>
     <div class="tool-section"><h1>🖼️ YouTube Thumbnail Previewer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Upload your thumbnail and see how it looks on YouTube — desktop, mobile, and TV views.</p>
-<div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop thumbnail image here (1280x720 recommended)<input type="file" id="inp" accept="image/*"></div>
+      <p class="info">Upload your thumbnail and see how it looks across YouTube and other platforms at real sizes — with overlays, safe-area guides, A/B comparison, a legibility checker and a contact-sheet export.</p>
+<div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop thumbnail image here (1280×720 recommended)<input type="file" id="inp" accept="image/*"></div>
 <input type="text" id="vidTitle" placeholder="Video title..." value="My Amazing Video Title" oninput="render();charCount()" style="margin-top:.5rem">
-<div id="charCounter" style="font-size:.8rem;color:var(--muted);margin:.2rem 0">0/60 characters (YouTube recommends &lt;60)</div>
+<div id="charCounter" style="font-size:.8rem;color:var(--text2);margin:.2rem 0">0/60 characters (YouTube recommends &lt;60)</div>
 <input type="text" id="channel" placeholder="Channel name..." value="FreeToolHubs" oninput="render()" style="margin-top:.3rem">
-<div id="previews" style="display:none;margin-top:1rem">
-<h3>Desktop View</h3>
-<div style="display:flex;gap:1rem;background:var(--card);padding:1rem;border-radius:10px;margin-bottom:1rem">
-<img id="deskThumb" style="width:360px;height:202px;object-fit:cover;border-radius:8px">
-<div><div id="deskTitle" style="font-weight:600;font-size:1rem;margin-bottom:.3rem"></div><div id="deskChannel" style="color:var(--muted);font-size:.85rem"></div><div style="color:var(--muted);font-size:.85rem">123K views · 2 hours ago</div></div></div>
-<h3>Mobile View</h3>
-<div style="max-width:360px;background:var(--card);padding:.5rem;border-radius:10px">
-<img id="mobThumb" style="width:100%;border-radius:8px">
-<div style="display:flex;gap:.5rem;padding:.5rem"><div style="width:36px;height:36px;border-radius:50%;background:var(--accent);flex-shrink:0"></div><div><div id="mobTitle" style="font-weight:600;font-size:.85rem"></div><div id="mobChannel" style="color:var(--muted);font-size:.75rem"></div></div></div></div>
-<h3 style="margin-top:1rem">TV View</h3>
-<div style="max-width:640px;background:#111;padding:1.5rem;border-radius:12px">
-<img id="tvThumb" style="width:100%;border-radius:6px">
-<div style="color:#fff;font-weight:600;font-size:1.1rem;margin-top:.5rem" id="tvTitle"></div>
-<div style="color:#aaa;font-size:.85rem" id="tvChannel"></div></div>
-<h3 style="margin-top:1rem">Twitter/X Preview</h3>
-<div style="max-width:500px;background:var(--card);padding:1rem;border-radius:12px;border:1px solid var(--border)">
-<div style="display:flex;gap:.5rem;margin-bottom:.5rem"><div style="width:40px;height:40px;border-radius:50%;background:var(--accent)"></div><div><strong id="twChannel">FreeToolHubs</strong><br><span style="color:var(--muted);font-size:.8rem">@freetoolhubs</span></div></div>
-<div id="twTitle" style="margin-bottom:.5rem"></div>
-<img id="twThumb" style="width:100%;border-radius:12px">
+<div class="row" style="gap:.8rem;flex-wrap:wrap;margin-top:.6rem;align-items:center">
+  <label style="font-size:.85rem"><input type="checkbox" id="optOverlay" checked onchange="render()"> Show overlays (duration, progress, title)</label>
+  <label style="font-size:.85rem"><input type="checkbox" id="optSafe" onchange="render()"> Show safe-area guides</label>
+  <label style="font-size:.85rem">Duration: <input type="text" id="optDur" value="10:24" oninput="render()" style="width:64px;text-align:center"></label>
+  <button class="btn btn-outline" onclick="toggleModeYT()" id="ytModeBtn" style="font-size:.85rem">🌙 YouTube: Dark</button>
 </div>
+
+<div id="previews" style="display:none;margin-top:1.2rem">
+  <h3>▶️ YouTube contexts (rendered at real pixel sizes)</h3>
+  <div id="ytContexts" class="ctxWrap"></div>
+
+  <h3 style="margin-top:1.4rem">🌐 Other platforms</h3>
+  <div id="otherContexts" class="ctxWrap"></div>
+
+  <h3 style="margin-top:1.4rem">📐 Legibility Checker</h3>
+  <div id="legibility" style="background:var(--card);border-radius:10px;padding:1rem;font-size:.9rem;line-height:1.7"></div>
+
+  <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
+    <button class="btn" onclick="exportContactSheet()">🖼️ Export Contact Sheet PNG</button>
+  </div>
 </div>
-<h3 style="margin-top:1.5rem">A/B Comparison</h3>
-<p class="info">Upload two thumbnails to compare side by side.</p>
+
+<h3 style="margin-top:1.5rem">⚖️ A/B Comparison</h3>
+<p class="info">Upload two thumbnails to compare them side by side in every context.</p>
 <div class="row" style="gap:1rem;flex-wrap:wrap">
-<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail A:</label><input type="file" id="abA" accept="image/*" onchange="loadAB('A')"><img id="abImgA" style="width:100%;border-radius:8px;margin-top:.3rem;display:none"></div>
-<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail B:</label><input type="file" id="abB" accept="image/*" onchange="loadAB('B')"><img id="abImgB" style="width:100%;border-radius:8px;margin-top:.3rem;display:none"></div>
+<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail A:</label><input type="file" id="abA" accept="image/*" onchange="loadAB('A')"></div>
+<div style="flex:1;min-width:200px"><label style="font-size:.85rem">Thumbnail B:</label><input type="file" id="abB" accept="image/*" onchange="loadAB('B')"></div>
 </div>
+<div id="abContexts" style="margin-top:1rem"></div>
+
 <div class="tool-section" style="margin-top:1.5rem;background:var(--card);padding:1rem;border-radius:10px">
 <h3>💡 CTR Tips — What Makes Good Thumbnails</h3>
 <ul style="margin-left:1.2rem;line-height:1.9;font-size:.9rem">
@@ -78,7 +81,7 @@
 <li>Optimizing click-through rate with better thumbnail design</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Preview how your YouTube thumbnail will look before publishing. Upload your thumbnail image (recommended 1280x720), enter video title and channel name, and see realistic previews for YouTube Desktop (search results view), YouTube Mobile (feed view), and Twitter/X (shared link view). Helps you check if text is readable at small sizes, if the image is eye-catching, and if it looks good across platforms. Essential for YouTubers, content creators, and social media managers.</p>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Preview how your thumbnail will look before publishing — everywhere it matters. Upload your image (recommended 1280×720) and see it rendered at real pixel sizes across YouTube contexts (desktop and mobile search, home feed grid, suggested/sidebar, watch-page end screen and channel page) as well as Instagram feed and 1:1 grid crop, Facebook link preview, Twitter/X card, LinkedIn post and a WhatsApp forward. Toggle YouTube's dark and light modes, simulate the duration badge, progress-watched bar and title text so you can see what actually covers your thumbnail, and switch on safe-area guides that show which regions get covered or cropped. Compare two thumbnails side by side (A/B) in every context, run the built-in legibility checker (dimensions, aspect ratio, sub-1280×720 warning, an estimate of whether in-image text is too small, plus brightness and contrast analysis with suggestions), and export a single contact-sheet PNG of all contexts to share with your team. Everything runs in your browser — images never leave your device.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
@@ -117,11 +120,264 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <style>.ctxWrap{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start}.ctxCard{background:var(--card);border-radius:10px;padding:.7rem}.ctxCard h4{margin:0 0 .3rem;font-size:.82rem}.ctxCard .dim{font-size:.72rem;color:var(--text2)}</style>
   <script src="../js/common.js"></script>
-  <script>setupDrop("drop","inp",function(f){var reader=new FileReader();reader.onload=function(){document.getElementById("deskThumb").src=reader.result;document.getElementById("mobThumb").src=reader.result;document.getElementById("tvThumb").src=reader.result;document.getElementById("previews").style.display="block";render()};reader.readAsDataURL(f[0])});
-function render(){var t=document.getElementById("vidTitle").value;var c=document.getElementById("channel").value;document.getElementById("deskTitle").textContent=t;document.getElementById("deskChannel").textContent=c;document.getElementById("mobTitle").textContent=t;document.getElementById("mobChannel").textContent=c+" · 123K views · 2h";document.getElementById("tvTitle").textContent=t;document.getElementById("tvChannel").textContent=c+" · 123K views";document.getElementById("twTitle").textContent=t;document.getElementById("twChannel").textContent=c;if(document.getElementById("deskThumb").src){document.getElementById("twThumb").src=document.getElementById("deskThumb").src}}
-function charCount(){var len=document.getElementById("vidTitle").value.length;var el=document.getElementById("charCounter");el.textContent=len+"/60 characters"+(len>60?" ⚠️ Too long!":len>50?" (getting close)":" (YouTube recommends <60)");el.style.color=len>60?"#e74c3c":"var(--muted)"}
+  <script>
+var mainImg=null;         // Image object for primary thumbnail
+var abImg={A:null,B:null};
+var ytDark=true;
+
+// Context definitions: real pixel render sizes (thumbnail box in px)
+var ytContexts=[
+  {id:"yt-search-desk",name:"Search results (desktop)",w:360,h:202,overlay:true,meta:"title-right"},
+  {id:"yt-search-mob",name:"Search results (mobile)",w:320,h:180,overlay:true,meta:"title-below"},
+  {id:"yt-home-grid",name:"Home feed grid",w:246,h:138,overlay:true,meta:"title-below"},
+  {id:"yt-sidebar",name:"Suggested / sidebar (small)",w:168,h:94,overlay:true,meta:"title-right-small"},
+  {id:"yt-endscreen",name:"Watch page end screen",w:300,h:169,overlay:false,meta:"none"},
+  {id:"yt-channel",name:"Channel page",w:210,h:118,overlay:true,meta:"title-below"}
+];
+var otherContexts=[
+  {id:"ig-feed",name:"Instagram feed",w:320,h:180,crop:"cover",meta:"none"},
+  {id:"ig-grid",name:"Instagram grid (1:1 crop)",w:180,h:180,crop:"square",meta:"none"},
+  {id:"fb-link",name:"Facebook link preview",w:320,h:167,crop:"cover",meta:"fb"},
+  {id:"tw-card",name:"Twitter/X card",w:320,h:160,crop:"cover",meta:"tw"},
+  {id:"li-post",name:"LinkedIn post",w:320,h:168,crop:"cover",meta:"li"},
+  {id:"wa-fwd",name:"WhatsApp forward",w:240,h:135,crop:"cover",meta:"wa"}
+];
+
+function bg(){return ytDark?"#0f0f0f":"#ffffff";}
+function fg(){return ytDark?"#f1f1f1":"#0f0f0f";}
+function sub(){return ytDark?"#aaaaaa":"#606060";}
+
+function toggleModeYT(){
+  ytDark=!ytDark;
+  document.getElementById("ytModeBtn").textContent=ytDark?"🌙 YouTube: Dark":"☀️ YouTube: Light";
+  render();
+}
+
+// draw image into a rect using cover fit
+function drawCover(ctx,img,x,y,w,h,mode){
+  if(!img)return;
+  var iw=img.width,ih=img.height;
+  if(mode==="square"){
+    var s=Math.min(iw,ih);
+    ctx.drawImage(img,(iw-s)/2,(ih-s)/2,s,s,x,y,w,h);
+    return;
+  }
+  var scale=Math.max(w/iw,h/ih);
+  var dw=iw*scale,dh=ih*scale;
+  ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+}
+
+// overlays specific to YouTube
+function drawYTOverlays(ctx,x,y,w,h){
+  var dur=document.getElementById("optDur").value||"10:24";
+  // duration badge (bottom-right)
+  ctx.font="bold "+Math.max(9,h*0.09)+"px Roboto,Arial,sans-serif";
+  var pad=h*0.04;var tw=ctx.measureText(dur).width;
+  var bw=tw+pad*2,bh=h*0.13;
+  ctx.fillStyle="rgba(0,0,0,.8)";
+  ctx.fillRect(x+w-bw-4,y+h-bh-4,bw,bh);
+  ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";
+  ctx.fillText(dur,x+w-bw-4+pad,y+h-bh-4+bh/2);
+  // progress-watched bar (bottom)
+  ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(x,y+h-3,w,3);
+  ctx.fillStyle="#ff0000";ctx.fillRect(x,y+h-3,w*0.4,3);
+}
+
+function drawSafeArea(ctx,x,y,w,h){
+  ctx.save();
+  ctx.strokeStyle="rgba(236,72,153,.9)";ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  // duration badge zone
+  var bw=w*0.22,bh=h*0.16;
+  ctx.strokeRect(x+w-bw-3,y+h-bh-3,bw,bh);
+  // progress bar zone
+  ctx.strokeStyle="rgba(255,0,0,.7)";ctx.strokeRect(x,y+h-4,w,4);
+  ctx.restore();
+}
+
+// Render a single context to a canvas element, returns canvas
+function renderContext(img,c,forYT){
+  var titleH=(c.meta==="title-below")?38:(c.meta==="fb"||c.meta==="tw"||c.meta==="li"||c.meta==="wa")?40:0;
+  var sideW=(c.meta==="title-right")?200:(c.meta==="title-right-small")?120:0;
+  var cw=c.w+sideW;var ch=c.h+titleH;
+  var cvs=document.createElement("canvas");
+  cvs.width=cw;cvs.height=ch;cvs.style.maxWidth="100%";
+  var ctx=cvs.getContext("2d");
+  // background depends on platform
+  var bgc=forYT?bg():(document.body.classList.contains("light")?"#fff":"#1e1e2e");
+  ctx.fillStyle=bgc;ctx.fillRect(0,0,cw,ch);
+  // thumbnail
+  drawCover(ctx,img,0,0,c.w,c.h,c.crop==="square"?"square":"cover");
+  if(forYT&&c.overlay&&document.getElementById("optOverlay").checked)drawYTOverlays(ctx,0,0,c.w,c.h);
+  if(forYT&&document.getElementById("optSafe").checked)drawSafeArea(ctx,0,0,c.w,c.h);
+  // title text
+  var title=document.getElementById("vidTitle").value||"";
+  var chan=document.getElementById("channel").value||"";
+  var tcol=forYT?fg():(document.body.classList.contains("light")?"#141428":"#f8f8ff");
+  var scol=forYT?sub():"#9494b8";
+  ctx.textBaseline="top";ctx.textAlign="left";
+  if(c.meta==="title-below"){
+    ctx.fillStyle=tcol;ctx.font="600 12px Roboto,Arial,sans-serif";
+    wrapText(ctx,title,4,c.h+4,c.w-8,14,2);
+    ctx.fillStyle=scol;ctx.font="11px Roboto,Arial,sans-serif";
+    ctx.fillText(chan+" · 123K views",4,c.h+30);
+  }else if(c.meta==="title-right"||c.meta==="title-right-small"){
+    var fs=c.meta==="title-right-small"?11:14;
+    ctx.fillStyle=tcol;ctx.font="600 "+fs+"px Roboto,Arial,sans-serif";
+    wrapText(ctx,title,c.w+8,2,sideW-8,fs+3,2);
+    ctx.fillStyle=scol;ctx.font=(fs-2)+"px Roboto,Arial,sans-serif";
+    ctx.fillText(chan,c.w+8,2+(fs+3)*2+4);
+    ctx.fillText("123K views · 2h",c.w+8,2+(fs+3)*2+4+fs);
+  }else if(c.meta==="fb"||c.meta==="tw"||c.meta==="li"||c.meta==="wa"){
+    var lbl={fb:"facebook.com",tw:"@channel",li:"LinkedIn",wa:"Forwarded"}[c.meta];
+    ctx.fillStyle=(document.body.classList.contains("light")?"#141428":"#f8f8ff");
+    ctx.font="600 12px Arial,sans-serif";
+    wrapText(ctx,title,4,c.h+4,c.w-8,14,1);
+    ctx.fillStyle="#9494b8";ctx.font="10px Arial,sans-serif";
+    ctx.fillText(lbl,4,c.h+22);
+  }
+  return {canvas:cvs,ctx:ctx};
+}
+
+function wrapText(ctx,text,x,y,maxW,lh,maxLines){
+  var words=text.split(" ");var line="";var yy=y;var lines=0;
+  for(var i=0;i<words.length;i++){
+    var test=line+words[i]+" ";
+    if(ctx.measureText(test).width>maxW&&i>0){
+      ctx.fillText(line,x,yy);line=words[i]+" ";yy+=lh;lines++;
+      if(maxLines&&lines>=maxLines){ctx.fillText("…",x,yy-lh+0);return;}
+    }else line=test;
+  }
+  ctx.fillText(line,x,yy);
+}
+
+function buildContextCards(wrapId,list,img,forYT){
+  var wrap=document.getElementById(wrapId);wrap.innerHTML="";
+  list.forEach(function(c){
+    var card=document.createElement("div");card.className="ctxCard";
+    var h=document.createElement("h4");h.textContent=c.name;card.appendChild(h);
+    var d=document.createElement("div");d.className="dim";d.textContent=c.w+"×"+c.h+" px";card.appendChild(d);
+    var r=renderContext(img,c,forYT);
+    card.appendChild(r.canvas);
+    wrap.appendChild(card);
+  });
+}
+
+function render(){
+  if(!mainImg)return;
+  document.getElementById("previews").style.display="block";
+  buildContextCards("ytContexts",ytContexts,mainImg,true);
+  buildContextCards("otherContexts",otherContexts,mainImg,false);
+  runLegibility();
+  if(abImg.A||abImg.B)renderAB();
+}
+
+// ---- Legibility checker ----
+function analyzeImage(img){
+  var c=document.createElement("canvas");var sw=Math.min(160,img.width),sh=Math.round(sw*img.height/img.width);
+  c.width=sw;c.height=sh;var ctx=c.getContext("2d");ctx.drawImage(img,0,0,sw,sh);
+  var data;try{data=ctx.getImageData(0,0,sw,sh).data;}catch(e){return null;}
+  var totL=0,n=sw*sh,minL=255,maxL=0;
+  for(var i=0;i<data.length;i+=4){
+    var lum=0.2126*data[i]+0.7152*data[i+1]+0.0722*data[i+2];
+    totL+=lum;if(lum<minL)minL=lum;if(lum>maxL)maxL=lum;
+  }
+  var avg=totL/n;
+  return {brightness:avg,contrast:maxL-minL};
+}
+function runLegibility(){
+  var el=document.getElementById("legibility");
+  var w=mainImg.width,h=mainImg.height;
+  var ar=(w/h);
+  var arStr=ar.toFixed(2)+":1";
+  var msgs=[];
+  msgs.push("<strong>Dimensions:</strong> "+w+"×"+h+" px");
+  msgs.push("<strong>Aspect ratio:</strong> "+arStr+(Math.abs(ar-16/9)<0.05?" ✅ (16:9, ideal)":" ⚠️ (YouTube expects 16:9 ≈ 1.78:1)"));
+  if(w<1280||h<720)msgs.push('<span style="color:#ec4899">⚠️ Below 1280×720 — YouTube recommends at least 1280×720. Your image may look soft on large screens.</span>');
+  else msgs.push("✅ Meets the 1280×720 minimum.");
+  // text-too-small estimate: smallest YT render is sidebar 168px wide vs 1280 source
+  var smallest=168;var scaleAtSmallest=smallest/w;
+  var minReadablePx=Math.round(24/scaleAtSmallest); // ~24px on screen needed; back-calc source px
+  msgs.push("<strong>Text size guide:</strong> at the smallest render (sidebar, "+smallest+"px wide) your image is scaled to "+(scaleAtSmallest*100).toFixed(0)+"%. Any text in the image smaller than ~"+minReadablePx+"px in the original will likely be unreadable there. Aim for large, bold words.");
+  var a=analyzeImage(mainImg);
+  if(a){
+    var b=a.brightness;
+    var bl=b<60?"very dark":b<110?"dark":b>200?"very bright":b>160?"bright":"balanced";
+    msgs.push("<strong>Brightness:</strong> "+b.toFixed(0)+"/255 ("+bl+")"+(b<60?" — consider brightening; dark thumbnails can disappear in dark mode.":b>210?" — consider toning down; very bright thumbnails wash out.":" ✅"));
+    var con=a.contrast;
+    msgs.push("<strong>Contrast range:</strong> "+con.toFixed(0)+"/255"+(con<90?' <span style="color:#ec4899">⚠️ low contrast — add brighter highlights or darker shadows so it pops in the feed.</span>':" ✅ good contrast."));
+  }else{
+    msgs.push("<em>Contrast/brightness analysis unavailable for this image.</em>");
+  }
+  el.innerHTML=msgs.map(function(m){return "<div>"+m+"</div>";}).join("");
+}
+
+// ---- A/B ----
+function loadAB(side){
+  var inp=document.getElementById("ab"+side);
+  if(inp.files[0]){
+    var url=URL.createObjectURL(inp.files[0]);
+    var img=new Image();img.onload=function(){abImg[side]=img;renderAB();};img.src=url;
+  }
+}
+function renderAB(){
+  var wrap=document.getElementById("abContexts");
+  if(!abImg.A&&!abImg.B){wrap.innerHTML="";return;}
+  var cols=ytContexts.slice(0,4); // show key contexts side by side
+  var html='<div style="overflow-x:auto"><table style="border-collapse:collapse"><tr><th style="text-align:left;font-size:.8rem;padding:.4rem">Context</th><th style="font-size:.8rem;padding:.4rem">A</th><th style="font-size:.8rem;padding:.4rem">B</th></tr>';
+  wrap.innerHTML=html+'</table></div>';
+  var table=wrap.querySelector("table");
+  cols.forEach(function(c){
+    var tr=document.createElement("tr");
+    var td0=document.createElement("td");td0.style.cssText="font-size:.78rem;padding:.4rem;color:var(--text2)";td0.textContent=c.name;tr.appendChild(td0);
+    ["A","B"].forEach(function(s){
+      var td=document.createElement("td");td.style.padding=".4rem";
+      if(abImg[s]){td.appendChild(renderContext(abImg[s],c,true).canvas);}
+      else{td.innerHTML='<span style="color:var(--text2);font-size:.75rem">—</span>';}
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+}
+
+// ---- Contact sheet export ----
+function exportContactSheet(){
+  if(!mainImg)return alert("Upload a thumbnail first.");
+  var all=ytContexts.concat(otherContexts);
+  var pad=20,cols=3,cellW=380,cellH=250,titleH=30;
+  var rows=Math.ceil(all.length/cols);
+  var W=cols*cellW+pad*(cols+1);
+  var H=rows*cellH+pad*(rows+1)+50;
+  var sheet=document.createElement("canvas");sheet.width=W;sheet.height=H;
+  var ctx=sheet.getContext("2d");
+  ctx.fillStyle="#15152a";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#fff";ctx.font="bold 22px Arial";ctx.textAlign="left";ctx.textBaseline="top";
+  ctx.fillText("Thumbnail Preview Contact Sheet · freetoolhubs.com",pad,16);
+  all.forEach(function(c,i){
+    var col=i%cols,row=Math.floor(i/cols);
+    var x=pad+col*(cellW+pad),y=50+pad+row*(cellH+pad);
+    var forYT=ytContexts.indexOf(c)>-1;
+    var r=renderContext(mainImg,c,forYT);
+    // scale rendered canvas to fit cell
+    var scale=Math.min((cellW)/r.canvas.width,(cellH-titleH)/r.canvas.height,1);
+    var dw=r.canvas.width*scale,dh=r.canvas.height*scale;
+    ctx.fillStyle="#ccc";ctx.font="12px Arial";ctx.fillText(c.name+"  ("+c.w+"×"+c.h+")",x,y);
+    ctx.drawImage(r.canvas,x,y+titleH,dw,dh);
+  });
+  sheet.toBlob(function(blob){if(window.download)download(blob,"thumbnail-contact-sheet.png");else{var a=document.createElement("a");a.download="thumbnail-contact-sheet.png";a.href=sheet.toDataURL();a.click();}});
+}
+
+// ---- char counter ----
+function charCount(){var len=document.getElementById("vidTitle").value.length;var el=document.getElementById("charCounter");el.textContent=len+"/60 characters"+(len>60?" ⚠️ Too long!":len>50?" (getting close)":" (YouTube recommends <60)");el.style.color=len>60?"#ec4899":"var(--text2)";}
+
+// ---- upload ----
+setupDrop("drop","inp",function(f){
+  if(!f||!f[0])return;
+  var url=URL.createObjectURL(f[0]);
+  var img=new Image();img.onload=function(){mainImg=img;render();};img.src=url;
+});
 charCount();
-function loadAB(side){var inp=document.getElementById("ab"+side);var img=document.getElementById("abImg"+side);if(inp.files[0]){var r=new FileReader();r.onload=function(){img.src=r.result;img.style.display="block"};r.readAsDataURL(inp.files[0])}}</script>
+  </script>
 </body>
 </html>

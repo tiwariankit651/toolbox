@@ -29,59 +29,168 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/url-shortener">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .lt-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+    .lt-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
+    .lt-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .lt-panel{display:none}.lt-panel.active{display:block}
+    .lt-notice{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.4);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
+    .lt-info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
+    .lt-in{width:100%;padding:.65rem;border-radius:10px;border:1px solid rgba(99,102,241,.35);background:var(--card);color:var(--text);box-sizing:border-box}
+    .lt-lbl{display:block;font-weight:600;font-size:.8rem;margin:.6rem 0 .25rem;color:var(--text2)}
+    .lt-card{background:var(--card);padding:1rem;border-radius:var(--radius);margin:.6rem 0;border:1px solid rgba(255,255,255,.06)}
+    .lt-tbl{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+    .lt-tbl th,.lt-tbl td{padding:.4rem .55rem;border:1px solid rgba(255,255,255,.1);text-align:left;vertical-align:top}
+    .lt-tbl th{background:rgba(99,102,241,.1)}
+    .lt-tbl input{width:100%;padding:.35rem;border-radius:6px;border:1px solid rgba(99,102,241,.3);background:var(--bg2);color:var(--text);box-sizing:border-box}
+    .lt-built{word-break:break-all;font-family:monospace;font-size:.85rem;background:rgba(99,102,241,.06);padding:.7rem;border-radius:10px;margin-top:.5rem}
+    .lt-chip{display:inline-block;padding:.3rem .6rem;border-radius:8px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);cursor:pointer;font-size:.78rem;margin:.15rem}
+    .lt-flag{padding:.5rem .8rem;border-radius:10px;margin:.35rem 0;font-size:.85rem}
+    .lt-warn{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.35)}
+    .lt-good{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.35)}
+    .lt-saved{display:flex;align-items:center;gap:.5rem;font-size:.8rem;padding:.4rem .5rem;border-radius:8px;background:rgba(99,102,241,.05);margin:.25rem 0}
+    .lt-saved a{flex:1;word-break:break-all}
+    #qrBox canvas,#qrBox img{background:#fff;padding:8px;border-radius:8px}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🔗 URL Shortener</div>
     <div style="min-height:90px"></div>
-    <div class="tool-section"><h1>🔗 URL Shortener</h1>
+    <div class="tool-section"><h1>🔗 Link Toolkit</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste a long URL and get a short, shareable link instantly.</p>
-      <div class="row"><input type="url" id="longUrl" placeholder="https://example.com/very/long/url/here" style="flex:1;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
-      <button class="btn" onclick="shortenUrl()" style="width:100%">Shorten URL</button>
-      <div id="result" style="margin-top:1rem"></div>
-      <div id="history" style="margin-top:1.5rem"></div>
+      <div class="lt-info">🧭 <strong>What this tool can and cannot do:</strong> Creating a real short link that actually redirects requires a redirect service with a backend — a static page cannot host redirects by itself. The <strong>Shorten</strong> tab below uses the third-party <strong>is.gd</strong> API to create genuine short links (your long URL is sent to is.gd to do this). Everything else — the UTM builder, URL parser, cleaner, encoder, QR code and safety checklist — runs entirely in your browser with no requests.</div>
+
+      <div class="lt-tabs" id="ltTabs">
+        <div class="lt-tab active" onclick="ltTab('shorten')">Shorten (is.gd)</div>
+        <div class="lt-tab" onclick="ltTab('utm')">UTM Builder</div>
+        <div class="lt-tab" onclick="ltTab('parse')">URL Parser</div>
+        <div class="lt-tab" onclick="ltTab('clean')">Tracker Cleaner</div>
+        <div class="lt-tab" onclick="ltTab('encode')">Encode / Decode</div>
+        <div class="lt-tab" onclick="ltTab('safety')">Safety Check</div>
+        <div class="lt-tab" onclick="ltTab('qr')">QR Code</div>
+      </div>
+
+      <!-- SHORTEN -->
+      <div class="lt-panel active" id="lt-shorten">
+        <div class="lt-notice">⚠️ <strong>External service:</strong> Shortening sends your long URL to <strong>is.gd</strong>, a third-party service, which creates and hosts the redirect. The URL leaves your browser. Links created by is.gd are managed by is.gd under their terms.</div>
+        <div class="row"><input type="url" id="longUrl" class="lt-in" placeholder="https://example.com/very/long/url/here"></div>
+        <button class="btn" onclick="shortenUrl()" style="width:100%">Shorten URL via is.gd</button>
+        <div id="result" style="margin-top:1rem"></div>
+        <div id="history" style="margin-top:1.5rem"></div>
+      </div>
+
+      <!-- UTM BUILDER -->
+      <div class="lt-panel" id="lt-utm">
+        <p class="info">Build campaign tracking URLs with proper encoding. Pick a channel preset, fill the fields, copy the result.</p>
+        <label class="lt-lbl">Base URL</label>
+        <input id="utmBase" class="lt-in" oninput="buildUtm()" placeholder="https://yoursite.com/landing">
+        <div style="margin:.6rem 0">
+          <span class="lt-chip" onclick="utmPreset('google')">Google Ads</span>
+          <span class="lt-chip" onclick="utmPreset('facebook')">Facebook</span>
+          <span class="lt-chip" onclick="utmPreset('instagram')">Instagram</span>
+          <span class="lt-chip" onclick="utmPreset('email')">Email newsletter</span>
+          <span class="lt-chip" onclick="utmPreset('youtube')">YouTube desc</span>
+          <span class="lt-chip" onclick="utmPreset('whatsapp')">WhatsApp</span>
+          <span class="lt-chip" onclick="utmPreset('linkedin')">LinkedIn</span>
+        </div>
+        <label class="lt-lbl">utm_source</label><input id="utmSource" class="lt-in" oninput="buildUtm()" placeholder="google">
+        <label class="lt-lbl">utm_medium</label><input id="utmMedium" class="lt-in" oninput="buildUtm()" placeholder="cpc">
+        <label class="lt-lbl">utm_campaign</label><input id="utmCampaign" class="lt-in" oninput="buildUtm()" placeholder="spring_sale">
+        <label class="lt-lbl">utm_term (optional)</label><input id="utmTerm" class="lt-in" oninput="buildUtm()" placeholder="running+shoes">
+        <label class="lt-lbl">utm_content (optional)</label><input id="utmContent" class="lt-in" oninput="buildUtm()" placeholder="banner_a">
+        <label class="lt-lbl">Built URL</label>
+        <div class="lt-built" id="utmOut">—</div>
+        <div class="row" style="gap:.5rem;margin-top:.5rem"><button class="btn" onclick="copyText(document.getElementById('utmOut').textContent)">Copy</button><button class="btn btn-outline" onclick="saveCampaign()">Save Campaign</button></div>
+        <div id="utmSaved" style="margin-top:1rem"></div>
+      </div>
+
+      <!-- URL PARSER -->
+      <div class="lt-panel" id="lt-parse">
+        <p class="info">Paste any URL to break it into parts. Edit query parameters in the table and rebuild the URL.</p>
+        <input id="parseInput" class="lt-in" oninput="parseUrl()" placeholder="https://sub.example.co.uk:8080/path/to/page?a=1&b=2#section">
+        <div id="parseOut" style="margin-top:.6rem"></div>
+      </div>
+
+      <!-- CLEANER -->
+      <div class="lt-panel" id="lt-clean">
+        <p class="info">Strip common tracking parameters (utm_*, fbclid, gclid, igshid, mc_eid, ref, and more).</p>
+        <input id="cleanInput" class="lt-in" oninput="cleanUrl()" placeholder="https://example.com/page?utm_source=fb&fbclid=abc&id=42">
+        <div id="cleanOut" style="margin-top:.6rem"></div>
+      </div>
+
+      <!-- ENCODE / DECODE -->
+      <div class="lt-panel" id="lt-encode">
+        <p class="info">Encode/decode URL components, and convert a relative URL to absolute given a base.</p>
+        <label class="lt-lbl">Text / component</label>
+        <textarea id="encInput" class="lt-in" rows="2" oninput="doEncode('enc')" placeholder="hello world & more"></textarea>
+        <label class="lt-lbl">URL-encoded</label>
+        <textarea id="encEncoded" class="lt-in" rows="2" oninput="doEncode('dec')" placeholder="hello%20world%20%26%20more"></textarea>
+        <hr style="border-color:rgba(255,255,255,.1);margin:1rem 0">
+        <label class="lt-lbl">Base URL</label>
+        <input id="relBase" class="lt-in" oninput="doResolve()" placeholder="https://example.com/dir/page.html">
+        <label class="lt-lbl">Relative URL</label>
+        <input id="relRel" class="lt-in" oninput="doResolve()" placeholder="../images/logo.png">
+        <label class="lt-lbl">Absolute URL</label>
+        <div class="lt-built" id="relOut">—</div>
+      </div>
+
+      <!-- SAFETY -->
+      <div class="lt-panel" id="lt-safety">
+        <div class="lt-info">These are <strong>heuristic warnings</strong> to help you eyeball a link — not a malware scanner. A clean result does not guarantee safety.</div>
+        <input id="safetyInput" class="lt-in" oninput="checkSafety()" placeholder="https://example.com/path">
+        <div id="safetyOut" style="margin-top:.6rem"></div>
+      </div>
+
+      <!-- QR -->
+      <div class="lt-panel" id="lt-qr">
+        <p class="info">Generate a scannable QR code for any link and download it as a PNG.</p>
+        <input id="qrInput" class="lt-in" oninput="makeQR()" placeholder="https://example.com">
+        <div id="qrBox" style="margin-top:1rem;text-align:center"></div>
+        <div id="qrDl" style="text-align:center;margin-top:.5rem"></div>
+      </div>
     </div>
 
     <div class="tool-section" style="margin-top:1.5rem"><h2>✅ Benefits</h2>
       <ul style="line-height:2">
-        <li>Instantly shorten any long URL</li>
-        <li>No signup or account required</li>
-        <li>Short links are permanent and never expire</li>
-        <li>History of last 5 links saved locally</li>
-        <li>One-click copy to clipboard</li>
+        <li>Honest link toolkit — offline tools make no network requests</li>
+        <li>UTM campaign builder with channel presets and saved campaigns</li>
+        <li>URL parser, tracker cleaner, encoder and safety checklist</li>
+        <li>QR code generation with PNG download</li>
+        <li>Real short links via the is.gd API (clearly disclosed)</li>
       </ul>
     </div>
 
     <div style="min-height:90px">
 <h2>Frequently Asked Questions</h2>
 <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits.</p></details>
-<details><summary>Do shortened URLs expire?</summary><p>No, links created via is.gd are permanent and will continue to work indefinitely.</p></details>
-<details><summary>Is my data safe?</summary><p>Your URL history is stored only in your browser's localStorage. We never track or store your URLs on any server.</p></details>
+<details><summary>Can a static page really create short links?</summary><p>Not on its own — a real short link needs a redirect service with a backend. The Shorten tab uses the third-party is.gd API to create genuine short links, which means your long URL is sent to is.gd. All the other tools (UTM builder, parser, cleaner, encoder, QR, safety check) run entirely in your browser.</p></details>
+<details><summary>Do shortened URLs expire?</summary><p>Links created via is.gd are managed by is.gd under their own terms. We do not control their lifetime.</p></details>
+<details><summary>Is my data safe?</summary><p>Your saved campaigns and link history are stored only in your browser's localStorage. The offline tools never send your URLs anywhere. Only the Shorten tab sends a URL to is.gd, and only when you press the button.</p></details>
 <details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, tablet, and mobile phone.</p></details>
-<details><summary>Can I use shortened URLs for commercial purposes?</summary><p>Yes, you can use the generated short links for any purpose — personal, educational, or commercial.</p></details>
+<details><summary>Can I use this for commercial purposes?</summary><p>Yes, you can use the generated links for any purpose — personal, educational, or commercial.</p></details>
 </div>
   </div>
 
   <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
-<li><strong>Step 1:</strong> Long ugly URL share karna hai? Paste that monster link in the box</li>
-<li><strong>Step 2:</strong> Click Shorten — boom, you get a clean short link instantly</li>
-<li><strong>Step 3:</strong> Copy it and share wherever you want — WhatsApp, email, anywhere</li>
-<li><strong>Step 4:</strong> Want a custom alias? Set one so people know what they're clicking</li>
-<li><strong>Step 5:</strong> Track how many people clicked your link. Knowledge is power!</li>
+<li><strong>Shorten:</strong> Long URL ko real short link banana hai? is.gd tab use karo — URL is.gd ko jaata hai (disclosed)</li>
+<li><strong>UTM Builder:</strong> Marketing campaign track karni hai? Channel preset pick karo, fields bharo, tracking URL ready</li>
+<li><strong>URL Parser:</strong> Kisi URL ke parts dekho — protocol, domain, path, query params — aur edit karke rebuild karo</li>
+<li><strong>Tracker Cleaner:</strong> Link se utm_*, fbclid, gclid jaise tracking params hatao</li>
+<li><strong>Safety Check + QR:</strong> Link ke red flags check karo aur QR code download karo</li>
 </ol>
 <h2>Common Use Cases</h2>
 <ul style="margin-left:1.5rem;line-height:2">
-<li>Shortening long URLs for social media posts with character limits</li>
-<li>Creating clean, memorable links for marketing campaigns</li>
-<li>Making URLs more manageable for print materials</li>
-<li>Sharing links in text messages without overwhelming the recipient</li>
-<li>Tracking link clicks and engagement for analytics</li>
+<li>Building tracked campaign links for Google Ads, Facebook, Instagram, email</li>
+<li>Cleaning ugly tracking parameters out of shared links</li>
+<li>Inspecting a suspicious URL's parts before clicking</li>
+<li>Making QR codes for posters, menus, and business cards</li>
+<li>Encoding/decoding URL components while debugging</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>URL Shortener lets you convert long, unwieldy URLs into short, clean links that are easy to share on social media, messaging apps, emails, and documents. Powered by the is.gd API, your shortened links are permanent and reliable. The tool keeps a history of your last 5 shortened URLs in your browser for quick access. No signup, no tracking, no server-side storage — just fast, free URL shortening.</p></div>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>The Link Toolkit is an honest set of link utilities. Because a static web page cannot host redirects on its own, real short-link creation is handled by the third-party is.gd API (clearly disclosed, and only when you press the button), while the rest of the toolkit — a UTM campaign builder with channel presets, a full URL parser and inspector, a tracking-parameter cleaner, URL component encoding and decoding, relative-to-absolute resolution, a QR code generator with PNG download, and a heuristic link-safety checklist — runs entirely in your browser. Saved campaigns and link history live only in your browser's localStorage.</p></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/caption-spacer" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Caption Spacer</a><a href="/tools/fancy-fonts" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Fancy Fonts</a><a href="/tools/meme-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Meme Generator</a><a href="/tools/quote-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Quote Generator</a><a href="/tools/thumbnail-preview" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Thumbnail Preview</a><a href="/tools/yt-thumbnail-downloader" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">YT Thumbnail</a></div></div>
   <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-url-shorteners-2026">Best Free URL Shorteners in 2026 — Top Link Shortening Tools Compared</a></li></ul></div>
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
@@ -102,24 +211,196 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-function getHistory(){return JSON.parse(localStorage.getItem('urlHistory')||'[]')}
-function saveHistory(h){localStorage.setItem('urlHistory',JSON.stringify(h.slice(0,5)))}
-function renderHistory(){var h=getHistory();if(!h.length){document.getElementById('history').innerHTML='';return}
+function ltTab(name){
+  var map=['shorten','utm','parse','clean','encode','safety','qr'];
+  document.querySelectorAll('.lt-tab').forEach(function(t,i){t.classList.toggle('active',map[i]===name);});
+  document.querySelectorAll('.lt-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('lt-'+name).classList.add('active');
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function copyText(t){if(t&&t!=='—')navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){});}
+
+// ---------- SHORTEN (is.gd) ----------
+function getHistory(){try{return JSON.parse(localStorage.getItem('urlHistory')||'[]');}catch(e){return [];}}
+function saveHistory(h){localStorage.setItem('urlHistory',JSON.stringify(h.slice(0,5)));}
+function renderHistory(){var h=getHistory();if(!h.length){document.getElementById('history').innerHTML='';return;}
 var html='<h3>📋 Recent Links</h3><div style="display:flex;flex-direction:column;gap:.4rem">';
-h.forEach(function(item){html+='<div style="background:var(--card);padding:.6rem;border-radius:8px;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="flex:1;min-width:150px;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+item.long+'">'+item.long+'</span><a href="'+item.short+'" target="_blank" style="font-weight:bold">'+item.short+'</a><button class="btn" onclick="copyText(\''+item.short+'\')">📋</button></div>'});
-html+='</div>';document.getElementById('history').innerHTML=html}
+h.forEach(function(item){html+='<div class="lt-saved"><span style="flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(item.long)+'">'+esc(item.long)+'</span><a href="'+esc(item.short)+'" target="_blank" rel="noopener" style="font-weight:bold">'+esc(item.short)+'</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="copyText(\''+item.short+'\')">📋</button></div>';});
+html+='</div>';document.getElementById('history').innerHTML=html;}
 async function shortenUrl(){var url=document.getElementById('longUrl').value.trim();
-if(!url){document.getElementById('result').innerHTML='<p style="color:#e74c3c">Please enter a URL</p>';return}
-if(!/^https?:\/\/.+/.test(url)){document.getElementById('result').innerHTML='<p style="color:#e74c3c">Please enter a valid URL starting with http:// or https://</p>';return}
-document.getElementById('result').innerHTML='<p class="info">Shortening...</p>';
+if(!url){document.getElementById('result').innerHTML='<p style="color:#ec4899">Please enter a URL</p>';return;}
+if(!/^https?:\/\/.+/.test(url)){document.getElementById('result').innerHTML='<p style="color:#ec4899">Please enter a valid URL starting with http:// or https://</p>';return;}
+document.getElementById('result').innerHTML='<p class="info">Shortening via is.gd…</p>';
 try{var res=await fetch('https://is.gd/create.php?format=json&url='+encodeURIComponent(url));var data=await res.json();
-if(data.shorturl){document.getElementById('result').innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><span style="flex:1;font-size:1.1rem;font-weight:bold"><a href="'+data.shorturl+'" target="_blank">'+data.shorturl+'</a></span><button class="btn" onclick="copyText(\''+data.shorturl+'\')">📋 Copy</button></div>';
-var h=getHistory();h.unshift({long:url,short:data.shorturl});saveHistory(h);renderHistory()}
-else{document.getElementById('result').innerHTML='<p style="color:#e74c3c">Error: '+(data.errormessage||'Could not shorten URL')+'</p>'}}
-catch(e){document.getElementById('result').innerHTML='<p style="color:#e74c3c">Network error. Please try again.</p>'}}
-function copyText(t){navigator.clipboard.writeText(t).then(function(){alert('Copied!')})}
+if(data.shorturl){document.getElementById('result').innerHTML='<div class="lt-card" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><span style="flex:1;font-size:1.05rem;font-weight:bold"><a href="'+esc(data.shorturl)+'" target="_blank" rel="noopener">'+esc(data.shorturl)+'</a></span><button class="btn" onclick="copyText(\''+data.shorturl+'\')">📋 Copy</button></div>';
+var h=getHistory();h.unshift({long:url,short:data.shorturl});saveHistory(h);renderHistory();}
+else{document.getElementById('result').innerHTML='<p style="color:#ec4899">Error: '+esc(data.errormessage||'Could not shorten URL')+'</p>';}}
+catch(e){document.getElementById('result').innerHTML='<p style="color:#ec4899">Network error. Please try again.</p>';}}
+
+// ---------- UTM BUILDER ----------
+var UTM_PRESETS={
+  google:{source:'google',medium:'cpc'},
+  facebook:{source:'facebook',medium:'social'},
+  instagram:{source:'instagram',medium:'social'},
+  email:{source:'newsletter',medium:'email'},
+  youtube:{source:'youtube',medium:'video'},
+  whatsapp:{source:'whatsapp',medium:'social'},
+  linkedin:{source:'linkedin',medium:'social'}
+};
+function utmPreset(k){var p=UTM_PRESETS[k];if(!p)return;document.getElementById('utmSource').value=p.source;document.getElementById('utmMedium').value=p.medium;buildUtm();}
+function buildUtm(){
+  var base=document.getElementById('utmBase').value.trim();
+  var out=document.getElementById('utmOut');
+  if(!base){out.textContent='—';return;}
+  var params=[
+    ['utm_source',document.getElementById('utmSource').value.trim()],
+    ['utm_medium',document.getElementById('utmMedium').value.trim()],
+    ['utm_campaign',document.getElementById('utmCampaign').value.trim()],
+    ['utm_term',document.getElementById('utmTerm').value.trim()],
+    ['utm_content',document.getElementById('utmContent').value.trim()]
+  ].filter(function(p){return p[1]!=='';});
+  var qs=params.map(function(p){return encodeURIComponent(p[0])+'='+encodeURIComponent(p[1]);}).join('&');
+  var sep=base.indexOf('?')>=0?'&':'?';
+  out.textContent=qs?base+sep+qs:base;
+}
+function getCampaigns(){try{return JSON.parse(localStorage.getItem('utmCampaigns')||'[]');}catch(e){return [];}}
+function saveCampaign(){var url=document.getElementById('utmOut').textContent;if(!url||url==='—')return;var c=getCampaigns();c.unshift({url:url,name:document.getElementById('utmCampaign').value.trim()||'campaign',ts:Date.now()});c=c.slice(0,20);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
+function delCampaign(i){var c=getCampaigns();c.splice(i,1);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
+function renderCampaigns(){var c=getCampaigns();var el=document.getElementById('utmSaved');if(!c.length){el.innerHTML='';return;}
+el.innerHTML='<h3>💾 Saved Campaigns</h3>'+c.map(function(x,i){return '<div class="lt-saved"><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+' — '+esc(x.url)+'</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="copyText(\''+x.url.replace(/'/g,"\\'")+'\')">📋</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="delCampaign('+i+')">✕</button></div>';}).join('');}
+
+// ---------- URL PARSER ----------
+var parsedParams=[];var parsedBase='';var parsedHash='';
+function parseUrl(){
+  var raw=document.getElementById('parseInput').value.trim();var out=document.getElementById('parseOut');
+  if(!raw){out.innerHTML='';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL. Include the protocol (https://).</p>';return;}
+  var host=u.hostname;var hp=host.split('.');
+  var tld=hp.length>1?hp[hp.length-1]:'';
+  var domain=hp.length>1?hp.slice(-2).join('.'):host;
+  var sub=hp.length>2?hp.slice(0,hp.length-2).join('.'):'';
+  var segs=u.pathname.split('/').filter(Boolean);
+  parsedParams=[];u.searchParams.forEach(function(v,k){parsedParams.push([k,v]);});
+  parsedBase=u.protocol+'//'+u.host+u.pathname;
+  parsedHash=u.hash||'';
+  var rows=[
+    ['Protocol',u.protocol.replace(':','')],
+    ['Subdomain',sub||'(none)'],
+    ['Domain',domain],
+    ['TLD',tld||'(none)'],
+    ['Port',u.port||'(default)'],
+    ['Path',u.pathname||'/'],
+    ['Path segments',segs.length?segs.join(' / '):'(none)'],
+    ['Fragment',u.hash?u.hash.slice(1):'(none)']
+  ];
+  var html='<table class="lt-tbl">'+rows.map(function(r){return '<tr><th>'+r[0]+'</th><td>'+esc(r[1])+'</td></tr>';}).join('')+'</table>';
+  html+='<label class="lt-lbl">Query parameters (editable — decoded for readability)</label>';
+  html+='<div id="paramArea"></div>';
+  html+='<button class="btn btn-outline" style="margin-top:.5rem" onclick="addParam()">+ Add parameter</button>';
+  html+='<label class="lt-lbl">Rebuilt URL</label><div class="lt-built" id="parseRebuilt"></div><button class="btn" style="margin-top:.5rem" onclick="copyText(document.getElementById(\'parseRebuilt\').textContent)">Copy rebuilt URL</button>';
+  out.innerHTML=html;
+  renderParamTable();
+}
+function renderParamTable(){
+  var area=document.getElementById('paramArea');if(!area)return;
+  var html='';
+  if(parsedParams.length){
+    html+='<table class="lt-tbl"><tr><th>Key</th><th>Value</th><th></th></tr>';
+    parsedParams.forEach(function(p,i){html+='<tr><td><input value="'+esc(p[0])+'" oninput="updParam('+i+',0,this.value)"></td><td><input value="'+esc(p[1])+'" oninput="updParam('+i+',1,this.value)"></td><td><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .45rem" onclick="delParam('+i+')">✕</button></td></tr>';});
+    html+='</table>';
+  }else{html+='<p class="info">No query parameters.</p>';}
+  area.innerHTML=html;
+  rebuildParsed();
+}
+function updParam(i,j,v){parsedParams[i][j]=v;rebuildParsed();}
+function delParam(i){parsedParams.splice(i,1);renderParamTable();}
+function addParam(){parsedParams.push(['key','value']);renderParamTable();}
+function rebuildParsed(){
+  var qs=parsedParams.filter(function(p){return p[0]!=='';}).map(function(p){return encodeURIComponent(p[0])+'='+encodeURIComponent(p[1]);}).join('&');
+  var full=parsedBase+(qs?'?'+qs:'')+parsedHash;
+  var el=document.getElementById('parseRebuilt');if(el)el.textContent=full;
+}
+
+// ---------- CLEANER ----------
+var TRACKERS=['utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_id','utm_reader','utm_name','utm_social','fbclid','gclid','dclid','gclsrc','msclkid','igshid','mc_eid','mc_cid','ref','ref_src','ref_url','yclid','_ga','vero_id','oly_enc_id','oly_anon_id','wickedid','soc_src','soc_trk','twclid','li_fat_id'];
+function cleanUrl(){
+  var raw=document.getElementById('cleanInput').value.trim();var out=document.getElementById('cleanOut');
+  if(!raw){out.innerHTML='';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL.</p>';return;}
+  var removed=[];
+  TRACKERS.forEach(function(t){if(u.searchParams.has(t)){removed.push(t+'='+u.searchParams.get(t));u.searchParams.delete(t);}});
+  // also remove any param starting with utm_
+  var extra=[];u.searchParams.forEach(function(v,k){if(/^utm_/i.test(k))extra.push(k);});
+  extra.forEach(function(k){removed.push(k+'='+u.searchParams.get(k));u.searchParams.delete(k);});
+  var clean=u.toString();
+  var html='<label class="lt-lbl">Cleaned URL</label><div class="lt-built">'+esc(clean)+'</div><button class="btn" style="margin-top:.5rem" onclick="copyText(\''+clean.replace(/'/g,"\\'")+'\')">Copy</button>';
+  if(removed.length){html+='<p class="lt-flag lt-good" style="margin-top:.7rem">Removed '+removed.length+' tracking parameter(s): '+esc(removed.join(', '))+'</p>';}
+  else{html+='<p class="info" style="margin-top:.7rem">No known tracking parameters found.</p>';}
+  out.innerHTML=html;
+}
+
+// ---------- ENCODE / DECODE ----------
+function doEncode(src){
+  var i=document.getElementById('encInput');var e=document.getElementById('encEncoded');
+  try{
+    if(src==='enc'){e.value=encodeURIComponent(i.value);}
+    else{i.value=decodeURIComponent(e.value.replace(/\+/g,'%20'));}
+  }catch(err){/* leave as is on malformed */}
+}
+function doResolve(){
+  var base=document.getElementById('relBase').value.trim();var rel=document.getElementById('relRel').value.trim();var out=document.getElementById('relOut');
+  if(!base||!rel){out.textContent='—';return;}
+  try{out.textContent=new URL(rel,base).toString();}catch(e){out.textContent='Invalid base or relative URL';}
+}
+
+// ---------- SAFETY ----------
+var SUSPICIOUS_TLD=['zip','mov','xyz','top','tk','ml','ga','cf','gq','work','click','link','rest','country','kim','science','party'];
+function checkSafety(){
+  var raw=document.getElementById('safetyInput').value.trim();var out=document.getElementById('safetyOut');
+  if(!raw){out.innerHTML='';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL.</p>';return;}
+  var flags=[];
+  if(u.protocol==='http:')flags.push(['warn','Uses insecure http:// instead of https://']);
+  if(/^\d{1,3}(\.\d{1,3}){3}$/.test(u.hostname))flags.push(['warn','Host is a raw IP address, not a domain name']);
+  if(/xn--/i.test(u.hostname))flags.push(['warn','Contains punycode (xn--) — possible IDN homograph / lookalike domain']);
+  var labels=u.hostname.split('.');
+  if(labels.length>=5)flags.push(['warn','Excessive subdomains ('+labels.length+' labels) — can be used to disguise the real domain']);
+  var tld=labels[labels.length-1].toLowerCase();
+  if(SUSPICIOUS_TLD.indexOf(tld)>=0)flags.push(['warn','TLD ".'+tld+'" is commonly abused for spam/phishing']);
+  if((u.pathname+u.search).length>100)flags.push(['warn','Very long / obfuscated path ('+(u.pathname+u.search).length+' chars)']);
+  if(/%[0-9a-f]{2}/i.test(u.hostname))flags.push(['warn','Host contains percent-encoding — unusual and suspicious']);
+  var html='';
+  if(flags.length){html=flags.map(function(f){return '<p class="lt-flag lt-warn">⚠️ '+esc(f[1])+'</p>';}).join('');}
+  else{html='<p class="lt-flag lt-good">✅ No heuristic red flags found. Remember: this is not a malware scanner.</p>';}
+  out.innerHTML=html;
+}
+
+// ---------- QR ----------
+function makeQR(){
+  var raw=document.getElementById('qrInput').value.trim();var box=document.getElementById('qrBox');var dl=document.getElementById('qrDl');
+  box.innerHTML='';dl.innerHTML='';
+  if(!raw)return;
+  if(typeof qrcode==='undefined'){box.innerHTML='<p class="info">QR library not loaded.</p>';return;}
+  var qr=qrcode(0,'M');qr.addData(raw);qr.make();
+  box.innerHTML=qr.createImgTag(5,8);
+  var img=box.querySelector('img');
+  dl.innerHTML='<button class="btn" onclick="downloadQR()">⬇️ Download PNG</button>';
+}
+function downloadQR(){
+  var raw=document.getElementById('qrInput').value.trim();if(!raw)return;
+  var qr=qrcode(0,'M');qr.addData(raw);qr.make();
+  var count=qr.getModuleCount();var cell=8;var margin=cell*4;var size=count*cell+margin*2;
+  var canvas=document.createElement('canvas');canvas.width=canvas.height=size;var ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);ctx.fillStyle='#000';
+  for(var r=0;r<count;r++)for(var c=0;c<count;c++){if(qr.isDark(r,c))ctx.fillRect(margin+c*cell,margin+r*cell,cell,cell);}
+  var a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='qr-code.png';a.click();
+}
+
+// ---------- init ----------
 renderHistory();
-</script>
+renderCampaigns();
+  </script>
 </body></html>

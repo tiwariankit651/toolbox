@@ -29,17 +29,38 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
-    .countdown-display{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.5rem 0;text-align:center}
-    .countdown-display .unit{background:var(--card);padding:1.5rem .5rem;border-radius:12px;border:1px solid var(--border)}
-    .countdown-display .num{font-size:2.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .countdown-display .label{font-size:.8rem;color:var(--text2);margin-top:.3rem}
-    .saved-item{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1rem;background:var(--card);border-radius:10px;margin:.5rem 0;border:1px solid var(--border)}
-    .saved-item .name{font-weight:600}
-    .saved-item .meta{font-size:.8rem;color:var(--text2)}
+    .cd-form{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0}
+    @media(max-width:600px){.cd-form{grid-template-columns:1fr}}
+    .cd-form label{font-size:.85rem;font-weight:600;display:block}
+    .preset-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin:.6rem 0}
+    .preset-chips button{padding:.4rem .9rem;border-radius:20px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.08);color:var(--text);cursor:pointer;font-size:.82rem}
+    .cd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:1rem}
+    .cd-card{background:var(--card);border-radius:var(--radius);padding:1.2rem;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+    .cd-card .accent-bar{position:absolute;top:0;left:0;right:0;height:4px}
+    .cd-card h3{margin:0 0 .3rem;display:flex;align-items:center;gap:.4rem}
+    .cd-units{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;text-align:center;margin:.6rem 0}
+    .cd-units .u{background:rgba(99,102,241,.08);border-radius:8px;padding:.5rem .2rem}
+    .cd-units .n{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .cd-units .l{font-size:.65rem;color:var(--text2);text-transform:uppercase}
+    .cd-card.compact .cd-units{grid-template-columns:1fr}
+    .cd-card.compact .cd-units .u:nth-child(n+2){display:none}
+    .cd-progress{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin:.5rem 0}
+    .cd-progress>span{display:block;height:100%;background:var(--gradient)}
+    .cd-note{font-size:.82rem;color:var(--text2);margin:.3rem 0}
+    .cd-actions{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
+    .cd-actions button{padding:.3rem .6rem;font-size:.8rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text);cursor:pointer}
+    .cd-past{color:var(--accent3);font-weight:600;font-size:.8rem}
+    .cd-fs{position:fixed;inset:0;background:var(--bg);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem}
+    .cd-fs.on{display:flex}
+    .cd-fs .fs-title{font-size:min(6vw,2.5rem);font-weight:700;margin-bottom:1rem}
+    .cd-fs .fs-units{display:flex;gap:min(4vw,2rem);flex-wrap:wrap;justify-content:center}
+    .cd-fs .fs-units .n{font-size:min(16vw,9rem);font-weight:800;font-variant-numeric:tabular-nums;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+    .cd-fs .fs-units .l{font-size:min(3vw,1rem);color:var(--text2);text-transform:uppercase}
+    .planner-box{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:1rem;margin-top:1rem}
     .celebration{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
     .confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:fall 3s linear forwards}
     @keyframes fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
-    @media(max-width:500px){.countdown-display .num{font-size:1.8rem}.countdown-display{gap:.5rem}}
+    @media(max-width:500px){.cd-units .n{font-size:1.2rem}}
   </style>
 </head>
 <body>
@@ -50,27 +71,55 @@
     <div class="tool-section">
       <h1>⏳ Event Countdown Timer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Create countdown timers for your events. Save multiple countdowns and share them via URL.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0">
-        <div><label style="font-size:.85rem;font-weight:600">Event Name</label><input type="text" id="eventName" placeholder="e.g. Birthday Party" style="width:100%;margin-top:.3rem"></div>
-        <div><label style="font-size:.85rem;font-weight:600">Target Date & Time</label><input type="datetime-local" id="eventDate" style="width:100%;margin-top:.3rem"></div>
+      <p class="info">Create multiple named countdowns to any date and time. Cards sort by soonest, past events count up as "time since", and everything saves in your browser.</p>
+
+      <div class="preset-chips" id="presetChips">
+        <button onclick="applyCdPreset('newyear')">🎆 New Year</button>
+        <button onclick="applyCdPreset('birthday')">🎂 Birthday (yearly)</button>
+        <button onclick="applyCdPreset('diwali')">🪔 Diwali</button>
+        <button onclick="applyCdPreset('holi')">🎨 Holi</button>
+        <button onclick="applyCdPreset('exam')">📝 Exam Date</button>
+        <button onclick="applyCdPreset('custom')">⚙️ Custom</button>
+      </div>
+
+      <div class="cd-form">
+        <div><label>Event Name</label><input type="text" id="eventName" placeholder="e.g. JEE Mains 2026"></div>
+        <div><label>Target Date &amp; Time</label><input type="datetime-local" id="eventDate"></div>
+        <div><label>Start Date (for progress bar, optional)</label><input type="datetime-local" id="startDate"></div>
+        <div><label>Recurring</label><select id="recurring"><option value="none">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
+        <div><label>Emoji / Icon</label><input type="text" id="eventEmoji" placeholder="🎉" maxlength="4"></div>
+        <div><label>Colour</label><input type="color" id="eventColor" value="#6366f1" style="height:44px;padding:.2rem"></div>
+        <div style="grid-column:1/-1"><label>Note (optional)</label><input type="text" id="eventNote" placeholder="Any details..."></div>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button onclick="startCountdown()">▶️ Start Countdown</button>
-        <button onclick="saveCountdown()" style="background:var(--card);color:var(--text)">💾 Save</button>
-        <button onclick="shareCountdown()" style="background:var(--card);color:var(--text)">🔗 Share</button>
+        <button class="btn" onclick="addCountdown()">➕ Add Countdown</button>
+        <button class="btn btn-outline" onclick="toggleDisplayMode()" id="dispModeBtn">🔎 Compact Mode</button>
+        <button class="btn btn-outline" onclick="copySummary()">📋 Copy Summary</button>
+        <button class="btn btn-outline" onclick="exportCountdowns()">📥 Export JSON</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importCountdowns(event)">
       </div>
-      <div id="activeCountdown" style="display:none">
-        <h2 id="activeTitle" style="text-align:center;margin-top:1.5rem"></h2>
-        <div class="countdown-display">
-          <div class="unit"><div class="num" id="days">0</div><div class="label">Days</div></div>
-          <div class="unit"><div class="num" id="hours">0</div><div class="label">Hours</div></div>
-          <div class="unit"><div class="num" id="minutes">0</div><div class="label">Minutes</div></div>
-          <div class="unit"><div class="num" id="seconds">0</div><div class="label">Seconds</div></div>
+
+      <div id="cdCards" class="cd-cards"></div>
+
+      <div class="planner-box">
+        <h3>🎓 Study Planner</h3>
+        <p class="info">Add a countdown named like an exam, then pick it here to get a revision split.</p>
+        <div class="row" style="gap:.5rem">
+          <select id="plannerSelect" onchange="renderPlanner()"><option value="">Select an exam countdown</option></select>
         </div>
+        <div id="plannerOut"></div>
+        <p class="info" style="margin-top:.5rem">Related: <a href="/tools/syllabus-tracker">Syllabus Tracker</a> · <a href="/tools/timetable">Timetable</a></p>
       </div>
-      <div id="savedList" style="margin-top:1.5rem"></div>
     </div>
+
+    <div class="cd-fs" id="cdFs">
+      <div class="fs-title" id="fsTitle"></div>
+      <div class="fs-units" id="fsUnits"></div>
+      <p class="info" id="fsNote"></p>
+      <button class="btn btn-outline" onclick="exitCdFullscreen()" style="margin-top:1.5rem">✕ Exit Fullscreen</button>
+    </div>
+
     <div style="min-height:90px">
 <h2>About This Tool</h2>
 <p>The Event Countdown Timer lets you track time remaining until important events. Whether it's a birthday, exam, product launch, or holiday — set up a countdown and watch it tick down in real time. Save multiple countdowns locally and share them with friends via a simple URL.</p>
@@ -121,102 +170,297 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>
-let timer=null;
-function startCountdown(){
-  const name=document.getElementById('eventName').value.trim();
-  const date=document.getElementById('eventDate').value;
-  if(!name||!date){alert('Please enter event name and date');return}
-  runCountdown(name,new Date(date).getTime());
+  <script>/*CD_START*/
+/* ===== Countdown Advanced ===== */
+var CD_KEY='countdownsV2';
+var countdowns=[];      // {id,name,target,start,recurring,emoji,color,note,celebrated,milestones}
+var displayMode='full'; // full | compact
+var notifyOK=false;
+var tickTimer=null;
+
+function uid(){return Date.now()+'-'+Math.floor(Math.random()*100000)}
+function pad(n){return n<10?'0'+n:''+n}
+
+function loadCountdowns(){
+  try{countdowns=JSON.parse(localStorage.getItem(CD_KEY)||'null')||[];}catch(e){countdowns=[];}
+  if(!countdowns.length){
+    // migrate old {name,date} array
+    try{var old=JSON.parse(localStorage.getItem('countdowns')||'[]');
+      if(old.length){countdowns=old.map(function(c){return{id:uid(),name:c.name,target:new Date(c.date).getTime(),start:null,recurring:'none',emoji:'⏳',color:'#6366f1',note:'',celebrated:false};});save();}
+    }catch(e){}
+  }
+  displayMode=localStorage.getItem('cd_dispmode')||'full';
 }
-function runCountdown(name,target){
-  clearInterval(timer);
-  document.getElementById('activeCountdown').style.display='block';
-  document.getElementById('activeTitle').textContent=name;
-  function tick(){
-    const now=Date.now();
-    const diff=target-now;
-    if(diff<=0){
-      document.getElementById('days').textContent='0';
-      document.getElementById('hours').textContent='0';
-      document.getElementById('minutes').textContent='0';
-      document.getElementById('seconds').textContent='0';
-      clearInterval(timer);
-      celebrate();
-      return;
+function save(){localStorage.setItem(CD_KEY,JSON.stringify(countdowns))}
+
+function applyCdPreset(kind){
+  var now=new Date();
+  var d=document.getElementById('eventDate');
+  var rec=document.getElementById('recurring');
+  var nm=document.getElementById('eventName');
+  var em=document.getElementById('eventEmoji');
+  function setDT(dt){d.value=toLocalInput(dt);}
+  if(kind==='newyear'){var y=now.getFullYear()+1;setDT(new Date(y,0,1,0,0));nm.value=nm.value||('New Year '+y);em.value='🎆';rec.value='yearly';}
+  else if(kind==='birthday'){nm.value=nm.value||'Birthday';em.value='🎂';rec.value='yearly';var b=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0);setDT(b);}
+  else if(kind==='diwali'){em.value='🪔';nm.value=nm.value||'Diwali';rec.value='yearly';setDT(nextGuess(now,10,20));}
+  else if(kind==='holi'){em.value='🎨';nm.value=nm.value||'Holi';rec.value='yearly';setDT(nextGuess(now,2,14));}
+  else if(kind==='exam'){em.value='📝';nm.value=nm.value||'Exam';rec.value='none';}
+  else {em.value=em.value||'⚙️';rec.value='none';}
+}
+function nextGuess(now,month,day){var d=new Date(now.getFullYear(),month,day,0,0);if(d.getTime()<now.getTime())d=new Date(now.getFullYear()+1,month,day,0,0);return d;}
+function toLocalInput(dt){return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate())+'T'+pad(dt.getHours())+':'+pad(dt.getMinutes());}
+
+function addCountdown(){
+  var name=document.getElementById('eventName').value.trim();
+  var date=document.getElementById('eventDate').value;
+  if(!name||!date){alert('Please enter an event name and target date.');return;}
+  var start=document.getElementById('startDate').value;
+  var c={
+    id:uid(),name:name,target:new Date(date).getTime(),
+    start:start?new Date(start).getTime():null,
+    recurring:document.getElementById('recurring').value,
+    emoji:(document.getElementById('eventEmoji').value.trim()||'⏳'),
+    color:document.getElementById('eventColor').value||'#6366f1',
+    note:document.getElementById('eventNote').value.trim(),
+    celebrated:false,milestones:{}
+  };
+  countdowns.push(c);save();
+  document.getElementById('eventName').value='';document.getElementById('eventNote').value='';
+  renderCards();renderPlannerSelect();
+}
+function deleteCountdown(id){if(!confirm('Delete this countdown?'))return;countdowns=countdowns.filter(function(c){return c.id!==id});save();renderCards();renderPlannerSelect();}
+
+function rollForward(c){
+  // if recurring and target passed, roll target forward until in future
+  if(c.recurring&&c.recurring!=='none'){
+    var t=new Date(c.target);var now=Date.now();var changed=false;
+    while(t.getTime()<=now){
+      if(c.recurring==='weekly')t.setDate(t.getDate()+7);
+      else if(c.recurring==='monthly')t.setMonth(t.getMonth()+1);
+      else if(c.recurring==='yearly')t.setFullYear(t.getFullYear()+1);
+      else break;
+      changed=true;
     }
-    const d=Math.floor(diff/86400000);
-    const h=Math.floor((diff%86400000)/3600000);
-    const m=Math.floor((diff%3600000)/60000);
-    const s=Math.floor((diff%60000)/1000);
-    document.getElementById('days').textContent=d;
-    document.getElementById('hours').textContent=h;
-    document.getElementById('minutes').textContent=m;
-    document.getElementById('seconds').textContent=s;
+    if(changed){c.target=t.getTime();c.celebrated=false;c.milestones={};}
+    return changed;
   }
-  tick();
-  timer=setInterval(tick,1000);
+  return false;
 }
-function saveCountdown(){
-  const name=document.getElementById('eventName').value.trim();
-  const date=document.getElementById('eventDate').value;
-  if(!name||!date){alert('Please enter event name and date');return}
-  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
-  saved.push({name,date});
-  localStorage.setItem('countdowns',JSON.stringify(saved));
-  renderSaved();
+
+function diffParts(ms){
+  var abs=Math.abs(ms);
+  return {
+    days:Math.floor(abs/86400000),
+    hours:Math.floor((abs%86400000)/3600000),
+    mins:Math.floor((abs%3600000)/60000),
+    secs:Math.floor((abs%60000)/1000)
+  };
 }
-function deleteCountdown(i){
-  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
-  saved.splice(i,1);
-  localStorage.setItem('countdowns',JSON.stringify(saved));
-  renderSaved();
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+function progressPct(c){
+  if(c.start==null)return null;
+  var total=c.target-c.start;if(total<=0)return null;
+  var done=Date.now()-c.start;var pct=done/total*100;
+  return Math.max(0,Math.min(100,pct));
 }
-function loadCountdown(i){
-  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
-  const c=saved[i];
-  document.getElementById('eventName').value=c.name;
-  document.getElementById('eventDate').value=c.date;
-  runCountdown(c.name,new Date(c.date).getTime());
+
+function renderCards(){
+  var changed=false;
+  countdowns.forEach(function(c){if(rollForward(c))changed=true;});
+  if(changed)save();
+  var sorted=countdowns.slice().sort(function(a,b){
+    var ap=a.target<Date.now(),bp=b.target<Date.now();
+    if(ap!==bp)return ap?1:-1; // upcoming first
+    return a.target-b.target;
+  });
+  var el=document.getElementById('cdCards');
+  if(!sorted.length){el.innerHTML='<p class="info">No countdowns yet. Add one above.</p>';return;}
+  el.innerHTML=sorted.map(function(c){
+    var ms=c.target-Date.now();
+    var past=ms<0;
+    var p=diffParts(ms);
+    var pct=progressPct(c);
+    var compact=displayMode==='compact';
+    var unitsHtml;
+    if(compact){
+      unitsHtml='<div class="cd-units"><div class="u"><div class="n">'+p.days+'</div><div class="l">'+(past?'days since':'days left')+'</div></div></div>';
+    } else {
+      unitsHtml='<div class="cd-units">'+
+        '<div class="u"><div class="n">'+p.days+'</div><div class="l">Days</div></div>'+
+        '<div class="u"><div class="n">'+pad(p.hours)+'</div><div class="l">Hours</div></div>'+
+        '<div class="u"><div class="n">'+pad(p.mins)+'</div><div class="l">Min</div></div>'+
+        '<div class="u"><div class="n">'+pad(p.secs)+'</div><div class="l">Sec</div></div></div>';
+    }
+    return '<div class="cd-card'+(compact?' compact':'')+'">'+
+      '<div class="accent-bar" style="background:'+c.color+'"></div>'+
+      '<h3>'+escapeHtml(c.emoji)+' '+escapeHtml(c.name)+(c.recurring!=='none'?' <span class="cd-note">('+c.recurring+')</span>':'')+'</h3>'+
+      (past?'<div class="cd-past">⏱️ Time since '+new Date(c.target).toLocaleString()+'</div>':'<div class="cd-note">'+new Date(c.target).toLocaleString()+'</div>')+
+      unitsHtml+
+      (pct!=null?'<div class="cd-progress"><span style="width:'+pct.toFixed(1)+'%"></span></div><div class="cd-note">'+pct.toFixed(1)+'% of the way there</div>':'')+
+      (c.note?'<div class="cd-note">📝 '+escapeHtml(c.note)+'</div>':'')+
+      '<div class="cd-actions">'+
+        '<button onclick="openCdFullscreen(\''+c.id+'\')">⛶ Fullscreen</button>'+
+        '<button onclick="setMilestones(\''+c.id+'\')">🔔 Alerts</button>'+
+        '<button onclick="deleteCountdown(\''+c.id+'\')">🗑️ Delete</button>'+
+      '</div></div>';
+  }).join('');
 }
-function renderSaved(){
-  const saved=JSON.parse(localStorage.getItem('countdowns')||'[]');
-  const el=document.getElementById('savedList');
-  if(!saved.length){el.innerHTML='';return}
-  el.innerHTML='<h3>💾 Saved Countdowns</h3>'+saved.map((c,i)=>'<div class="saved-item"><div><div class="name">'+c.name+'</div><div class="meta">'+new Date(c.date).toLocaleString()+'</div></div><div style="display:flex;gap:.3rem"><button onclick="loadCountdown('+i+')" style="padding:.3rem .6rem;font-size:.8rem">▶️</button><button onclick="deleteCountdown('+i+')" style="padding:.3rem .6rem;font-size:.8rem;background:var(--card);color:var(--text)">🗑️</button></div></div>').join('');
+
+function tickAll(){
+  renderCards();
+  checkMilestones();
+  updateCdFullscreen();
 }
-function shareCountdown(){
-  const name=document.getElementById('eventName').value.trim();
-  const date=document.getElementById('eventDate').value;
-  if(!name||!date){alert('Please enter event name and date');return}
-  const url=window.location.origin+window.location.pathname+'?name='+encodeURIComponent(name)+'&date='+encodeURIComponent(date);
-  navigator.clipboard.writeText(url).then(()=>alert('Link copied to clipboard!')).catch(()=>{prompt('Copy this link:',url)});
+
+/* ---- fullscreen ---- */
+var fsId=null;
+function openCdFullscreen(id){fsId=id;document.getElementById('cdFs').classList.add('on');updateCdFullscreen();}
+function exitCdFullscreen(){fsId=null;document.getElementById('cdFs').classList.remove('on');}
+function updateCdFullscreen(){
+  if(fsId==null)return;
+  var c=countdowns.find(function(x){return x.id===fsId});
+  if(!c){exitCdFullscreen();return;}
+  var ms=c.target-Date.now();var past=ms<0;var p=diffParts(ms);
+  document.getElementById('fsTitle').textContent=c.emoji+' '+c.name+(past?' — time since':'');
+  document.getElementById('fsUnits').innerHTML=
+    '<div><div class="n">'+p.days+'</div><div class="l">Days</div></div>'+
+    '<div><div class="n">'+pad(p.hours)+'</div><div class="l">Hours</div></div>'+
+    '<div><div class="n">'+pad(p.mins)+'</div><div class="l">Min</div></div>'+
+    '<div><div class="n">'+pad(p.secs)+'</div><div class="l">Sec</div></div>';
+  document.getElementById('fsNote').textContent=c.note||'';
 }
+
+/* ---- milestones / notifications ---- */
+function setMilestones(id){
+  var c=countdowns.find(function(x){return x.id===id});if(!c)return;
+  var opts=['1 day','1 hour','10 minutes'];
+  var chosen=prompt('Notify me at which thresholds? Comma-separated from: 1 day, 1 hour, 10 minutes\n(Note: the tab must stay open to fire alerts.)','1 day, 1 hour, 10 minutes');
+  if(chosen===null)return;
+  c.milestones={};
+  chosen.toLowerCase().split(',').forEach(function(s){s=s.trim();
+    if(s.indexOf('day')>=0)c.milestones['86400000']=false;
+    else if(s.indexOf('hour')>=0)c.milestones['3600000']=false;
+    else if(s.indexOf('min')>=0)c.milestones['600000']=false;
+  });
+  save();
+  requestNotify();
+  alert('Milestone alerts set. Keep this tab open to receive them.');
+}
+function requestNotify(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted'){notifyOK=true;return;}
+  Notification.requestPermission().then(function(p){notifyOK=(p==='granted');});
+}
+function fireNotify(title,body){
+  if(notifyOK&&('Notification' in window)&&Notification.permission==='granted'){try{new Notification(title,{body:body});}catch(e){}}
+}
+function checkMilestones(){
+  var dirty=false;
+  countdowns.forEach(function(c){
+    var ms=c.target-Date.now();
+    if(c.milestones){
+      for(var thr in c.milestones){
+        var t=+thr;
+        if(!c.milestones[thr]&&ms<=t&&ms>0){c.milestones[thr]=true;dirty=true;
+          var label=t===86400000?'1 day':t===3600000?'1 hour':'10 minutes';
+          fireNotify('⏳ '+c.name,label+' remaining!');
+        }
+      }
+    }
+    if(ms<=0&&!c.celebrated){c.celebrated=true;dirty=true;celebrate();fireNotify('🎉 '+c.name,'The moment has arrived!');}
+  });
+  if(dirty)save();
+}
+
+/* ---- display mode ---- */
+function toggleDisplayMode(){
+  displayMode=(displayMode==='full'?'compact':'full');
+  localStorage.setItem('cd_dispmode',displayMode);
+  document.getElementById('dispModeBtn').textContent=displayMode==='full'?'🔎 Compact Mode':'🔎 Large Mode';
+  renderCards();
+}
+
+/* ---- share / export / import ---- */
+function copySummary(){
+  if(!countdowns.length){alert('No countdowns to copy.');return;}
+  var lines=countdowns.slice().sort(function(a,b){return a.target-b.target;}).map(function(c){
+    var ms=c.target-Date.now();var p=diffParts(ms);
+    return c.emoji+' '+c.name+': '+(ms<0?(p.days+' days ago'):(p.days+'d '+p.hours+'h '+p.mins+'m left'))+' ('+new Date(c.target).toLocaleString()+')';
+  });
+  var text=lines.join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){alert('Summary copied!');},function(){prompt('Copy:',text);});}
+  else prompt('Copy:',text);
+}
+function exportCountdowns(){
+  var blob=new Blob([JSON.stringify(countdowns,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='countdowns.json';a.click();
+}
+function importCountdowns(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{var data=JSON.parse(r.result);
+      if(!Array.isArray(data))throw 0;
+      data.forEach(function(c){if(c.name&&c.target){countdowns.push({id:uid(),name:c.name,target:c.target,start:c.start||null,recurring:c.recurring||'none',emoji:c.emoji||'⏳',color:c.color||'#6366f1',note:c.note||'',celebrated:false,milestones:c.milestones||{}});}});
+      save();renderCards();renderPlannerSelect();alert('Imported '+data.length+' countdown(s).');
+    }catch(e){alert('Invalid JSON file.');}
+    ev.target.value='';
+  };
+  r.readAsText(f);
+}
+
+/* ---- study planner ---- */
+function renderPlannerSelect(){
+  var sel=document.getElementById('plannerSelect');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Select an exam countdown</option>'+countdowns.filter(function(c){return c.target>Date.now();}).map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.emoji+' '+c.name)+'</option>';}).join('');
+  sel.value=cur;
+}
+function renderPlanner(){
+  var id=document.getElementById('plannerSelect').value;
+  var out=document.getElementById('plannerOut');
+  if(!id){out.innerHTML='';return;}
+  var c=countdowns.find(function(x){return x.id===id;});
+  if(!c){out.innerHTML='';return;}
+  var days=Math.max(0,Math.ceil((c.target-Date.now())/86400000));
+  var learn=Math.round(days*0.5),revise=Math.round(days*0.3),test=days-learn-revise;
+  out.innerHTML='<div style="margin-top:.6rem"><strong>'+days+' days</strong> until '+escapeHtml(c.name)+'.'+
+    '<ul style="margin:.5rem 0 0 1.2rem;line-height:1.9">'+
+    '<li>📖 First ~'+learn+' days: learn / cover new syllabus (50%)</li>'+
+    '<li>🔁 Next ~'+revise+' days: revision &amp; notes (30%)</li>'+
+    '<li>🧪 Last ~'+test+' days: mock tests &amp; weak areas (20%)</li>'+
+    '</ul><p class="cd-note">Guidance only — adjust to your syllabus.</p></div>';
+}
+
+/* ---- celebration (existing feature preserved) ---- */
 function celebrate(){
-  const container=document.createElement('div');
-  container.className='celebration';
-  document.body.appendChild(container);
-  const colors=['#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd'];
-  for(let i=0;i<80;i++){
-    const c=document.createElement('div');
-    c.className='confetti';
-    c.style.left=Math.random()*100+'%';
-    c.style.background=colors[Math.floor(Math.random()*colors.length)];
-    c.style.animationDelay=Math.random()*2+'s';
-    c.style.width=(Math.random()*8+5)+'px';
-    c.style.height=(Math.random()*8+5)+'px';
-    container.appendChild(c);
+  var container=document.createElement('div');container.className='celebration';document.body.appendChild(container);
+  var colors=['#6366f1','#8b5cf6','#ec4899','#feca57','#48dbfb','#54a0ff'];
+  for(var i=0;i<80;i++){var cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.background=colors[Math.floor(Math.random()*colors.length)];cf.style.animationDelay=Math.random()*2+'s';cf.style.width=(Math.random()*8+5)+'px';cf.style.height=(Math.random()*8+5)+'px';container.appendChild(cf);}
+  setTimeout(function(){container.remove();},4000);
+}
+
+/* ---- URL params (shared single countdown) ---- */
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('name')&&params.get('date')){
+    var name=params.get('name');var target=new Date(params.get('date')).getTime();
+    if(!isNaN(target)&&!countdowns.some(function(c){return c.name===name&&c.target===target;})){
+      countdowns.push({id:uid(),name:name,target:target,start:null,recurring:'none',emoji:'🔗',color:'#8b5cf6',note:'(shared)',celebrated:false,milestones:{}});
+      save();
+    }
   }
-  setTimeout(()=>container.remove(),4000);
-}
-// Load from URL params
-const params=new URLSearchParams(window.location.search);
-if(params.get('name')&&params.get('date')){
-  document.getElementById('eventName').value=params.get('name');
-  document.getElementById('eventDate').value=params.get('date');
-  runCountdown(params.get('name'),new Date(params.get('date')).getTime());
-}
-renderSaved();
-  </script>
+})();
+
+/* ---- init ---- */
+loadCountdowns();
+document.getElementById('dispModeBtn').textContent=displayMode==='full'?'🔎 Compact Mode':'🔎 Large Mode';
+renderCards();
+renderPlannerSelect();
+if(('Notification' in window)&&Notification.permission==='granted')notifyOK=true;
+tickTimer=setInterval(tickAll,1000);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')exitCdFullscreen();});
+  
 </body>
 </html>

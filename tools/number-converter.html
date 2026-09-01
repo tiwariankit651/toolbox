@@ -30,19 +30,42 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
-    .output-row{display:flex;align-items:center;gap:.5rem;margin:.5rem 0;padding:.5rem .75rem;background:var(--bg2,#f5f5f5);border-radius:8px}
-    .output-row label{min-width:70px;font-weight:600;font-size:.85rem}
-    .output-row span{flex:1;word-break:break-all;font-family:monospace}
-    .output-row button{padding:.25rem .5rem;font-size:.75rem;cursor:pointer;border:1px solid var(--border,#ddd);border-radius:4px;background:var(--bg,#fff)}
-    .bit-box{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--border,#ccc);border-radius:4px;margin:2px;font-family:monospace;font-size:.85rem;font-weight:600}
+    .nc-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+    .nc-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
+    .nc-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .nc-panel{display:none}
+    .nc-panel.active{display:block}
+    .output-row{display:flex;align-items:center;gap:.5rem;margin:.5rem 0;padding:.5rem .75rem;background:rgba(99,102,241,.06);border-radius:10px}
+    .output-row label{min-width:110px;font-weight:600;font-size:.85rem}
+    .output-row .val{flex:1;word-break:break-all;font-family:monospace;font-size:.95rem}
+    .output-row button{padding:.25rem .55rem;font-size:.75rem;cursor:pointer;border:1px solid rgba(99,102,241,.35);border-radius:8px;background:rgba(99,102,241,.08);color:var(--text)}
+    .nc-input{width:100%;padding:.7rem;font-size:1rem;border-radius:10px;border:1px solid rgba(99,102,241,.35);background:var(--card);color:var(--text);font-family:monospace;box-sizing:border-box}
+    .nc-live-row{display:flex;align-items:center;gap:.5rem;margin:.4rem 0}
+    .nc-live-row label{min-width:120px;font-weight:600;font-size:.8rem;color:var(--text2)}
+    .nc-live-row input{flex:1;padding:.55rem;border-radius:8px;border:1px solid rgba(99,102,241,.3);background:var(--card);color:var(--text);font-family:monospace}
+    .bit-box{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid rgba(99,102,241,.4);border-radius:6px;margin:2px;font-family:monospace;font-size:.85rem;font-weight:600;cursor:pointer;user-select:none;position:relative}
     .bit-box.one{background:#6366f1;color:#fff}
-    .bit-box.zero{background:var(--bg2,#f0f0f0)}
+    .bit-box.zero{background:rgba(99,102,241,.06);color:var(--text2)}
+    .bit-box.signbit{outline:2px solid #8b5cf6;outline-offset:1px}
+    .bit-lab{display:inline-block;width:30px;text-align:center;font-size:.6rem;color:var(--text2);margin:0 2px}
     .bit-vis{margin:1rem 0}
-    .bit-vis h4{margin-bottom:.5rem}
-    .base-select{padding:.5rem;border-radius:6px;border:1px solid var(--border,#ccc);font-size:1rem}
+    .base-select,.nc-select{padding:.55rem;border-radius:8px;border:1px solid rgba(99,102,241,.35);background:var(--card);color:var(--text);font-size:.95rem}
     .conv-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
-    .conv-table th,.conv-table td{padding:.4rem .6rem;border:1px solid var(--border,#ddd);text-align:center}
-    .conv-table th{background:var(--bg2,#f5f5f5);font-weight:600}
+    .conv-table th,.conv-table td{padding:.4rem .6rem;border:1px solid rgba(255,255,255,.1);text-align:center}
+    .conv-table th{background:rgba(99,102,241,.1);font-weight:600}
+    .nc-card{background:var(--card);padding:1rem;border-radius:var(--radius);margin:.75rem 0;border:1px solid rgba(255,255,255,.06)}
+    .nc-steps{font-family:monospace;font-size:.85rem;line-height:1.8;white-space:pre-wrap;background:rgba(99,102,241,.05);padding:.75rem;border-radius:10px}
+    .nc-hist-item{display:flex;align-items:center;gap:.5rem;font-size:.8rem;padding:.35rem .5rem;border-radius:8px;background:rgba(99,102,241,.05);margin:.25rem 0}
+    .nc-hist-item span{flex:1;font-family:monospace;word-break:break-all}
+    .nc-flag{padding:.6rem .9rem;border-radius:10px;margin:.4rem 0;font-size:.85rem}
+    .nc-warn{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.35)}
+    .nc-ok{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.35)}
+    label.nc-lbl{display:block;font-weight:600;font-size:.8rem;margin:.6rem 0 .2rem;color:var(--text2)}
+    .ieee-grid{display:flex;flex-wrap:wrap;gap:2px;font-family:monospace;font-size:.7rem}
+    .ieee-grid .b{width:20px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:3px}
+    .ieee-sign{background:#ec4899;color:#fff}
+    .ieee-exp{background:#8b5cf6;color:#fff}
+    .ieee-man{background:#6366f1;color:#fff}
   </style>
 </head>
 <body>
@@ -53,26 +76,140 @@
     <div class="tool-section">
       <h1>🔢 Binary / Hex / Octal / Decimal Converter</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <div class="row" style="gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;align-items:center">
-        <select id="baseSelect" class="base-select" onchange="convert()">
-          <option value="2">Binary</option>
-          <option value="8">Octal</option>
-          <option value="10" selected>Decimal</option>
-          <option value="16">Hexadecimal</option>
-        </select>
-      </div>
-      <input type="text" id="inp" placeholder="Enter a number..." style="width:100%;padding:.75rem;font-size:1.1rem;border-radius:8px;border:1px solid var(--border,#ccc);font-family:monospace;box-sizing:border-box" oninput="convert()" autocomplete="off">
 
-      <div id="outputs" style="margin-top:1rem">
-        <div class="output-row"><label>Binary</label><span id="outBin">—</span><button onclick="copyVal('outBin')">Copy</button></div>
-        <div class="output-row"><label>Octal</label><span id="outOct">—</span><button onclick="copyVal('outOct')">Copy</button></div>
-        <div class="output-row"><label>Decimal</label><span id="outDec">—</span><button onclick="copyVal('outDec')">Copy</button></div>
-        <div class="output-row"><label>Hex</label><span id="outHex">—</span><button onclick="copyVal('outHex')">Copy</button></div>
+      <div class="nc-tabs" id="ncTabs">
+        <div class="nc-tab active" onclick="ncTab('base')">Base Converter</div>
+        <div class="nc-tab" onclick="ncTab('bits')">Bit Visualiser & Two's Complement</div>
+        <div class="nc-tab" onclick="ncTab('bitwise')">Bitwise Operations</div>
+        <div class="nc-tab" onclick="ncTab('frac')">Fractional</div>
+        <div class="nc-tab" onclick="ncTab('text')">Text / ASCII / Unicode</div>
+        <div class="nc-tab" onclick="ncTab('ieee')">IEEE 754 Float</div>
+        <div class="nc-tab" onclick="ncTab('roman')">Roman Numerals</div>
       </div>
 
-      <div class="bit-vis" id="bitVis">
-        <h4>Bit Visualization</h4>
-        <div id="bitBoxes"></div>
+      <!-- BASE CONVERTER -->
+      <div class="nc-panel active" id="panel-base">
+        <p class="info">Type a number in any field — every base updates live. Uses BigInt so huge numbers stay exact. Negative numbers supported.</p>
+        <div class="nc-live-row"><label>Binary (2)</label><input id="fBin" oninput="baseFrom(2)" autocomplete="off" placeholder="1010"></div>
+        <div class="nc-live-row"><label>Octal (8)</label><input id="fOct" oninput="baseFrom(8)" autocomplete="off" placeholder="12"></div>
+        <div class="nc-live-row"><label>Decimal (10)</label><input id="fDec" oninput="baseFrom(10)" autocomplete="off" placeholder="10"></div>
+        <div class="nc-live-row"><label>Hex (16)</label><input id="fHex" oninput="baseFrom(16)" autocomplete="off" placeholder="A"></div>
+        <div class="nc-live-row"><label>Custom base</label>
+          <input id="fCustomVal" oninput="baseFromCustom()" autocomplete="off" placeholder="value" style="flex:2">
+          <select id="fCustomBase" class="nc-select" onchange="renderBaseCustom()" style="flex:0 0 90px"></select>
+        </div>
+        <div class="nc-live-row"><label>Custom result</label><input id="fCustomOut" readonly style="opacity:.85"></div>
+        <div class="row" style="gap:.5rem;margin:.5rem 0"><button class="btn" onclick="copyField('fDec')">Copy Decimal</button><button class="btn btn-outline" onclick="clearBase()">Clear</button></div>
+        <label class="nc-lbl">Step-by-step working (decimal → chosen base by repeated division)</label>
+        <div class="row" style="gap:.5rem;align-items:center;margin-bottom:.4rem">
+          <span style="font-size:.8rem;color:var(--text2)">Target base</span>
+          <select id="stepBase" class="nc-select" onchange="renderSteps()"></select>
+        </div>
+        <div class="nc-steps" id="stepOut">Enter a whole number above to see the working.</div>
+      </div>
+
+      <!-- BITS + TWO'S COMPLEMENT -->
+      <div class="nc-panel" id="panel-bits">
+        <p class="info">Enter a decimal value, choose a bit width, and toggle individual bits. Two's complement is shown for negative numbers with the sign bit highlighted.</p>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
+          <input id="bitVal" class="nc-input" style="flex:2" oninput="renderBits()" placeholder="Enter decimal (e.g. -42)" autocomplete="off">
+          <select id="bitWidth" class="nc-select" onchange="renderBits()">
+            <option value="8">8-bit</option>
+            <option value="16">16-bit</option>
+            <option value="32" selected>32-bit</option>
+            <option value="64">64-bit</option>
+          </select>
+        </div>
+        <div class="bit-vis"><div id="bitLabels"></div><div id="bitBoxes"></div></div>
+        <div class="output-row"><label>Unsigned dec</label><span class="val" id="bUdec">—</span><button onclick="copyText(document.getElementById('bUdec').textContent)">Copy</button></div>
+        <div class="output-row"><label>Signed dec</label><span class="val" id="bSdec">—</span><button onclick="copyText(document.getElementById('bSdec').textContent)">Copy</button></div>
+        <div class="output-row"><label>Hex</label><span class="val" id="bHex">—</span><button onclick="copyText(document.getElementById('bHex').textContent)">Copy</button></div>
+        <div class="output-row"><label>Two's compl.</label><span class="val" id="bTc">—</span><button onclick="copyText(document.getElementById('bTc').textContent)">Copy</button></div>
+      </div>
+
+      <!-- BITWISE -->
+      <div class="nc-panel" id="panel-bitwise">
+        <p class="info">Two operands, all bases shown. Shift amount applies to shift operations. NOT uses operand A within the chosen width.</p>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
+          <input id="bwA" class="nc-input" style="flex:1" oninput="renderBitwise()" placeholder="A (decimal)" autocomplete="off">
+          <input id="bwB" class="nc-input" style="flex:1" oninput="renderBitwise()" placeholder="B (decimal)" autocomplete="off">
+        </div>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem">
+          <select id="bwOp" class="nc-select" onchange="renderBitwise()">
+            <option value="and">A AND B</option>
+            <option value="or">A OR B</option>
+            <option value="xor">A XOR B</option>
+            <option value="not">NOT A</option>
+            <option value="shl">A &lt;&lt; n (left shift)</option>
+            <option value="shr">A &gt;&gt;&gt; n (logical right shift)</option>
+            <option value="sar">A &gt;&gt; n (arithmetic right shift)</option>
+          </select>
+          <input id="bwShift" class="nc-input" style="flex:0 0 90px" oninput="renderBitwise()" placeholder="n" value="1" autocomplete="off">
+          <select id="bwWidth" class="nc-select" onchange="renderBitwise()">
+            <option value="8">8-bit</option>
+            <option value="16">16-bit</option>
+            <option value="32" selected>32-bit</option>
+            <option value="64">64-bit</option>
+          </select>
+        </div>
+        <div class="nc-card" id="bwResult">Enter operands to compute.</div>
+      </div>
+
+      <!-- FRACTIONAL -->
+      <div class="nc-panel" id="panel-frac">
+        <p class="info">Convert non-integer values (e.g. 0.625) between bases. Fractional digits are found by repeated multiplication.</p>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
+          <input id="fracVal" class="nc-input" style="flex:2" oninput="renderFrac()" placeholder="Value (e.g. 0.625)" autocomplete="off">
+          <select id="fracFrom" class="nc-select" onchange="renderFrac()"></select>
+          <span style="color:var(--text2)">→</span>
+          <select id="fracTo" class="nc-select" onchange="renderFrac()"></select>
+        </div>
+        <div class="row" style="gap:.5rem;align-items:center;margin-top:.5rem">
+          <span style="font-size:.8rem;color:var(--text2)">Precision (fractional digits)</span>
+          <input id="fracPrec" class="nc-input" style="flex:0 0 90px" value="12" oninput="renderFrac()" autocomplete="off">
+        </div>
+        <div class="output-row"><label>Result</label><span class="val" id="fracOut">—</span><button onclick="copyText(document.getElementById('fracOut').textContent)">Copy</button></div>
+        <div class="nc-steps" id="fracSteps"></div>
+      </div>
+
+      <!-- TEXT / ASCII / UNICODE -->
+      <div class="nc-panel" id="panel-text">
+        <p class="info">Convert text to binary/hex and back, and between characters and Unicode code points.</p>
+        <label class="nc-lbl">Text</label>
+        <textarea id="txtInput" class="nc-input" rows="2" oninput="txtFrom('text')" placeholder="Hello"></textarea>
+        <label class="nc-lbl">Binary (space-separated bytes / code units)</label>
+        <textarea id="txtBin" class="nc-input" rows="2" oninput="txtFrom('bin')" placeholder="01001000 01101001"></textarea>
+        <label class="nc-lbl">Hex (space-separated)</label>
+        <textarea id="txtHex" class="nc-input" rows="2" oninput="txtFrom('hex')" placeholder="48 69"></textarea>
+        <label class="nc-lbl">Unicode code points (decimal, space-separated)</label>
+        <textarea id="txtCp" class="nc-input" rows="2" oninput="txtFrom('cp')" placeholder="72 105"></textarea>
+        <div class="row" style="gap:.5rem;margin-top:.5rem"><button class="btn" onclick="copyField('txtHex')">Copy Hex</button><button class="btn btn-outline" onclick="copyField('txtBin')">Copy Binary</button></div>
+      </div>
+
+      <!-- IEEE 754 -->
+      <div class="nc-panel" id="panel-ieee">
+        <p class="info">Break a decimal number into its IEEE 754 floating-point representation (sign, exponent, mantissa).</p>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center">
+          <input id="ieeeVal" class="nc-input" style="flex:2" oninput="renderIeee()" placeholder="e.g. 3.14" autocomplete="off">
+          <select id="ieeeType" class="nc-select" onchange="renderIeee()">
+            <option value="32">32-bit (single)</option>
+            <option value="64" selected>64-bit (double)</option>
+          </select>
+        </div>
+        <div class="nc-card" id="ieeeOut">Enter a number.</div>
+      </div>
+
+      <!-- ROMAN -->
+      <div class="nc-panel" id="panel-roman">
+        <p class="info">Convert between Roman numerals and decimal (1–3999).</p>
+        <div class="nc-live-row"><label>Decimal</label><input id="romDec" oninput="romanFrom('dec')" placeholder="2024" autocomplete="off"></div>
+        <div class="nc-live-row"><label>Roman</label><input id="romRom" oninput="romanFrom('rom')" placeholder="MMXXIV" autocomplete="off" style="text-transform:uppercase"></div>
+        <div id="romMsg" style="font-size:.85rem;color:var(--text2);margin-top:.5rem"></div>
+      </div>
+
+      <div class="bit-vis" style="margin-top:1.5rem">
+        <h4 style="display:flex;justify-content:space-between;align-items:center">Conversion History <button class="btn btn-outline" style="font-size:.7rem;padding:.25rem .5rem" onclick="clearHistory()">Clear</button></h4>
+        <div id="ncHistory"></div>
       </div>
     </div>
 
@@ -113,8 +250,8 @@
 <h2>Frequently Asked Questions</h2>
 <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Use it as many times as you want.</p></details>
 <details><summary>Is my data safe?</summary><p>Absolutely. All processing happens in your browser using JavaScript. No data is ever sent to any server.</p></details>
-<details><summary>What number bases are supported?</summary><p>This tool supports Binary (base 2), Octal (base 8), Decimal (base 10), and Hexadecimal (base 16). Enter a number in any base and see all conversions instantly.</p></details>
-<details><summary>What is the bit visualization?</summary><p>The bit visualization shows the binary representation of your number as individual bit boxes (0s and 1s), displayed in 8-bit, 16-bit, or 32-bit format depending on the number's size.</p></details>
+<details><summary>What number bases are supported?</summary><p>This tool supports Binary (base 2), Octal (base 8), Decimal (base 10), and Hexadecimal (base 16), plus any custom base from 2 to 36. Enter a number in any base and see all conversions instantly.</p></details>
+<details><summary>What is the bit visualization?</summary><p>The bit visualization shows the binary representation of your number as individual clickable bit boxes (0s and 1s), displayed in 8-bit, 16-bit, 32-bit, or 64-bit format. Click any bit to toggle it and watch the value update.</p></details>
 <details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, laptop, tablet, and mobile phone. No app installation needed.</p></details>
 <details><summary>Can I use this for commercial purposes?</summary><p>Yes, all output from this tool is yours to use for any purpose — personal, educational, or commercial.</p></details>
 </div>
@@ -161,36 +298,283 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function convert(){
-  const inp=document.getElementById('inp').value.trim();
-  const base=parseInt(document.getElementById('baseSelect').value);
-  const outBin=document.getElementById('outBin');
-  const outOct=document.getElementById('outOct');
-  const outDec=document.getElementById('outDec');
-  const outHex=document.getElementById('outHex');
-  const bitBoxes=document.getElementById('bitBoxes');
-  if(!inp){outBin.textContent='—';outOct.textContent='—';outDec.textContent='—';outHex.textContent='—';bitBoxes.innerHTML='';return}
-  const num=parseInt(inp,base);
-  if(isNaN(num)||num<0){outBin.textContent='Invalid';outOct.textContent='Invalid';outDec.textContent='Invalid';outHex.textContent='Invalid';bitBoxes.innerHTML='';return}
-  outBin.textContent=num.toString(2);
-  outOct.textContent=num.toString(8);
-  outDec.textContent=num.toString(10);
-  outHex.textContent=num.toString(16).toUpperCase();
-  // Bit visualization
-  const bin=num.toString(2);
-  const bits=bin.length<=8?8:bin.length<=16?16:32;
-  const padded=bin.padStart(bits,'0');
-  let html='<div style="font-size:.75rem;color:var(--text2);margin-bottom:.25rem">'+bits+'-bit</div>';
-  for(let i=0;i<padded.length;i++){
-    if(i>0&&i%8===0)html+='<span style="display:inline-block;width:8px"></span>';
-    html+='<span class="bit-box '+(padded[i]==='1'?'one':'zero')+'">'+padded[i]+'</span>';
+// ---------- shared helpers ----------
+var DIGITS="0123456789abcdefghijklmnopqrstuvwxyz";
+function parseBig(str,base){
+  str=str.trim().toLowerCase();
+  if(!str)return null;
+  var neg=false;
+  if(str[0]==='-'){neg=true;str=str.slice(1);}
+  else if(str[0]==='+'){str=str.slice(1);}
+  if(!str)return null;
+  var val=0n;var b=BigInt(base);
+  for(var i=0;i<str.length;i++){
+    var d=DIGITS.indexOf(str[i]);
+    if(d<0||d>=base)return undefined; // invalid
+    val=val*b+BigInt(d);
   }
-  bitBoxes.innerHTML=html;
+  return neg?-val:val;
 }
-function copyVal(id){
-  const t=document.getElementById(id).textContent;
-  if(t&&t!=='—'&&t!=='Invalid')navigator.clipboard.writeText(t);
+function toBase(val,base){
+  if(val===null||val===undefined)return '';
+  var neg=val<0n;var v=neg?-val:val;var b=BigInt(base);
+  if(v===0n)return '0';
+  var out='';
+  while(v>0n){var r=v%b;out=DIGITS[Number(r)]+out;v=v/b;}
+  return (neg?'-':'')+out;
 }
+function copyText(t){if(t&&t!=='—'&&t!=='Invalid'&&t!=='')navigator.clipboard&&navigator.clipboard.writeText(t);}
+function copyField(id){var el=document.getElementById(id);copyText(el.value!==undefined?el.value:el.textContent);}
+
+// ---------- tabs ----------
+function ncTab(name){
+  var tabs=document.querySelectorAll('.nc-tab');
+  var map=['base','bits','bitwise','frac','text','ieee','roman'];
+  tabs.forEach(function(t,i){t.classList.toggle('active',map[i]===name);});
+  document.querySelectorAll('.nc-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ---------- populate base dropdowns 2..36 ----------
+function fillBaseSelect(id,def){
+  var s=document.getElementById(id);var h='';
+  for(var b=2;b<=36;b++){h+='<option value="'+b+'"'+(b===def?' selected':'')+'>'+b+'</option>';}
+  s.innerHTML=h;
+}
+
+// ---------- base converter ----------
+var lastBigVal=null;
+function setAllBases(val,exceptId){
+  lastBigVal=val;
+  if(val===null){['fBin','fOct','fDec','fHex'].forEach(function(id){if(id!==exceptId)document.getElementById(id).value='';});document.getElementById('fCustomOut').value='';return;}
+  var m={fBin:2,fOct:8,fDec:10,fHex:16};
+  Object.keys(m).forEach(function(id){if(id!==exceptId)document.getElementById(id).value=toBase(val,m[id]);});
+  renderBaseCustom();
+  renderSteps();
+}
+function markInvalid(id,bad){document.getElementById(id).style.borderColor=bad?'#ec4899':'rgba(99,102,241,.3)';}
+function baseFrom(base){
+  var idmap={2:'fBin',8:'fOct',10:'fDec',16:'fHex'};var id=idmap[base];
+  var raw=document.getElementById(id).value;
+  if(raw.trim()===''){setAllBases(null,id);markInvalid(id,false);return;}
+  var v=parseBig(raw,base);
+  if(v===undefined||v===null){markInvalid(id,true);return;}
+  markInvalid(id,false);setAllBases(v,id);
+  addHistory(raw+' (base '+base+') → dec '+toBase(v,10));
+}
+function baseFromCustom(){
+  var base=parseInt(document.getElementById('fCustomBase').value);
+  var raw=document.getElementById('fCustomVal').value;
+  if(raw.trim()===''){setAllBases(null,null);markInvalid('fCustomVal',false);return;}
+  var v=parseBig(raw,base);
+  if(v===undefined||v===null){markInvalid('fCustomVal',true);return;}
+  markInvalid('fCustomVal',false);setAllBases(v,null);
+  document.getElementById('fCustomVal').value=raw;
+  addHistory(raw+' (base '+base+') → dec '+toBase(v,10));
+}
+function renderBaseCustom(){
+  var base=parseInt(document.getElementById('fCustomBase').value);
+  document.getElementById('fCustomOut').value=lastBigVal===null?'':toBase(lastBigVal,base);
+}
+function clearBase(){['fBin','fOct','fDec','fHex','fCustomVal','fCustomOut'].forEach(function(id){document.getElementById(id).value='';});lastBigVal=null;renderSteps();}
+function renderSteps(){
+  var base=parseInt(document.getElementById('stepBase').value);
+  var out=document.getElementById('stepOut');
+  if(lastBigVal===null){out.textContent='Enter a whole number above to see the working.';return;}
+  var neg=lastBigVal<0n;var v=neg?-lastBigVal:lastBigVal;var b=BigInt(base);
+  if(v===0n){out.textContent='0 in base '+base+' = 0';return;}
+  var lines=(neg?'(working with magnitude, sign re-applied at the end)\n':'');
+  var digits='';
+  while(v>0n){var q=v/b;var r=v%b;lines+=v.toString()+' ÷ '+base+' = '+q.toString()+' remainder '+r.toString()+'  → '+DIGITS[Number(r)]+'\n';digits=DIGITS[Number(r)]+digits;v=q;}
+  lines+='\nRead remainders bottom-to-top: '+(neg?'-':'')+digits;
+  out.textContent=lines;
+}
+
+// ---------- two's complement helpers ----------
+function mask(width){return (1n<<BigInt(width))-1n;}
+function toTwos(val,width){var m=mask(width);return (val & m);}
+function fromUnsigned(u,width){var signbit=1n<<BigInt(width-1);return (u & signbit)?u-(1n<<BigInt(width)):u;}
+
+// ---------- bit visualiser ----------
+function renderBits(){
+  var raw=document.getElementById('bitVal').value.trim();
+  var width=parseInt(document.getElementById('bitWidth').value);
+  var boxes=document.getElementById('bitBoxes');var labels=document.getElementById('bitLabels');
+  if(raw===''){boxes.innerHTML='';labels.innerHTML='';['bUdec','bSdec','bHex','bTc'].forEach(function(id){document.getElementById(id).textContent='—';});return;}
+  var v=parseBig(raw,10);
+  if(v===undefined||v===null){boxes.innerHTML='<span style="color:#ec4899">Invalid decimal</span>';labels.innerHTML='';return;}
+  var u=toTwos(v,width);
+  var bin=u.toString(2).padStart(width,'0');
+  var lh='',bh='';
+  for(var i=0;i<width;i++){
+    var pos=width-1-i;
+    if(i>0&&i%4===0){lh+='<span class="bit-lab"></span>';bh+='<span style="display:inline-block;width:6px"></span>';}
+    lh+='<span class="bit-lab">'+pos+'</span>';
+    bh+='<span class="bit-box '+(bin[i]==='1'?'one':'zero')+(i===0?' signbit':'')+'" onclick="toggleBit('+i+')">'+bin[i]+'</span>';
+  }
+  labels.innerHTML=lh;boxes.innerHTML=bh;
+  var signed=fromUnsigned(u,width);
+  document.getElementById('bUdec').textContent=u.toString();
+  document.getElementById('bSdec').textContent=signed.toString();
+  document.getElementById('bHex').textContent='0x'+u.toString(16).toUpperCase();
+  document.getElementById('bTc').textContent=bin;
+}
+function toggleBit(i){
+  var width=parseInt(document.getElementById('bitWidth').value);
+  var raw=document.getElementById('bitVal').value.trim();
+  var v=parseBig(raw,10);if(v===undefined||v===null)v=0n;
+  var u=toTwos(v,width);
+  var pos=BigInt(width-1-i);
+  u=u ^ (1n<<pos);
+  var signed=fromUnsigned(u,width);
+  document.getElementById('bitVal').value=signed.toString();
+  renderBits();
+}
+
+// ---------- bitwise ----------
+function renderBitwise(){
+  var width=parseInt(document.getElementById('bwWidth').value);
+  var op=document.getElementById('bwOp').value;
+  var a=parseBig(document.getElementById('bwA').value,10);
+  var b=parseBig(document.getElementById('bwB').value,10);
+  var n=parseInt(document.getElementById('bwShift').value)||0;
+  var out=document.getElementById('bwResult');
+  if(a===undefined||a===null){out.textContent='Enter a valid decimal for A.';return;}
+  var ua=toTwos(a,width);var ub=(b===undefined||b===null)?0n:toTwos(b,width);var res;
+  if(op==='and')res=ua & ub;
+  else if(op==='or')res=ua | ub;
+  else if(op==='xor')res=ua ^ ub;
+  else if(op==='not')res=(~ua) & mask(width);
+  else if(op==='shl')res=(ua << BigInt(n)) & mask(width);
+  else if(op==='shr')res=(ua >> BigInt(n)) & mask(width);
+  else if(op==='sar'){var s=fromUnsigned(ua,width);res=toTwos(s >> BigInt(n),width);}
+  var signed=fromUnsigned(res,width);
+  var bin=res.toString(2).padStart(width,'0');
+  var grid='';
+  for(var i=0;i<width;i++){if(i>0&&i%4===0)grid+='<span style="display:inline-block;width:6px"></span>';grid+='<span class="bit-box '+(bin[i]==='1'?'one':'zero')+'">'+bin[i]+'</span>';}
+  out.innerHTML='<div class="output-row"><label>Binary</label><span class="val">'+bin+'</span></div>'+
+    '<div class="output-row"><label>Unsigned dec</label><span class="val">'+res.toString()+'</span></div>'+
+    '<div class="output-row"><label>Signed dec</label><span class="val">'+signed.toString()+'</span></div>'+
+    '<div class="output-row"><label>Hex</label><span class="val">0x'+res.toString(16).toUpperCase()+'</span></div>'+
+    '<div class="output-row"><label>Octal</label><span class="val">'+res.toString(8)+'</span></div>'+
+    '<div style="margin-top:.6rem">'+grid+'</div>';
+}
+
+// ---------- fractional ----------
+function renderFrac(){
+  var from=parseInt(document.getElementById('fracFrom').value);
+  var to=parseInt(document.getElementById('fracTo').value);
+  var prec=Math.max(0,Math.min(64,parseInt(document.getElementById('fracPrec').value)||0));
+  var raw=document.getElementById('fracVal').value.trim().toLowerCase();
+  var out=document.getElementById('fracOut');var steps=document.getElementById('fracSteps');
+  if(raw===''){out.textContent='—';steps.textContent='';return;}
+  var neg=false;if(raw[0]==='-'){neg=true;raw=raw.slice(1);}
+  var parts=raw.split('.');
+  var intPart=parts[0]||'0';var fracPart=parts[1]||'';
+  var iv=parseBig(intPart||'0',from);
+  if(iv===undefined||iv===null){out.textContent='Invalid';steps.textContent='';return;}
+  // fractional value as exact rational using BigInt
+  var fnum=0n;var fden=1n;var fb=BigInt(from);var ok=true;
+  for(var i=0;i<fracPart.length;i++){var d=DIGITS.indexOf(fracPart[i]);if(d<0||d>=from){ok=false;break;}fnum=fnum*fb+BigInt(d);fden=fden*fb;}
+  if(!ok){out.textContent='Invalid';steps.textContent='';return;}
+  var intOut=toBase(iv,to);
+  // convert fraction to target base by repeated multiplication
+  var tb=BigInt(to);var digits='';var sSteps='Fractional part working (multiply by '+to+' each step):\n';
+  var num=fnum;
+  for(var k=0;k<prec && num!==0n;k++){
+    num=num*tb;var digit=num/fden;var rem=num%fden;
+    digits+=DIGITS[Number(digit)];
+    sSteps+=(num).toString()+'/'+fden.toString()+' → digit '+DIGITS[Number(digit)]+'\n';
+    num=rem;
+  }
+  var result=(neg?'-':'')+intOut+(digits?'.'+digits:'');
+  out.textContent=result;
+  steps.textContent=fracPart?sSteps:'(no fractional part)';
+}
+
+// ---------- text / ascii / unicode ----------
+function txtFrom(src){
+  var tInput=document.getElementById('txtInput');
+  var tBin=document.getElementById('txtBin');
+  var tHex=document.getElementById('txtHex');
+  var tCp=document.getElementById('txtCp');
+  var text='';
+  try{
+    if(src==='text'){text=tInput.value;}
+    else if(src==='bin'){text=(tBin.value.trim().split(/\s+/).filter(Boolean).map(function(b){return String.fromCodePoint(parseInt(b,2));}).join(''));}
+    else if(src==='hex'){text=(tHex.value.trim().split(/\s+/).filter(Boolean).map(function(h){return String.fromCodePoint(parseInt(h,16));}).join(''));}
+    else if(src==='cp'){text=(tCp.value.trim().split(/\s+/).filter(Boolean).map(function(c){return String.fromCodePoint(parseInt(c,10));}).join(''));}
+  }catch(e){return;}
+  var cps=Array.from(text).map(function(ch){return ch.codePointAt(0);});
+  if(src!=='text')tInput.value=text;
+  if(src!=='bin')tBin.value=cps.map(function(c){return c.toString(2).padStart(8,'0');}).join(' ');
+  if(src!=='hex')tHex.value=cps.map(function(c){return c.toString(16).toUpperCase().padStart(2,'0');}).join(' ');
+  if(src!=='cp')tCp.value=cps.map(function(c){return c.toString(10);}).join(' ');
+}
+
+// ---------- IEEE 754 ----------
+function renderIeee(){
+  var raw=document.getElementById('ieeeVal').value.trim();
+  var type=parseInt(document.getElementById('ieeeType').value);
+  var out=document.getElementById('ieeeOut');
+  if(raw===''){out.textContent='Enter a number.';return;}
+  var num=Number(raw);
+  if(isNaN(num)&&raw.toLowerCase()!=='nan'){out.textContent='Invalid number.';return;}
+  var buf=new ArrayBuffer(8);var dv=new DataView(buf);
+  var bits='',signW,expW,manW;
+  if(type===32){dv.setFloat32(0,num);var u=dv.getUint32(0)>>>0;bits=u.toString(2).padStart(32,'0');signW=1;expW=8;manW=23;}
+  else{dv.setFloat64(0,num);var hi=dv.getUint32(0)>>>0;var lo=dv.getUint32(4)>>>0;bits=hi.toString(2).padStart(32,'0')+lo.toString(2).padStart(32,'0');signW=1;expW=11;manW=52;}
+  var sign=bits.slice(0,1);var exp=bits.slice(1,1+expW);var man=bits.slice(1+expW);
+  var expVal=parseInt(exp,2);var bias=(1<<(expW-1))-1;
+  var grid='';
+  for(var i=0;i<bits.length;i++){var cls=i<signW?'ieee-sign':(i<signW+expW?'ieee-exp':'ieee-man');grid+='<span class="b '+cls+'">'+bits[i]+'</span>';}
+  out.innerHTML='<div class="ieee-grid">'+grid+'</div>'+
+    '<div style="margin-top:.7rem;font-size:.85rem;line-height:1.9">'+
+    '<div><span style="color:#ec4899">■</span> Sign: '+sign+' ('+(sign==='1'?'negative':'positive')+')</div>'+
+    '<div><span style="color:#8b5cf6">■</span> Exponent: '+exp+' = '+expVal+' (bias '+bias+', unbiased '+(expVal-bias)+')</div>'+
+    '<div><span style="color:#6366f1">■</span> Mantissa: '+man+'</div>'+
+    '<div style="margin-top:.4rem">Value: '+num+'</div>'+
+    '<div>Hex: 0x'+(bitsToHex(bits))+'</div></div>';
+}
+function bitsToHex(bits){var h='';for(var i=0;i<bits.length;i+=4){h+=parseInt(bits.substr(i,4),2).toString(16).toUpperCase();}return h;}
+
+// ---------- roman numerals ----------
+var ROMAN=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+function toRoman(n){if(n<1||n>3999)return null;var out='';for(var i=0;i<ROMAN.length;i++){while(n>=ROMAN[i][0]){out+=ROMAN[i][1];n-=ROMAN[i][0];}}return out;}
+function fromRoman(s){s=s.toUpperCase();var map={I:1,V:5,X:10,L:50,C:100,D:500,M:1000};var total=0,prev=0;for(var i=s.length-1;i>=0;i--){var v=map[s[i]];if(v===undefined)return null;if(v<prev)total-=v;else{total+=v;prev=v;}}if(toRoman(total)!==s)return null;return total;}
+function romanFrom(src){
+  var dEl=document.getElementById('romDec');var rEl=document.getElementById('romRom');var msg=document.getElementById('romMsg');
+  if(src==='dec'){
+    var raw=dEl.value.trim();if(raw===''){rEl.value='';msg.textContent='';return;}
+    var n=parseInt(raw,10);
+    if(isNaN(n)){msg.textContent='Enter a whole number.';return;}
+    var r=toRoman(n);
+    if(r===null){rEl.value='';msg.textContent='Roman numerals only cover 1 to 3999.';return;}
+    rEl.value=r;msg.textContent='';addHistory(n+' → '+r+' (Roman)');
+  }else{
+    var raw2=rEl.value.trim();if(raw2===''){dEl.value='';msg.textContent='';return;}
+    var v=fromRoman(raw2);
+    if(v===null){dEl.value='';msg.textContent='Not a valid Roman numeral.';return;}
+    dEl.value=v;msg.textContent='';addHistory(raw2.toUpperCase()+' → '+v+' (decimal)');
+  }
+}
+
+// ---------- history ----------
+function getHist(){try{return JSON.parse(localStorage.getItem('ncHistory')||'[]');}catch(e){return [];}}
+function addHistory(entry){var h=getHist();if(h[0]===entry)return;h.unshift(entry);h=h.slice(0,20);localStorage.setItem('ncHistory',JSON.stringify(h));renderHistory();}
+function clearHistory(){localStorage.removeItem('ncHistory');renderHistory();}
+function renderHistory(){
+  var h=getHist();var el=document.getElementById('ncHistory');
+  if(!h.length){el.innerHTML='<p class="info">No conversions yet.</p>';return;}
+  el.innerHTML=h.map(function(e){return '<div class="nc-hist-item"><span>'+e.replace(/</g,'&lt;')+'</span><button onclick="copyText(this.previousSibling.textContent)" style="font-size:.7rem;padding:.2rem .45rem;border:1px solid rgba(99,102,241,.35);border-radius:6px;background:rgba(99,102,241,.08);color:var(--text);cursor:pointer">Copy</button></div>';}).join('');
+}
+
+// ---------- init ----------
+fillBaseSelect('fCustomBase',16);
+fillBaseSelect('stepBase',2);
+fillBaseSelect('fracFrom',10);
+fillBaseSelect('fracTo',2);
+renderHistory();
   </script>
 </body>
 </html>

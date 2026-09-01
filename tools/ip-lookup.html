@@ -10,79 +10,207 @@
   <meta property="og:title" content="IP Address Lookup — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/ip-lookup"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/ip-lookup"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"IP Address Lookup","url":"https://freetoolhubs.com/tools/ip-lookup","description":"Look up any IP address to find its geolocation, city, region, country, ISP, timezone, and coordinates.","applicationCategory":"NetworkingApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <style>
+    .ipl-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+    .ipl-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
+    .ipl-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .ipl-panel{display:none}.ipl-panel.active{display:block}
+    .ipl-notice{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.4);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
+    .ipl-info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
+    .ipl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.7rem;margin-top:.8rem}
+    .ipl-item{background:var(--card);padding:.8rem 1rem;border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    .ipl-item .k{font-size:.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+    .ipl-item .v{font-size:.95rem;font-weight:600;color:var(--text);word-break:break-word;margin-top:.2rem}
+    .ipl-in{width:100%;padding:.65rem;border-radius:10px;border:1px solid rgba(99,102,241,.35);background:var(--card);color:var(--text);box-sizing:border-box;font-family:monospace}
+    .ipl-lbl{display:block;font-weight:600;font-size:.8rem;margin:.6rem 0 .25rem;color:var(--text2)}
+    .ipl-card{background:var(--card);padding:1rem;border-radius:var(--radius);margin:.6rem 0;border:1px solid rgba(255,255,255,.06)}
+    .ipl-tbl{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+    .ipl-tbl th,.ipl-tbl td{padding:.4rem .55rem;border:1px solid rgba(255,255,255,.1);text-align:left}
+    .ipl-tbl th{background:rgba(99,102,241,.1)}
+    .ipl-ok{color:#8b5cf6;font-weight:700}.ipl-bad{color:#ec4899;font-weight:700}
+    .ipl-kv{font-family:monospace;font-size:.9rem}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → 🌐 IP Address Lookup</div>
     <div class="tool-section">
-      <h1>🌐 IP Address Lookup</h1>
+      <h1>🌐 IP Address & Network Toolkit</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Instantly detect your public IP address and look up geolocation details for any IP.</p>
-      <div class="row" style="gap:.5rem">
-        <input type="text" id="ipInput" placeholder="Enter IP address (e.g. 8.8.8.8)" style="flex:2">
-        <button class="btn" onclick="lookupIP()">🔍 Lookup</button>
+      <p class="info">Inspect what your browser reveals about your connection, detect local IPs, and run offline IP/subnet calculations. Public IP geolocation is optional and clearly disclosed.</p>
+
+      <div class="ipl-tabs" id="iplTabs">
+        <div class="ipl-tab active" onclick="iplTab('browser')">My Connection</div>
+        <div class="ipl-tab" onclick="iplTab('public')">Public IP Lookup</div>
+        <div class="ipl-tab" onclick="iplTab('webrtc')">Local IP (WebRTC)</div>
+        <div class="ipl-tab" onclick="iplTab('toolkit')">IP Toolkit (offline)</div>
+        <div class="ipl-tab" onclick="iplTab('ref')">Reference</div>
       </div>
-      <div class="row" style="gap:.5rem;margin-top:.5rem">
-        <button class="btn btn-outline" onclick="lookupMyIP()" style="flex:1">📡 My IP</button>
-        <button class="btn btn-outline" id="copyBtn" onclick="copyIP()" style="flex:1" disabled>📋 Copy IP</button>
+
+      <!-- MY CONNECTION -->
+      <div class="ipl-panel active" id="ipl-browser">
+        <div class="ipl-info">This section shows only what your own browser genuinely exposes to any web page locally. Nothing here is sent to a server.</div>
+        <div class="row" style="gap:.5rem;margin-bottom:.5rem"><button class="btn" onclick="loadBrowserInfo()">🔄 Refresh</button></div>
+        <div class="ipl-grid" id="browserInfo"></div>
+        <div id="battery" style="margin-top:.5rem"></div>
       </div>
-      <div id="loading" style="display:none;text-align:center;padding:2rem;color:var(--text2)">⏳ Looking up IP...</div>
-      <div id="result" style="display:none;margin-top:1rem">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem">
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">🖥️</div><div id="rIP" style="font-size:1.1rem;font-weight:700;color:var(--accent);word-break:break-all"></div><div class="info">IP Address</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">🏙️</div><div id="rCity" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">City</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">📍</div><div id="rRegion" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">Region</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">🌍</div><div id="rCountry" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">Country</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">🏢</div><div id="rISP" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">ISP / Organization</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">🕐</div><div id="rTZ" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">Timezone</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">📐</div><div id="rLat" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">Latitude</div></div>
-          <div style="background:var(--card);padding:1rem;border-radius:12px;text-align:center"><div style="font-size:1.5rem">📐</div><div id="rLon" style="font-size:1.1rem;font-weight:700;color:var(--accent)"></div><div class="info">Longitude</div></div>
+
+      <!-- PUBLIC IP LOOKUP -->
+      <div class="ipl-panel" id="ipl-public">
+        <div class="ipl-notice">⚠️ <strong>External service notice:</strong> Looking up a public IP sends a request from your browser to <strong>ipapi.co</strong>, a third-party service. The IP you enter (or, for "My Public IP", your own address) leaves your browser and is processed by ipapi.co under their privacy policy. This does not run automatically — you must press a button.</div>
+        <div class="row" style="gap:.5rem">
+          <input type="text" id="ipInput" class="ipl-in" placeholder="Enter IP address (e.g. 8.8.8.8)" style="flex:2">
+          <button class="btn" onclick="lookupIP()">🔍 Lookup</button>
+        </div>
+        <div class="row" style="gap:.5rem;margin-top:.5rem">
+          <button class="btn btn-outline" onclick="lookupMyIP()" style="flex:1">📡 My Public IP (sends request)</button>
+          <button class="btn btn-outline" id="copyBtn" onclick="copyIP()" style="flex:1" disabled>📋 Copy IP</button>
+        </div>
+        <div id="loading" style="display:none;text-align:center;padding:2rem;color:var(--text2)">⏳ Looking up IP via ipapi.co...</div>
+        <div id="result" style="display:none;margin-top:1rem">
+          <div class="ipl-grid">
+            <div class="ipl-item"><div class="k">IP Address</div><div class="v" id="rIP"></div></div>
+            <div class="ipl-item"><div class="k">City</div><div class="v" id="rCity"></div></div>
+            <div class="ipl-item"><div class="k">Region</div><div class="v" id="rRegion"></div></div>
+            <div class="ipl-item"><div class="k">Country</div><div class="v" id="rCountry"></div></div>
+            <div class="ipl-item"><div class="k">ISP / Organization</div><div class="v" id="rISP"></div></div>
+            <div class="ipl-item"><div class="k">Timezone</div><div class="v" id="rTZ"></div></div>
+            <div class="ipl-item"><div class="k">Latitude</div><div class="v" id="rLat"></div></div>
+            <div class="ipl-item"><div class="k">Longitude</div><div class="v" id="rLon"></div></div>
+          </div>
+        </div>
+        <div id="error" style="display:none;margin-top:1rem;padding:1rem;background:#ec4899;color:#fff;border-radius:8px;text-align:center"></div>
+      </div>
+
+      <!-- WEBRTC -->
+      <div class="ipl-panel" id="ipl-webrtc">
+        <div class="ipl-notice">⚠️ <strong>Privacy note:</strong> WebRTC can expose your device's <strong>local network addresses</strong> (and sometimes public IP) to any web page — a well-known privacy leak. This all happens inside your browser; nothing is sent to us. Modern browsers often mask the real local IP behind an <strong>mDNS</strong> hostname ending in <code>.local</code>, so you may see obfuscated values instead of a real address. This is expected and is a good privacy protection.</div>
+        <button class="btn" onclick="detectWebRTC()">🔎 Detect Local Addresses</button>
+        <div id="webrtcOut" style="margin-top:1rem"></div>
+      </div>
+
+      <!-- IP TOOLKIT -->
+      <div class="ipl-panel" id="ipl-toolkit">
+        <div class="ipl-info">Everything below runs entirely offline in your browser — no requests are made.</div>
+
+        <div class="ipl-card">
+          <strong>Validate & classify an IP</strong>
+          <input id="valIp" class="ipl-in" style="margin-top:.5rem" oninput="doValidate()" placeholder="e.g. 192.168.1.10 or 2001:db8::1">
+          <div id="valOut" style="margin-top:.5rem;font-size:.85rem"></div>
+        </div>
+
+        <div class="ipl-card">
+          <strong>IPv4 ↔ 32-bit integer</strong>
+          <label class="ipl-lbl">IPv4 address</label>
+          <input id="intIp" class="ipl-in" oninput="ipToInt()" placeholder="192.168.0.1">
+          <label class="ipl-lbl">Integer</label>
+          <input id="intVal" class="ipl-in" oninput="intToIp()" placeholder="3232235521">
+        </div>
+
+        <div class="ipl-card">
+          <strong>CIDR / Subnet calculator</strong>
+          <div class="row" style="gap:.5rem;margin-top:.5rem;align-items:center">
+            <input id="cidrIp" class="ipl-in" style="flex:2" oninput="doCidr()" placeholder="192.168.1.10">
+            <span style="color:var(--text2)">/</span>
+            <input id="cidrPrefix" class="ipl-in" style="flex:0 0 80px" oninput="doCidr()" placeholder="24" value="24">
+          </div>
+          <div id="cidrOut" style="margin-top:.6rem"></div>
+        </div>
+
+        <div class="ipl-card">
+          <strong>Is an IP inside a CIDR range?</strong>
+          <div class="row" style="gap:.5rem;margin-top:.5rem">
+            <input id="chkIp" class="ipl-in" style="flex:1" oninput="doContains()" placeholder="IP e.g. 10.0.5.7">
+            <input id="chkCidr" class="ipl-in" style="flex:1" oninput="doContains()" placeholder="CIDR e.g. 10.0.0.0/16">
+          </div>
+          <div id="chkOut" style="margin-top:.5rem;font-size:.9rem"></div>
+        </div>
+
+        <div class="ipl-card">
+          <strong>Subnet splitter</strong>
+          <div class="row" style="gap:.5rem;margin-top:.5rem;align-items:center">
+            <input id="splitCidr" class="ipl-in" style="flex:2" oninput="doSplit()" placeholder="Base CIDR e.g. 192.168.1.0/24">
+            <span style="color:var(--text2)">→ /</span>
+            <input id="splitPrefix" class="ipl-in" style="flex:0 0 80px" oninput="doSplit()" placeholder="26">
+          </div>
+          <div id="splitOut" style="margin-top:.6rem"></div>
         </div>
       </div>
-      <div id="error" style="display:none;margin-top:1rem;padding:1rem;background:#ff5252;color:#fff;border-radius:8px;text-align:center"></div>
+
+      <!-- REFERENCE -->
+      <div class="ipl-panel" id="ipl-ref">
+        <h3>Reserved / special IPv4 ranges</h3>
+        <table class="ipl-tbl">
+          <tr><th>Range</th><th>Purpose (RFC)</th></tr>
+          <tr><td>10.0.0.0/8</td><td>Private network (RFC1918)</td></tr>
+          <tr><td>172.16.0.0/12</td><td>Private network (RFC1918)</td></tr>
+          <tr><td>192.168.0.0/16</td><td>Private network (RFC1918)</td></tr>
+          <tr><td>127.0.0.0/8</td><td>Loopback (RFC1122)</td></tr>
+          <tr><td>169.254.0.0/16</td><td>Link-local / APIPA (RFC3927)</td></tr>
+          <tr><td>100.64.0.0/10</td><td>Carrier-grade NAT (RFC6598)</td></tr>
+          <tr><td>224.0.0.0/4</td><td>Multicast (RFC5771)</td></tr>
+          <tr><td>240.0.0.0/4</td><td>Reserved / future use (RFC1112)</td></tr>
+          <tr><td>0.0.0.0/8</td><td>"This" network (RFC1122)</td></tr>
+          <tr><td>255.255.255.255</td><td>Limited broadcast</td></tr>
+        </table>
+        <h3 style="margin-top:1rem">Common ports</h3>
+        <table class="ipl-tbl">
+          <tr><th>Port</th><th>Service</th></tr>
+          <tr><td>20 / 21</td><td>FTP (data / control)</td></tr>
+          <tr><td>22</td><td>SSH</td></tr>
+          <tr><td>23</td><td>Telnet</td></tr>
+          <tr><td>25</td><td>SMTP (email sending)</td></tr>
+          <tr><td>53</td><td>DNS</td></tr>
+          <tr><td>67 / 68</td><td>DHCP</td></tr>
+          <tr><td>80</td><td>HTTP</td></tr>
+          <tr><td>110</td><td>POP3</td></tr>
+          <tr><td>143</td><td>IMAP</td></tr>
+          <tr><td>443</td><td>HTTPS</td></tr>
+          <tr><td>3306</td><td>MySQL</td></tr>
+          <tr><td>3389</td><td>RDP (Remote Desktop)</td></tr>
+          <tr><td>5432</td><td>PostgreSQL</td></tr>
+          <tr><td>6379</td><td>Redis</td></tr>
+          <tr><td>8080</td><td>HTTP alternate / proxies</td></tr>
+        </table>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
-<li><strong>Auto-detect:</strong> VPN on hai but kaam kar raha hai ya nahi? Page open karte hi apna public IP dikh jayega</li>
-<li><strong>Location dekho:</strong> Approximate location map pe dikhega — city, country, coordinates</li>
-<li><strong>ISP info:</strong> Kaunsa ISP hai, connection type kya hai — sab details milenge</li>
-<li><strong>Any IP lookup:</strong> Kisi aur IP ka location jaanna hai? Enter karo aur search karo</li>
-<li><strong>Copy details:</strong> Network troubleshooting ke liye IP details copy karo</li>
+<li><strong>My Connection:</strong> Browser jo info local expose karta hai — browser, OS, screen, cores, timezone — sab dekho. Kuch bhi server pe nahi jaata</li>
+<li><strong>Public IP lookup:</strong> Apna public IP ya kisi aur IP ka location chahiye? Button dabao — request ipapi.co ko jaati hai (clearly disclosed)</li>
+<li><strong>Local IP (WebRTC):</strong> Local network address detect karo. Yeh ek known privacy leak hai — modern browsers mDNS se mask karte hain</li>
+<li><strong>IP Toolkit:</strong> Subnet calculator, CIDR check, IPv4-to-integer — sab offline, no internet needed</li>
+<li><strong>Reference:</strong> Common ports aur reserved IP ranges ki quick table</li>
 </ol>
 <h2>Common Use Cases</h2>
 <ul style="margin-left:1.5rem;line-height:2">
-<li>VPN properly kaam kar raha hai ya nahi? IP check karo — location change hua ya nahi</li>
-<li>Remote access setup karna hai? Apna public IP jaano</li>
-<li>Website slow hai — server ka IP kahan hai? Latency samjho</li>
-<li>Suspicious login alert aaya? IP ka location check karo</li>
-<li>Network issue debug kar rahe ho? ISP details aur IP info ek jagah</li>
+<li>VPN properly kaam kar raha hai ya nahi? Public IP check karo — location match karta hai?</li>
+<li>Subnetting homework — network, broadcast, usable hosts calculate karo offline</li>
+<li>Firewall rule likhni hai? Check karo IP kaunse CIDR range mein aata hai</li>
+<li>Network troubleshooting — apna browser/connection info ek jagah dekho</li>
+<li>Samajhna hai IP private hai ya public — validate & classify karo</li>
 </ul>
 </div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
-<p>The IP Address Lookup tool is a powerful network utility that allows you to instantly discover detailed geolocation and network information about any public IP address. When you load the page, it automatically detects your own public IP address and displays comprehensive details including your city, region, country, Internet Service Provider (ISP), timezone, and precise geographic coordinates (latitude and longitude).</p>
-<p>This tool is invaluable for network administrators, cybersecurity professionals, web developers, and everyday users who need to verify their VPN connection, troubleshoot network issues, or investigate suspicious IP addresses. It leverages the ipapi.co geolocation API to provide accurate, real-time data about IP addresses worldwide. Whether you're checking if your VPN is masking your real location, verifying server locations for latency optimization, or conducting security audits to trace potentially malicious traffic, this tool delivers the information you need in a clean, easy-to-read card layout.</p>
-<p>Beyond simple IP detection, you can manually enter any valid IPv4 or IPv6 address to retrieve its geolocation data. This makes it perfect for investigating email headers, analyzing web traffic origins, verifying CDN node locations, or simply satisfying your curiosity about where an IP address is physically located. The copy button lets you quickly grab your IP for use in configurations, firewall rules, or documentation.</p>
+<p>This IP & Network Toolkit is built around honesty about what a static web page can and cannot do. A page running only in your browser cannot look up the geolocation of an arbitrary IP address on its own — that requires a database held by an external service. So this tool separates the features clearly: the parts that work purely in your browser (connection info, WebRTC local-IP detection, and a full offline IP/subnet toolkit) run with no network requests at all, while public-IP geolocation is an optional, clearly-disclosed feature that sends a request to the third-party service <strong>ipapi.co</strong> only when you press a button.</p>
+<p>The <strong>My Connection</strong> tab reflects only information your browser genuinely exposes to any web page: user agent, parsed browser/OS/device, screen and viewport size, colour depth, device pixel ratio, CPU core count, device memory (where exposed), language list, timezone, cookie and do-not-track settings, online status, Network Information API estimates, battery status (where available), and touch support. The <strong>IP Toolkit</strong> validates IPv4 and IPv6 addresses, converts IPv4 to and from its 32-bit integer form, runs a full CIDR/subnet calculator, splits subnets, checks CIDR membership, and identifies private, loopback, link-local, multicast and reserved ranges.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
 <li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
-<li><strong>Auto-Detection</strong> — Automatically detects your public IP address on page load</li>
-<li><strong>Comprehensive Data</strong> — Shows IP, city, region, country, ISP, timezone, and coordinates</li>
-<li><strong>Manual Lookup</strong> — Look up any public IP address, not just your own</li>
-<li><strong>One-Click Copy</strong> — Copy your IP address to clipboard instantly</li>
+<li><strong>Honest & Transparent</strong> — Offline tools make no requests; external lookups are clearly disclosed and opt-in</li>
+<li><strong>Powerful Offline Toolkit</strong> — Subnet calculator, CIDR checker, IPv4/integer conversion, validation</li>
+<li><strong>Connection Insight</strong> — See exactly what your browser reveals about you</li>
 <li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
-<li><strong>VPN Verification</strong> — Confirm your VPN is working by checking your visible IP location</li>
-<li><strong>Fast Results</strong> — Get geolocation data in under a second</li>
 </ul>
 <h2>Frequently Asked Questions</h2>
 <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Use it as many times as you want.</p></details>
-<details><summary>Does this tool require an internet connection?</summary><p>Yes. Unlike most tools on this site, the IP Address Lookup tool requires an active internet connection because it queries an external geolocation API (ipapi.co) to retrieve IP information. It cannot work offline.</p></details>
-<details><summary>How accurate is the geolocation data?</summary><p>IP geolocation is generally accurate to the city level for most residential connections. However, accuracy can vary — VPNs, proxies, corporate networks, and mobile carriers may show different locations. The data is sourced from ipapi.co which maintains one of the most accurate IP geolocation databases available.</p></details>
-<details><summary>Can I look up any IP address?</summary><p>You can look up any valid public IPv4 or IPv6 address. Private/internal IP addresses (like 192.168.x.x or 10.x.x.x) cannot be geolocated as they are not routable on the public internet.</p></details>
-<details><summary>Is my IP address stored or logged?</summary><p>No. This tool makes a direct API call from your browser to the geolocation service. We do not store, log, or track any IP addresses you look up. Your privacy is fully respected.</p></details>
-<details><summary>Why does my IP location show a different city?</summary><p>ISPs often route traffic through regional hubs, so your IP may be registered to a nearby city rather than your exact location. This is normal and does not indicate a problem. VPN and proxy users will see the location of their exit server instead.</p></details>
-<details><summary>Can I use this to verify my VPN is working?</summary><p>Absolutely. Load this page with your VPN connected — if the displayed IP and location match your VPN server rather than your real location, your VPN is working correctly. Disconnect and reload to compare with your real IP.</p></details>
+<details><summary>Does the public IP lookup send my data anywhere?</summary><p>Yes — and only when you press the lookup button. The public IP lookup sends a request from your browser directly to ipapi.co, a third-party geolocation service, which processes the request under its own privacy policy. All other tabs (connection info, WebRTC, and the IP toolkit) run entirely in your browser and make no requests.</p></details>
+<details><summary>Why does WebRTC show a .local hostname instead of an IP?</summary><p>Modern browsers deliberately mask your real local IP address behind an mDNS hostname (ending in .local) to protect your privacy. Seeing this instead of a real address means your browser's privacy protection is working.</p></details>
+<details><summary>Does the IP toolkit need an internet connection?</summary><p>No. Validation, subnet calculation, CIDR checks, and IPv4/integer conversion all run offline in your browser using JavaScript.</p></details>
+<details><summary>How accurate is IP geolocation?</summary><p>IP geolocation from any service (including ipapi.co) is typically accurate only to the city or region level, and VPNs, proxies, and mobile carriers can show a very different location. Treat it as approximate.</p></details>
+<details><summary>Can I look up private IPs like 192.168.x.x?</summary><p>Private, loopback, and link-local addresses are not routable on the public internet and cannot be geolocated. The offline toolkit will still validate and classify them for you.</p></details>
 </div>
   </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/json-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON Formatter</a><a href="/tools/json-csv" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON to CSV</a><a href="/tools/base64" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Base64 Encoder</a><a href="/tools/regex-tester" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Regex Tester</a><a href="/tools/sql-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">SQL Formatter</a><a href="/tools/html-editor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">HTML Editor</a></div></div>
@@ -107,15 +235,236 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+// ---------- tabs ----------
+function iplTab(name){
+  var map=['browser','public','webrtc','toolkit','ref'];
+  document.querySelectorAll('.ipl-tab').forEach(function(t,i){t.classList.toggle('active',map[i]===name);});
+  document.querySelectorAll('.ipl-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('ipl-'+name).classList.add('active');
+}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+// ---------- browser / connection info ----------
+function parseUA(ua){
+  var browser='Unknown',os='Unknown';
+  if(/Edg\//.test(ua))browser='Edge';
+  else if(/OPR\/|Opera/.test(ua))browser='Opera';
+  else if(/Chrome\//.test(ua))browser='Chrome';
+  else if(/Firefox\//.test(ua))browser='Firefox';
+  else if(/Safari\//.test(ua))browser='Safari';
+  if(/Windows NT 10/.test(ua))os='Windows 10/11';
+  else if(/Windows/.test(ua))os='Windows';
+  else if(/Android/.test(ua))os='Android';
+  else if(/iPhone|iPad|iPod/.test(ua))os='iOS';
+  else if(/Mac OS X/.test(ua))os='macOS';
+  else if(/Linux/.test(ua))os='Linux';
+  var device=/Mobi|Android|iPhone/.test(ua)?'Mobile':(/iPad|Tablet/.test(ua)?'Tablet':'Desktop');
+  return {browser:browser,os:os,device:device};
+}
+function loadBrowserInfo(){
+  var n=navigator;var p=parseUA(n.userAgent);
+  var conn=n.connection||n.mozConnection||n.webkitConnection;
+  var tz='Unknown',off='';
+  try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){}
+  var om=new Date().getTimezoneOffset();
+  off=(om<=0?'+':'-')+String(Math.floor(Math.abs(om)/60)).padStart(2,'0')+':'+String(Math.abs(om)%60).padStart(2,'0');
+  var items=[
+    ['Browser',p.browser],
+    ['Operating system',p.os],
+    ['Device type',p.device],
+    ['User agent',n.userAgent],
+    ['Screen size',screen.width+' × '+screen.height],
+    ['Viewport size',window.innerWidth+' × '+window.innerHeight],
+    ['Colour depth',screen.colorDepth+'-bit'],
+    ['Device pixel ratio',window.devicePixelRatio],
+    ['CPU cores',n.hardwareConcurrency!=null?n.hardwareConcurrency:'Not exposed'],
+    ['Device memory',n.deviceMemory!=null?n.deviceMemory+' GB (approx)':'Not exposed'],
+    ['Language',n.language||'Unknown'],
+    ['Languages',(n.languages||[]).join(', ')||'Unknown'],
+    ['Timezone',tz+' (UTC '+off+')'],
+    ['Cookies enabled',n.cookieEnabled?'Yes':'No'],
+    ['Do Not Track',n.doNotTrack==='1'?'On':(n.doNotTrack==='0'?'Off':'Not set')],
+    ['Online status',n.onLine?'Online':'Offline'],
+    ['Touch support',('ontouchstart' in window)||n.maxTouchPoints>0?'Yes ('+(n.maxTouchPoints||0)+' points)':'No'],
+    ['Connection type',conn&&conn.effectiveType?conn.effectiveType:'Not exposed'],
+    ['Downlink estimate',conn&&conn.downlink!=null?conn.downlink+' Mbps':'Not exposed'],
+    ['Round-trip time',conn&&conn.rtt!=null?conn.rtt+' ms':'Not exposed']
+  ];
+  document.getElementById('browserInfo').innerHTML=items.map(function(it){
+    return '<div class="ipl-item"><div class="k">'+esc(it[0])+'</div><div class="v">'+esc(it[1])+'</div></div>';
+  }).join('');
+  var batt=document.getElementById('battery');batt.innerHTML='';
+  if(navigator.getBattery){
+    navigator.getBattery().then(function(b){
+      batt.innerHTML='<div class="ipl-item" style="margin-top:.5rem"><div class="k">Battery</div><div class="v">'+Math.round(b.level*100)+'% '+(b.charging?'(charging)':'(not charging)')+'</div></div>';
+    }).catch(function(){});
+  }else{
+    batt.innerHTML='<div class="ipl-item" style="margin-top:.5rem"><div class="k">Battery</div><div class="v">Not exposed by this browser</div></div>';
+  }
+}
+
+// ---------- public IP lookup (ipapi.co, explicit only) ----------
 var currentIP='';
-function showLoading(){document.getElementById('loading').style.display='block';document.getElementById('result').style.display='none';document.getElementById('error').style.display='none'}
-function showError(msg){document.getElementById('loading').style.display='none';document.getElementById('error').style.display='block';document.getElementById('error').textContent=msg}
-function showResult(d){document.getElementById('loading').style.display='none';document.getElementById('error').style.display='none';document.getElementById('result').style.display='block';currentIP=d.ip||'';document.getElementById('rIP').textContent=d.ip||'N/A';document.getElementById('rCity').textContent=d.city||'N/A';document.getElementById('rRegion').textContent=d.region||'N/A';document.getElementById('rCountry').textContent=(d.country_name||d.country||'N/A');document.getElementById('rISP').textContent=d.org||'N/A';document.getElementById('rTZ').textContent=d.timezone||'N/A';document.getElementById('rLat').textContent=d.latitude!=null?d.latitude:'N/A';document.getElementById('rLon').textContent=d.longitude!=null?d.longitude:'N/A';document.getElementById('copyBtn').disabled=false}
-function fetchIP(url){showLoading();fetch(url).then(function(r){if(!r.ok)throw new Error('API error: '+r.status);return r.json()}).then(function(d){if(d.error)throw new Error(d.reason||'Invalid IP address');showResult(d)}).catch(function(e){showError(e.message||'Failed to fetch IP data. Check your connection.')})}
-function lookupMyIP(){document.getElementById('ipInput').value='';fetchIP('https://ipapi.co/json/')}
-function lookupIP(){var ip=document.getElementById('ipInput').value.trim();if(!ip){lookupMyIP();return}fetchIP('https://ipapi.co/'+encodeURIComponent(ip)+'/json/')}
-function copyIP(){if(!currentIP)return;navigator.clipboard.writeText(currentIP).then(function(){var b=document.getElementById('copyBtn');b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy IP'},1500)})}
-lookupMyIP();
+function showLoading(){document.getElementById('loading').style.display='block';document.getElementById('result').style.display='none';document.getElementById('error').style.display='none';}
+function showError(msg){document.getElementById('loading').style.display='none';document.getElementById('error').style.display='block';document.getElementById('error').textContent=msg;}
+function showResult(d){document.getElementById('loading').style.display='none';document.getElementById('error').style.display='none';document.getElementById('result').style.display='block';currentIP=d.ip||'';document.getElementById('rIP').textContent=d.ip||'N/A';document.getElementById('rCity').textContent=d.city||'N/A';document.getElementById('rRegion').textContent=d.region||'N/A';document.getElementById('rCountry').textContent=(d.country_name||d.country||'N/A');document.getElementById('rISP').textContent=d.org||'N/A';document.getElementById('rTZ').textContent=d.timezone||'N/A';document.getElementById('rLat').textContent=d.latitude!=null?d.latitude:'N/A';document.getElementById('rLon').textContent=d.longitude!=null?d.longitude:'N/A';document.getElementById('copyBtn').disabled=false;}
+function fetchIP(url){showLoading();fetch(url).then(function(r){if(!r.ok)throw new Error('API error: '+r.status);return r.json();}).then(function(d){if(d.error)throw new Error(d.reason||'Invalid IP address');showResult(d);}).catch(function(e){showError(e.message||'Failed to fetch IP data. Check your connection.');});}
+function lookupMyIP(){document.getElementById('ipInput').value='';fetchIP('https://ipapi.co/json/');}
+function lookupIP(){var ip=document.getElementById('ipInput').value.trim();if(!ip){lookupMyIP();return;}fetchIP('https://ipapi.co/'+encodeURIComponent(ip)+'/json/');}
+function copyIP(){if(!currentIP)return;navigator.clipboard.writeText(currentIP).then(function(){var b=document.getElementById('copyBtn');b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy IP';},1500);});}
+
+// ---------- WebRTC local IP ----------
+function detectWebRTC(){
+  var out=document.getElementById('webrtcOut');
+  out.innerHTML='<p class="info">Detecting…</p>';
+  var found={};
+  if(typeof RTCPeerConnection==='undefined'){out.innerHTML='<p class="info">WebRTC is not available in this browser.</p>';return;}
+  var pc;
+  try{pc=new RTCPeerConnection({iceServers:[]});}catch(e){out.innerHTML='<p class="info">Could not create a WebRTC connection.</p>';return;}
+  pc.createDataChannel('x');
+  pc.onicecandidate=function(e){
+    if(!e||!e.candidate||!e.candidate.candidate)return;
+    var parts=e.candidate.candidate.split(' ');
+    var addr=parts[4];
+    if(addr&&!found[addr]){found[addr]=true;render();}
+  };
+  pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).catch(function(){});
+  function render(){
+    var addrs=Object.keys(found);
+    var html='<table class="ipl-tbl"><tr><th>Address / hostname</th><th>Type</th></tr>';
+    addrs.forEach(function(a){
+      var type=/\.local$/i.test(a)?'mDNS (masked — good for privacy)':(/^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|169\.254\.|fe80:|fc|fd)/i.test(a)?'Local / private':'Possibly public');
+      html+='<tr><td class="ipl-kv">'+esc(a)+'</td><td>'+type+'</td></tr>';
+    });
+    html+='</table>';
+    out.innerHTML=html;
+  }
+  setTimeout(function(){if(!Object.keys(found).length){out.innerHTML='<p class="info">No addresses were exposed — your browser is masking them (good for privacy).</p>';}try{pc.close();}catch(e){}},2500);
+}
+
+// ---------- IPv4 helpers ----------
+function isValidIPv4(ip){
+  var parts=ip.split('.');
+  if(parts.length!==4)return false;
+  for(var i=0;i<4;i++){var p=parts[i];if(!/^\d+$/.test(p))return false;if(p.length>1&&p[0]==='0')return false;var n=+p;if(n<0||n>255)return false;}
+  return true;
+}
+function isValidIPv6(ip){
+  if(ip.indexOf(':')<0)return false;
+  if((ip.match(/::/g)||[]).length>1)return false;
+  var hasDouble=ip.indexOf('::')>=0;
+  var groups=ip.split(':');
+  if(!hasDouble&&groups.length!==8)return false;
+  for(var i=0;i<groups.length;i++){var g=groups[i];if(g==='')continue;if(!/^[0-9a-fA-F]{1,4}$/.test(g))return false;}
+  return true;
+}
+function ipv4ToInt(ip){var p=ip.split('.');return ((+p[0])*16777216+(+p[1])*65536+(+p[2])*256+(+p[3]))>>>0;}
+function intToIpv4(n){n=n>>>0;return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');}
+
+function classifyIPv4(ip){
+  var n=ipv4ToInt(ip);
+  function inR(cidr){var pp=cidr.split('/');var base=ipv4ToInt(pp[0]);var bits=+pp[1];var m=bits===0?0:(0xFFFFFFFF<<(32-bits))>>>0;return (n&m)===(base&m);}
+  if(inR('127.0.0.0/8'))return 'Loopback (RFC1122)';
+  if(inR('10.0.0.0/8')||inR('172.16.0.0/12')||inR('192.168.0.0/16'))return 'Private (RFC1918)';
+  if(inR('169.254.0.0/16'))return 'Link-local / APIPA (RFC3927)';
+  if(inR('100.64.0.0/10'))return 'Carrier-grade NAT (RFC6598)';
+  if(inR('224.0.0.0/4'))return 'Multicast (RFC5771)';
+  if(inR('240.0.0.0/4'))return 'Reserved / future use (RFC1112)';
+  if(inR('0.0.0.0/8'))return '"This" network (RFC1122)';
+  if(ip==='255.255.255.255')return 'Limited broadcast';
+  return 'Public / globally routable';
+}
+
+// ---------- validate ----------
+function doValidate(){
+  var ip=document.getElementById('valIp').value.trim();var out=document.getElementById('valOut');
+  if(ip===''){out.innerHTML='';return;}
+  if(isValidIPv4(ip)){
+    out.innerHTML='<span class="ipl-ok">Valid IPv4</span> — '+esc(classifyIPv4(ip))+'<br><span class="ipl-kv">Integer: '+ipv4ToInt(ip)+'</span>';
+  }else if(isValidIPv6(ip)){
+    var lc=ip.toLowerCase();var kind='Global unicast (likely)';
+    if(lc==='::1')kind='Loopback';
+    else if(lc.indexOf('fe80')===0)kind='Link-local';
+    else if(lc[0]==='f'&&(lc[1]==='c'||lc[1]==='d'))kind='Unique local (private)';
+    else if(lc.indexOf('ff')===0)kind='Multicast';
+    out.innerHTML='<span class="ipl-ok">Valid IPv6</span> — '+esc(kind);
+  }else{
+    out.innerHTML='<span class="ipl-bad">Not a valid IPv4 or IPv6 address</span>';
+  }
+}
+
+// ---------- ipv4 <-> int ----------
+function ipToInt(){var ip=document.getElementById('intIp').value.trim();if(!isValidIPv4(ip)){document.getElementById('intVal').value=ip===''?'':'invalid';return;}document.getElementById('intVal').value=ipv4ToInt(ip);}
+function intToIp(){var raw=document.getElementById('intVal').value.trim();if(raw===''){document.getElementById('intIp').value='';return;}var n=Number(raw);if(!/^\d+$/.test(raw)||n<0||n>4294967295){document.getElementById('intIp').value='invalid';return;}document.getElementById('intIp').value=intToIpv4(n);}
+
+// ---------- CIDR calculator ----------
+function doCidr(){
+  var ip=document.getElementById('cidrIp').value.trim();var pfx=parseInt(document.getElementById('cidrPrefix').value,10);
+  var out=document.getElementById('cidrOut');
+  if(ip===''){out.innerHTML='';return;}
+  if(!isValidIPv4(ip)){out.innerHTML='<span class="ipl-bad">Invalid IPv4 address</span>';return;}
+  if(isNaN(pfx)||pfx<0||pfx>32){out.innerHTML='<span class="ipl-bad">Prefix must be 0–32</span>';return;}
+  var mask=pfx===0?0:(0xFFFFFFFF<<(32-pfx))>>>0;
+  var wildcard=(~mask)>>>0;
+  var net=(ipv4ToInt(ip)&mask)>>>0;
+  var bcast=(net|wildcard)>>>0;
+  var totalHosts=Math.pow(2,32-pfx);
+  var usable=pfx>=31?0:totalHosts-2;
+  var first=pfx>=31?net:(net+1)>>>0;
+  var last=pfx>=31?bcast:(bcast-1)>>>0;
+  var rows=[
+    ['Network address',intToIpv4(net)],
+    ['Broadcast address',intToIpv4(bcast)],
+    ['Subnet mask',intToIpv4(mask)],
+    ['Wildcard mask',intToIpv4(wildcard)],
+    ['First usable host',pfx>=31?'—':intToIpv4(first)],
+    ['Last usable host',pfx>=31?'—':intToIpv4(last)],
+    ['Total addresses',totalHosts.toLocaleString()],
+    ['Usable hosts',usable.toLocaleString()],
+    ['CIDR notation',intToIpv4(net)+'/'+pfx]
+  ];
+  out.innerHTML='<table class="ipl-tbl">'+rows.map(function(r){return '<tr><th>'+r[0]+'</th><td class="ipl-kv">'+r[1]+'</td></tr>';}).join('')+'</table>';
+}
+
+// ---------- contains ----------
+function doContains(){
+  var ip=document.getElementById('chkIp').value.trim();var cidr=document.getElementById('chkCidr').value.trim();
+  var out=document.getElementById('chkOut');
+  if(ip===''||cidr===''){out.innerHTML='';return;}
+  var pp=cidr.split('/');
+  if(pp.length!==2||!isValidIPv4(pp[0])||!isValidIPv4(ip)){out.innerHTML='<span class="ipl-bad">Enter a valid IPv4 and CIDR (e.g. 10.0.0.0/16)</span>';return;}
+  var bits=parseInt(pp[1],10);if(isNaN(bits)||bits<0||bits>32){out.innerHTML='<span class="ipl-bad">Prefix must be 0–32</span>';return;}
+  var mask=bits===0?0:(0xFFFFFFFF<<(32-bits))>>>0;
+  var inside=((ipv4ToInt(ip)&mask)>>>0)===((ipv4ToInt(pp[0])&mask)>>>0);
+  out.innerHTML=inside?'<span class="ipl-ok">✅ '+esc(ip)+' IS inside '+esc(cidr)+'</span>':'<span class="ipl-bad">❌ '+esc(ip)+' is NOT inside '+esc(cidr)+'</span>';
+}
+
+// ---------- subnet split ----------
+function doSplit(){
+  var cidr=document.getElementById('splitCidr').value.trim();var newP=parseInt(document.getElementById('splitPrefix').value,10);
+  var out=document.getElementById('splitOut');
+  if(cidr===''){out.innerHTML='';return;}
+  var pp=cidr.split('/');
+  if(pp.length!==2||!isValidIPv4(pp[0])){out.innerHTML='<span class="ipl-bad">Enter a valid base CIDR</span>';return;}
+  var baseP=parseInt(pp[1],10);
+  if(isNaN(baseP)||baseP<0||baseP>32){out.innerHTML='<span class="ipl-bad">Base prefix must be 0–32</span>';return;}
+  if(isNaN(newP)||newP<baseP||newP>32){out.innerHTML='<span class="ipl-bad">New prefix must be between '+baseP+' and 32</span>';return;}
+  var count=Math.pow(2,newP-baseP);
+  if(count>256){out.innerHTML='<span class="ipl-bad">That would create '+count.toLocaleString()+' subnets — narrow the range (max 256 shown).</span>';return;}
+  var mask=baseP===0?0:(0xFFFFFFFF<<(32-baseP))>>>0;
+  var base=(ipv4ToInt(pp[0])&mask)>>>0;
+  var step=Math.pow(2,32-newP);
+  var rows='';
+  for(var i=0;i<count;i++){
+    var net=(base+i*step)>>>0;
+    var bc=(net+step-1)>>>0;
+    rows+='<tr><td class="ipl-kv">'+intToIpv4(net)+'/'+newP+'</td><td class="ipl-kv">'+intToIpv4(net)+'</td><td class="ipl-kv">'+intToIpv4(bc)+'</td></tr>';
+  }
+  out.innerHTML='<p class="info">'+count+' subnets:</p><table class="ipl-tbl"><tr><th>Subnet</th><th>Network</th><th>Broadcast</th></tr>'+rows+'</table>';
+}
+
+// ---------- init ----------
+loadBrowserInfo();
   </script>
 </body>
 </html>

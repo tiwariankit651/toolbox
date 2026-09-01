@@ -26,25 +26,41 @@
       <h1>💕 Love Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
       <p class="info">Enter two names and discover your love compatibility! Just for fun 😄</p>
+      <div style="background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.35);border-radius:12px;padding:.7rem 1rem;margin:0 auto 1rem;max-width:480px;font-size:.85rem;color:var(--text2)">
+        💡 <strong>Just for fun!</strong> This is an entertainment toy with <strong>no scientific basis whatsoever</strong>. Results are generated from the letters of the names — they say nothing real about any relationship. Enjoy responsibly. 💕
+      </div>
+      <div class="row" style="justify-content:center;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="btn btn-outline modeBtn" data-mode="love" onclick="setMode('love')" style="font-size:.85rem">💘 Love %</button>
+        <button class="btn btn-outline modeBtn" data-mode="flames" onclick="setMode('flames')" style="font-size:.85rem">🔥 FLAMES</button>
+        <button class="btn btn-outline modeBtn" data-mode="letters" onclick="setMode('letters')" style="font-size:.85rem">🔤 Shared Letters</button>
+        <button class="btn btn-outline modeBtn" data-mode="friend" onclick="setMode('friend')" style="font-size:.85rem">🤝 Friendship</button>
+      </div>
       <div style="max-width:400px;margin:0 auto">
         <input type="text" id="name1" placeholder="Your name..." style="text-align:center;font-size:1.1rem">
         <div style="font-size:2rem;margin:.5rem 0">❤️</div>
         <input type="text" id="name2" placeholder="Their name..." style="text-align:center;font-size:1.1rem">
-        <button class="btn" onclick="calculate()" style="width:100%;margin-top:1rem;font-size:1.1rem">💘 Calculate Love</button>
+        <button class="btn" onclick="calculate()" style="width:100%;margin-top:1rem;font-size:1.1rem">💘 Calculate</button>
       </div>
       <div id="result" style="display:none;margin-top:1.5rem">
         <div id="heart" style="font-size:4rem;animation:pulse 1s infinite">💖</div>
         <div id="percentage" style="font-size:3rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+        <canvas id="loveCanvas" width="300" height="150" style="max-width:100%;margin:.5rem auto;display:block"></canvas>
         <div id="message" style="font-size:1.2rem;margin:.5rem 0"></div>
-        <div id="bar" style="height:20px;border-radius:10px;background:var(--border);margin:1rem auto;max-width:300px;overflow:hidden"><div id="barFill" style="height:100%;border-radius:10px;background:linear-gradient(90deg,#ff6b6b,#ff1493);transition:width 1s"></div></div>
-        <div id="funFact" style="font-size:.95rem;color:var(--muted);margin:.5rem 0;font-style:italic"></div>
+        <div id="bar" style="height:20px;border-radius:10px;background:rgba(255,255,255,.1);margin:1rem auto;max-width:300px;overflow:hidden"><div id="barFill" style="height:100%;border-radius:10px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 1s"></div></div>
+        <div id="funFact" style="font-size:.95rem;color:var(--text2);margin:.5rem 0;font-style:italic"></div>
         <div class="row" style="justify-content:center;gap:.5rem;margin-top:.5rem">
           <button class="btn btn-outline" onclick="shareResult()">📤 Share Result</button>
-          <button class="btn btn-outline" onclick="generateCard()">🖼️ Download Card</button>
+          <button class="btn btn-outline" onclick="generateCard('status')">🖼️ WhatsApp Card</button>
+          <button class="btn btn-outline" onclick="generateCard('story')">📱 IG Story Card</button>
         </div>
       </div>
 
-      <hr style="margin:2rem 0;border-color:var(--border)">
+      <div id="historyBox" style="max-width:480px;margin:1.5rem auto 0;display:none;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">🕓 Recent Results</h3><button class="btn btn-outline" onclick="clearHistory()" style="font-size:.75rem;padding:.3rem .7rem">Clear all</button></div>
+        <div id="historyList" style="margin-top:.5rem"></div>
+      </div>
+
+      <hr style="margin:2rem 0;border:none;border-top:1px solid rgba(255,255,255,.1)">
       <h2>♈ Zodiac Compatibility</h2>
       <div style="max-width:400px;margin:0 auto">
         <div class="row" style="gap:.5rem">
@@ -55,9 +71,9 @@
         <div id="zodiacResult" style="margin-top:1rem;display:none;padding:1rem;background:var(--card);border-radius:10px"></div>
       </div>
 
-      <hr style="margin:2rem 0;border-color:var(--border)">
+      <hr style="margin:2rem 0;border:none;border-top:1px solid rgba(255,255,255,.1)">
       <h2>💬 Compatibility Quiz</h2>
-      <p style="font-size:.9rem;color:var(--muted)">Answer 10 fun questions together to check compatibility!</p>
+      <p style="font-size:.9rem;color:var(--text2)">Answer 10 fun questions together to check compatibility!</p>
       <button class="btn btn-outline" onclick="startQuiz()" id="quizStartBtn">🎯 Start Quiz</button>
       <div id="quizArea" style="display:none;max-width:500px;margin:1rem auto;text-align:left"></div>
       <div id="quizResult" style="display:none;margin-top:1rem;font-size:1.2rem;font-weight:700"></div>
@@ -79,7 +95,7 @@
 <li>Enjoying a quick laugh during breaks</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A fun love compatibility calculator for entertainment. Enter two names and get a love percentage with a fun message. The result is generated using a consistent algorithm based on name characters — same names always give the same result. Features animated heart, percentage bar, and shareable results (copy to clipboard or share via Web Share API). Perfect for fun with friends, social media engagement, and lighthearted entertainment. Disclaimer: This is purely for fun — real relationships are built on trust and communication!</p>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A fun love compatibility calculator built <strong>purely for entertainment</strong> — it has no scientific basis whatsoever and should never be taken seriously. Enter two names and get a playful result. Choose from several modes: classic Love %, the classic FLAMES game (Friends, Lovers, Affection, Marriage, Enemies, Siblings), a shared-letters breakdown, a friendship meter, and light-hearted zodiac compatibility. Results are deterministic — the same names always give the same answer — because they are generated from a stable hash of the letters, not from anything real. Features an animated counter, a canvas heart-fill visual, shareable image cards sized for WhatsApp status and Instagram story, and a local history. Perfect for a laugh with friends. Remember: real relationships are built on trust, communication and respect — not percentages!</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
@@ -91,6 +107,7 @@
 <li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
 </ul>
 <h2>Frequently Asked Questions</h2>
+<details><summary>Is this love calculator real or accurate?</summary><p>No — this is 100% for entertainment. It has no scientific basis at all. The result comes from a stable hash of the letters in the names, not from any real measure of compatibility. Please enjoy it as a game and never use it to make real decisions about people or relationships.</p></details>
 <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Use it as many times as you want.</p></details>
 <details><summary>Is my data safe?</summary><p>Absolutely. All processing happens in your browser using JavaScript. Your files and data are never uploaded to any server. We physically cannot access your data.</p></details>
 <details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, laptop, tablet, and mobile phone. No app installation needed.</p></details>
@@ -121,6 +138,212 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+var currentMode="love";
+function setMode(m){
+  currentMode=m;
+  document.querySelectorAll(".modeBtn").forEach(function(b){b.style.background=b.dataset.mode===m?"var(--accent)":"transparent";b.style.color=b.dataset.mode===m?"#fff":"var(--accent)";});
+}
+
+// Stable deterministic hash (same names => same result)
+function stableHash(str){
+  var h=0;
+  for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h=h&h;}
+  return Math.abs(h);
+}
+
+function bandMessage(pct){
+  var msgs=["Not a great match... but who knows! 🤷","There might be something there! 🌱","You two have potential! ✨","Good compatibility! Keep going! 😊","Strong connection! 💪","Great match! You two are amazing together! 🌟","Perfect match! Made for each other! 💕","Soulmates! This is destiny! 🔥💖"];
+  return msgs[Math.min(Math.floor(pct/13),msgs.length-1)];
+}
+function friendMessage(pct){
+  var msgs=["New acquaintances 👋","Casual buddies 🙂","Good friends 😄","Close friends 🤗","Best friends forever! 🎉"];
+  return msgs[Math.min(Math.floor(pct/21),msgs.length-1)];
+}
+
+// FLAMES game — classic counting-out algorithm
+function flames(a,b){
+  a=a.toLowerCase().replace(/[^a-z]/g,"").split("");
+  b=b.toLowerCase().replace(/[^a-z]/g,"").split("");
+  // cancel common letters
+  for(var i=0;i<a.length;i++){
+    var idx=b.indexOf(a[i]);
+    if(idx>-1){b.splice(idx,1);a[i]="";}
+  }
+  var count=a.join("").length+b.join("").length;
+  if(count===0)return {letter:"L",word:"Lovers",emoji:"💞"};
+  var flamesArr=["F","L","A","M","E","S"];
+  var names={F:"Friends",L:"Lovers",A:"Affection",M:"Marriage",E:"Enemies",S:"Siblings"};
+  var emojis={F:"🤝",L:"💞",A:"🥰",M:"💍",E:"😠",S:"👫"};
+  var pos=0;
+  while(flamesArr.length>1){
+    pos=(pos+count-1)%flamesArr.length;
+    flamesArr.splice(pos,1);
+    if(pos>=flamesArr.length)pos=0;
+  }
+  var r=flamesArr[0];
+  return {letter:r,word:names[r],emoji:emojis[r]};
+}
+
+// shared-letters breakdown
+function sharedLetters(a,b){
+  var sa=new Set(a.toLowerCase().replace(/[^a-z]/g,"").split(""));
+  var sb=new Set(b.toLowerCase().replace(/[^a-z]/g,"").split(""));
+  var shared=[...sa].filter(function(c){return sb.has(c);});
+  var total=new Set([...sa,...sb]).size||1;
+  var pct=Math.round(shared.length/total*100);
+  return {shared:shared,pct:pct};
+}
+
+function animateCounter(target,suffix){
+  var el=document.getElementById("percentage");
+  var start=0,dur=900,t0=null;
+  function step(ts){
+    if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);
+    var val=Math.round(start+(target-start)*p);
+    el.textContent=val+(suffix||"");
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// canvas heart-fill visual for a percentage
+function drawHeartFill(pct){
+  var c=document.getElementById("loveCanvas");var ctx=c.getContext("2d");
+  ctx.clearRect(0,0,300,150);
+  function heartPath(){
+    ctx.beginPath();
+    var x=150,y=40,w=90;
+    ctx.moveTo(x,y+30);
+    ctx.bezierCurveTo(x,y+22,x-w/2,y-10,x-w/2,y+22);
+    ctx.bezierCurveTo(x-w/2,y+55,x,y+80,x,y+100);
+    ctx.bezierCurveTo(x,y+80,x+w/2,y+55,x+w/2,y+22);
+    ctx.bezierCurveTo(x+w/2,y-10,x,y+22,x,y+30);
+    ctx.closePath();
+  }
+  // outline
+  heartPath();ctx.strokeStyle="rgba(139,92,246,.6)";ctx.lineWidth=3;ctx.stroke();
+  // fill from bottom up
+  ctx.save();heartPath();ctx.clip();
+  var fillH=140*(pct/100);
+  var grd=ctx.createLinearGradient(0,150,0,0);
+  grd.addColorStop(0,"#6366f1");grd.addColorStop(1,"#ec4899");
+  ctx.fillStyle=grd;ctx.fillRect(0,150-fillH,300,fillH);
+  ctx.restore();
+}
+
+function calculate(){
+  var raw1=document.getElementById("name1").value.trim();
+  var raw2=document.getElementById("name2").value.trim();
+  if(!raw1||!raw2)return alert("Enter both names!");
+  var n1=raw1.toLowerCase(),n2=raw2.toLowerCase();
+  var res=document.getElementById("result");
+  res.style.display="block";
+  document.getElementById("bar").style.display="";
+  document.getElementById("loveCanvas").style.display="";
+  var pct,message,fact="";
+  var hash=stableHash(n1+"|"+n2+"|"+currentMode);
+
+  if(currentMode==="flames"){
+    var fl=flames(n1,n2);
+    document.getElementById("heart").textContent=fl.emoji;
+    document.getElementById("percentage").textContent=fl.word;
+    document.getElementById("bar").style.display="none";
+    document.getElementById("loveCanvas").style.display="none";
+    message="FLAMES says: "+fl.word+" ("+fl.letter+")";
+    document.getElementById("message").textContent=message;
+    document.getElementById("funFact").textContent="💡 FLAMES = Friends, Lovers, Affection, Marriage, Enemies, Siblings. Purely a classic playground game!";
+    saveHistory(raw1,raw2,"FLAMES",fl.word);
+    return;
+  }
+  if(currentMode==="letters"){
+    var sl=sharedLetters(n1,n2);
+    pct=sl.pct;message="You share the letters: "+(sl.shared.join(", ").toUpperCase()||"none!");
+    fact="💡 Based on "+sl.shared.length+" shared unique letters.";
+  }else if(currentMode==="friend"){
+    pct=hash%61+40; // 40-100
+    message=friendMessage(pct);
+    fact="💡 Friendship meter — just for laughs!";
+  }else{ // love
+    pct=hash%51+50; // 50-100
+    if(n1===n2)pct=100;
+    message=bandMessage(pct);
+    fact="💡 "+funTips[pct<65?"low":pct<80?"mid":"high"][hash%3]+" | "+funFacts[hash%funFacts.length];
+  }
+  document.getElementById("heart").textContent="💖";
+  animateCounter(pct,"%");
+  drawHeartFill(pct);
+  document.getElementById("message").textContent=message;
+  document.getElementById("barFill").style.width=pct+"%";
+  document.getElementById("funFact").textContent=fact;
+  saveHistory(raw1,raw2,currentMode==="friend"?"Friendship":currentMode==="letters"?"Shared Letters":"Love",pct+"%");
+}
+
+function shareResult(){
+  var n1=document.getElementById("name1").value;
+  var n2=document.getElementById("name2").value;
+  var pct=document.getElementById("percentage").textContent;
+  var text=n1+" + "+n2+" = "+pct+" 💕 (just for fun!) Check yours: https://freetoolhubs.com/tools/love-calculator";
+  if(navigator.share){navigator.share({title:"Love Calculator Result",text:text})}
+  else{navigator.clipboard.writeText(text);alert("Copied to clipboard! Share it with friends 💕")}
+}
+
+function generateCard(format){
+  var n1=document.getElementById("name1").value||"You";
+  var n2=document.getElementById("name2").value||"Them";
+  var pct=document.getElementById("percentage").textContent;
+  var msg=document.getElementById("message").textContent;
+  var c=document.createElement("canvas");
+  var w,h;
+  if(format==="story"){w=1080;h=1920;}else{w=1080;h=1080;} // IG story vs WhatsApp status square
+  c.width=w;c.height=h;
+  var ctx=c.getContext("2d");
+  var grd=ctx.createLinearGradient(0,0,w,h);
+  grd.addColorStop(0,"#6366f1");grd.addColorStop(.5,"#8b5cf6");grd.addColorStop(1,"#ec4899");
+  ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+  // decorative hearts
+  ctx.globalAlpha=.15;ctx.font="120px sans-serif";
+  for(var i=0;i<6;i++){ctx.fillText("💗",(i*180)%w,(i*260)%h+120);}
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#fff";ctx.textAlign="center";
+  ctx.font="bold "+(w*.06)+"px sans-serif";
+  ctx.fillText(n1+"  ❤  "+n2,w/2,h*0.32);
+  ctx.font="bold "+(w*.16)+"px sans-serif";
+  ctx.fillText(pct,w/2,h*0.5);
+  ctx.font=(w*.04)+"px sans-serif";
+  wrapText(ctx,msg,w/2,h*0.6,w*0.85,w*.05);
+  ctx.font=(w*.028)+"px sans-serif";ctx.globalAlpha=.85;
+  ctx.fillText("Just for fun 💕 · freetoolhubs.com/tools/love-calculator",w/2,h*0.92);
+  c.toBlob(function(blob){if(window.download)download(blob,"love-"+format+".png");else{var a=document.createElement("a");a.download="love-"+format+".png";a.href=c.toDataURL();a.click();}});
+}
+function wrapText(ctx,text,x,y,maxW,lh){
+  var words=text.split(" ");var line="";var yy=y;
+  for(var i=0;i<words.length;i++){
+    var test=line+words[i]+" ";
+    if(ctx.measureText(test).width>maxW&&i>0){ctx.fillText(line,x,yy);line=words[i]+" ";yy+=lh;}
+    else line=test;
+  }
+  ctx.fillText(line,x,yy);
+}
+
+// ---- History ----
+function saveHistory(n1,n2,mode,result){
+  var hist=JSON.parse(localStorage.getItem("loveHistory")||"[]");
+  hist.unshift({n1:n1,n2:n2,mode:mode,result:result,t:Date.now()});
+  hist=hist.slice(0,20);
+  localStorage.setItem("loveHistory",JSON.stringify(hist));
+  renderHistory();
+}
+function renderHistory(){
+  var hist=JSON.parse(localStorage.getItem("loveHistory")||"[]");
+  var box=document.getElementById("historyBox");
+  if(!hist.length){box.style.display="none";return;}
+  box.style.display="block";
+  document.getElementById("historyList").innerHTML=hist.map(function(h){
+    return '<div style="background:var(--card);border-radius:8px;padding:.5rem .8rem;margin:.3rem 0;font-size:.9rem">'+h.n1+' + '+h.n2+' · <span style="color:var(--text2)">'+h.mode+'</span> → <strong>'+h.result+'</strong></div>';
+  }).join("");
+}
+function clearHistory(){localStorage.removeItem("loveHistory");renderHistory();}
+
 var funFacts=[
   "Couples who laugh together stay together! 😂",
   "Holding hands reduces stress and pain. Try it! 🤝",
@@ -128,7 +351,7 @@ var funFacts=[
   "Cuddling releases oxytocin, the 'love hormone' 🤗",
   "Couples who travel together have healthier relationships ✈️",
   "It takes only 4 minutes to decide if you like someone ⚡",
-  "Looking into each other's eyes can make strangers fall in love 👀",
+  "Looking into each other's eyes can make strangers feel closer 👀",
   "A strong friendship is the best foundation for love 🏗️",
   "Expressing gratitude daily strengthens relationships 🙏",
   "Couples with similar humor have stronger bonds 😄"
@@ -139,50 +362,8 @@ var funTips={
   high:["You have great potential — nurture it with trust","Keep surprising each other to keep the spark alive","Support each other's dreams and goals"]
 };
 
-function calculate(){
-  var n1=document.getElementById("name1").value.trim().toLowerCase();
-  var n2=document.getElementById("name2").value.trim().toLowerCase();
-  if(!n1||!n2)return alert("Enter both names!");
-  var combined=n1+n2;var hash=0;
-  for(var i=0;i<combined.length;i++){hash=((hash<<5)-hash)+combined.charCodeAt(i);hash=hash&hash}
-  var pct=Math.abs(hash%51)+50;
-  if(n1===n2)pct=100;
-  var msgs=["Not a great match... but who knows! 🤷","There might be something there! 🌱","You two have potential! ✨","Good compatibility! Keep going! 😊","Strong connection! 💪","Great match! You two are amazing together! 🌟","Perfect match! Made for each other! 💕","Soulmates! This is destiny! 🔥💖"];
-  var msgIdx=Math.min(Math.floor(pct/13),msgs.length-1);
-  document.getElementById("result").style.display="block";
-  document.getElementById("percentage").textContent=pct+"%";
-  document.getElementById("message").textContent=msgs[msgIdx];
-  document.getElementById("barFill").style.width=pct+"%";
-  var tipCat=pct<65?"low":pct<80?"mid":"high";
-  var tips=funTips[tipCat];
-  document.getElementById("funFact").textContent="💡 "+tips[Math.floor(Math.random()*tips.length)]+" | "+funFacts[Math.floor(Math.random()*funFacts.length)];
-}
-
-function shareResult(){
-  var n1=document.getElementById("name1").value;
-  var n2=document.getElementById("name2").value;
-  var pct=document.getElementById("percentage").textContent;
-  var text=n1+" + "+n2+" = "+pct+" love! 💕 Check yours: https://freetoolhubs.com/tools/love-calculator";
-  if(navigator.share){navigator.share({title:"Love Calculator Result",text:text})}
-  else{navigator.clipboard.writeText(text);alert("Copied to clipboard! Share it with friends 💕")}
-}
-
-function generateCard(){
-  var n1=document.getElementById("name1").value||"You";
-  var n2=document.getElementById("name2").value||"Them";
-  var pct=document.getElementById("percentage").textContent;
-  var c=document.createElement("canvas");c.width=600;c.height=400;
-  var ctx=c.getContext("2d");
-  var grd=ctx.createLinearGradient(0,0,600,400);
-  grd.addColorStop(0,"#ff6b6b");grd.addColorStop(1,"#ff1493");
-  ctx.fillStyle=grd;ctx.fillRect(0,0,600,400);
-  ctx.fillStyle="#fff";ctx.font="bold 28px sans-serif";ctx.textAlign="center";
-  ctx.fillText(n1+" ❤️ "+n2,300,120);
-  ctx.font="bold 80px sans-serif";ctx.fillText(pct,300,240);
-  ctx.font="20px sans-serif";ctx.fillText("Love Compatibility",300,300);
-  ctx.font="14px sans-serif";ctx.fillText("freetoolhubs.com/tools/love-calculator",300,370);
-  var a=document.createElement("a");a.download="love-result.png";a.href=c.toDataURL();a.click();
-}
+setMode("love");
+renderHistory();
 
 // Zodiac compatibility
 var zodiacCompat={
@@ -241,7 +422,7 @@ function showQuestion(){
     finishQuiz();return;
   }
   var q=quizQuestions[quizStep];
-  var html='<p style="color:var(--muted);font-size:.85rem">Partner '+quizPerson+' — Question '+(quizStep+1)+'/10</p><h3>'+q.q+'</h3>';
+  var html='<p style="color:var(--text2);font-size:.85rem">Partner '+quizPerson+' — Question '+(quizStep+1)+'/10</p><h3>'+q.q+'</h3>';
   q.a.forEach(function(a,i){html+='<button class="btn btn-outline" style="display:block;width:100%;margin:.3rem 0;text-align:left" onclick="answerQuiz('+i+')">'+a+'</button>'});
   area.innerHTML=html;
 }
