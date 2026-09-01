@@ -56,6 +56,41 @@
 .time-track{font-size:.72rem;color:var(--text2);margin-top:.2rem;display:flex;align-items:center;gap:.3rem}
 .time-track button{font-size:.7rem;padding:.1rem .3rem;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer}
 .time-track button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* advanced additions */
+.kanban-col{border-top:4px solid var(--accent)}
+.kanban-col.wip-exceeded{outline:2px solid #f44336}
+.wip-badge{font-size:.72rem;font-weight:600;padding:.05rem .4rem;border-radius:6px;background:rgba(255,255,255,.08);color:var(--text2)}
+.wip-badge.over{background:rgba(244,67,54,.2);color:#f44336}
+.col-tools{display:flex;gap:.15rem;align-items:center}
+.col-tools button{border:none;background:none;cursor:pointer;font-size:.8rem;opacity:.6;color:var(--text);padding:0 .1rem}
+.col-tools button:hover{opacity:1}
+.kanban-card.drop-before{box-shadow:0 -3px 0 var(--accent)}
+.kanban-card.drop-after{box-shadow:0 3px 0 var(--accent)}
+.kanban-cards.drop-empty{outline:2px dashed var(--accent);border-radius:8px}
+.kanban-card{touch-action:none}
+.card-tags{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.25rem}
+.card-tag{font-size:.68rem;padding:.05rem .35rem;border-radius:5px;background:rgba(99,102,241,.18);color:var(--accent2)}
+.card-assignee{font-size:.7rem;color:var(--text2);margin-top:.2rem}
+.card-due.overdue{background:rgba(244,67,54,.18)!important;color:#f44336;font-weight:700}
+.checklist{list-style:none;padding:0;margin:.4rem 0 0}
+.checklist li{display:flex;align-items:center;gap:.4rem;padding:.15rem 0;font-size:.85rem}
+.checklist li.done span{text-decoration:line-through;opacity:.6}
+.checklist li button{border:none;background:none;cursor:pointer;color:var(--text);opacity:.6}
+.checklist-add{display:flex;gap:.3rem;margin-top:.3rem}
+.checklist-add input{flex:1}
+.kb-stats{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem}
+.kb-stat{background:var(--card);border-radius:10px;padding:.6rem .9rem;font-size:.8rem}
+.kb-stat b{display:block;font-size:1.2rem;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.col-color-opts{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
+.col-color-opts span{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.col-color-opts span.sel{border-color:var(--text)}
+@media print{
+  body *{visibility:hidden}
+  #kanban,#kanban *{visibility:visible}
+  #kanban{position:absolute;left:0;top:0;width:100%;display:block!important;overflow:visible!important}
+  .kanban-col{break-inside:avoid;max-width:none;margin-bottom:1rem}
+  .card-actions,.time-track,.subtask-add,.checklist-add{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -70,15 +105,33 @@
       <div class="board-bar">
         <select id="boardSelect" onchange="switchBoard()"></select>
         <button onclick="newBoard()">+ Board</button>
-        <button onclick="deleteBoard()">🗑️</button>
+        <button onclick="renameBoard()">✏️ Rename</button>
+        <button onclick="deleteBoard()">🗑️ Delete</button>
+        <select id="templateSelect" onchange="applyTemplate()">
+          <option value="">＋ New from template…</option>
+          <option value="simple">Simple (To Do/Doing/Done)</option>
+          <option value="sprint">Software Sprint</option>
+          <option value="study">Study Plan</option>
+          <option value="jobs">Job Application Tracker</option>
+          <option value="content">Content Pipeline</option>
+        </select>
         <button onclick="addColumn()">+ Column</button>
-        <button onclick="exportBoard()">📤 Export JSON</button>
+      </div>
+      <div class="board-bar">
         <input type="text" id="searchInput" placeholder="🔍 Search cards..." oninput="renderBoard()">
         <select id="filterPriority" onchange="renderBoard()"><option value="">All Priorities</option><option value="High">High</option><option value="Med">Med</option><option value="Low">Low</option></select>
-        <select id="filterColor" onchange="renderBoard()"><option value="">All Colors</option><option value="#f44336">Red</option><option value="#ff9800">Orange</option><option value="#4caf50">Green</option><option value="#2196f3">Blue</option><option value="#9c27b0">Purple</option><option value="#607d8b">Gray</option></select>
+        <select id="filterTag" onchange="renderBoard()"><option value="">All Tags</option></select>
+        <select id="filterDue" onchange="renderBoard()"><option value="">Any Due</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="week">Due This Week</option></select>
+        <button onclick="exportBoard()">📤 JSON</button>
+        <button onclick="document.getElementById('importFile').click()">📥 Import</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importBoard(event)">
+        <button onclick="exportMarkdown()">📝 Markdown</button>
+        <button onclick="window.print()">🖨️ Print</button>
+        <button onclick="toggleArchive()" id="archiveBtn">🗄️ Archive</button>
       </div>
 
       <div id="kanban" class="kanban-wrap"></div>
+      <div id="statsBox" class="kb-stats"></div>
     </div>
 
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -138,6 +191,8 @@
       <label>Priority</label>
       <select id="cardPriorityInput"><option value="Med">Medium</option><option value="High">High</option><option value="Low">Low</option></select>
       <label>Due Date</label><input type="date" id="cardDueInput">
+      <label>Assignee</label><input type="text" id="cardAssigneeInput" placeholder="Name (optional)">
+      <label>Tags (comma separated)</label><input type="text" id="cardTagsInput" placeholder="frontend, urgent">
       <label>Color Label</label>
       <div class="color-opts" id="colorOpts">
         <span style="background:#f44336" onclick="pickColor(this)" data-c="#f44336"></span>
@@ -147,9 +202,37 @@
         <span style="background:#9c27b0" onclick="pickColor(this)" data-c="#9c27b0"></span>
         <span style="background:#607d8b" onclick="pickColor(this)" data-c="#607d8b"></span>
       </div>
+      <label>Checklist</label>
+      <ul class="checklist" id="modalChecklist"></ul>
+      <div class="checklist-add"><input type="text" id="modalCheckInput" placeholder="Add checklist item..." onkeydown="if(event.key==='Enter')addModalCheck()"><button onclick="addModalCheck()" style="border:none;background:var(--accent);color:#fff;border-radius:6px;padding:.3rem .6rem;cursor:pointer">+</button></div>
       <div class="modal-btns">
         <button onclick="closeModal()" style="background:var(--bg);color:var(--text)">Cancel</button>
         <button onclick="saveCard()" style="background:var(--accent);color:#fff">Save</button>
+      </div>
+      <div class="modal-btns" id="editOnlyBtns" style="display:none">
+        <button onclick="duplicateCurrentCard()" style="background:var(--card);color:var(--text)">⧉ Duplicate</button>
+        <button onclick="deleteCurrentCard()" style="background:#f44336;color:#fff">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="colModal">
+    <div class="modal">
+      <h3>Column Settings</h3>
+      <label>Name</label><input type="text" id="colNameInput">
+      <label>WIP Limit (0 = none)</label><input type="number" id="colWipInput" min="0" value="0">
+      <label>Color</label>
+      <div class="col-color-opts" id="colColorOpts">
+        <span style="background:#6366f1" onclick="pickColColor(this)" data-c="#6366f1"></span>
+        <span style="background:#8b5cf6" onclick="pickColColor(this)" data-c="#8b5cf6"></span>
+        <span style="background:#f44336" onclick="pickColColor(this)" data-c="#f44336"></span>
+        <span style="background:#ff9800" onclick="pickColColor(this)" data-c="#ff9800"></span>
+        <span style="background:#4caf50" onclick="pickColColor(this)" data-c="#4caf50"></span>
+        <span style="background:#2196f3" onclick="pickColColor(this)" data-c="#2196f3"></span>
+      </div>
+      <div class="modal-btns">
+        <button onclick="closeColModal()" style="background:var(--bg);color:var(--text)">Cancel</button>
+        <button onclick="saveColSettings()" style="background:var(--accent);color:#fff">Save</button>
       </div>
     </div>
   </div>
@@ -176,105 +259,224 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var STORAGE='kanban_data';
-var data=JSON.parse(localStorage.getItem(STORAGE)||'null');
-if(!data)data={boards:[{name:'My Board',columns:[{name:'To Do',cards:[]},{name:'In Progress',cards:[]},{name:'Done',cards:[]}]}],active:0};
-var editingCard=null,editingCol=null,selectedColor='';
+var STORAGE='kanban_data_v2';
+var TEMPLATES={
+  simple:['To Do','Doing','Done'],
+  sprint:['Backlog','Todo','In Progress','Review','Done'],
+  study:['To Learn','Learning','Revising','Mastered'],
+  jobs:['Applied','Screening','Interview','Offer','Rejected'],
+  content:['Ideas','Drafting','Editing','Scheduled','Published']
+};
+var COL_COLORS=['#6366f1','#8b5cf6','#f44336','#ff9800','#4caf50','#2196f3'];
+var data=migrate();
+var editingCard=null,editingCol=null,selectedColor='',modalChecklist=[];
+var editingColIdx=null,selectedColColor='';
 var timerInterval=null;
+var showArchive=false;
+
+function migrate(){
+  var d=JSON.parse(localStorage.getItem(STORAGE)||'null');
+  if(d&&d.boards){d.boards.forEach(normalizeBoard);return d}
+  // migrate from old v1 key
+  var old=JSON.parse(localStorage.getItem('kanban_data')||'null');
+  if(old&&old.boards){old.boards.forEach(normalizeBoard);old.archive=old.archive||[];localStorage.setItem(STORAGE,JSON.stringify(old));return old}
+  var fresh={boards:[{name:'My Board',columns:makeColumns(TEMPLATES.simple)}],active:0,archive:[]};
+  return fresh;
+}
+function makeColumns(names){return names.map(function(n,i){return {name:n,cards:[],color:COL_COLORS[i%COL_COLORS.length],wip:0}})}
+function normalizeBoard(b){
+  b.archive=b.archive||[];
+  b.columns.forEach(function(c,i){
+    if(!c.color)c.color=COL_COLORS[i%COL_COLORS.length];
+    if(c.wip===undefined)c.wip=0;
+    c.cards.forEach(function(card){
+      if(!card.tags)card.tags=[];
+      if(card.assignee===undefined)card.assignee='';
+      if(!card.checklist)card.checklist=card.subtasks||[];
+      if(!card.created)card.created=Date.now();
+      if(!card.enteredCol)card.enteredCol=card.created;
+    });
+  });
+}
 
 function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
 function board(){return data.boards[data.active]}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function todayD(){var d=new Date();d.setHours(0,0,0,0);return d}
+function parseDate(s){return s?new Date(s+'T00:00:00'):null}
 
 function formatTime(ms){
   var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);s=s%60;
   return (h?h+'h ':'')+(m?m+'m ':'')+(s+'s');
 }
+function getCardTime(c){var t=c.timeSpent||0;if(c.timerStart)t+=Date.now()-c.timerStart;return t}
 
-function getCardTime(c){
-  var t=c.timeSpent||0;
-  if(c.timerStart)t+=Date.now()-c.timerStart;
-  return t;
-}
-
+/* ---- boards ---- */
 function renderBoardSelect(){
   var s=document.getElementById('boardSelect');
-  s.innerHTML=data.boards.map(function(b,i){return '<option value="'+i+'"'+(i===data.active?' selected':'')+'>'+b.name+'</option>'}).join('');
+  s.innerHTML=data.boards.map(function(b,i){return '<option value="'+i+'"'+(i===data.active?' selected':'')+'>'+esc(b.name)+'</option>'}).join('');
 }
-
-function switchBoard(){data.active=+document.getElementById('boardSelect').value;renderBoard()}
-
+function switchBoard(){data.active=+document.getElementById('boardSelect').value;showArchive=false;renderBoard()}
 function newBoard(){
-  var name=prompt('Board name:');
-  if(!name)return;
-  data.boards.push({name:name,columns:[{name:'To Do',cards:[]},{name:'In Progress',cards:[]},{name:'Done',cards:[]}]});
-  data.active=data.boards.length-1;save();renderBoardSelect();renderBoard();
+  var name=prompt('Board name:');if(!name)return;
+  data.boards.push({name:name.trim(),columns:makeColumns(TEMPLATES.simple),archive:[]});
+  data.active=data.boards.length-1;save();renderBoard();
 }
-
+function renameBoard(){var n=prompt('Rename board:',board().name);if(!n)return;board().name=n.trim();save();renderBoard()}
 function deleteBoard(){
   if(data.boards.length<2){alert('Cannot delete the only board');return}
   if(!confirm('Delete board "'+board().name+'"?'))return;
-  data.boards.splice(data.active,1);data.active=0;save();renderBoardSelect();renderBoard();
+  data.boards.splice(data.active,1);data.active=0;save();renderBoard();
+}
+function applyTemplate(){
+  var t=document.getElementById('templateSelect').value;
+  document.getElementById('templateSelect').value='';
+  if(!t)return;
+  var name=prompt('New board name:','New '+t+' board');if(!name)return;
+  data.boards.push({name:name.trim(),columns:makeColumns(TEMPLATES[t]),archive:[]});
+  data.active=data.boards.length-1;save();renderBoard();
 }
 
+/* ---- columns ---- */
 function addColumn(){
-  var name=prompt('Column name:');
-  if(!name)return;
-  board().columns.push({name:name,cards:[]});save();renderBoard();
+  var name=prompt('Column name:');if(!name)return;
+  var i=board().columns.length;
+  board().columns.push({name:name.trim(),cards:[],color:COL_COLORS[i%COL_COLORS.length],wip:0});save();renderBoard();
 }
-
 function deleteColumn(ci){
   if(!confirm('Delete column "'+board().columns[ci].name+'" and all its cards?'))return;
   board().columns.splice(ci,1);save();renderBoard();
 }
-
-function renameColumn(ci,el){
-  board().columns[ci].name=el.value;save();
+function renameColumn(ci,el){board().columns[ci].name=el.value;save()}
+function moveColumn(ci,dir){
+  var cols=board().columns;var ni=ci+dir;if(ni<0||ni>=cols.length)return;
+  var tmp=cols[ci];cols[ci]=cols[ni];cols[ni]=tmp;save();renderBoard();
+}
+function openColSettings(ci){
+  editingColIdx=ci;var c=board().columns[ci];
+  document.getElementById('colNameInput').value=c.name;
+  document.getElementById('colWipInput').value=c.wip||0;
+  selectedColColor=c.color;
+  document.querySelectorAll('#colColorOpts span').forEach(function(s){s.classList.toggle('sel',s.dataset.c===c.color)});
+  document.getElementById('colModal').classList.add('active');
+}
+function pickColColor(el){document.querySelectorAll('#colColorOpts span').forEach(function(s){s.classList.remove('sel')});el.classList.add('sel');selectedColColor=el.dataset.c}
+function closeColModal(){document.getElementById('colModal').classList.remove('active');editingColIdx=null}
+function saveColSettings(){
+  var c=board().columns[editingColIdx];
+  c.name=document.getElementById('colNameInput').value.trim()||c.name;
+  c.wip=Math.max(0,parseInt(document.getElementById('colWipInput').value,10)||0);
+  c.color=selectedColColor||c.color;
+  closeColModal();save();renderBoard();
 }
 
-function renderBoard(){
+/* ---- filters ---- */
+function refreshTagFilter(){
+  var all={};
+  board().columns.forEach(function(col){col.cards.forEach(function(c){(c.tags||[]).forEach(function(t){all[t]=1})})});
+  var sel=document.getElementById('filterTag');var cur=sel.value;
+  sel.innerHTML='<option value="">All Tags</option>'+Object.keys(all).sort().map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>'}).join('');
+  sel.value=cur;
+}
+function dueStatus(c){
+  if(!c.due)return null;var d=parseDate(c.due),now=todayD();
+  if(d<now)return 'overdue';
+  if(c.due===dstr(now))return 'today';
+  var end=new Date(now);end.setDate(end.getDate()+7);
+  if(d<=end)return 'week';
+  return 'future';
+}
+function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function passFilter(c){
   var search=document.getElementById('searchInput').value.toLowerCase();
   var fp=document.getElementById('filterPriority').value;
-  var fc=document.getElementById('filterColor').value;
+  var ft=document.getElementById('filterTag').value;
+  var fd=document.getElementById('filterDue').value;
+  if(search&&(c.title+' '+(c.desc||'')+' '+(c.assignee||'')).toLowerCase().indexOf(search)===-1)return false;
+  if(fp&&c.priority!==fp)return false;
+  if(ft&&(c.tags||[]).indexOf(ft)===-1)return false;
+  if(fd){var st=dueStatus(c);if(fd==='overdue'&&st!=='overdue')return false;if(fd==='today'&&st!=='today')return false;if(fd==='week'&&!(st==='today'||st==='week'||st==='overdue'))return false}
+  return true;
+}
+
+/* ---- render ---- */
+function renderBoard(){
+  renderBoardSelect();refreshTagFilter();
+  document.getElementById('archiveBtn').textContent=showArchive?'🗄️ Back to Board':'🗄️ Archive';
   var wrap=document.getElementById('kanban');
+  if(showArchive){renderArchive(wrap);renderStats();save();return}
   wrap.innerHTML=board().columns.map(function(col,ci){
-    var cards=col.cards.filter(function(c){
-      if(search&&c.title.toLowerCase().indexOf(search)===-1&&(c.desc||'').toLowerCase().indexOf(search)===-1)return false;
-      if(fp&&c.priority!==fp)return false;
-      if(fc&&c.color!==fc)return false;
-      return true;
-    });
-    return '<div class="kanban-col" data-col="'+ci+'" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="drop(event,'+ci+')">'+
-      '<div class="kanban-col-header"><input value="'+col.name+'" onchange="renameColumn('+ci+',this)"><span style="display:flex;gap:.2rem"><button onclick="openModal('+ci+')" style="border:none;background:none;cursor:pointer;font-size:1rem" title="Add card">+</button><button onclick="deleteColumn('+ci+')" style="border:none;background:none;cursor:pointer;font-size:.8rem" title="Delete column">🗑️</button></span></div>'+
-      '<div class="kanban-cards">'+cards.map(function(c,cdi){
-        var realIdx=col.cards.indexOf(c);
-        var subs=c.subtasks||[];
-        var done=subs.filter(function(s){return s.done}).length;
-        var progressHtml=subs.length?'<div class="card-progress">✓ '+done+'/'+subs.length+' subtasks</div>':'';
-        var timeHtml='<div class="time-track"><button class="'+(c.timerStart?'active':'')+'" onclick="toggleTimer('+ci+','+realIdx+')">'+(c.timerStart?'⏹ Stop':'▶ Start')+'</button><span>⏱ '+formatTime(getCardTime(c))+'</span></div>';
-        var subtaskHtml='<ul class="subtask-list">'+subs.map(function(s,si){
-          return '<li class="'+(s.done?'done':'')+'"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSubtask('+ci+','+realIdx+','+si+')"><span>'+s.text+'</span><button onclick="deleteSubtask('+ci+','+realIdx+','+si+')">✕</button></li>';
-        }).join('')+'</ul><div class="subtask-add"><input type="text" placeholder="Add subtask..." onkeydown="if(event.key===\'Enter\')addSubtask('+ci+','+realIdx+',this)"><button onclick="addSubtask('+ci+','+realIdx+',this.previousElementSibling)">+</button></div>';
-        return '<div class="kanban-card priority-'+c.priority.toLowerCase()+'" draggable="true" ondragstart="dragStart(event,'+ci+','+realIdx+')" style="border-left-color:'+(c.color||'var(--border)')+'">'+
-          '<div class="card-actions"><button onclick="openEditModal('+ci+','+realIdx+')" title="Edit">✏️</button><button onclick="deleteCard('+ci+','+realIdx+')" title="Delete">✕</button></div>'+
-          '<div class="card-title">'+c.title+'</div>'+
-          (c.desc?'<div class="card-desc">'+c.desc+'</div>':'')+
-          '<div class="card-meta"><span>'+c.priority+'</span>'+(c.due?'<span>📅 '+c.due+'</span>':'')+'</div>'+
-          progressHtml+timeHtml+subtaskHtml+'</div>';
+    var cards=col.cards.filter(passFilter);
+    var over=col.wip>0&&col.cards.length>col.wip;
+    var wipBadge=col.wip>0?'<span class="wip-badge'+(over?' over':'')+'">'+col.cards.length+'/'+col.wip+'</span>':'<span class="wip-badge">'+col.cards.length+'</span>';
+    return '<div class="kanban-col'+(over?' wip-exceeded':'')+'" data-col="'+ci+'" style="border-top-color:'+col.color+'" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="drop(event,'+ci+')">'+
+      '<div class="kanban-col-header"><input value="'+esc(col.name)+'" onchange="renameColumn('+ci+',this)">'+
+      '<span class="col-tools">'+wipBadge+
+      '<button onclick="moveColumn('+ci+',-1)" title="Move left">◀</button>'+
+      '<button onclick="moveColumn('+ci+',1)" title="Move right">▶</button>'+
+      '<button onclick="openModal('+ci+')" title="Add card">+</button>'+
+      '<button onclick="openColSettings('+ci+')" title="Settings">⚙</button>'+
+      '<button onclick="deleteColumn('+ci+')" title="Delete column">🗑️</button></span></div>'+
+      '<div class="kanban-cards'+(cards.length?'':' drop-empty')+'" data-col="'+ci+'">'+cards.map(function(c){
+        return cardHtml(c,ci,col.cards.indexOf(c));
       }).join('')+'</div></div>';
   }).join('');
-  renderBoardSelect();
-  startTimerUpdate();
+  renderStats();startTimerUpdate();save();
+}
+function cardHtml(c,ci,realIdx){
+  var subs=c.checklist||[];
+  var done=subs.filter(function(s){return s.done}).length;
+  var progressHtml=subs.length?'<div class="card-progress">✓ '+done+'/'+subs.length+' checklist</div>':'';
+  var timeHtml='<div class="time-track"><button class="'+(c.timerStart?'active':'')+'" onclick="toggleTimer('+ci+','+realIdx+')">'+(c.timerStart?'⏹ Stop':'▶ Start')+'</button><span>⏱ '+formatTime(getCardTime(c))+'</span></div>';
+  var overdue=dueStatus(c)==='overdue';
+  var tagsHtml=(c.tags||[]).length?'<div class="card-tags">'+c.tags.map(function(t){return '<span class="card-tag">#'+esc(t)+'</span>'}).join('')+'</div>':'';
+  var assigneeHtml=c.assignee?'<div class="card-assignee">👤 '+esc(c.assignee)+'</div>':'';
+  return '<div class="kanban-card priority-'+c.priority.toLowerCase()+'" data-col="'+ci+'" data-idx="'+realIdx+'" draggable="true" ondragstart="dragStart(event,'+ci+','+realIdx+')" ondragover="cardDragOver(event)" ondragleave="cardDragLeave(event)" ondragend="dragEnd(event)" onpointerdown="pointerDown(event,'+ci+','+realIdx+')" style="border-left-color:'+(c.color||'var(--accent)')+'">'+
+    '<div class="card-actions"><button onclick="openEditModal('+ci+','+realIdx+')" title="Edit">✏️</button><button onclick="duplicateCard('+ci+','+realIdx+')" title="Duplicate">⧉</button><button onclick="deleteCard('+ci+','+realIdx+')" title="Delete">✕</button></div>'+
+    '<div class="card-title">'+esc(c.title)+'</div>'+
+    (c.desc?'<div class="card-desc">'+esc(c.desc)+'</div>':'')+
+    '<div class="card-meta"><span>'+c.priority+'</span>'+(c.due?'<span class="card-due'+(overdue?' overdue':'')+'">'+(overdue?'⚠️ ':'📅 ')+c.due+'</span>':'')+'</div>'+
+    tagsHtml+assigneeHtml+progressHtml+timeHtml+'</div>';
+}
+
+function renderArchive(wrap){
+  var arch=board().archive||[];
+  wrap.innerHTML='<div class="kanban-col" style="border-top-color:var(--accent);min-width:100%"><div class="kanban-col-header"><span>🗄️ Archived Cards ('+arch.length+')</span></div><div class="kanban-cards">'+
+    (arch.length?arch.map(function(c,i){
+      return '<div class="kanban-card priority-'+c.priority.toLowerCase()+'" style="border-left-color:'+(c.color||'var(--accent)')+'">'+
+        '<div class="card-actions"><button onclick="restoreCard('+i+')" title="Restore">↩</button><button onclick="deleteArchived('+i+')" title="Delete">✕</button></div>'+
+        '<div class="card-title">'+esc(c.title)+'</div>'+(c.desc?'<div class="card-desc">'+esc(c.desc)+'</div>':'')+'</div>';
+    }).join(''):'<p class="info">No archived cards.</p>')+'</div></div>';
+}
+function toggleArchive(){showArchive=!showArchive;renderBoard()}
+function restoreCard(i){var c=board().archive.splice(i,1)[0];c.enteredCol=Date.now();board().columns[0].cards.push(c);save();renderBoard()}
+function deleteArchived(i){board().archive.splice(i,1);save();renderBoard()}
+
+/* ---- stats ---- */
+function renderStats(){
+  var b=board();
+  var perCol=b.columns.map(function(c){return c.name+': '+c.cards.length}).join(' · ');
+  var lastCol=b.columns.length?b.columns[b.columns.length-1]:null;
+  var weekAgo=Date.now()-7*864e5;
+  var doneWeek=0;
+  if(lastCol)doneWeek=lastCol.cards.filter(function(c){return (c.enteredCol||0)>=weekAgo}).length;
+  // average time in current column
+  var times=[];b.columns.forEach(function(c){c.cards.forEach(function(card){if(card.enteredCol)times.push(Date.now()-card.enteredCol)})});
+  var avg=times.length?times.reduce(function(a,x){return a+x},0)/times.length:0;
+  document.getElementById('statsBox').innerHTML=
+    '<div class="kb-stat"><b>'+b.columns.reduce(function(a,c){return a+c.cards.length},0)+'</b><span>Total cards</span></div>'+
+    '<div class="kb-stat"><b>'+doneWeek+'</b><span>Completed this week</span></div>'+
+    '<div class="kb-stat"><b>'+(avg?formatTime(avg):'—')+'</b><span>Avg time in column</span></div>'+
+    '<div class="kb-stat" style="align-self:center;font-size:.75rem;color:var(--text2)">'+esc(perCol)+'</div>';
 }
 
 function startTimerUpdate(){
   if(timerInterval)clearInterval(timerInterval);
   var hasActive=false;
   board().columns.forEach(function(col){col.cards.forEach(function(c){if(c.timerStart)hasActive=true})});
-  if(hasActive){timerInterval=setInterval(function(){
-    document.querySelectorAll('.time-track span').forEach(function(el){});renderBoard();
-  },60000)}
+  if(hasActive){timerInterval=setInterval(function(){renderBoard()},60000)}
 }
-
 function toggleTimer(ci,cdi){
   var c=board().columns[ci].cards[cdi];
   if(c.timerStart){c.timeSpent=(c.timeSpent||0)+(Date.now()-c.timerStart);c.timerStart=null}
@@ -282,70 +484,162 @@ function toggleTimer(ci,cdi){
   save();renderBoard();
 }
 
-function addSubtask(ci,cdi,input){
-  var text=input.value.trim();if(!text)return;
-  var c=board().columns[ci].cards[cdi];
-  if(!c.subtasks)c.subtasks=[];
-  c.subtasks.push({text:text,done:false});
-  input.value='';save();renderBoard();
+/* ---- card modal ---- */
+function renderModalChecklist(){
+  document.getElementById('modalChecklist').innerHTML=modalChecklist.map(function(s,i){
+    return '<li class="'+(s.done?'done':'')+'"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleModalCheck('+i+')"><span>'+esc(s.text)+'</span><button onclick="delModalCheck('+i+')">✕</button></li>';
+  }).join('');
 }
+function addModalCheck(){var inp=document.getElementById('modalCheckInput');var v=inp.value.trim();if(!v)return;modalChecklist.push({text:v,done:false});inp.value='';renderModalChecklist()}
+function toggleModalCheck(i){modalChecklist[i].done=!modalChecklist[i].done;renderModalChecklist()}
+function delModalCheck(i){modalChecklist.splice(i,1);renderModalChecklist()}
 
-function toggleSubtask(ci,cdi,si){
-  var c=board().columns[ci].cards[cdi];
-  c.subtasks[si].done=!c.subtasks[si].done;
-  save();renderBoard();
+function openModal(ci){
+  editingCol=ci;editingCard=null;selectedColor='';modalChecklist=[];
+  document.getElementById('modalTitle').textContent='Add Card';
+  document.getElementById('cardTitleInput').value='';
+  document.getElementById('cardDescInput').value='';
+  document.getElementById('cardPriorityInput').value='Med';
+  document.getElementById('cardDueInput').value='';
+  document.getElementById('cardAssigneeInput').value='';
+  document.getElementById('cardTagsInput').value='';
+  document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});
+  document.getElementById('editOnlyBtns').style.display='none';
+  renderModalChecklist();
+  document.getElementById('cardModal').classList.add('active');
 }
-
-function deleteSubtask(ci,cdi,si){
-  board().columns[ci].cards[cdi].subtasks.splice(si,1);
-  save();renderBoard();
-}
-
-function openModal(ci){editingCol=ci;editingCard=null;selectedColor='';document.getElementById('modalTitle').textContent='Add Card';document.getElementById('cardTitleInput').value='';document.getElementById('cardDescInput').value='';document.getElementById('cardPriorityInput').value='Med';document.getElementById('cardDueInput').value='';document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});document.getElementById('cardModal').classList.add('active')}
-
 function openEditModal(ci,cdi){
   var c=board().columns[ci].cards[cdi];editingCol=ci;editingCard=cdi;selectedColor=c.color||'';
+  modalChecklist=(c.checklist||[]).map(function(s){return {text:s.text,done:s.done}});
   document.getElementById('modalTitle').textContent='Edit Card';
   document.getElementById('cardTitleInput').value=c.title;
   document.getElementById('cardDescInput').value=c.desc||'';
   document.getElementById('cardPriorityInput').value=c.priority;
   document.getElementById('cardDueInput').value=c.due||'';
+  document.getElementById('cardAssigneeInput').value=c.assignee||'';
+  document.getElementById('cardTagsInput').value=(c.tags||[]).join(', ');
   document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.toggle('sel',s.dataset.c===selectedColor)});
+  document.getElementById('editOnlyBtns').style.display='flex';
+  renderModalChecklist();
   document.getElementById('cardModal').classList.add('active');
 }
-
 function closeModal(){document.getElementById('cardModal').classList.remove('active')}
-
 function pickColor(el){
   document.querySelectorAll('.color-opts span').forEach(function(s){s.classList.remove('sel')});
   if(selectedColor===el.dataset.c){selectedColor=''}else{el.classList.add('sel');selectedColor=el.dataset.c}
 }
-
 function saveCard(){
   var title=document.getElementById('cardTitleInput').value.trim();
   if(!title){alert('Title is required');return}
-  var card={title:title,desc:document.getElementById('cardDescInput').value.trim(),priority:document.getElementById('cardPriorityInput').value,due:document.getElementById('cardDueInput').value,color:selectedColor};
-  if(editingCard!==null){var old=board().columns[editingCol].cards[editingCard];card.subtasks=old.subtasks||[];card.timeSpent=old.timeSpent||0;card.timerStart=old.timerStart||null;board().columns[editingCol].cards[editingCard]=card}else{card.subtasks=[];card.timeSpent=0;card.timerStart=null;board().columns[editingCol].cards.push(card)}
+  var tags=document.getElementById('cardTagsInput').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var base={title:title,desc:document.getElementById('cardDescInput').value.trim(),priority:document.getElementById('cardPriorityInput').value,due:document.getElementById('cardDueInput').value,color:selectedColor,assignee:document.getElementById('cardAssigneeInput').value.trim(),tags:tags,checklist:modalChecklist.map(function(s){return {text:s.text,done:s.done}})};
+  if(editingCard!==null){
+    var old=board().columns[editingCol].cards[editingCard];
+    base.timeSpent=old.timeSpent||0;base.timerStart=old.timerStart||null;base.created=old.created;base.enteredCol=old.enteredCol;
+    board().columns[editingCol].cards[editingCard]=base;
+  }else{
+    base.timeSpent=0;base.timerStart=null;base.created=Date.now();base.enteredCol=Date.now();
+    board().columns[editingCol].cards.push(base);
+  }
   save();closeModal();renderBoard();
 }
-
 function deleteCard(ci,cdi){if(confirm('Delete this card?')){board().columns[ci].cards.splice(cdi,1);save();renderBoard()}}
+function deleteCurrentCard(){if(editingCard===null)return;var ci=editingCol,cdi=editingCard;if(confirm('Delete this card?')){board().columns[ci].cards.splice(cdi,1);closeModal();save();renderBoard()}}
+function duplicateCard(ci,cdi){
+  var c=board().columns[ci].cards[cdi];
+  var copy=JSON.parse(JSON.stringify(c));copy.title=c.title+' (copy)';copy.timerStart=null;copy.created=Date.now();copy.enteredCol=Date.now();
+  board().columns[ci].cards.splice(cdi+1,0,copy);save();renderBoard();
+}
+function duplicateCurrentCard(){if(editingCard===null)return;duplicateCard(editingCol,editingCard);closeModal()}
 
+/* ---- checklist (kept name for compat) ---- */
+function addSubtask(ci,cdi,input){
+  var text=input.value.trim();if(!text)return;
+  var c=board().columns[ci].cards[cdi];if(!c.checklist)c.checklist=[];
+  c.checklist.push({text:text,done:false});input.value='';save();renderBoard();
+}
+function toggleSubtask(ci,cdi,si){var c=board().columns[ci].cards[cdi];c.checklist[si].done=!c.checklist[si].done;save();renderBoard()}
+function deleteSubtask(ci,cdi,si){board().columns[ci].cards[cdi].checklist.splice(si,1);save();renderBoard()}
+
+/* ---- drag & drop (HTML5, with card position + drop indicator) ---- */
 var dragData={};
 function dragStart(e,ci,cdi){dragData={col:ci,card:cdi};e.dataTransfer.effectAllowed='move';e.target.classList.add('dragging')}
 function dragOver(e,el){e.preventDefault();el.classList.add('drag-over')}
 function dragLeave(el){el.classList.remove('drag-over')}
+function cardDragOver(e){e.preventDefault();var el=e.currentTarget;var r=el.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;el.classList.toggle('drop-before',before);el.classList.toggle('drop-after',!before)}
+function cardDragLeave(e){e.currentTarget.classList.remove('drop-before','drop-after')}
+function dragEnd(e){document.querySelectorAll('.kanban-card').forEach(function(x){x.classList.remove('dragging','drop-before','drop-after')});document.querySelectorAll('.kanban-col').forEach(function(x){x.classList.remove('drag-over')})}
 function drop(e,targetCol){
   e.preventDefault();e.currentTarget.classList.remove('drag-over');
   if(dragData.col===undefined)return;
-  var card=board().columns[dragData.col].cards.splice(dragData.card,1)[0];
-  board().columns[targetCol].cards.push(card);
-  save();renderBoard();
+  var targetCard=e.target.closest?e.target.closest('.kanban-card'):null;
+  var insertIdx=null,before=true;
+  if(targetCard){insertIdx=+targetCard.dataset.idx;before=targetCard.classList.contains('drop-before')}
+  performMove(dragData.col,dragData.card,targetCol,insertIdx,before);
+}
+function performMove(fromCol,fromCard,toCol,insertIdx,before){
+  var card=board().columns[fromCol].cards.splice(fromCard,1)[0];
+  if(fromCol!==toCol)card.enteredCol=Date.now();
+  var dest=board().columns[toCol].cards;
+  if(insertIdx===null||insertIdx<0){dest.push(card)}
+  else{
+    if(fromCol===toCol&&fromCard<insertIdx)insertIdx--;
+    dest.splice(before?insertIdx:insertIdx+1,0,card);
+  }
+  dragData={};save();renderBoard();
+}
+/* pointer / touch drag */
+var ptr=null;
+function pointerDown(e,ci,cdi){
+  if(e.pointerType==='mouse')return;
+  if(e.target.closest('button,input,textarea'))return;
+  ptr={col:ci,card:cdi,el:e.currentTarget};e.currentTarget.classList.add('dragging');
+  document.addEventListener('pointermove',pointerMove);
+  document.addEventListener('pointerup',pointerUp);
+}
+function pointerMove(e){
+  document.querySelectorAll('.kanban-card').forEach(function(x){x.classList.remove('drop-before','drop-after')});
+  document.querySelectorAll('.kanban-col').forEach(function(x){x.classList.remove('drag-over')});
+  var el=document.elementFromPoint(e.clientX,e.clientY);if(!el)return;
+  var card=el.closest('.kanban-card');var col=el.closest('.kanban-col');
+  if(card&&card!==ptr.el){var r=card.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;card.classList.toggle('drop-before',before);card.classList.toggle('drop-after',!before)}
+  else if(col){col.classList.add('drag-over')}
+}
+function pointerUp(e){
+  document.removeEventListener('pointermove',pointerMove);
+  document.removeEventListener('pointerup',pointerUp);
+  var el=document.elementFromPoint(e.clientX,e.clientY);
+  var handled=false;
+  if(el){
+    var card=el.closest('.kanban-card');var col=el.closest('.kanban-col');
+    if(card&&card!==ptr.el){var r=card.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;performMove(ptr.col,ptr.card,+card.dataset.col,+card.dataset.idx,before);handled=true}
+    else if(col){performMove(ptr.col,ptr.card,+col.dataset.col,null,true);handled=true}
+  }
+  if(!handled)renderBoard();
+  ptr=null;
 }
 
-function exportBoard(){
-  var blob=new Blob([JSON.stringify(board(),null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=board().name.replace(/\s+/g,'_')+'.json';a.click();
+/* ---- export / import ---- */
+function download(name,text,type){var b=new Blob([text],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
+function exportBoard(){download(board().name.replace(/\s+/g,'_')+'.json',JSON.stringify(board(),null,2),'application/json')}
+function importBoard(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var b=JSON.parse(r.result);if(b&&b.columns){normalizeBoard(b);data.boards.push(b);data.active=data.boards.length-1;save();renderBoard();alert('Board imported.')}else alert('Invalid board file.')}catch(err){alert('Could not read file.')}};
+  r.readAsText(f);e.target.value='';
+}
+function exportMarkdown(){
+  var lines=['# '+board().name,''];
+  board().columns.forEach(function(col){
+    lines.push('## '+col.name+(col.wip?' (WIP '+col.wip+')':''));
+    col.cards.forEach(function(c){
+      lines.push('- **'+c.title+'**'+(c.priority?' _['+c.priority+']_':'')+(c.due?' 📅 '+c.due:'')+(c.assignee?' 👤 '+c.assignee:''));
+      if(c.desc)lines.push('  - '+c.desc.replace(/\n/g,' '));
+      (c.tags||[]).length&&lines.push('  - tags: '+c.tags.map(function(t){return '#'+t}).join(' '));
+      (c.checklist||[]).forEach(function(s){lines.push('  - ['+(s.done?'x':' ')+'] '+s.text)});
+    });
+    lines.push('');
+  });
+  download(board().name.replace(/\s+/g,'_')+'.md',lines.join('\n'),'text/markdown');
 }
 
 renderBoard();

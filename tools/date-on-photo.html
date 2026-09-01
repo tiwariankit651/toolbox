@@ -17,26 +17,123 @@
     <div class="tool-section">
       <h1>📅 Add Date on Photo</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Add date/text on your photos — supports batch processing, custom positions, and styling.</p>
+      <p class="info">Stamp a date and your name/signature on exam-form photos — two independent text lines, exam presets, precise positioning and KB-size targeting.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop photo(s) here<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="editor" style="display:none">
-        <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
+        <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo" style="text-align:center"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
+
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Exam preset:</label>
+            <select id="examPreset" onchange="applyExamPreset()">
+              <option value="">— None —</option>
+              <option value="ssc">SSC</option>
+              <option value="upsc">UPSC</option>
+              <option value="ibps">IBPS / Banking</option>
+              <option value="railway">Railway (RRB)</option>
+              <option value="statepsc">State PSC</option>
+            </select>
+          </div>
+        </div>
+        <p class="info" id="examNote" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:.6rem .9rem">⚠️ Always verify the exact photo/signature requirement in your own official exam notification — rules differ by exam and year.</p>
+
+        <h2 style="font-size:1rem;margin-top:1rem">📅 Line 1 — Date</h2>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="dateOn" checked style="width:auto" onchange="render()"><label for="dateOn" style="margin:0">Show date</label></div>
           <div><label>Date:</label><input type="date" id="dateVal" oninput="render()"></div>
-          <div><label>Format:</label><select id="dateFmt" onchange="render()"><option value="dd/mm/yyyy">DD/MM/YYYY</option><option value="dd-mm-yyyy">DD-MM-YYYY</option><option value="yyyy-mm-dd">YYYY-MM-DD</option><option value="dd mon yyyy">DD Mon YYYY</option></select></div>
-          <div><label>Custom text:</label><input type="text" id="customTxt" placeholder="Optional extra text" oninput="render()" style="max-width:150px"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-outline" onclick="useToday()">Use today</button></div>
+          <div><label>Format:</label><select id="dateFmt" onchange="render()">
+            <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+            <option value="dd-mm-yyyy">DD-MM-YYYY</option>
+            <option value="dd.mm.yyyy">DD.MM.YYYY</option>
+            <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+            <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+            <option value="long">Long (15 March 2026)</option>
+          </select></div>
         </div>
-        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Position:</label><select id="pos" onchange="render()"><option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option><option value="middle-left">Middle-Left</option><option value="middle-center">Center</option><option value="middle-right">Middle-Right</option><option value="bottom-left">Bottom-Left</option><option value="bottom-center" selected>Bottom-Center</option><option value="bottom-right">Bottom-Right</option></select></div>
-          <div><label>Font Size:</label><input type="range" id="fontSize" min="10" max="60" value="16" oninput="render()"><span id="fsVal">16</span>px</div>
-          <div><label>Color:</label><input type="color" id="txtCol" value="#000000" oninput="render()" style="height:35px;width:40px;border:none"></div>
-          <div><label>Opacity:</label><input type="range" id="opacity" min="10" max="100" value="100" oninput="render()"><span id="opVal">100</span>%</div>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Position:</label><select id="datePos" onchange="render()">
+            <option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option>
+            <option value="middle-left">Middle-Left</option><option value="middle-center">Center</option><option value="middle-right">Middle-Right</option>
+            <option value="bottom-left">Bottom-Left</option><option value="bottom-center">Bottom-Center</option><option value="bottom-right" selected>Bottom-Right</option>
+          </select></div>
+          <div><label>Font size: <span id="dateFsVal">18</span>px</label><input type="range" id="dateFs" min="8" max="80" value="18" oninput="render()"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="dateAuto" style="width:auto" onchange="render()"><label for="dateAuto" style="margin:0">Auto-size to width</label></div>
+          <div><label>Color:</label><input type="color" id="dateCol" value="#ffcc00" oninput="render()" style="height:35px;width:44px;border:none;padding:0"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="dateBold" checked style="width:auto" onchange="render()"><label for="dateBold" style="margin:0">Bold</label></div>
         </div>
-        <canvas id="canvas" style="max-width:100%;border-radius:8px;margin:.5rem 0"></canvas>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Offset X: <span id="dateOxVal">10</span></label><input type="range" id="dateOx" min="-100" max="100" value="10" oninput="render()"></div>
+          <div><label>Offset Y: <span id="dateOyVal">10</span></label><input type="range" id="dateOy" min="-100" max="100" value="10" oninput="render()"></div>
+          <div><label>Opacity: <span id="dateOpVal">100</span>%</label><input type="range" id="dateOp" min="10" max="100" value="100" oninput="render()"></div>
+        </div>
+
+        <h2 style="font-size:1rem;margin-top:1rem">✍️ Line 2 — Name / Signature text</h2>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="nameOn" style="width:auto" onchange="render()"><label for="nameOn" style="margin:0">Show name</label></div>
+          <div style="flex:1 1 220px"><label>Name / text:</label><input type="text" id="nameVal" placeholder="Candidate name" oninput="render()"></div>
+          <div><label>Position:</label><select id="namePos" onchange="render()">
+            <option value="top-left">Top-Left</option><option value="top-center">Top-Center</option><option value="top-right">Top-Right</option>
+            <option value="middle-left">Middle-Left</option><option value="middle-center">Center</option><option value="middle-right">Middle-Right</option>
+            <option value="bottom-left" selected>Bottom-Left</option><option value="bottom-center">Bottom-Center</option><option value="bottom-right">Bottom-Right</option>
+          </select></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Font size: <span id="nameFsVal">18</span>px</label><input type="range" id="nameFs" min="8" max="80" value="18" oninput="render()"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="nameAuto" style="width:auto" onchange="render()"><label for="nameAuto" style="margin:0">Auto-size to width</label></div>
+          <div><label>Color:</label><input type="color" id="nameCol" value="#ffffff" oninput="render()" style="height:35px;width:44px;border:none;padding:0"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="nameBold" checked style="width:auto" onchange="render()"><label for="nameBold" style="margin:0">Bold</label></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Offset X: <span id="nameOxVal">10</span></label><input type="range" id="nameOx" min="-100" max="100" value="10" oninput="render()"></div>
+          <div><label>Offset Y: <span id="nameOyVal">10</span></label><input type="range" id="nameOy" min="-100" max="100" value="10" oninput="render()"></div>
+          <div><label>Opacity: <span id="nameOpVal">100</span>%</label><input type="range" id="nameOp" min="10" max="100" value="100" oninput="render()"></div>
+        </div>
+
+        <h2 style="font-size:1rem;margin-top:1rem">🅰️ Shared text style</h2>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Font family:</label><select id="fontFam" onchange="render()">
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="'Comic Sans MS', cursive">Comic Sans</option>
+          </select></div>
+          <div><label>Effect:</label><select id="textFx" onchange="render()">
+            <option value="outline">Outline</option>
+            <option value="shadow">Shadow</option>
+            <option value="none">None</option>
+          </select></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="stripOn" style="width:auto" onchange="render()"><label for="stripOn" style="margin:0">Background strip behind text</label></div>
+          <div><label>Strip color:</label><input type="color" id="stripCol" value="#000000" oninput="render()" style="height:35px;width:44px;border:none;padding:0"></div>
+          <div><label>Strip padding: <span id="stripPadVal">6</span>px</label><input type="range" id="stripPad" min="0" max="30" value="6" oninput="render()"></div>
+          <div><label>Strip opacity: <span id="stripOpVal">50</span>%</label><input type="range" id="stripOp" min="0" max="100" value="50" oninput="render()"></div>
+        </div>
+
+        <p class="info">Tip: click and drag either text line directly on the preview to position it.</p>
+        <canvas id="canvas" style="max-width:100%;border-radius:8px;margin:.5rem 0;cursor:move"></canvas>
+
+        <h2 style="font-size:1rem;margin-top:1rem">💾 Output & size</h2>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Max output width (px, 0 = keep):</label><input type="number" id="outW" min="0" value="0" oninput="render()"></div>
+          <div><label>Format:</label><select id="fmt" onchange="render()"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
+          <div><label>Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92" oninput="render()"></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin:.4rem 0">
+          <div><label>Target size limit (KB, 0 = off):</label><input type="number" id="targetKB" min="0" value="0" oninput="render()"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-outline" onclick="hitTarget()">🎯 Fit to KB limit</button></div>
+        </div>
+        <p class="info" id="sizeInfo"></p>
+
         <div class="row">
           <button class="btn" onclick="downloadCurrent()">💾 Download</button>
-          <button class="btn btn-outline" id="batchBtn" style="display:none" onclick="downloadAll()">📦 Download All</button>
+          <button class="btn btn-outline" id="batchBtn" style="display:none" onclick="downloadAllZip()">📦 Download all as ZIP</button>
         </div>
+        <div id="progress" style="display:none;margin-top:.6rem"><div style="background:var(--card);border-radius:8px;overflow:hidden;height:14px"><div id="progressBar" style="height:100%;width:0;background:var(--gradient);transition:width .2s"></div></div><p class="info" id="progressTxt" style="text-align:center"></p></div>
+
+        <p class="info" style="margin-top:.8rem">Finishing your form? Use <a href="/tools/image-resizer">Image Resizer</a>, <a href="/tools/image-compressor">Image Compressor</a> and <a href="/tools/signature-maker">Signature Maker</a> for the rest of the workflow.</p>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -95,54 +192,229 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var images=[],curIdx=0;
+// per-line free-drag offsets (null = use grid+offset)
+var dragPos={date:null,name:null};
+var lastBlob=null,lastQuality=null;
 document.getElementById("dateVal").valueAsDate=new Date();
+
 setupDrop("drop","inp",function(f){
-  images=[];curIdx=0;
+  if(!f.length)return;
+  if(typeof checkFileSize==="function"&&!checkFileSize(f,60))return;
+  images=[];curIdx=0;dragPos={date:null,name:null};
+  var files=Array.from(f).filter(function(x){return x.type.indexOf("image")===0});
   var loaded=0;
-  Array.from(f).forEach(function(file,i){
-    loadImage(file).then(function(img){images[i]=img;loaded++;if(loaded===f.length){document.getElementById("editor").style.display="block";if(f.length>1){document.getElementById("batchNav").style.display="flex";document.getElementById("batchBtn").style.display="inline-block"}else{document.getElementById("batchNav").style.display="none";document.getElementById("batchBtn").style.display="none"}render()}});
+  files.forEach(function(file,i){
+    loadImage(file).then(function(img){
+      images[i]={img:img,name:file.name};loaded++;
+      if(loaded===files.length){
+        images=images.filter(Boolean);
+        document.getElementById("editor").style.display="block";
+        var multi=images.length>1;
+        document.getElementById("batchNav").style.display=multi?"flex":"none";
+        document.getElementById("batchBtn").style.display=multi?"inline-block":"none";
+        curIdx=0;render();
+      }
+    });
   });
 });
-function navImg(dir){curIdx=Math.max(0,Math.min(images.length-1,curIdx+dir));render()}
-function getDateText(){
-  var date=document.getElementById("dateVal").value;var fmt=document.getElementById("dateFmt").value;var custom=document.getElementById("customTxt").value;
-  if(date){var d=new Date(date);var dd=String(d.getDate()).padStart(2,"0");var mm=String(d.getMonth()+1).padStart(2,"0");var yyyy=d.getFullYear();var mon=d.toLocaleDateString("en",{month:"short"});
-    if(fmt==="dd/mm/yyyy")date=dd+"/"+mm+"/"+yyyy;else if(fmt==="dd-mm-yyyy")date=dd+"-"+mm+"-"+yyyy;else if(fmt==="yyyy-mm-dd")date=yyyy+"-"+mm+"-"+dd;else date=dd+" "+mon+" "+yyyy;}
-  if(custom)date=(date?date+" — ":"")+custom;
-  return date;
+
+function navImg(dir){curIdx=Math.max(0,Math.min(images.length-1,curIdx+dir));dragPos={date:null,name:null};render()}
+function useToday(){document.getElementById("dateVal").valueAsDate=new Date();render()}
+
+var examPresets={
+  ssc:{note:"SSC: many SSC forms require the candidate to write their name and the date on white paper and hold/attach it, or a photo with name + date. Commonly name at bottom-left, date bottom-right.",name:true,datePos:"bottom-right",namePos:"bottom-left"},
+  upsc:{note:"UPSC: recent photograph with the date printed on it is typically required; some forms also ask for the candidate name. Date usually at the bottom.",name:false,datePos:"bottom-center",namePos:"bottom-left"},
+  ibps:{note:"IBPS / Banking: signature and photo have strict size limits; the date on the photo is often needed. Name at bottom-left, date bottom-right is common.",name:true,datePos:"bottom-right",namePos:"bottom-left"},
+  railway:{note:"Railway (RRB): photograph should be recent with the date; verify current CEN notification for exact placement.",name:false,datePos:"bottom-center",namePos:"bottom-left"},
+  statepsc:{note:"State PSC: requirements vary by state commission. Name and date on the photo are frequently requested.",name:true,datePos:"bottom-right",namePos:"bottom-left"}
+};
+function applyExamPreset(){
+  var p=examPresets[document.getElementById("examPreset").value];
+  var noteEl=document.getElementById("examNote");
+  if(!p){noteEl.textContent="⚠️ Always verify the exact photo/signature requirement in your own official exam notification — rules differ by exam and year.";return}
+  document.getElementById("dateOn").checked=true;
+  document.getElementById("nameOn").checked=p.name;
+  document.getElementById("datePos").value=p.datePos;
+  document.getElementById("namePos").value=p.namePos;
+  dragPos={date:null,name:null};
+  noteEl.textContent="ℹ️ "+p.note+" — Always confirm the exact requirement in your own official notification.";
+  render();
 }
+
+function syncLabels(){
+  var m={dateFs:"dateFsVal",dateOx:"dateOxVal",dateOy:"dateOyVal",dateOp:"dateOpVal",nameFs:"nameFsVal",nameOx:"nameOxVal",nameOy:"nameOyVal",nameOp:"nameOpVal",stripPad:"stripPadVal",stripOp:"stripOpVal",quality:"qVal"};
+  Object.keys(m).forEach(function(id){var el=document.getElementById(id);if(el)document.getElementById(m[id]).textContent=el.value});
+}
+
+function fmtDate(){
+  var date=document.getElementById("dateVal").value;if(!date)return "";
+  var d=new Date(date+"T00:00:00");
+  var dd=String(d.getDate()).padStart(2,"0");var mm=String(d.getMonth()+1).padStart(2,"0");var yyyy=d.getFullYear();
+  var fmt=document.getElementById("dateFmt").value;
+  if(fmt==="dd/mm/yyyy")return dd+"/"+mm+"/"+yyyy;
+  if(fmt==="dd-mm-yyyy")return dd+"-"+mm+"-"+yyyy;
+  if(fmt==="dd.mm.yyyy")return dd+"."+mm+"."+yyyy;
+  if(fmt==="mm/dd/yyyy")return mm+"/"+dd+"/"+yyyy;
+  if(fmt==="yyyy-mm-dd")return yyyy+"-"+mm+"-"+dd;
+  if(fmt==="long")return d.getDate()+" "+d.toLocaleDateString("en",{month:"long"})+" "+yyyy;
+  return dd+"/"+mm+"/"+yyyy;
+}
+
+function gridXY(ctx,c,pos,fs,offX,offY,which){
+  // returns {x,y,align} ; if dragPos set for this line use it
+  if(dragPos[which]){return {x:dragPos[which].x,y:dragPos[which].y,align:"center"}}
+  var parts=pos.split("-");var vp=parts[0],hp=parts[1];var x,y,align;
+  if(hp==="left"){align="left";x=offX}else if(hp==="right"){align="right";x=c.width-offX}else{align="center";x=c.width/2+ (offX-10)}
+  if(vp==="top")y=fs+offY;else if(vp==="bottom")y=c.height-offY;else y=c.height/2+fs/3+ (offY-10);
+  return {x:x,y:y,align:align};
+}
+
+// draw one line, returns bounding box {x,y,w,h,cx,cy} in canvas coords for hit-testing
+function drawLine(ctx,c,text,opts){
+  if(!text)return null;
+  var fs=opts.auto?Math.max(10,Math.round(c.width/ (opts.autoDivisor||16))):opts.fs;
+  var weight=opts.bold?"bold ":"";
+  ctx.font=weight+fs+"px "+opts.font;
+  ctx.textBaseline="alphabetic";
+  var g=gridXY(ctx,c,opts.pos,fs,opts.ox,opts.oy,opts.which);
+  ctx.textAlign=g.align;
+  var tw=ctx.measureText(text).width;
+  var left=g.align==="left"?g.x:g.align==="right"?g.x-tw:g.x-tw/2;
+  var top=g.y-fs;
+  // strip
+  if(opts.strip){
+    ctx.save();ctx.globalAlpha=opts.stripOp;ctx.fillStyle=opts.stripCol;
+    ctx.fillRect(left-opts.stripPad,top-opts.stripPad*0.4,tw+opts.stripPad*2,fs+opts.stripPad*1.2);ctx.restore();
+  }
+  ctx.save();ctx.globalAlpha=opts.opacity;
+  if(opts.fx==="outline"){ctx.lineWidth=Math.max(2,fs*0.12);ctx.strokeStyle="rgba(0,0,0,0.85)";ctx.strokeText(text,g.x,g.y)}
+  else if(opts.fx==="shadow"){ctx.shadowColor="rgba(0,0,0,0.7)";ctx.shadowBlur=Math.max(2,fs*0.15);ctx.shadowOffsetX=fs*0.05;ctx.shadowOffsetY=fs*0.05}
+  ctx.fillStyle=opts.col;ctx.fillText(text,g.x,g.y);
+  ctx.restore();
+  return {left:left,top:top,w:tw,h:fs,cx:left+tw/2,cy:top+fs/2,which:opts.which};
+}
+
+var boxes={};
 function render(){
   if(!images.length)return;
-  var img=images[curIdx];var c=document.getElementById("canvas"),ctx=c.getContext("2d");
-  c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);
-  document.getElementById("fsVal").textContent=document.getElementById("fontSize").value;
-  document.getElementById("opVal").textContent=document.getElementById("opacity").value;
-  if(images.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+"/"+images.length;
-  var text=getDateText();if(!text)return;
-  var pos=document.getElementById("pos").value;
-  var fs=+document.getElementById("fontSize").value;
-  var opacity=+document.getElementById("opacity").value/100;
-  var col=document.getElementById("txtCol").value;
-  ctx.globalAlpha=opacity;ctx.font="bold "+fs+"px Arial";ctx.fillStyle=col;
-  var parts=pos.split("-");var vp=parts[0],hp=parts[1];
-  var x,y;
-  if(hp==="left"){ctx.textAlign="left";x=10}else if(hp==="right"){ctx.textAlign="right";x=c.width-10}else{ctx.textAlign="center";x=c.width/2}
-  if(vp==="top")y=fs+10;else if(vp==="bottom")y=c.height-10;else y=c.height/2+fs/3;
-  ctx.strokeStyle="rgba(255,255,255,0.7)";ctx.lineWidth=3;ctx.strokeText(text,x,y);
-  ctx.fillText(text,x,y);ctx.globalAlpha=1;
-}
-function downloadCurrent(){document.getElementById("canvas").toBlob(function(b){download(b,"photo_dated_"+(curIdx+1)+".jpg")},"image/jpeg",0.95)}
-function downloadAll(){
-  var origIdx=curIdx;
-  function next(i){
-    if(i>=images.length){curIdx=origIdx;render();return}
-    curIdx=i;render();
-    document.getElementById("canvas").toBlob(function(b){download(b,"photo_dated_"+(i+1)+".jpg");setTimeout(function(){next(i+1)},300)},"image/jpeg",0.95);
+  syncLabels();
+  var img=images[curIdx].img;
+  var c=document.getElementById("canvas"),ctx=c.getContext("2d");
+  var maxW=+document.getElementById("outW").value;
+  var w=img.width,h=img.height;
+  if(maxW>0&&w>maxW){var s=maxW/w;w=maxW;h=Math.round(h*s)}
+  c.width=w;c.height=h;ctx.drawImage(img,0,0,w,h);
+  if(images.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+" / "+images.length;
+  boxes={};
+  var shared={font:document.getElementById("fontFam").value,fx:document.getElementById("textFx").value,
+    strip:document.getElementById("stripOn").checked,stripCol:document.getElementById("stripCol").value,
+    stripPad:+document.getElementById("stripPad").value,stripOp:+document.getElementById("stripOp").value/100};
+  if(document.getElementById("dateOn").checked){
+    var b=drawLine(ctx,c,fmtDate(),Object.assign({which:"date",fs:+document.getElementById("dateFs").value,auto:document.getElementById("dateAuto").checked,autoDivisor:18,bold:document.getElementById("dateBold").checked,col:document.getElementById("dateCol").value,pos:document.getElementById("datePos").value,ox:+document.getElementById("dateOx").value,oy:+document.getElementById("dateOy").value,opacity:+document.getElementById("dateOp").value/100},shared));
+    if(b)boxes.date=b;
   }
-  next(0);
+  if(document.getElementById("nameOn").checked){
+    var b2=drawLine(ctx,c,document.getElementById("nameVal").value,Object.assign({which:"name",fs:+document.getElementById("nameFs").value,auto:document.getElementById("nameAuto").checked,autoDivisor:16,bold:document.getElementById("nameBold").checked,col:document.getElementById("nameCol").value,pos:document.getElementById("namePos").value,ox:+document.getElementById("nameOx").value,oy:+document.getElementById("nameOy").value,opacity:+document.getElementById("nameOp").value/100},shared));
+    if(b2)boxes.name=b2;
+  }
+  updateSize();
 }
-  </script>
+
+function updateSize(){
+  var c=document.getElementById("canvas");
+  var fmt=document.getElementById("fmt").value;var q=+document.getElementById("quality").value/100;
+  c.toBlob(function(b){if(!b)return;lastBlob=b;var target=+document.getElementById("targetKB").value;var kb=b.size/1024;var msg="Output: "+c.width+"x"+c.height+" · "+formatSize(b.size);if(target>0){msg+=kb>target?"  ❌ over "+target+" KB — click 'Fit to KB limit'":"  ✅ under "+target+" KB"}document.getElementById("sizeInfo").innerHTML=msg},fmt,fmt==="image/png"?undefined:q);
+}
+
+// Binary search JPEG/WEBP quality to hit KB target
+function hitTarget(){
+  var target=+document.getElementById("targetKB").value;
+  if(!target){alert("Enter a target KB limit first.");return}
+  var fmt=document.getElementById("fmt").value;
+  if(fmt==="image/png"){alert("PNG has no quality slider. Switch to JPEG or WEBP to hit a KB target.");return}
+  var c=document.getElementById("canvas");
+  var lo=0.1,hi=1,best=null,bestQ=0.1;
+  var iter=0;
+  function tryQ(q){
+    return new Promise(function(res){c.toBlob(function(b){res(b)},fmt,q)});
+  }
+  function loop(){
+    if(iter>=8){finish();return}
+    var mid=(lo+hi)/2;iter++;
+    tryQ(mid).then(function(b){
+      if(b.size/1024<=target){best=b;bestQ=mid;lo=mid}else{hi=mid}
+      loop();
+    });
+  }
+  function finish(){
+    if(best){lastBlob=best;document.getElementById("quality").value=Math.round(bestQ*100);document.getElementById("qVal").textContent=Math.round(bestQ*100);document.getElementById("sizeInfo").innerHTML="Output: "+c.width+"x"+c.height+" · "+formatSize(best.size)+"  ✅ fits "+target+" KB (quality "+Math.round(bestQ*100)+"%)"}
+    else{tryQ(0.1).then(function(b){lastBlob=b;document.getElementById("sizeInfo").innerHTML="Output: "+c.width+"x"+c.height+" · "+formatSize(b.size)+"  ⚠️ cannot reach "+target+" KB even at lowest quality — reduce max width."})}
+  }
+  loop();
+}
+
+function ext(){var f=document.getElementById("fmt").value;return f==="image/png"?"png":f==="image/webp"?"webp":"jpg"}
+
+function currentBlob(cb){
+  var fmt=document.getElementById("fmt").value;var q=+document.getElementById("quality").value/100;
+  var target=+document.getElementById("targetKB").value;
+  if(target>0&&fmt!=="image/png"){
+    hitTargetBlob(target,fmt,cb);
+  }else{
+    document.getElementById("canvas").toBlob(function(b){cb(b)},fmt,fmt==="image/png"?undefined:q);
+  }
+}
+function hitTargetBlob(target,fmt,cb){
+  var c=document.getElementById("canvas");var lo=0.1,hi=1,best=null,iter=0;
+  function tryQ(q){return new Promise(function(res){c.toBlob(function(b){res(b)},fmt,q)})}
+  function loop(){if(iter>=8){cb(best||null);if(!best)c.toBlob(function(b){cb(b)},fmt,0.1);return}var mid=(lo+hi)/2;iter++;tryQ(mid).then(function(b){if(b.size/1024<=target){best=b;lo=mid}else{hi=mid}loop()})}
+  loop();
+}
+
+function downloadCurrent(){currentBlob(function(b){var base=images[curIdx].name.replace(/\.[^.]+$/,"");download(b,base+"_stamped."+ext())})}
+
+function downloadAllZip(){
+  if(!images.length)return;
+  var bar=document.getElementById("progressBar"),txt=document.getElementById("progressTxt");
+  document.getElementById("progress").style.display="block";
+  var zip=new JSZip();var i=0;var origIdx=curIdx;
+  function step(){
+    if(i>=images.length){txt.textContent="Zipping…";zip.generateAsync({type:"blob"}).then(function(blob){download(blob,"stamped_photos.zip");txt.textContent="Done — "+images.length+" photos.";curIdx=origIdx;dragPos={date:null,name:null};render()});return}
+    txt.textContent="Processing "+(i+1)+" / "+images.length+"…";bar.style.width=((i/images.length)*100)+"%";
+    curIdx=i;dragPos={date:null,name:null};render();
+    currentBlob(function(b){var base=images[i].name.replace(/\.[^.]+$/,"");zip.file(base+"_stamped."+ext(),b);i++;bar.style.width=((i/images.length)*100)+"%";requestAnimationFrame(function(){setTimeout(step,20)})});
+  }
+  step();
+}
+
+// ---- drag text on preview ----
+(function(){
+  var canvas=document.getElementById("canvas");
+  var dragging=null;
+  function toCanvasCoords(e){
+    var rect=canvas.getBoundingClientRect();
+    var cx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    var cy=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+    return {x:cx*(canvas.width/rect.width),y:cy*(canvas.height/rect.height)};
+  }
+  function hit(p){
+    var keys=["name","date"];
+    for(var k=0;k<keys.length;k++){var b=boxes[keys[k]];if(b&&p.x>=b.left-10&&p.x<=b.left+b.w+10&&p.y>=b.top-10&&p.y<=b.top+b.h+10)return keys[k]}
+    return null;
+  }
+  function start(e){if(!images.length)return;var p=toCanvasCoords(e);var w=hit(p);if(w){dragging=w;e.preventDefault()}}
+  function moveEv(e){if(!dragging)return;var p=toCanvasCoords(e);dragPos[dragging]={x:p.x,y:p.y};render();e.preventDefault()}
+  function end(){dragging=null}
+  canvas.addEventListener("mousedown",start);
+  window.addEventListener("mousemove",moveEv);
+  window.addEventListener("mouseup",end);
+  canvas.addEventListener("touchstart",start,{passive:false});
+  canvas.addEventListener("touchmove",moveEv,{passive:false});
+  window.addEventListener("touchend",end);
+})();
+</script>
 </body></html>

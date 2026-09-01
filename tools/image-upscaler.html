@@ -18,22 +18,60 @@
     <div class="tool-section">
       <h1>🔍 Image Upscaler & Enhancer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Enlarge low-resolution images with smoothing. Best for small images up to 500px.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
-      <div id="uploadPreview" style="display:none;margin:.8rem 0;text-align:center;background:var(--card);padding:.8rem;border-radius:10px"><img id="uploadImg" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"><p class="info" id="uploadInfo" style="margin-top:.5rem"></p></div>
+      <p class="info">Enlarge low-resolution images using multiple interpolation algorithms, then sharpen and clean them up. Add several images for batch processing.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here<input type="file" id="inp" accept="image/*" multiple></div>
+      <div id="honestNote" class="info" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:.7rem .9rem;margin:.6rem 0"><strong>ℹ️ Honest note:</strong> This is classical interpolation, not AI super-resolution. It cannot invent detail that was never captured — it makes images larger and sharper-looking, not magically higher-resolution. For genuine detail reconstruction you would need a dedicated AI upscaler.</div>
       <div id="editor" style="display:none">
+        <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo" style="text-align:center"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
         <div id="origInfo" class="info" style="margin:.5rem 0"></div>
+
+        <h2 style="font-size:1rem;margin-top:1rem">1. Algorithm & Scale</h2>
         <div class="row" style="flex-wrap:wrap">
-          <label>Scale:</label>
-          <button class="btn btn-outline" onclick="setScale(2)" id="s2">2x</button>
-          <button class="btn" onclick="setScale(3)" id="s3" style="background:var(--accent)">3x</button>
-          <button class="btn btn-outline" onclick="setScale(4)" id="s4">4x</button>
-          <label>Smoothing:</label>
-          <select id="smooth"><option value="high">High (Smooth)</option><option value="medium" selected>Medium</option><option value="low">Low (Sharp)</option></select>
-          <label>Sharpen:</label>
-          <input type="range" id="sharpen" min="0" max="100" value="30" style="max-width:100px">
+          <div><label>Algorithm:</label>
+            <select id="algo" onchange="updateAlgoNote()">
+              <option value="bicubic" selected>Browser Bicubic (high-quality smoothing)</option>
+              <option value="stepwise">Stepwise (repeated 1.5–2x, keeps detail)</option>
+              <option value="lanczos">Lanczos-style resampling (manual)</option>
+              <option value="nearest">Nearest-Neighbour (pixel art)</option>
+            </select>
+          </div>
+          <div><label>Scale:</label>
+            <select id="scale" onchange="onScaleChange()">
+              <option value="2">2x</option>
+              <option value="3" selected>3x</option>
+              <option value="4">4x</option>
+              <option value="8">8x</option>
+              <option value="custom">Custom size…</option>
+            </select>
+          </div>
         </div>
+        <div id="customRow" class="row" style="flex-wrap:wrap;display:none">
+          <div><label>Target width (px):</label><input type="number" id="customW" min="1" oninput="syncCustom('w')"></div>
+          <div><label>Target height (px):</label><input type="number" id="customH" min="1" oninput="syncCustom('h')"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="lockAspect" checked style="width:auto"><label for="lockAspect" style="margin:0">Lock aspect ratio</label></div>
+        </div>
+        <p id="algoNote" class="info"></p>
+
+        <h2 style="font-size:1rem;margin-top:1rem">2. Post-Processing</h2>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Unsharp amount: <span id="uaVal">40</span>%</label><input type="range" id="usAmount" min="0" max="200" value="40"></div>
+          <div><label>Unsharp radius: <span id="urVal">1</span>px</label><input type="range" id="usRadius" min="0" max="5" value="1"></div>
+          <div><label>Noise reduction: <span id="nrVal">0</span></label><input type="range" id="noise" min="0" max="3" value="0"></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0"></div>
+          <div><label>Saturation: <span id="satVal">100</span>%</label><input type="range" id="saturation" min="0" max="200" value="100"></div>
+        </div>
+
+        <h2 style="font-size:1rem;margin-top:1rem">3. Output</h2>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Format:</label><select id="fmt" onchange="toggleQuality()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
+          <div id="qualityWrap" style="display:none"><label>Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92"></div>
+        </div>
+
         <button class="btn" onclick="upscale()" style="width:100%;margin-top:.8rem" id="upBtn">🔍 Upscale Image</button>
+        <button class="btn btn-outline" id="batchAllBtn" style="display:none;width:100%;margin-top:.4rem" onclick="processAll()">⚙️ Process All & Download ZIP</button>
+        <div id="progress" style="display:none;margin-top:.8rem"><div style="background:var(--card);border-radius:8px;overflow:hidden;height:14px"><div id="progressBar" style="height:100%;width:0;background:var(--gradient);transition:width .2s"></div></div><p class="info" id="progressTxt" style="text-align:center"></p></div>
         <div id="result" style="margin-top:1rem"></div>
       </div>
     </div>
@@ -41,7 +79,7 @@
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Old photo blurry hai? Zoom karo toh pixels dikhtein hain? Upload that image here</li>
 <li><strong>Step 2:</strong> Pick how much bigger you want it — 2x is usually enough, 4x for really small images</li>
-<li><strong>Step 3:</strong> Let the AI do its thing — it fills in the missing detail</li>
+<li><strong>Step 3:</strong> Pick an algorithm (bicubic, stepwise, Lanczos or nearest-neighbour) and let it interpolate the extra pixels</li>
 <li><strong>Step 4:</strong> Compare before and after side by side — you'll see the difference</li>
 <li><strong>Step 5:</strong> Download your enhanced, sharper image. Looks way better now!</li>
 </ol>
@@ -93,39 +131,313 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-var img=null,scale=3;
-setupDrop("drop","inp",function(f){var file=f[0];document.getElementById("uploadPreview").style.display="block";document.getElementById("uploadImg").src=URL.createObjectURL(file);document.getElementById("uploadInfo").textContent="✅ "+file.name+" ("+formatSize(file.size)+")";loadImage(file).then(function(i){img=i;document.getElementById("editor").style.display="block";document.getElementById("origInfo").textContent="Original: "+i.width+" x "+i.height+" px"})});
-function setScale(s){scale=s;document.getElementById("s2").className=s===2?"btn":"btn btn-outline";document.getElementById("s3").className=s===3?"btn":"btn btn-outline";document.getElementById("s4").className=s===4?"btn":"btn btn-outline";if(s===2)document.getElementById("s2").style.background="var(--accent)";else document.getElementById("s2").style.background="";if(s===3)document.getElementById("s3").style.background="var(--accent)";else document.getElementById("s3").style.background="";if(s===4)document.getElementById("s4").style.background="var(--accent)";else document.getElementById("s4").style.background=""}
-function upscale(){
-  if(!img)return;showProcessing("result");
-  setTimeout(function(){
-    var w=img.width*scale,h=img.height*scale;
-    var smooth=document.getElementById("smooth").value;
-    var sharpenAmt=+document.getElementById("sharpen").value/100;
-    // Step 1: Upscale with smoothing
-    var c1=document.createElement("canvas");c1.width=w;c1.height=h;
-    var ctx1=c1.getContext("2d");
-    ctx1.imageSmoothingEnabled=smooth!=="low";
-    ctx1.imageSmoothingQuality=smooth==="high"?"high":"medium";
-    ctx1.drawImage(img,0,0,w,h);
-    // Step 2: Sharpen using unsharp mask
-    if(sharpenAmt>0){
-      var imageData=ctx1.getImageData(0,0,w,h);var d=imageData.data;
-      var c2=document.createElement("canvas");c2.width=w;c2.height=h;
-      var ctx2=c2.getContext("2d");ctx2.filter="blur(1px)";ctx2.drawImage(c1,0,0);
-      var blurred=ctx2.getImageData(0,0,w,h).data;
-      var amt=sharpenAmt*2;
-      for(var i=0;i<d.length;i+=4){d[i]=Math.min(255,Math.max(0,d[i]+amt*(d[i]-blurred[i])));d[i+1]=Math.min(255,Math.max(0,d[i+1]+amt*(d[i+1]-blurred[i+1])));d[i+2]=Math.min(255,Math.max(0,d[i+2]+amt*(d[i+2]-blurred[i+2])))}
-      ctx1.putImageData(imageData,0,0);
-    }
-    c1.toBlob(function(b){
-      document.getElementById("result").innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0"><div style="text-align:center"><p class="info">Original ('+img.width+'x'+img.height+')</p><img src="'+img.src+'" style="max-width:100%;border-radius:8px"></div><div style="text-align:center"><p class="info">Upscaled '+scale+'x ('+w+'x'+h+')</p><img src="'+URL.createObjectURL(b)+'" style="max-width:100%;border-radius:8px"></div></div><p class="info">Size: '+formatSize(b.size)+'</p><button class="btn" onclick="download(window._upBlob,\'upscaled.png\')">💾 Download</button>';
-      window._upBlob=b;
+var items=[],curIdx=0;
+
+setupDrop("drop","inp",function(f){
+  if(!f.length)return;
+  if(typeof checkFileSize==="function"&&!checkFileSize(f,60))return;
+  items=[];curIdx=0;
+  var files=Array.from(f).filter(function(x){return x.type.indexOf("image")===0});
+  var loaded=0;
+  files.forEach(function(file,i){
+    loadImage(file).then(function(img){
+      items[i]={img:img,name:file.name,inSize:file.size,outBlob:null,outW:0,outH:0,status:"pending"};
+      loaded++;
+      if(loaded===files.length){
+        items=items.filter(Boolean);
+        document.getElementById("editor").style.display="block";
+        var multi=items.length>1;
+        document.getElementById("batchNav").style.display=multi?"flex":"none";
+        document.getElementById("batchAllBtn").style.display=multi?"block":"none";
+        curIdx=0;updateOrigInfo();updateAlgoNote();
+      }
     });
-  },100);
+  });
+});
+
+function navImg(dir){curIdx=Math.max(0,Math.min(items.length-1,curIdx+dir));updateOrigInfo()}
+function updateOrigInfo(){
+  if(!items.length)return;
+  var it=items[curIdx];
+  var label=items.length>1?"Image "+(curIdx+1)+"/"+items.length+": ":"";
+  document.getElementById("origInfo").textContent=label+"Original "+it.img.width+" x "+it.img.height+" px ("+formatSize(it.inSize)+")";
+  if(items.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+" / "+items.length;
+  document.getElementById("result").innerHTML="";
 }
-  </script>
+
+var algoNotes={
+  bicubic:"Browser bicubic uses the built-in high-quality image smoothing. Fast and smooth, good general-purpose choice.",
+  stepwise:"Stepwise scales up in small 1.5–2x jumps. Repeated small steps preserve edge detail better than one large jump.",
+  lanczos:"Lanczos-style resampling weights nearby pixels with a sinc window, computed manually on pixel data. Sharpest for photos but slower.",
+  nearest:"Nearest-neighbour copies pixels with no blending — keeps hard edges. Ideal for pixel art and sprites."
+};
+function updateAlgoNote(){document.getElementById("algoNote").textContent=algoNotes[document.getElementById("algo").value]||""}
+
+function onScaleChange(){
+  var custom=document.getElementById("scale").value==="custom";
+  document.getElementById("customRow").style.display=custom?"flex":"none";
+  if(custom&&items.length){var it=items[curIdx];if(!document.getElementById("customW").value){document.getElementById("customW").value=it.img.width*2;document.getElementById("customH").value=it.img.height*2}}
+}
+function syncCustom(which){
+  if(!document.getElementById("lockAspect").checked||!items.length)return;
+  var it=items[curIdx];var ar=it.img.width/it.img.height;
+  if(which==="w"){var w=+document.getElementById("customW").value;if(w>0)document.getElementById("customH").value=Math.round(w/ar)}
+  else{var h=+document.getElementById("customH").value;if(h>0)document.getElementById("customW").value=Math.round(h*ar)}
+}
+function toggleQuality(){document.getElementById("qualityWrap").style.display=document.getElementById("fmt").value==="image/png"?"none":"block"}
+
+// Live labels
+["usAmount","usRadius","noise","contrast","saturation","quality"].forEach(function(id){
+  var map={usAmount:"uaVal",usRadius:"urVal",noise:"nrVal",contrast:"conVal",saturation:"satVal",quality:"qVal"};
+  var el=document.getElementById(id);if(el)el.addEventListener("input",function(){document.getElementById(map[id]).textContent=this.value});
+});
+
+function getTargetSize(img){
+  var sv=document.getElementById("scale").value;
+  if(sv==="custom"){
+    var w=+document.getElementById("customW").value||img.width;
+    var h=+document.getElementById("customH").value||img.height;
+    return {w:Math.max(1,Math.round(w)),h:Math.max(1,Math.round(h))};
+  }
+  var s=+sv;return {w:img.width*s,h:img.height*s};
+}
+
+// --- Interpolation algorithms ---
+function drawSmooth(img,w,h,quality){
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality=quality||"high";
+  ctx.drawImage(img,0,0,w,h);return c;
+}
+function drawNearest(img,w,h){
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(img,0,0,w,h);return c;
+}
+function drawStepwise(img,w,h){
+  var cw=img.width,ch=img.height;
+  var cur=document.createElement("canvas");cur.width=cw;cur.height=ch;
+  cur.getContext("2d").drawImage(img,0,0);
+  while(cw<w||ch<h){
+    var nw=Math.min(w,Math.round(cw*1.8)),nh=Math.min(h,Math.round(ch*1.8));
+    if(nw===cw&&nh===ch){nw=w;nh=h}
+    var next=document.createElement("canvas");next.width=nw;next.height=nh;
+    var nctx=next.getContext("2d");nctx.imageSmoothingEnabled=true;nctx.imageSmoothingQuality="high";
+    nctx.drawImage(cur,0,0,nw,nh);cur=next;cw=nw;ch=nh;
+  }
+  return cur;
+}
+// Lanczos resampling on pixel data (separable, a=3)
+function lanczosKernel(x,a){
+  if(x===0)return 1;
+  if(x<=-a||x>=a)return 0;
+  var px=Math.PI*x;
+  return (a*Math.sin(px)*Math.sin(px/a))/(px*px);
+}
+function drawLanczos(img,w,h){
+  var src=document.createElement("canvas");src.width=img.width;src.height=img.height;
+  src.getContext("2d").drawImage(img,0,0);
+  var sd=src.getContext("2d").getImageData(0,0,img.width,img.height).data;
+  var sw=img.width,sh=img.height,a=3;
+  // horizontal pass -> tmp (w x sh)
+  var tmp=new Float32Array(w*sh*4);
+  var ratioX=sw/w;
+  for(var y=0;y<sh;y++){
+    for(var x=0;x<w;x++){
+      var cx=(x+0.5)*ratioX-0.5;
+      var x0=Math.floor(cx);
+      var r=0,g=0,b=0,al=0,ws=0;
+      for(var i=-a+1;i<=a;i++){
+        var px=x0+i;if(px<0)px=0;if(px>=sw)px=sw-1;
+        var wgt=lanczosKernel(cx-(x0+i),a);
+        var idx=(y*sw+px)*4;
+        r+=sd[idx]*wgt;g+=sd[idx+1]*wgt;b+=sd[idx+2]*wgt;al+=sd[idx+3]*wgt;ws+=wgt;
+      }
+      var o=(y*w+x)*4;tmp[o]=r/ws;tmp[o+1]=g/ws;tmp[o+2]=b/ws;tmp[o+3]=al/ws;
+    }
+  }
+  // vertical pass -> out (w x h)
+  var out=document.createElement("canvas");out.width=w;out.height=h;var octx=out.getContext("2d");
+  var oimg=octx.createImageData(w,h);var od=oimg.data;
+  var ratioY=sh/h;
+  for(var x2=0;x2<w;x2++){
+    for(var y2=0;y2<h;y2++){
+      var cy=(y2+0.5)*ratioY-0.5;
+      var y0=Math.floor(cy);
+      var r2=0,g2=0,b2=0,a2=0,ws2=0;
+      for(var j=-a+1;j<=a;j++){
+        var py=y0+j;if(py<0)py=0;if(py>=sh)py=sh-1;
+        var wgt2=lanczosKernel(cy-(y0+j),a);
+        var idx2=(py*w+x2)*4;
+        r2+=tmp[idx2]*wgt2;g2+=tmp[idx2+1]*wgt2;b2+=tmp[idx2+2]*wgt2;a2+=tmp[idx2+3]*wgt2;ws2+=wgt2;
+      }
+      var o2=(y2*w+x2)*4;
+      od[o2]=Math.max(0,Math.min(255,r2/ws2));od[o2+1]=Math.max(0,Math.min(255,g2/ws2));od[o2+2]=Math.max(0,Math.min(255,b2/ws2));od[o2+3]=Math.max(0,Math.min(255,a2/ws2));
+    }
+  }
+  octx.putImageData(oimg,0,0);return out;
+}
+
+// --- Post processing ---
+function unsharpMask(canvas,amount,radius){
+  if(amount<=0||radius<=0)return canvas;
+  var w=canvas.width,h=canvas.height;var ctx=canvas.getContext("2d");
+  var orig=ctx.getImageData(0,0,w,h);var d=orig.data;
+  var b=document.createElement("canvas");b.width=w;b.height=h;var bctx=b.getContext("2d");
+  bctx.filter="blur("+radius+"px)";bctx.drawImage(canvas,0,0);
+  var blur=bctx.getImageData(0,0,w,h).data;
+  var amt=amount/100;
+  for(var i=0;i<d.length;i+=4){
+    d[i]=Math.max(0,Math.min(255,d[i]+amt*(d[i]-blur[i])));
+    d[i+1]=Math.max(0,Math.min(255,d[i+1]+amt*(d[i+1]-blur[i+1])));
+    d[i+2]=Math.max(0,Math.min(255,d[i+2]+amt*(d[i+2]-blur[i+2])));
+  }
+  ctx.putImageData(orig,0,0);return canvas;
+}
+// Median filter for noise reduction (light, passes = strength)
+function medianFilter(canvas,passes){
+  if(passes<=0)return canvas;
+  var w=canvas.width,h=canvas.height;var ctx=canvas.getContext("2d");
+  for(var p=0;p<passes;p++){
+    var src=ctx.getImageData(0,0,w,h);var s=src.data;
+    var dst=ctx.createImageData(w,h);var out=dst.data;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var o=(y*w+x)*4;
+        for(var ch=0;ch<3;ch++){
+          var vals=[];
+          for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){
+            var nx=Math.max(0,Math.min(w-1,x+dx)),ny=Math.max(0,Math.min(h-1,y+dy));
+            vals.push(s[(ny*w+nx)*4+ch]);
+          }
+          vals.sort(function(a,b){return a-b});out[o+ch]=vals[4];
+        }
+        out[o+3]=s[o+3];
+      }
+    }
+    ctx.putImageData(dst,0,0);
+  }
+  return canvas;
+}
+function contrastSaturation(canvas,con,sat){
+  if(con===0&&sat===100)return canvas;
+  var w=canvas.width,h=canvas.height;var ctx=canvas.getContext("2d");
+  var id=ctx.getImageData(0,0,w,h);var d=id.data;
+  var factor=(259*(con+255))/(255*(259-con));var s=sat/100;
+  for(var i=0;i<d.length;i+=4){
+    var r=factor*(d[i]-128)+128,g=factor*(d[i+1]-128)+128,b=factor*(d[i+2]-128)+128;
+    var gray=r*0.299+g*0.587+b*0.114;
+    r=gray+(r-gray)*s;g=gray+(g-gray)*s;b=gray+(b-gray)*s;
+    d[i]=Math.max(0,Math.min(255,r));d[i+1]=Math.max(0,Math.min(255,g));d[i+2]=Math.max(0,Math.min(255,b));
+  }
+  ctx.putImageData(id,0,0);return canvas;
+}
+
+function renderCanvas(img,cb){
+  var size=getTargetSize(img);var w=size.w,h=size.h;
+  var algo=document.getElementById("algo").value;
+  var canvas;
+  if(algo==="nearest")canvas=drawNearest(img,w,h);
+  else if(algo==="stepwise")canvas=drawStepwise(img,w,h);
+  else if(algo==="lanczos")canvas=drawLanczos(img,w,h);
+  else canvas=drawSmooth(img,w,h,"high");
+  canvas=contrastSaturation(canvas,+document.getElementById("contrast").value,+document.getElementById("saturation").value);
+  canvas=medianFilter(canvas,+document.getElementById("noise").value);
+  canvas=unsharpMask(canvas,+document.getElementById("usAmount").value,+document.getElementById("usRadius").value);
+  var fmt=document.getElementById("fmt").value;
+  var q=+document.getElementById("quality").value/100;
+  canvas.toBlob(function(b){cb(b,w,h)},fmt,fmt==="image/png"?undefined:q);
+}
+
+function upscale(){
+  if(!items.length)return;showProcessing("result");
+  var it=items[curIdx];
+  // yield to let spinner paint before heavy work
+  requestAnimationFrame(function(){setTimeout(function(){
+    renderCanvas(it.img,function(blob,w,h){
+      it.outBlob=blob;it.outW=w;it.outH=h;it.status="done";
+      showComparison(it);
+    });
+  },30)});
+}
+
+function ext(){var f=document.getElementById("fmt").value;return f==="image/png"?"png":f==="image/webp"?"webp":"jpg"}
+
+function showComparison(it){
+  var origUrl=it.img.src;var upUrl=URL.createObjectURL(it.outBlob);
+  var html=''+
+  '<div class="info">Input: '+it.img.width+'x'+it.img.height+' ('+formatSize(it.inSize)+') → Output: '+it.outW+'x'+it.outH+' ('+formatSize(it.outBlob.size)+')</div>'+
+  '<h2 style="font-size:1rem;margin-top:.8rem">Before / After slider</h2>'+
+  '<div id="cmpWrap" style="position:relative;max-width:100%;margin:.5rem auto;border-radius:8px;overflow:hidden;user-select:none;touch-action:none">'+
+    '<img src="'+upUrl+'" style="display:block;width:100%">'+
+    '<div id="cmpTop" style="position:absolute;top:0;left:0;height:100%;width:50%;overflow:hidden">'+
+      '<img src="'+origUrl+'" style="display:block;height:100%;width:auto;max-width:none">'+
+    '</div>'+
+    '<div id="cmpDivider" style="position:absolute;top:0;left:50%;width:3px;height:100%;background:#6366f1;cursor:ew-resize;transform:translateX(-50%)"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem">⇔</div></div>'+
+  '</div>'+
+  '<p class="info" style="text-align:center">Left = original · Right = upscaled. Drag the divider.</p>'+
+  '<h2 style="font-size:1rem;margin-top:.8rem">100% zoom side-by-side</h2>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+
+    '<div><p class="info" style="text-align:center">Original @100%</p><div style="overflow:auto;max-height:260px;border:1px solid rgba(99,102,241,.2);border-radius:8px"><img src="'+origUrl+'" style="display:block;image-rendering:pixelated"></div></div>'+
+    '<div><p class="info" style="text-align:center">Upscaled @100%</p><div style="overflow:auto;max-height:260px;border:1px solid rgba(99,102,241,.2);border-radius:8px"><img src="'+upUrl+'" style="display:block;image-rendering:pixelated"></div></div>'+
+  '</div>'+
+  '<button class="btn" style="width:100%;margin-top:.8rem" onclick="downloadCurrent()">💾 Download this image</button>';
+  document.getElementById("result").innerHTML=html;
+  setupCompareSlider(it);
+}
+
+function setupCompareSlider(it){
+  var wrap=document.getElementById("cmpWrap"),top=document.getElementById("cmpTop"),div=document.getElementById("cmpDivider");
+  if(!wrap)return;
+  // match the clipped image width to displayed width
+  var full=wrap.querySelector("img");
+  function fitTop(){var topImg=top.querySelector("img");topImg.style.width=wrap.clientWidth+"px";topImg.style.height="auto"}
+  full.addEventListener("load",fitTop);fitTop();
+  function move(clientX){
+    var rect=wrap.getBoundingClientRect();
+    var pct=Math.max(0,Math.min(1,(clientX-rect.left)/rect.width));
+    top.style.width=(pct*100)+"%";div.style.left=(pct*100)+"%";
+  }
+  var dragging=false;
+  div.addEventListener("mousedown",function(){dragging=true});
+  window.addEventListener("mouseup",function(){dragging=false});
+  window.addEventListener("mousemove",function(e){if(dragging)move(e.clientX)});
+  div.addEventListener("touchstart",function(){dragging=true});
+  window.addEventListener("touchend",function(){dragging=false});
+  wrap.addEventListener("touchmove",function(e){if(dragging){move(e.touches[0].clientX);e.preventDefault()}});
+}
+
+function downloadCurrent(){
+  var it=items[curIdx];if(!it||!it.outBlob)return;
+  var base=it.name.replace(/\.[^.]+$/,"");
+  download(it.outBlob,base+"_upscaled."+ext());
+}
+
+function processAll(){
+  if(!items.length)return;
+  var bar=document.getElementById("progressBar"),txt=document.getElementById("progressTxt");
+  document.getElementById("progress").style.display="block";
+  var i=0;
+  function step(){
+    if(i>=items.length){
+      txt.textContent="Zipping…";
+      var zip=new JSZip();
+      items.forEach(function(it){if(it.outBlob){var base=it.name.replace(/\.[^.]+$/,"");zip.file(base+"_upscaled."+ext(),it.outBlob)}});
+      zip.generateAsync({type:"blob"}).then(function(blob){download(blob,"upscaled_images.zip");txt.textContent="Done — "+items.length+" images.";});
+      return;
+    }
+    txt.textContent="Processing "+(i+1)+" / "+items.length+"…";
+    bar.style.width=((i/items.length)*100)+"%";
+    var it=items[i];
+    renderCanvas(it.img,function(blob,w,h){
+      it.outBlob=blob;it.outW=w;it.outH=h;it.status="done";
+      i++;bar.style.width=((i/items.length)*100)+"%";
+      requestAnimationFrame(function(){setTimeout(step,20)});
+    });
+  }
+  step();
+}
+</script>
 </body>
 </html>

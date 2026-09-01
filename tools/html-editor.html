@@ -17,45 +17,66 @@
     <div class="tool-section">
       <h1>💻 HTML Live Editor</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Write HTML, CSS, JS and see live preview. Auto-updates as you type. Auto-saves to browser.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.5rem">
+      <p class="info">Write HTML, CSS and JS across three panes with a live, sandboxed preview. Auto-updates as you type. Auto-saves to your browser.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.5rem;align-items:center">
         <span style="font-size:.8rem;font-weight:600;margin-right:4px">Templates:</span>
-        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('blank')">Blank</button>
-        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('landing')">Landing Page</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('blank')">Blank Page</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('card')">Centred Card</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('flex')">Flexbox Layout</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('grid')">CSS Grid Gallery</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('navbar')">Responsive Navbar</button>
         <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('contact')">Contact Form</button>
-        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('card')">Card Component</button>
-        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('grid')">Responsive Grid</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('landing')">Landing Hero</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('anim')">CSS Animation</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="loadTemplate('todo')">JS Todo Demo</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem">
+        <label style="margin:0;font-size:.8rem;font-weight:600">Snippets:</label>
+        <select id="snippetSelect" onchange="loadSnippet()" style="width:auto;padding:.3rem .5rem;font-size:.8rem;margin:0"><option value="">— Autosave (current) —</option></select>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="saveSnippet()">💾 Save As…</button>
+        <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem" onclick="deleteSnippet()">🗑️ Delete</button>
+      </div>
+      <div id="editorGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0">
         <div>
-          <div style="display:flex;gap:4px;margin-bottom:4px">
+          <div style="display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap;align-items:center">
             <button onclick="showTab('html')" id="tabHtml" class="btn" style="padding:.2rem .6rem;font-size:.8rem">HTML</button>
             <button onclick="showTab('css')" id="tabCss" class="btn btn-outline" style="padding:.2rem .6rem;font-size:.8rem">CSS</button>
             <button onclick="showTab('js')" id="tabJs" class="btn btn-outline" style="padding:.2rem .6rem;font-size:.8rem">JS</button>
+            <button onclick="formatActive()" class="btn btn-outline" style="padding:.2rem .5rem;font-size:.72rem;margin-left:auto" title="Beautify the active pane">✨ Format</button>
           </div>
-          <div style="position:relative">
+          <div id="paneHtmlWrap" style="position:relative">
             <div id="highlight" aria-hidden="true" style="position:absolute;top:0;left:0;width:100%;height:100%;font-family:monospace;font-size:.85rem;padding:8px;box-sizing:border-box;white-space:pre-wrap;word-wrap:break-word;overflow:auto;pointer-events:none;border:1px solid transparent;border-radius:4px;line-height:1.4"></div>
-            <textarea id="htmlCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;position:relative;background:transparent;color:transparent;caret-color:var(--text);line-height:1.4;z-index:1" oninput="onEdit()" placeholder="HTML here...">&lt;h1 style="color:#6366f1"&gt;Hello World!&lt;/h1&gt;
-&lt;p&gt;Edit code in tabs and see live preview →&lt;/p&gt;
+            <textarea id="htmlCode" rows="16" style="font-family:monospace;font-size:.85rem;width:100%;position:relative;background:transparent;color:transparent;caret-color:var(--text);line-height:1.4;z-index:1" oninput="onEdit()" onkeydown="onKey(event,this)" placeholder="HTML here...">&lt;h1 style="color:#6366f1"&gt;Hello World!&lt;/h1&gt;
+&lt;p&gt;Edit code in the tabs and watch the live preview →&lt;/p&gt;
 &lt;button id="btn"&gt;Click Me&lt;/button&gt;</textarea>
           </div>
-          <textarea id="cssCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" placeholder="CSS here...">body { font-family: Arial; padding: 20px; }
+          <textarea id="cssCode" rows="16" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" onkeydown="onKey(event,this)" placeholder="CSS here...">body { font-family: Arial, sans-serif; padding: 20px; }
 button { padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; }
-button:hover { background: #3a7be0; }</textarea>
-          <textarea id="jsCode" rows="15" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" placeholder="JavaScript here...">document.getElementById('btn').onclick = function() { alert('It works!'); }</textarea>
+button:hover { background: #8b5cf6; }</textarea>
+          <textarea id="jsCode" rows="16" style="font-family:monospace;font-size:.85rem;width:100%;display:none;line-height:1.4" oninput="onEdit()" onkeydown="onKey(event,this)" placeholder="JavaScript here...">document.getElementById('btn').onclick = function () {
+  console.log('Button clicked!');
+  alert('It works!');
+};</textarea>
         </div>
         <div>
-          <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;flex-wrap:wrap">
             <label style="margin:0">Preview</label>
-            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem;margin-left:auto" onclick="setPreview('100%')">Desktop</button>
-            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('768px')">Tablet</button>
-            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('375px')">Mobile</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem;margin-left:auto" onclick="setPreview('100%',this)">🖥️ Desktop</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('768px',this)">📱 Tablet</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="setPreview('375px',this)">📲 Mobile</button>
+            <button class="btn btn-outline" style="padding:.2rem .5rem;font-size:.7rem" onclick="toggleFullscreen()">⛶ Fullscreen</button>
           </div>
-          <div style="display:flex;justify-content:center;border:1px solid var(--border);border-radius:8px;background:#fff;height:340px;overflow:auto">
-            <iframe id="preview" style="width:100%;height:100%;border:none;transition:width .3s"></iframe>
+          <div id="previewWrap" style="display:flex;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#fff;height:300px;overflow:auto">
+            <iframe id="preview" title="Live preview" sandbox="allow-scripts" style="width:100%;height:100%;border:none;transition:width .3s"></iframe>
           </div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:6px">
+            <label style="margin:0;font-size:.78rem;font-weight:600">Console</label>
+            <button class="btn btn-outline" style="padding:.15rem .45rem;font-size:.68rem;margin-left:auto" onclick="clearConsole()">Clear</button>
+          </div>
+          <div id="console" style="height:110px;overflow:auto;background:var(--bg2,#111122);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem;font-family:monospace;font-size:.75rem;line-height:1.45;margin-top:4px"></div>
         </div>
       </div>
+      <p class="info" style="font-size:.78rem">🔒 The preview runs in a sandboxed iframe (<code>sandbox="allow-scripts"</code>). Your JavaScript executes but cannot touch this page. Network requests from your code may be blocked by the sandbox.</p>
       <div class="row"><button class="btn btn-outline" onclick="copyAll()">📋 Copy All</button><button class="btn btn-outline" onclick="dlAll()">💾 Download HTML</button></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -105,28 +126,42 @@ button:hover { background: #3a7be0; }</textarea>
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <style>
+  @media(max-width:760px){#editorGrid{grid-template-columns:1fr}}
+  #console .c-log{color:var(--text)}
+  #console .c-warn{color:#e5c07b}
+  #console .c-error{color:#e06c75}
+  #console .c-info{color:#61afef}
+  #console .c-empty{color:var(--text2);font-style:italic}
+  .fs-preview #previewWrap{position:fixed;inset:0;z-index:9999;height:100vh!important;border-radius:0}
+  </style>
   <script>
 const templates={
-blank:{html:"",css:"",js:""},
-landing:{html:'<header style="text-align:center;padding:60px 20px">\n  <h1>Welcome to My Site</h1>\n  <p>A simple landing page template</p>\n  <a href="#" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:8px">Get Started</a>\n</header>\n<section style="padding:40px 20px;max-width:800px;margin:0 auto">\n  <h2>Features</h2>\n  <p>Build something amazing with this starter template.</p>\n</section>',css:"body{font-family:Arial,sans-serif;margin:0;color:#333}\nheader{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}",js:""},
-contact:{html:'<div style="max-width:500px;margin:40px auto;padding:0 20px">\n  <h1>Contact Us</h1>\n  <form id="form">\n    <label>Name</label><input type="text" placeholder="Your name" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px">\n    <label>Email</label><input type="email" placeholder="you@email.com" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px">\n    <label>Message</label><textarea rows="4" placeholder="Your message" style="width:100%;padding:8px;margin:8px 0 16px;border:1px solid #ccc;border-radius:4px"></textarea>\n    <button type="submit" style="padding:10px 24px;background:#6366f1;color:#fff;border:none;border-radius:6px;cursor:pointer">Send</button>\n  </form>\n</div>',css:"body{font-family:Arial,sans-serif}\nlabel{font-weight:bold;font-size:.9rem}",js:'document.getElementById("form").onsubmit=function(e){e.preventDefault();alert("Message sent!")}'},
+blank:{html:"<h1>New Page</h1>\n<p>Start building here.</p>",css:"body { font-family: Arial, sans-serif; padding: 20px; }",js:""},
 card:{html:'<div class="card">\n  <div class="card-img">🖼️</div>\n  <div class="card-body">\n    <h3>Card Title</h3>\n    <p>Some quick example text for the card component.</p>\n    <button>Learn More</button>\n  </div>\n</div>',css:"body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f5f5f5}\n.card{width:300px;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);background:#fff}\n.card-img{height:160px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:3rem}\n.card-body{padding:20px}\n.card-body button{padding:8px 16px;background:#6366f1;color:#fff;border:none;border-radius:6px;cursor:pointer}",js:""},
-grid:{html:'<div class="grid">\n  <div class="item">1</div>\n  <div class="item">2</div>\n  <div class="item">3</div>\n  <div class="item">4</div>\n  <div class="item">5</div>\n  <div class="item">6</div>\n</div>',css:"body{font-family:Arial,sans-serif;padding:20px;margin:0}\n.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}\n.item{background:#6366f1;color:#fff;padding:40px;text-align:center;border-radius:8px;font-size:1.5rem;font-weight:bold}",js:""}
+flex:{html:'<div class="bar">\n  <div class="box">Sidebar</div>\n  <div class="box main">Main content area — flex grows to fill space.</div>\n</div>',css:"body{font-family:Arial,sans-serif;margin:0;padding:16px}\n.bar{display:flex;gap:12px}\n.box{background:#e0e7ff;padding:20px;border-radius:8px}\n.main{flex:1;background:#6366f1;color:#fff}",js:""},
+grid:{html:'<div class="gallery">\n  <div class="cell">1</div>\n  <div class="cell">2</div>\n  <div class="cell">3</div>\n  <div class="cell">4</div>\n  <div class="cell">5</div>\n  <div class="cell">6</div>\n</div>',css:"body{font-family:Arial,sans-serif;padding:20px;margin:0}\n.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}\n.cell{background:#6366f1;color:#fff;padding:40px;text-align:center;border-radius:8px;font-size:1.5rem;font-weight:bold}",js:""},
+navbar:{html:'<nav class="nav">\n  <span class="brand">MySite</span>\n  <button class="toggle" id="navBtn">☰</button>\n  <ul class="links" id="navLinks">\n    <li><a href="#">Home</a></li>\n    <li><a href="#">About</a></li>\n    <li><a href="#">Contact</a></li>\n  </ul>\n</nav>',css:"body{font-family:Arial,sans-serif;margin:0}\n.nav{display:flex;align-items:center;gap:16px;background:#6366f1;color:#fff;padding:12px 20px;flex-wrap:wrap}\n.brand{font-weight:bold;font-size:1.2rem}\n.links{list-style:none;display:flex;gap:16px;margin:0 0 0 auto;padding:0}\n.links a{color:#fff;text-decoration:none}\n.toggle{display:none;background:none;border:none;color:#fff;font-size:1.4rem;margin-left:auto;cursor:pointer}\n@media(max-width:500px){.toggle{display:block}.links{display:none;flex-direction:column;width:100%}.links.open{display:flex}}",js:"document.getElementById('navBtn').addEventListener('click', function () {\n  document.getElementById('navLinks').classList.toggle('open');\n});"},
+contact:{html:'<div class="wrap">\n  <h1>Contact Us</h1>\n  <form id="form">\n    <label>Name</label><input type="text" placeholder="Your name" required>\n    <label>Email</label><input type="email" placeholder="you@email.com" required>\n    <label>Message</label><textarea rows="4" placeholder="Your message"></textarea>\n    <button type="submit">Send</button>\n  </form>\n</div>',css:"body{font-family:Arial,sans-serif}\n.wrap{max-width:500px;margin:40px auto;padding:0 20px}\nlabel{font-weight:bold;font-size:.9rem;display:block;margin-top:12px}\ninput,textarea{width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}\nbutton{margin-top:16px;padding:10px 24px;background:#6366f1;color:#fff;border:none;border-radius:6px;cursor:pointer}",js:"document.getElementById('form').addEventListener('submit', function (e) {\n  e.preventDefault();\n  console.log('Form submitted');\n  alert('Message sent!');\n});"},
+landing:{html:'<header class="hero">\n  <h1>Build Something Great</h1>\n  <p>A clean landing page hero to start from.</p>\n  <a href="#" class="cta">Get Started</a>\n</header>\n<section class="feat">\n  <h2>Features</h2>\n  <p>Describe what makes your product shine.</p>\n</section>',css:"body{font-family:Arial,sans-serif;margin:0;color:#333}\n.hero{text-align:center;padding:80px 20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}\n.hero h1{font-size:2.4rem;margin:0 0 10px}\n.cta{display:inline-block;margin-top:20px;padding:12px 28px;background:#fff;color:#6366f1;text-decoration:none;border-radius:8px;font-weight:bold}\n.feat{padding:40px 20px;max-width:800px;margin:0 auto}",js:""},
+anim:{html:'<div class="stage">\n  <div class="ball"></div>\n</div>',css:"body{font-family:Arial,sans-serif;margin:0}\n.stage{display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a12}\n.ball{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);animation:bounce 1.2s ease-in-out infinite}\n@keyframes bounce{0%,100%{transform:translateY(-40px);opacity:.6}50%{transform:translateY(40px);opacity:1}}",js:""},
+todo:{html:'<div class="app">\n  <h1>Todo <span id="count">(0)</span></h1>\n  <div class="add"><input id="text" placeholder="New task..."><button id="addBtn">Add</button></div>\n  <ul id="list"></ul>\n</div>',css:"body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0}\n.app{max-width:420px;margin:40px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}\n.add{display:flex;gap:8px}\n.add input{flex:1;padding:8px;border:1px solid #ccc;border-radius:6px}\n.add button{padding:8px 16px;background:#6366f1;color:#fff;border:none;border-radius:6px;cursor:pointer}\nul{list-style:none;padding:0}\nli{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}\nli.done span{text-decoration:line-through;color:#999}\nli button{background:none;border:none;color:#e06c75;cursor:pointer}",js:"var list=document.getElementById('list'),text=document.getElementById('text'),count=document.getElementById('count'),todos=[];\nfunction render(){list.innerHTML='';todos.forEach(function(t,i){var li=document.createElement('li');if(t.done)li.className='done';var s=document.createElement('span');s.textContent=t.text;s.style.cursor='pointer';s.onclick=function(){todos[i].done=!todos[i].done;render()};var b=document.createElement('button');b.textContent='✕';b.onclick=function(){todos.splice(i,1);render()};li.appendChild(s);li.appendChild(b);list.appendChild(li)});count.textContent='('+todos.length+')'}\nfunction add(){if(!text.value.trim())return;todos.push({text:text.value.trim(),done:false});text.value='';render()}\ndocument.getElementById('addBtn').onclick=add;\ntext.addEventListener('keydown',function(e){if(e.key==='Enter')add()});"}
 };
+var STORE="htmlEditorV2",SNIPS="htmlEditorSnippets";
+var $=function(id){return document.getElementById(id)};
+var activeTab="html";
 function showTab(t){
-  const wrap=document.getElementById("htmlCode").parentElement;
-  document.getElementById("htmlCode").style.display=t==="html"?"":"none";
-  document.getElementById("highlight").style.display=t==="html"?"":"none";
-  wrap.style.display=t==="html"?"":"none";
-  document.getElementById("cssCode").style.display=t==="css"?"":"none";
-  document.getElementById("jsCode").style.display=t==="js"?"":"none";
-  document.getElementById("tabHtml").className=t==="html"?"btn":"btn btn-outline";
-  document.getElementById("tabCss").className=t==="css"?"btn":"btn btn-outline";
-  document.getElementById("tabJs").className=t==="js"?"btn":"btn btn-outline";
+  activeTab=t;
+  $("paneHtmlWrap").style.display=t==="html"?"":"none";
+  $("cssCode").style.display=t==="css"?"":"none";
+  $("jsCode").style.display=t==="js"?"":"none";
+  $("tabHtml").className=t==="html"?"btn":"btn btn-outline";
+  $("tabCss").className=t==="css"?"btn":"btn btn-outline";
+  $("tabJs").className=t==="js"?"btn":"btn btn-outline";
   if(t==="html")updateHighlight();
 }
 function highlightHTML(code){
-  let escaped=code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  var escaped=code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   escaped=escaped.replace(/(&lt;\/?)([\w-]+)/g,'$1<span style="color:#e06c75">$2</span>');
   escaped=escaped.replace(/([\w-]+)(=)/g,'<span style="color:#d19a66">$1</span>$2');
   escaped=escaped.replace(/(&quot;|")(.*?)(\1)/g,'<span style="color:#98c379">"$2"</span>');
@@ -134,23 +169,129 @@ function highlightHTML(code){
   return escaped;
 }
 function updateHighlight(){
-  const hl=document.getElementById("highlight");
-  const ta=document.getElementById("htmlCode");
+  var hl=$("highlight"),ta=$("htmlCode");
   hl.innerHTML=highlightHTML(ta.value)+"\n";
   hl.scrollTop=ta.scrollTop;
 }
-document.getElementById("htmlCode").addEventListener("scroll",function(){document.getElementById("highlight").scrollTop=this.scrollTop;document.getElementById("highlight").scrollLeft=this.scrollLeft});
-function getFullCode(){return document.getElementById("htmlCode").value+"<style>"+document.getElementById("cssCode").value+"</style><script>"+document.getElementById("jsCode").value+"<\/script>"}
-function run(){document.getElementById("preview").srcdoc=getFullCode()}
-let saveTimer;
-function onEdit(){run();updateHighlight();clearTimeout(saveTimer);saveTimer=setTimeout(saveToStorage,500)}
-function saveToStorage(){localStorage.setItem("htmlEditor",JSON.stringify({html:document.getElementById("htmlCode").value,css:document.getElementById("cssCode").value,js:document.getElementById("jsCode").value}))}
-function loadFromStorage(){const d=localStorage.getItem("htmlEditor");if(d){const p=JSON.parse(d);document.getElementById("htmlCode").value=p.html||"";document.getElementById("cssCode").value=p.css||"";document.getElementById("jsCode").value=p.js||""}}
-loadFromStorage();
-function setPreview(w){document.getElementById("preview").style.width=w}
-function loadTemplate(name){const t=templates[name];document.getElementById("htmlCode").value=t.html;document.getElementById("cssCode").value=t.css;document.getElementById("jsCode").value=t.js;run();updateHighlight();saveToStorage()}
+$("htmlCode").addEventListener("scroll",function(){$("highlight").scrollTop=this.scrollTop;$("highlight").scrollLeft=this.scrollLeft});
+// Auto-close brackets/tags + tab-to-indent
+var PAIRS={"(":")","[":"]","{":"}","\"":"\"","'":"'","`":"`"};
+function onKey(e,ta){
+  if(e.key==="Tab"){
+    e.preventDefault();
+    var s=ta.selectionStart,en=ta.selectionEnd;
+    ta.value=ta.value.substring(0,s)+"  "+ta.value.substring(en);
+    ta.selectionStart=ta.selectionEnd=s+2;
+    onEdit();return;
+  }
+  if(PAIRS[e.key]){
+    var s=ta.selectionStart,en=ta.selectionEnd;
+    var close=PAIRS[e.key];
+    // avoid doubling closing quote already there
+    if((e.key==="\""||e.key==="'"||e.key==="`")&&ta.value[en]===e.key){return}
+    e.preventDefault();
+    ta.value=ta.value.substring(0,s)+e.key+ta.value.substring(s,en)+close+ta.value.substring(en);
+    ta.selectionStart=ta.selectionEnd=s+1;
+    onEdit();return;
+  }
+  if(e.key===">"&&ta===$("htmlCode")){
+    var s=ta.selectionStart;
+    var before=ta.value.substring(0,s);
+    var m=before.match(/<([a-zA-Z][\w-]*)(?:\s[^<>]*)?$/);
+    var voids=["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"];
+    if(m&&voids.indexOf(m[1].toLowerCase())===-1&&!/\/$/.test(before)){
+      e.preventDefault();
+      var close="></"+m[1]+">";
+      ta.value=before+close+ta.value.substring(s);
+      ta.selectionStart=ta.selectionEnd=s+1;
+      onEdit();return;
+    }
+  }
+}
+// Simple beautifiers (no external library)
+function formatHtml(src){
+  var tokens=src.replace(/>\s*</g,"><").replace(/</g,"\n<").split("\n").filter(function(l){return l.trim()!==""});
+  var voids=["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr","!doctype"];
+  var out=[],depth=0;
+  tokens.forEach(function(t){
+    t=t.trim();
+    var isClose=/^<\//.test(t);
+    var m=t.match(/^<\/?([a-zA-Z!][\w-]*)/);
+    var name=m?m[1].toLowerCase():"";
+    var selfClose=/\/>$/.test(t)||voids.indexOf(name)!==-1;
+    if(isClose)depth=Math.max(0,depth-1);
+    out.push("  ".repeat(depth)+t);
+    if(!isClose&&/^</.test(t)&&!selfClose&&!/<\/[a-zA-Z]/.test(t))depth++;
+  });
+  return out.join("\n");
+}
+function formatCss(src){
+  var s=src.replace(/\s*\{\s*/g," {\n").replace(/;\s*/g,";\n").replace(/\s*\}\s*/g,"\n}\n");
+  var out=[],depth=0;
+  s.split("\n").forEach(function(l){
+    l=l.trim();if(l==="")return;
+    if(l==="}")depth=Math.max(0,depth-1);
+    out.push("  ".repeat(depth)+l);
+    if(/\{$/.test(l))depth++;
+  });
+  return out.join("\n");
+}
+function formatJs(src){
+  var out="",depth=0,inStr=false,q="";
+  for(var i=0;i<src.length;i++){
+    var c=src[i];
+    if(inStr){out+=c;if(c===q&&src[i-1]!=="\\")inStr=false;continue}
+    if(c==="\""||c==="'"||c==="`"){inStr=true;q=c;out+=c;continue}
+    if(c==="{"||c==="["){depth++;out+=c+"\n"+"  ".repeat(depth)}
+    else if(c==="}"||c==="]"){depth=Math.max(0,depth-1);out=out.replace(/\s+$/,"");out+="\n"+"  ".repeat(depth)+c}
+    else if(c===";"){out+=c+"\n"+"  ".repeat(depth)}
+    else if(c==="\n"){/* collapse; handled by structure */}
+    else out+=c;
+  }
+  return out.split("\n").map(function(l){return l.replace(/\s+$/,"")}).filter(function(l,idx,a){return!(l===""&&a[idx-1]==="")}).join("\n").trim();
+}
+function formatActive(){
+  if(activeTab==="html"){$("htmlCode").value=formatHtml($("htmlCode").value);updateHighlight()}
+  else if(activeTab==="css"){$("cssCode").value=formatCss($("cssCode").value)}
+  else{$("jsCode").value=formatJs($("jsCode").value)}
+  onEdit();
+}
+// Preview with console capture
+function getFullCode(){
+  return "<!DOCTYPE html><html><head><meta charset='utf-8'><style>"+$("cssCode").value+"</style></head><body>"+$("htmlCode").value+"<script>"+$("jsCode").value+"<\/script></body></html>";
+}
+function getPreviewDoc(){
+  var bridge="<script>(function(){function send(level,args){parent.postMessage({__ed:1,level:level,text:Array.prototype.map.call(args,function(a){try{return typeof a==='object'?JSON.stringify(a):String(a)}catch(e){return String(a)}}).join(' ')},'*')}['log','warn','error','info'].forEach(function(m){var o=console[m];console[m]=function(){send(m,arguments);o&&o.apply(console,arguments)}});window.onerror=function(msg,src,line,col){send('error',[msg+' (line '+line+(col?':'+col:'')+')']);return false};})();<\/script>";
+  return "<!DOCTYPE html><html><head><meta charset='utf-8'><style>"+$("cssCode").value+"</style></head><body>"+$("htmlCode").value+bridge+"<script>try{"+$("jsCode").value+"}catch(e){console.error(e.message)}<\/script></body></html>";
+}
+function run(){clearConsole();$("preview").srcdoc=getPreviewDoc()}
+function logConsole(level,text){
+  var box=$("console");
+  var empty=box.querySelector(".c-empty");if(empty)empty.remove();
+  var div=document.createElement("div");
+  div.className="c-"+(level||"log");
+  div.textContent=(level==="error"?"✖ ":level==="warn"?"⚠ ":"› ")+text;
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+}
+function clearConsole(){$("console").innerHTML='<div class="c-empty">Console output appears here…</div>'}
+window.addEventListener("message",function(e){if(e.data&&e.data.__ed){logConsole(e.data.level,e.data.text)}});
+var saveTimer;
+function onEdit(){clearTimeout(saveTimer);saveTimer=setTimeout(function(){run();saveToStorage()},350);if(activeTab==="html")updateHighlight()}
+function currentState(){return{html:$("htmlCode").value,css:$("cssCode").value,js:$("jsCode").value}}
+function saveToStorage(){localStorage.setItem(STORE,JSON.stringify(currentState()))}
+function loadFromStorage(){var d=localStorage.getItem(STORE);if(d){try{var p=JSON.parse(d);$("htmlCode").value=p.html||"";$("cssCode").value=p.css||"";$("jsCode").value=p.js||""}catch(e){}}}
+function setState(s){$("htmlCode").value=s.html||"";$("cssCode").value=s.css||"";$("jsCode").value=s.js||"";run();updateHighlight();saveToStorage()}
+function setPreview(w,btn){$("preview").style.width=w}
+function toggleFullscreen(){document.body.classList.toggle("fs-preview")}
+function loadTemplate(name){setState(templates[name])}
+// Named snippets
+function getSnips(){try{return JSON.parse(localStorage.getItem(SNIPS)||"{}")}catch(e){return{}}}
+function refreshSnips(){var sel=$("snippetSelect");var cur=sel.value;var snips=getSnips();sel.innerHTML='<option value="">— Autosave (current) —</option>';Object.keys(snips).forEach(function(n){var o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});if(getSnips()[cur])sel.value=cur}
+function saveSnippet(){var name=prompt("Snippet name:");if(!name)return;var snips=getSnips();snips[name]=currentState();localStorage.setItem(SNIPS,JSON.stringify(snips));refreshSnips();$("snippetSelect").value=name}
+function loadSnippet(){var name=$("snippetSelect").value;if(!name){loadFromStorage();run();updateHighlight();return}var snips=getSnips();if(snips[name])setState(snips[name])}
+function deleteSnippet(){var name=$("snippetSelect").value;if(!name){alert("Select a named snippet to delete.");return}if(!confirm("Delete snippet \""+name+"\"?"))return;var snips=getSnips();delete snips[name];localStorage.setItem(SNIPS,JSON.stringify(snips));$("snippetSelect").value="";refreshSnips()}
 function copyAll(){navigator.clipboard.writeText(getFullCode())}
-function dlAll(){const b=new Blob([getFullCode()],{type:"text/html"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="page.html";a.click();URL.revokeObjectURL(a.href)}
-run();updateHighlight();
+function dlAll(){var b=new Blob([getFullCode()],{type:"text/html"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="page.html";a.click();URL.revokeObjectURL(a.href)}
+loadFromStorage();refreshSnips();clearConsole();run();updateHighlight();
   </script>
 </body></html>

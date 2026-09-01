@@ -10,6 +10,69 @@
   <meta property="og:title" content="To-Do List & Kanban Board — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/todo"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"To-Do List & Kanban Board","url":"https://freetoolhubs.com/tools/todo","description":"Organize tasks with Kanban board","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/todo"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<style>
+.td-bar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem}
+.td-bar select,.td-bar input,.td-bar button{font-size:.85rem;padding:.35rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--text)}
+.td-bar button{cursor:pointer}
+.td-views{display:flex;gap:.4rem;flex-wrap:wrap;margin:.6rem 0}
+.td-view{padding:.35rem .7rem;border-radius:999px;border:1px solid rgba(99,102,241,.4);background:var(--card);color:var(--text2);cursor:pointer;font-size:.8rem}
+.td-view.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.td-view .cnt{opacity:.8;font-size:.72rem;margin-left:.25rem}
+.td-add{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.6rem 0}
+.td-add input[type=text]{flex:3;min-width:180px}
+.td-add select,.td-add input,.td-add button{font-size:.9rem;padding:.5rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--text)}
+.td-list{list-style:none;padding:0;margin:.6rem 0;min-height:60px}
+.td-item{display:flex;align-items:flex-start;gap:.6rem;background:var(--card);border:1px solid rgba(255,255,255,.06);border-left:4px solid var(--accent);border-radius:10px;padding:.6rem .8rem;margin:.45rem 0;position:relative;touch-action:none}
+.td-item.dragging{opacity:.4}
+.td-item.drop-before{box-shadow:0 -3px 0 var(--accent)}
+.td-item.drop-after{box-shadow:0 3px 0 var(--accent)}
+.td-item.done .td-title{text-decoration:line-through;opacity:.55}
+.td-check{width:20px;height:20px;margin-top:.15rem;cursor:pointer;flex:none}
+.td-body{flex:1;min-width:0}
+.td-title{font-weight:600;word-break:break-word}
+.td-notes{color:var(--text2);font-size:.8rem;margin-top:.15rem;white-space:pre-wrap}
+.td-meta{display:flex;gap:.4rem;flex-wrap:wrap;font-size:.72rem;margin-top:.3rem;align-items:center}
+.td-badge{padding:.1rem .45rem;border-radius:5px;font-weight:700;color:#fff}
+.td-tag{padding:.1rem .45rem;border-radius:5px;background:rgba(99,102,241,.18);color:var(--accent2);cursor:pointer}
+.td-due{padding:.1rem .45rem;border-radius:5px;background:rgba(255,255,255,.06);color:var(--text2)}
+.td-due.overdue{background:rgba(244,67,54,.15);color:#f44336;font-weight:700}
+.td-recur{padding:.1rem .45rem;border-radius:5px;background:rgba(139,92,246,.18);color:var(--accent2)}
+.td-actions{display:flex;gap:.3rem;flex:none}
+.td-actions button{border:none;background:none;cursor:pointer;font-size:.85rem;opacity:.6;color:var(--text)}
+.td-actions button:hover{opacity:1}
+.td-drag{cursor:grab;opacity:.4;font-size:1rem;user-select:none;flex:none;margin-top:.1rem}
+.td-sub{list-style:none;padding:0;margin:.4rem 0 0;font-size:.8rem}
+.td-sub li{display:flex;align-items:center;gap:.4rem;padding:.12rem 0}
+.td-sub li.done span{text-decoration:line-through;opacity:.6}
+.td-sub li button{border:none;background:none;cursor:pointer;font-size:.7rem;opacity:.6;color:var(--text)}
+.td-subadd{display:flex;gap:.3rem;margin-top:.3rem}
+.td-subadd input{flex:1;font-size:.78rem;padding:.2rem .4rem;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--text)}
+.td-subadd button{font-size:.75rem;padding:.2rem .5rem;border-radius:5px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+.td-progress{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:.35rem;overflow:hidden}
+.td-progress i{display:block;height:100%;background:var(--gradient);border-radius:3px}
+.td-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin-top:.6rem}
+.td-stat{background:var(--card);border-radius:10px;padding:.7rem;text-align:center}
+.td-stat b{display:block;font-size:1.4rem;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.td-stat span{font-size:.72rem;color:var(--text2)}
+.td-chart{display:flex;align-items:flex-end;gap:.35rem;height:80px;margin-top:.6rem}
+.td-chart .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.2rem}
+.td-chart .bar i{width:100%;background:var(--gradient);border-radius:4px 4px 0 0;min-height:2px;display:block}
+.td-chart .bar small{font-size:.62rem;color:var(--text2)}
+.td-bulk{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+.td-bulk button{font-size:.8rem;padding:.35rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--text);cursor:pointer}
+.td-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:center;justify-content:center;padding:1rem}
+.td-modal.active{display:flex}
+.td-modal-box{background:var(--surface);border-radius:var(--radius);padding:1.4rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.td-modal-box label{display:block;font-size:.82rem;font-weight:600;margin-top:.7rem}
+.td-modal-box input,.td-modal-box textarea,.td-modal-box select{width:100%;padding:.45rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--text);font-size:.9rem;margin-top:.2rem;box-sizing:border-box}
+.td-modal-box textarea{resize:vertical;min-height:60px}
+.td-recur-days{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.3rem}
+.td-recur-days label{display:inline-flex;align-items:center;gap:.2rem;font-weight:400;margin:0;font-size:.78rem}
+.td-recur-days input{width:auto;margin:0}
+.td-modal-btns{display:flex;gap:.5rem;margin-top:1rem}
+.td-modal-btns button{flex:1;padding:.55rem;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+.td-kbd{font-family:monospace;background:rgba(255,255,255,.08);padding:.05rem .35rem;border-radius:4px;font-size:.8rem}
+</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -18,17 +81,58 @@
     <div class="tool-section">
       <h1>📋 To-Do List & Kanban Board</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Add tasks and move them between columns. Auto-saves to browser.</p>
-      <div class="row"><input type="text" id="newTask" placeholder="Add a new task..." style="flex:3" onkeydown="if(event.key==='Enter')addTask()">
-        <select id="priority"><option value="medium">Medium</option><option value="high">🔴 High</option><option value="low">🟢 Low</option></select>
-        <input type="date" id="dueDate" title="Due date (optional)">
-        <button class="btn" onclick="addTask()">+ Add</button></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem">
-        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #6366f1">📝 To Do <span id="countTodo" class="info"></span></h3><div id="colTodo" style="min-height:100px"></div></div>
-        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #ff9800">🔄 Doing <span id="countDoing" class="info"></span></h3><div id="colDoing" style="min-height:100px"></div></div>
-        <div><h3 style="text-align:center;padding:.5rem;background:var(--card);border-radius:8px;border-top:3px solid #4caf50">✅ Done <span id="countDone" class="info"></span></h3><div id="colDone" style="min-height:100px"></div></div>
+      <p class="info">A focused, list-based task manager with projects, priorities, due dates, subtasks, recurring tasks, smart views and stats. Auto-saves to your browser.</p>
+
+      <div class="td-bar">
+        <select id="listSelect" onchange="switchList()"></select>
+        <button onclick="newList()">+ List</button>
+        <button onclick="renameList()">✏️ Rename</button>
+        <button onclick="deleteList()">🗑️ Delete</button>
+        <button onclick="exportJSON()">📤 Export JSON</button>
+        <button onclick="document.getElementById('importFile').click()">📥 Import</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
+        <button onclick="exportText()">📝 Text</button>
+        <button onclick="exportMarkdown()">☑️ Markdown</button>
       </div>
-      <div class="row" style="margin-top:1rem;justify-content:center"><button class="btn btn-outline" onclick="clearDone()">🗑️ Clear Done</button></div>
+
+      <div class="td-views" id="views"></div>
+
+      <div class="td-add">
+        <input type="text" id="newTask" placeholder="Add a task and press Enter..." onkeydown="taskKey(event)">
+        <select id="priority" title="Priority"><option value="low">🟢 Low</option><option value="medium" selected>🟡 Medium</option><option value="high">🟠 High</option><option value="urgent">🔴 Urgent</option></select>
+        <input type="date" id="dueDate" title="Due date (optional)">
+        <input type="text" id="taskTags" placeholder="tags (comma)" style="max-width:130px">
+        <button class="btn" onclick="addTask()">+ Add</button>
+      </div>
+
+      <div class="td-bar">
+        <input type="text" id="search" placeholder="🔍 Search text..." oninput="render()">
+        <select id="filterTag" onchange="render()"><option value="">All Tags</option></select>
+        <select id="filterPriority" onchange="render()"><option value="">All Priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+        <select id="sortBy" onchange="render()"><option value="manual">Sort: Manual</option><option value="due">Due date</option><option value="priority">Priority</option><option value="created">Created</option><option value="alpha">A–Z</option></select>
+      </div>
+
+      <ul class="td-list" id="taskList"></ul>
+
+      <div class="td-bulk">
+        <button onclick="completeAll()">✅ Complete All</button>
+        <button onclick="clearCompleted()">🧹 Clear Completed</button>
+        <button onclick="deleteCompleted()">🗑️ Delete Completed</button>
+      </div>
+
+      <h2 style="margin-top:1.5rem">📊 Stats</h2>
+      <div class="td-stats" id="stats"></div>
+      <p class="info" style="margin-top:.8rem">Tasks completed — last 7 days</p>
+      <div class="td-chart" id="chart"></div>
+
+      <h2 style="margin-top:1.5rem">⌨️ Keyboard Shortcuts</h2>
+      <ul style="margin-left:1.5rem;line-height:2">
+        <li><span class="td-kbd">Enter</span> in the add box — add the task</li>
+        <li><span class="td-kbd">↑</span> / <span class="td-kbd">↓</span> — move focus between tasks</li>
+        <li><span class="td-kbd">Space</span> or <span class="td-kbd">Enter</span> on a focused task — toggle complete</li>
+        <li><span class="td-kbd">E</span> on a focused task — edit it</li>
+        <li><span class="td-kbd">Delete</span> on a focused task — delete it</li>
+      </ul>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Tasks ka list banana hai? Priority set karo, due date lagao. Kaam hone pe "Done" mein move karo. Simple Kanban board — Trello jaisa but free aur instant.</p>
@@ -67,6 +171,27 @@
 <details><summary>Can I use this for commercial purposes?</summary><p>Yes, all output from this tool is yours to use for any purpose — personal, educational, or commercial.</p></details>
 </div>
   </div>
+  <div class="td-modal" id="taskModal">
+    <div class="td-modal-box">
+      <h3 id="tmTitle">Edit Task</h3>
+      <label>Title *</label><input type="text" id="tmName">
+      <label>Notes</label><textarea id="tmNotes"></textarea>
+      <label>Due date</label><input type="date" id="tmDue">
+      <label>Priority</label>
+      <select id="tmPriority"><option value="low">🟢 Low</option><option value="medium">🟡 Medium</option><option value="high">🟠 High</option><option value="urgent">🔴 Urgent</option></select>
+      <label>Tags (comma separated)</label><input type="text" id="tmTags">
+      <label>Recurring</label>
+      <select id="tmRecur" onchange="tmRecurChange()"><option value="none">None</option><option value="daily">Daily</option><option value="weekly">Weekly (chosen days)</option><option value="monthly">Monthly</option></select>
+      <div id="tmRecurDaysWrap" style="display:none">
+        <label>Repeat on</label>
+        <div class="td-recur-days" id="tmRecurDays"></div>
+      </div>
+      <div class="td-modal-btns">
+        <button onclick="closeTaskModal()" style="background:var(--card);color:var(--text)">Cancel</button>
+        <button onclick="saveTaskModal()" style="background:var(--accent);color:#fff">Save</button>
+      </div>
+    </div>
+  </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/notes" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Notes</a><a href="/tools/kanban" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Kanban Board</a><a href="/tools/pomodoro" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Pomodoro Timer</a><a href="/tools/habit-tracker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Habit Tracker</a><a href="/tools/mind-map" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Mind Map</a><a href="/tools/whiteboard" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Whiteboard</a></div></div>
   <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/free-online-kanban-todo-list">Free Online Kanban Board and To-Do List</a></li></ul></div>
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
@@ -89,31 +214,324 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var tasks=JSON.parse(localStorage.getItem("kanban")||"[]");
-function save(){localStorage.setItem("kanban",JSON.stringify(tasks))}
-function addTask(){var t=document.getElementById("newTask").value.trim();if(!t)return;tasks.push({text:t,col:"todo",created:Date.now(),priority:document.getElementById("priority").value,due:document.getElementById("dueDate").value||""});document.getElementById("newTask").value="";document.getElementById("dueDate").value="";save();render()}
-function moveTask(i,col){tasks[i].col=col;save();render()}
-function removeTask(i){tasks.splice(i,1);save();render()}
-function clearDone(){tasks=tasks.filter(function(t){return t.col!=="done"});save();render()}
-function isOverdue(t){if(!t.due||t.col==="done")return false;var today=new Date();today.setHours(0,0,0,0);return new Date(t.due+"T00:00:00")<today}
-function priBadge(p){if(p==="high")return ' <span style="background:#f44336;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">HIGH</span>';if(p==="medium"||p==="normal")return ' <span style="background:#ff9800;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">MED</span>';if(p==="low")return ' <span style="background:#4caf50;color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:bold">LOW</span>';return ""}
-function render(){
-  var cols={todo:[],doing:[],done:[]};
-  tasks.forEach(function(t,i){t._i=i;if(cols[t.col])cols[t.col].push(t)});
-  ["todo","doing","done"].forEach(function(col){
-    var el=document.getElementById("col"+col.charAt(0).toUpperCase()+col.slice(1));
-    var colors={todo:"#6366f1",doing:"#ff9800",done:"#4caf50"};
-    var nextCol={todo:"doing",doing:"done",done:"todo"};
-    var arrows={todo:"→ Doing",doing:"→ Done",done:"↩ To Do"};
-    el.innerHTML=cols[col].map(function(t){
-      var overdue=isOverdue(t);
-      var border=overdue?"#f44336":colors[col];
-      var bg=overdue?"rgba(244,67,54,.08)":"var(--card)";
-      return '<div style="background:'+bg+';padding:.6rem .8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+border+'"><div style="'+(col==="done"?"text-decoration:line-through;opacity:.6":"")+'">'+t.text+priBadge(t.priority)+(t.due?' <span style="color:'+(overdue?"#f44336":"var(--muted)")+';font-size:.75rem;'+(overdue?"font-weight:bold":"")+'">'+(overdue?"⚠️":"📅")+' '+t.due+'</span>':"")+'</div><div style="margin-top:.3rem;display:flex;gap:4px"><button onclick="moveTask('+t._i+',\''+nextCol[col]+'\')" style="font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer">'+arrows[col]+'</button><button onclick="removeTask('+t._i+')" style="font-size:.75rem;padding:.2rem .5rem;border:none;background:none;color:#f44336;cursor:pointer">×</button></div></div>';
-    }).join("")||'<p class="info" style="text-align:center;font-size:.8rem">Empty</p>';
-    document.getElementById("count"+col.charAt(0).toUpperCase()+col.slice(1)).textContent="("+cols[col].length+")";
+var KEY='fth_todo_v2';
+var PRI={urgent:{label:'URGENT',color:'#f44336',rank:0},high:{label:'HIGH',color:'#ff9800',rank:1},medium:{label:'MED',color:'#eab308',rank:2},low:{label:'LOW',color:'#4caf50',rank:3}};
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var data=load();
+var currentView='all';
+var focusIdx=-1;
+var editingId=null;
+
+function load(){
+  var raw=localStorage.getItem(KEY);
+  if(raw){try{var d=JSON.parse(raw);if(d&&d.lists)return d}catch(e){}}
+  // migrate old single-array kanban-style todo if present
+  var migrated=[];
+  try{
+    var old=JSON.parse(localStorage.getItem('kanban')||'[]');
+    if(Array.isArray(old)&&old.length){
+      old.forEach(function(t){
+        migrated.push({id:uid(),title:t.text||'Untitled',notes:'',due:t.due||'',priority:t.priority==='normal'?'medium':(t.priority||'medium'),tags:[],subtasks:[],done:t.col==='done',created:t.created||Date.now(),recur:'none',recurDays:[]});
+      });
+    }
+  }catch(e){}
+  return {lists:[{id:uid(),name:'My Tasks',tasks:migrated}],active:0,history:{}};
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function list(){return data.lists[data.active]}
+function todayStr(){var d=new Date();d.setHours(0,0,0,0);return dstr(d)}
+function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseDate(s){return s?new Date(s+'T00:00:00'):null}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+/* ---- lists ---- */
+function renderListSelect(){
+  var s=document.getElementById('listSelect');
+  s.innerHTML=data.lists.map(function(l,i){return '<option value="'+i+'"'+(i===data.active?' selected':'')+'>'+esc(l.name)+'</option>'}).join('');
+}
+function switchList(){data.active=+document.getElementById('listSelect').value;currentView='all';focusIdx=-1;save();render()}
+function newList(){var n=prompt('New list name:');if(!n)return;data.lists.push({id:uid(),name:n.trim(),tasks:[]});data.active=data.lists.length-1;save();render()}
+function renameList(){var n=prompt('Rename list:',list().name);if(!n)return;list().name=n.trim();save();render()}
+function deleteList(){if(data.lists.length<2){alert('Cannot delete the only list.');return}if(!confirm('Delete list "'+list().name+'"?'))return;data.lists.splice(data.active,1);data.active=0;save();render()}
+
+/* ---- add task ---- */
+function taskKey(e){if(e.key==='Enter')addTask()}
+function addTask(){
+  var input=document.getElementById('newTask');
+  var t=input.value.trim();if(!t)return;
+  var tags=document.getElementById('taskTags').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  list().tasks.push({id:uid(),title:t,notes:'',due:document.getElementById('dueDate').value||'',priority:document.getElementById('priority').value,tags:tags,subtasks:[],done:false,created:Date.now(),recur:'none',recurDays:[]});
+  input.value='';document.getElementById('dueDate').value='';document.getElementById('taskTags').value='';
+  save();render();input.focus();
+}
+
+/* ---- views ---- */
+function matchesView(t){
+  var today=todayStr();
+  if(currentView==='completed')return t.done;
+  if(currentView==='all')return true;
+  if(t.done)return false;
+  if(currentView==='nodate')return !t.due;
+  if(!t.due)return false;
+  var d=parseDate(t.due),now=parseDate(today);
+  if(currentView==='overdue')return d<now;
+  if(currentView==='today')return t.due===today;
+  if(currentView==='tomorrow'){var tm=new Date(now);tm.setDate(tm.getDate()+1);return t.due===dstr(tm)}
+  if(currentView==='week'){var end=new Date(now);end.setDate(end.getDate()+7);return d>=now&&d<=end}
+  return true;
+}
+function viewCount(v){var s=currentView;currentView=v;var c=list().tasks.filter(matchesView).length;currentView=s;return c}
+function renderViews(){
+  var views=[['all','All'],['today','Today'],['tomorrow','Tomorrow'],['week','This Week'],['overdue','Overdue'],['nodate','No Date'],['completed','Completed']];
+  document.getElementById('views').innerHTML=views.map(function(v){
+    return '<button class="td-view'+(currentView===v[0]?' active':'')+'" onclick="setView(\''+v[0]+'\')">'+v[1]+'<span class="cnt">'+viewCount(v[0])+'</span></button>';
+  }).join('');
+}
+function setView(v){currentView=v;focusIdx=-1;render()}
+
+/* ---- filtering & sorting ---- */
+function applyFilters(tasks){
+  var search=document.getElementById('search').value.toLowerCase();
+  var ftag=document.getElementById('filterTag').value;
+  var fpri=document.getElementById('filterPriority').value;
+  return tasks.filter(function(t){
+    if(!matchesView(t))return false;
+    if(search&&(t.title+' '+(t.notes||'')).toLowerCase().indexOf(search)===-1)return false;
+    if(ftag&&(t.tags||[]).indexOf(ftag)===-1)return false;
+    if(fpri&&t.priority!==fpri)return false;
+    return true;
   });
 }
+function sortTasks(tasks){
+  var by=document.getElementById('sortBy').value;
+  var arr=tasks.slice();
+  if(by==='due')arr.sort(function(a,b){return (a.due||'9999').localeCompare(b.due||'9999')});
+  else if(by==='priority')arr.sort(function(a,b){return PRI[a.priority].rank-PRI[b.priority].rank});
+  else if(by==='created')arr.sort(function(a,b){return a.created-b.created});
+  else if(by==='alpha')arr.sort(function(a,b){return a.title.toLowerCase().localeCompare(b.title.toLowerCase())});
+  return arr;
+}
+function refreshTagFilter(){
+  var all={};
+  list().tasks.forEach(function(t){(t.tags||[]).forEach(function(x){all[x]=1})});
+  var sel=document.getElementById('filterTag');var cur=sel.value;
+  sel.innerHTML='<option value="">All Tags</option>'+Object.keys(all).sort().map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
+  sel.value=cur;
+}
+
+/* ---- render ---- */
+function render(){
+  renderListSelect();refreshTagFilter();renderViews();
+  var manual=document.getElementById('sortBy').value==='manual';
+  var tasks=sortTasks(applyFilters(list().tasks));
+  var ul=document.getElementById('taskList');
+  if(!tasks.length){ul.innerHTML='<li class="info" style="text-align:center;list-style:none">No tasks in this view.</li>'}
+  else ul.innerHTML=tasks.map(function(t){return taskHtml(t,manual)}).join('');
+  renderStats();renderChart();save();
+}
+function taskHtml(t,manual){
+  var p=PRI[t.priority];
+  var overdue=t.due&&!t.done&&parseDate(t.due)<parseDate(todayStr());
+  var subs=t.subtasks||[];var done=subs.filter(function(s){return s.done}).length;
+  var subHtml=subs.length?'<ul class="td-sub">'+subs.map(function(s,si){
+    return '<li class="'+(s.done?'done':'')+'"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSub(\''+t.id+'\','+si+')"><span>'+esc(s.text)+'</span><button onclick="delSub(\''+t.id+'\','+si+')" title="Remove">✕</button></li>';
+  }).join('')+'</ul>':'';
+  var progress=subs.length?'<div class="td-progress"><i style="width:'+Math.round(done/subs.length*100)+'%"></i></div>':'';
+  var subAdd='<div class="td-subadd"><input type="text" placeholder="Add subtask..." onkeydown="if(event.key===\'Enter\')addSub(\''+t.id+'\',this)"><button onclick="addSub(\''+t.id+'\',this.previousElementSibling)">+</button></div>';
+  var tags=(t.tags||[]).map(function(x){return '<span class="td-tag" onclick="quickTag(\''+esc(x)+'\')">#'+esc(x)+'</span>'}).join('');
+  var recurLabel={daily:'🔁 Daily',weekly:'🔁 Weekly',monthly:'🔁 Monthly'}[t.recur];
+  return '<li class="td-item'+(t.done?' done':'')+'" tabindex="0" data-id="'+t.id+'" style="border-left-color:'+p.color+'"'+
+    (manual?' draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropTask(event)" ondragend="dragEnd(event)" onpointerdown="pointerDown(event)"':'')+
+    ' onkeydown="itemKey(event,\''+t.id+'\')">'+
+    (manual?'<span class="td-drag" title="Drag to reorder">⠿</span>':'')+
+    '<input type="checkbox" class="td-check" '+(t.done?'checked':'')+' onchange="toggleDone(\''+t.id+'\')">'+
+    '<div class="td-body">'+
+      '<div class="td-title">'+esc(t.title)+'</div>'+
+      (t.notes?'<div class="td-notes">'+esc(t.notes)+'</div>':'')+
+      '<div class="td-meta">'+
+        '<span class="td-badge" style="background:'+p.color+'">'+p.label+'</span>'+
+        (t.due?'<span class="td-due'+(overdue?' overdue':'')+'">'+(overdue?'⚠️ ':'📅 ')+t.due+'</span>':'')+
+        (recurLabel?'<span class="td-recur">'+recurLabel+'</span>':'')+
+        tags+
+        (subs.length?'<span class="td-due">☑️ '+done+'/'+subs.length+'</span>':'')+
+      '</div>'+progress+subHtml+subAdd+
+    '</div>'+
+    '<div class="td-actions"><button onclick="openEdit(\''+t.id+'\')" title="Edit">✏️</button><button onclick="delTask(\''+t.id+'\')" title="Delete">🗑️</button></div>'+
+  '</li>';
+}
+
+/* ---- task ops ---- */
+function findTask(id){return list().tasks.filter(function(t){return t.id===id})[0]}
+function toggleDone(id){
+  var t=findTask(id);if(!t)return;
+  t.done=!t.done;
+  if(t.done){
+    recordCompletion();
+    if(t.recur&&t.recur!=='none')spawnRecurring(t);
+  }
+  save();render();
+}
+function recordCompletion(){var d=todayStr();data.history[d]=(data.history[d]||0)+1}
+function spawnRecurring(t){
+  var base=t.due?parseDate(t.due):new Date();base.setHours(0,0,0,0);
+  var next=new Date(base);
+  if(t.recur==='daily'){next.setDate(next.getDate()+1)}
+  else if(t.recur==='monthly'){next.setMonth(next.getMonth()+1)}
+  else if(t.recur==='weekly'){
+    var days=(t.recurDays&&t.recurDays.length)?t.recurDays.slice().sort(function(a,b){return a-b}):[base.getDay()];
+    for(var i=1;i<=7;i++){var c=new Date(base);c.setDate(c.getDate()+i);if(days.indexOf(c.getDay())!==-1){next=c;break}}
+  }
+  list().tasks.push({id:uid(),title:t.title,notes:t.notes,due:dstr(next),priority:t.priority,tags:(t.tags||[]).slice(),subtasks:(t.subtasks||[]).map(function(s){return {text:s.text,done:false}}),done:false,created:Date.now(),recur:t.recur,recurDays:(t.recurDays||[]).slice()});
+}
+function delTask(id){if(!confirm('Delete this task?'))return;list().tasks=list().tasks.filter(function(t){return t.id!==id});save();render()}
+function quickTag(tag){document.getElementById('filterTag').value=tag;render()}
+
+/* ---- subtasks ---- */
+function addSub(id,input){var t=findTask(id);var v=input.value.trim();if(!v)return;if(!t.subtasks)t.subtasks=[];t.subtasks.push({text:v,done:false});input.value='';save();render()}
+function toggleSub(id,si){var t=findTask(id);t.subtasks[si].done=!t.subtasks[si].done;save();render()}
+function delSub(id,si){findTask(id).subtasks.splice(si,1);save();render()}
+
+/* ---- edit modal ---- */
+function renderRecurDays(selected){
+  document.getElementById('tmRecurDays').innerHTML=DAYS.map(function(d,i){
+    return '<label><input type="checkbox" value="'+i+'"'+((selected||[]).indexOf(i)!==-1?' checked':'')+'>'+d+'</label>';
+  }).join('');
+}
+function tmRecurChange(){document.getElementById('tmRecurDaysWrap').style.display=document.getElementById('tmRecur').value==='weekly'?'block':'none'}
+function openEdit(id){
+  var t=findTask(id);if(!t)return;editingId=id;
+  document.getElementById('tmName').value=t.title;
+  document.getElementById('tmNotes').value=t.notes||'';
+  document.getElementById('tmDue').value=t.due||'';
+  document.getElementById('tmPriority').value=t.priority;
+  document.getElementById('tmTags').value=(t.tags||[]).join(', ');
+  document.getElementById('tmRecur').value=t.recur||'none';
+  renderRecurDays(t.recurDays||[]);tmRecurChange();
+  document.getElementById('taskModal').classList.add('active');
+}
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('active');editingId=null}
+function saveTaskModal(){
+  var t=findTask(editingId);if(!t)return;
+  var name=document.getElementById('tmName').value.trim();if(!name){alert('Title is required');return}
+  t.title=name;
+  t.notes=document.getElementById('tmNotes').value.trim();
+  t.due=document.getElementById('tmDue').value;
+  t.priority=document.getElementById('tmPriority').value;
+  t.tags=document.getElementById('tmTags').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  t.recur=document.getElementById('tmRecur').value;
+  t.recurDays=[].slice.call(document.querySelectorAll('#tmRecurDays input:checked')).map(function(c){return +c.value});
+  closeTaskModal();save();render();
+}
+
+/* ---- bulk ---- */
+function completeAll(){var any=false;applyFilters(list().tasks).forEach(function(t){if(!t.done){t.done=true;any=true;if(t.recur&&t.recur!=='none')spawnRecurring(t)}});if(any)recordCompletion();save();render()}
+function clearCompleted(){list().tasks.forEach(function(t){t.done=false});save();render()}
+function deleteCompleted(){if(!confirm('Delete all completed tasks in this list?'))return;list().tasks=list().tasks.filter(function(t){return !t.done});save();render()}
+
+/* ---- stats ---- */
+function weekAgoStr(n){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return dstr(d)}
+function renderStats(){
+  var today=todayStr();var todayC=data.history[today]||0;
+  var weekC=0;for(var i=0;i<7;i++)weekC+=data.history[weekAgoStr(i)]||0;
+  var total=list().tasks.length;var done=list().tasks.filter(function(t){return t.done}).length;
+  var rate=total?Math.round(done/total*100):0;
+  var streak=0;var d=new Date();d.setHours(0,0,0,0);
+  if(!(data.history[dstr(d)]>0))d.setDate(d.getDate()-1);
+  while(data.history[dstr(d)]>0){streak++;d.setDate(d.getDate()-1)}
+  document.getElementById('stats').innerHTML=
+    '<div class="td-stat"><b>'+todayC+'</b><span>Completed today</span></div>'+
+    '<div class="td-stat"><b>'+weekC+'</b><span>This week</span></div>'+
+    '<div class="td-stat"><b>'+rate+'%</b><span>Completion rate</span></div>'+
+    '<div class="td-stat"><b>'+streak+'🔥</b><span>Day streak</span></div>';
+}
+function renderChart(){
+  var vals=[];for(var i=6;i>=0;i--){var ds=weekAgoStr(i);vals.push({d:new Date(ds+'T00:00:00'),v:data.history[ds]||0})}
+  var max=Math.max(1,Math.max.apply(null,vals.map(function(x){return x.v})));
+  document.getElementById('chart').innerHTML=vals.map(function(x){
+    return '<div class="bar"><i style="height:'+Math.round(x.v/max*70)+'px" title="'+x.v+' done"></i><small>'+DAYS[x.d.getDay()]+'</small></div>';
+  }).join('');
+}
+
+/* ---- export / import ---- */
+function download(filename,text,type){var b=new Blob([text],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=filename;a.click()}
+function exportJSON(){download('todo_backup.json',JSON.stringify(data,null,2),'application/json')}
+function importJSON(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var d=JSON.parse(r.result);if(d&&d.lists){data=d;data.active=0;save();render();alert('Imported successfully.')}else alert('Invalid file.')}catch(err){alert('Could not read file.')}};
+  r.readAsText(f);e.target.value='';
+}
+function exportText(){
+  var lines=[list().name,''];
+  list().tasks.forEach(function(t){lines.push((t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':''));});
+  download(list().name.replace(/\s+/g,'_')+'.txt',lines.join('\n'),'text/plain');
+}
+function exportMarkdown(){
+  var lines=['# '+list().name,''];
+  list().tasks.forEach(function(t){
+    lines.push('- ['+(t.done?'x':' ')+'] '+t.title+(t.due?' _(due '+t.due+')_':''));
+    (t.subtasks||[]).forEach(function(s){lines.push('  - ['+(s.done?'x':' ')+'] '+s.text)});
+  });
+  download(list().name.replace(/\s+/g,'_')+'.md',lines.join('\n'),'text/markdown');
+}
+
+/* ---- drag & drop reordering (manual) ---- */
+var dragId=null;
+function dragStart(e){dragId=e.currentTarget.dataset.id;e.currentTarget.classList.add('dragging');e.dataTransfer&&(e.dataTransfer.effectAllowed='move')}
+function dragOver(e){e.preventDefault();var li=e.currentTarget;var r=li.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;li.classList.toggle('drop-before',before);li.classList.toggle('drop-after',!before)}
+function dragLeave(e){e.currentTarget.classList.remove('drop-before','drop-after')}
+function dropTask(e){
+  e.preventDefault();var li=e.currentTarget;var targetId=li.dataset.id;
+  var before=li.classList.contains('drop-before');
+  li.classList.remove('drop-before','drop-after');
+  reorder(dragId,targetId,before);
+}
+function dragEnd(e){document.querySelectorAll('.td-item').forEach(function(x){x.classList.remove('dragging','drop-before','drop-after')})}
+function reorder(fromId,toId,before){
+  if(!fromId||fromId===toId)return;
+  var arr=list().tasks;
+  var from=arr.findIndex(function(t){return t.id===fromId});
+  if(from<0)return;var moved=arr.splice(from,1)[0];
+  var to=arr.findIndex(function(t){return t.id===toId});
+  if(to<0){arr.push(moved)}else{arr.splice(before?to:to+1,0,moved)}
+  dragId=null;save();render();
+}
+/* pointer-based (touch) drag */
+var ptrId=null,ptrEl=null;
+function pointerDown(e){
+  if(e.pointerType==='mouse')return; // desktop uses native DnD
+  var li=e.currentTarget;ptrId=li.dataset.id;ptrEl=li;li.classList.add('dragging');
+  li.setPointerCapture&&li.setPointerCapture(e.pointerId);
+  document.addEventListener('pointermove',pointerMove);
+  document.addEventListener('pointerup',pointerUp);
+}
+function pointerMove(e){
+  document.querySelectorAll('.td-item').forEach(function(x){x.classList.remove('drop-before','drop-after')});
+  var el=document.elementFromPoint(e.clientX,e.clientY);
+  var li=el&&el.closest?el.closest('.td-item'):null;
+  if(li&&li!==ptrEl){var r=li.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;li.classList.toggle('drop-before',before);li.classList.toggle('drop-after',!before)}
+}
+function pointerUp(e){
+  document.removeEventListener('pointermove',pointerMove);
+  document.removeEventListener('pointerup',pointerUp);
+  var el=document.elementFromPoint(e.clientX,e.clientY);
+  var li=el&&el.closest?el.closest('.td-item'):null;
+  if(li&&li!==ptrEl){var r=li.getBoundingClientRect();var before=(e.clientY-r.top)<r.height/2;reorder(ptrId,li.dataset.id,before)}
+  else{document.querySelectorAll('.td-item').forEach(function(x){x.classList.remove('dragging','drop-before','drop-after')})}
+  ptrId=null;ptrEl=null;
+}
+
+/* ---- keyboard nav ---- */
+function itemKey(e,id){
+  var items=[].slice.call(document.querySelectorAll('.td-item'));
+  var idx=items.findIndex(function(x){return x.dataset.id===id});
+  if(e.key==='ArrowDown'){e.preventDefault();if(items[idx+1])items[idx+1].focus()}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(items[idx-1])items[idx-1].focus()}
+  else if(e.key===' '||e.key==='Enter'){e.preventDefault();toggleDone(id)}
+  else if(e.key==='e'||e.key==='E'){e.preventDefault();openEdit(id)}
+  else if(e.key==='Delete'){e.preventDefault();delTask(id)}
+}
+
 render();
   </script>
 </body>

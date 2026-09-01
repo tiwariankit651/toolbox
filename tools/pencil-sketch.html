@@ -18,21 +18,78 @@
     <div class="tool-section">
       <h1>✏️ Image to Pencil Sketch</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Convert any photo into a pencil sketch drawing. Adjust intensity and blur.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image here<input type="file" id="inp" accept="image/*"></div>
+      <p class="info">Convert photos into artistic drawings — 11 effect modes with real pixel-level processing, live preview and batch export.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="editor" style="display:none">
-        <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
-          <div><label>Intensity: <span id="intVal">20</span></label><input type="range" id="intensity" min="5" max="50" value="20" oninput="document.getElementById('intVal').textContent=this.value;convert()" style="max-width:150px"></div>
-          <div><label>Blur: <span id="blurVal">3</span></label><input type="range" id="blur" min="1" max="10" value="3" oninput="document.getElementById('blurVal').textContent=this.value;convert()" style="max-width:150px"></div>
-          <div><label>Style:</label><select id="style" onchange="convert()"><option value="pencil">Pencil</option><option value="charcoal">Charcoal</option><option value="ink">Ink</option><option value="watercolor">Watercolor</option><option value="sepia">Sepia Vintage</option><option value="pop">Pop Art</option></select></div>
-          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0" oninput="document.getElementById('conVal').textContent=this.value;convert()" style="max-width:120px"></div>
-          <div><label>Brightness: <span id="briVal">0</span></label><input type="range" id="brightness" min="-50" max="50" value="0" oninput="document.getElementById('briVal').textContent=this.value;convert()" style="max-width:120px"></div>
+        <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo" style="text-align:center"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
+
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Preset:</label>
+            <select id="preset" onchange="applyPreset()">
+              <option value="">— Custom —</option>
+              <option value="portrait">Portrait Sketch</option>
+              <option value="boldink">Bold Ink</option>
+              <option value="watercolour">Soft Watercolour</option>
+              <option value="comic">Comic Pop</option>
+            </select>
+          </div>
+          <div><label>Effect:</label>
+            <select id="style" onchange="scheduleRender()">
+              <option value="pencil">Pencil Sketch</option>
+              <option value="colored">Coloured Pencil</option>
+              <option value="charcoal">Charcoal</option>
+              <option value="ink">Pen &amp; Ink</option>
+              <option value="crosshatch">Cross-Hatch</option>
+              <option value="stipple">Stipple / Dotted</option>
+              <option value="watercolour">Watercolour</option>
+              <option value="oil">Oil Painting</option>
+              <option value="cartoon">Cartoon / Comic</option>
+              <option value="blueprint">Blueprint</option>
+            </select>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0">
-          <div style="text-align:center"><p class="info">Original</p><canvas id="orig" style="max-width:100%;border-radius:8px"></canvas></div>
-          <div style="text-align:center"><p class="info">Sketch</p><canvas id="sketch" style="max-width:100%;border-radius:8px"></canvas></div>
+
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Line strength / edge threshold: <span id="lineVal">30</span></label><input type="range" id="line" min="1" max="100" value="30" oninput="scheduleRender()"></div>
+          <div><label>Blur radius: <span id="blurVal">3</span></label><input type="range" id="blur" min="0" max="12" value="3" oninput="scheduleRender()"></div>
+          <div><label>Detail level: <span id="detailVal">5</span></label><input type="range" id="detail" min="1" max="10" value="5" oninput="scheduleRender()"></div>
         </div>
-        <div class="row" style="justify-content:center"><button class="btn" onclick="dl()">💾 Download Sketch</button></div>
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
+          <div><label>Brightness: <span id="briVal">0</span></label><input type="range" id="brightness" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="invert" style="width:auto" onchange="scheduleRender()"><label for="invert" style="margin:0">Invert</label></div>
+        </div>
+
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Background:</label>
+            <select id="bg" onchange="scheduleRender()">
+              <option value="white">White</option>
+              <option value="cream">Cream / Paper texture</option>
+              <option value="transparent">Transparent (PNG)</option>
+            </select>
+          </div>
+          <div><label>Paper grain: <span id="grainVal">0</span></label><input type="range" id="grain" min="0" max="100" value="0" oninput="scheduleRender()"></div>
+        </div>
+
+        <div style="position:relative;max-width:100%;margin:.5rem auto" id="cmpWrap">
+          <canvas id="sketch" style="display:block;max-width:100%;border-radius:8px"></canvas>
+          <div id="cmpTop" style="position:absolute;top:0;left:0;height:100%;width:50%;overflow:hidden;border-radius:8px 0 0 8px"><canvas id="orig" style="display:block;border-radius:8px"></canvas></div>
+          <div id="cmpDivider" style="position:absolute;top:0;left:50%;width:3px;height:100%;background:#6366f1;cursor:ew-resize;transform:translateX(-50%)"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem">⇔</div></div>
+        </div>
+        <p class="info" style="text-align:center">Left = original · Right = effect. Drag the divider.</p>
+
+        <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
+          <div><label>Output format:</label><select id="fmt" onchange="toggleQuality();updateSize()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
+          <div id="qualityWrap" style="display:none"><label>Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92" oninput="updateSize()"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;margin:.3rem 0"><input type="checkbox" id="hires" checked style="width:auto"><label for="hires" style="margin:0">High-resolution export (process at full image size)</label></div>
+        <p class="info" id="sizeInfo"></p>
+
+        <div class="row" style="justify-content:center">
+          <button class="btn" onclick="dl()">💾 Download</button>
+          <button class="btn btn-outline" id="batchBtn" style="display:none" onclick="downloadAllZip()">📦 Download all as ZIP</button>
+        </div>
+        <div id="progress" style="display:none;margin-top:.6rem"><div style="background:var(--card);border-radius:8px;overflow:hidden;height:14px"><div id="progressBar" style="height:100%;width:0;background:var(--gradient);transition:width .2s"></div></div><p class="info" id="progressTxt" style="text-align:center"></p></div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -91,47 +148,347 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-var img=null;
-setupDrop("drop","inp",function(f){loadImage(f[0]).then(function(i){img=i;document.getElementById("editor").style.display="block";var oc=document.getElementById("orig");oc.width=i.width;oc.height=i.height;oc.getContext("2d").drawImage(i,0,0);convert()})});
-function convert(){
-  if(!img)return;
-  var w=img.width,h=img.height;
-  var sc=document.getElementById("sketch");sc.width=w;sc.height=h;var ctx=sc.getContext("2d");
-  var intensity=+document.getElementById("intensity").value;
-  var blurR=+document.getElementById("blur").value;
-  var style=document.getElementById("style").value;
-  // Step 1: Draw original grayscale
-  ctx.drawImage(img,0,0);
-  var imageData=ctx.getImageData(0,0,w,h);var d=imageData.data;
-  for(var i=0;i<d.length;i+=4){var gray=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;d[i]=d[i+1]=d[i+2]=gray}
-  ctx.putImageData(imageData,0,0);
-  // Step 2: Create inverted blurred version
-  var c2=document.createElement("canvas");c2.width=w;c2.height=h;var ctx2=c2.getContext("2d");
-  ctx2.filter="blur("+blurR+"px)";ctx2.drawImage(sc,0,0);
-  var blurred=ctx2.getImageData(0,0,w,h).data;
-  // Step 3: Color dodge blend
-  var out=ctx.getImageData(0,0,w,h);var od=out.data;
-  for(var i=0;i<od.length;i+=4){
-    var base=od[i];var inv=255-blurred[i];
-    var result=Math.min(255,base*256/(256-inv+1));
-    if(style==="charcoal"){result=result<128?result*0.5:result;result=Math.min(255,result*1.2)}
-    else if(style==="ink"){result=result<intensity*5?0:255}
-    else if(style==="watercolor"){var orig=imageData.data[i];result=Math.round(result/32)*32;od[i]=Math.round(orig*0.3+result*0.7);od[i+1]=Math.round(imageData.data[i+1]*0.3+result*0.7);od[i+2]=Math.round(imageData.data[i+2]*0.3+result*0.7);continue}
-    else if(style==="sepia"){var r2=Math.min(255,result*1.2);var g2=result;var b2=result*0.8;od[i]=r2;od[i+1]=g2;od[i+2]=b2;continue}
-    else if(style==="pop"){var orig2=imageData.data[i];result=Math.round(orig2/64)*85;od[i]=result;od[i+1]=Math.round(imageData.data[i+1]/64)*85;od[i+2]=Math.round(imageData.data[i+2]/64)*85;continue}
-    else{result=Math.min(255,result+(255-result)*0.1)}
-    od[i]=od[i+1]=od[i+2]=result;
-  }
-  ctx.putImageData(out,0,0);
-  // Step 4: Enhance contrast
-  ctx.globalCompositeOperation="multiply";ctx.globalAlpha=0.1*intensity/20;ctx.drawImage(sc,0,0);ctx.globalCompositeOperation="source-over";ctx.globalAlpha=1;
-  // Apply contrast and brightness
-  var con=+document.getElementById("contrast").value;var bri=+document.getElementById("brightness").value;
-  if(con!==0||bri!==0){var fd=ctx.getImageData(0,0,w,h);var dd=fd.data;var factor=(259*(con+255))/(255*(259-con));for(var j=0;j<dd.length;j+=4){dd[j]=Math.min(255,Math.max(0,factor*(dd[j]-128)+128+bri));dd[j+1]=Math.min(255,Math.max(0,factor*(dd[j+1]-128)+128+bri));dd[j+2]=Math.min(255,Math.max(0,factor*(dd[j+2]-128)+128+bri))}ctx.putImageData(fd,0,0)}
+var items=[],curIdx=0,renderTimer=null,PREVIEW_MAX=900;
+
+setupDrop("drop","inp",function(f){
+  if(!f.length)return;
+  if(typeof checkFileSize==="function"&&!checkFileSize(f,60))return;
+  items=[];curIdx=0;
+  var files=Array.from(f).filter(function(x){return x.type.indexOf("image")===0});
+  var loaded=0;
+  files.forEach(function(file,i){
+    loadImage(file).then(function(img){
+      items[i]={img:img,name:file.name};loaded++;
+      if(loaded===files.length){
+        items=items.filter(Boolean);
+        document.getElementById("editor").style.display="block";
+        var multi=items.length>1;
+        document.getElementById("batchNav").style.display=multi?"flex":"none";
+        document.getElementById("batchBtn").style.display=multi?"inline-block":"none";
+        curIdx=0;render();
+      }
+    });
+  });
+});
+
+function navImg(dir){curIdx=Math.max(0,Math.min(items.length-1,curIdx+dir));render()}
+
+function scheduleRender(){
+  syncLabels();
+  document.getElementById("preset").value="";
+  if(renderTimer)clearTimeout(renderTimer);
+  renderTimer=setTimeout(render,120);
 }
-function dl(){document.getElementById("sketch").toBlob(function(b){download(b,"sketch.png")})}
-  </script>
+function syncLabels(){
+  document.getElementById("lineVal").textContent=document.getElementById("line").value;
+  document.getElementById("blurVal").textContent=document.getElementById("blur").value;
+  document.getElementById("detailVal").textContent=document.getElementById("detail").value;
+  document.getElementById("conVal").textContent=document.getElementById("contrast").value;
+  document.getElementById("briVal").textContent=document.getElementById("brightness").value;
+  document.getElementById("grainVal").textContent=document.getElementById("grain").value;
+}
+function toggleQuality(){document.getElementById("qualityWrap").style.display=document.getElementById("fmt").value==="image/png"?"none":"block"}
+
+var presets={
+  portrait:{style:"pencil",line:25,blur:3,detail:6,contrast:10,brightness:5,invert:false,bg:"white",grain:15},
+  boldink:{style:"ink",line:55,blur:2,detail:4,contrast:25,brightness:0,invert:false,bg:"white",grain:0},
+  watercolour:{style:"watercolour",line:20,blur:5,detail:5,contrast:-5,brightness:5,invert:false,bg:"cream",grain:30},
+  comic:{style:"cartoon",line:45,blur:2,detail:6,contrast:20,brightness:5,invert:false,bg:"white",grain:0}
+};
+function applyPreset(){
+  var p=presets[document.getElementById("preset").value];if(!p)return;
+  document.getElementById("style").value=p.style;
+  document.getElementById("line").value=p.line;
+  document.getElementById("blur").value=p.blur;
+  document.getElementById("detail").value=p.detail;
+  document.getElementById("contrast").value=p.contrast;
+  document.getElementById("brightness").value=p.brightness;
+  document.getElementById("invert").checked=p.invert;
+  document.getElementById("bg").value=p.bg;
+  document.getElementById("grain").value=p.grain;
+  syncLabels();render();
+}
+
+// ---- helpers ----
+function scaledDims(img,maxDim){
+  if(!maxDim||Math.max(img.width,img.height)<=maxDim)return {w:img.width,h:img.height};
+  var s=maxDim/Math.max(img.width,img.height);
+  return {w:Math.round(img.width*s),h:Math.round(img.height*s)};
+}
+function toGray(d){for(var i=0;i<d.length;i+=4){var g=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;d[i]=d[i+1]=d[i+2]=g}}
+function gaussianCanvas(srcCanvas,radius){
+  var w=srcCanvas.width,h=srcCanvas.height;
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  ctx.filter="blur("+radius+"px)";ctx.drawImage(srcCanvas,0,0);ctx.filter="none";return c;
+}
+// Sobel edge magnitude on a grayscale ImageData -> returns Uint8 array
+function sobel(gray,w,h){
+  var out=new Float32Array(w*h);
+  for(var y=1;y<h-1;y++)for(var x=1;x<w-1;x++){
+    var i=(y*w+x);
+    var gx=-gray[i-w-1]-2*gray[i-1]-gray[i+w-1]+gray[i-w+1]+2*gray[i+1]+gray[i+w+1];
+    var gy=-gray[i-w-1]-2*gray[i-w]-gray[i-w+1]+gray[i+w-1]+2*gray[i+w]+gray[i+w+1];
+    out[i]=Math.sqrt(gx*gx+gy*gy);
+  }
+  return out;
+}
+function grayArray(canvas){
+  var w=canvas.width,h=canvas.height;var d=canvas.getContext("2d").getImageData(0,0,w,h).data;
+  var g=new Float32Array(w*h);
+  for(var i=0,j=0;i<d.length;i+=4,j++)g[j]=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+  return g;
+}
+
+// ---- effect renderers: each returns a finished canvas (before bg/grain/adjust) ----
+function fxDodge(img,w,h,blurR,colored){
+  var base=document.createElement("canvas");base.width=w;base.height=h;var bctx=base.getContext("2d");
+  bctx.drawImage(img,0,0,w,h);
+  var origData=bctx.getImageData(0,0,w,h);
+  var gray=document.createElement("canvas");gray.width=w;gray.height=h;var gctx=gray.getContext("2d");
+  gctx.drawImage(img,0,0,w,h);var gd=gctx.getImageData(0,0,w,h);toGray(gd.data);gctx.putImageData(gd,0,0);
+  var blur=gaussianCanvas(gray,blurR||3);
+  var bd=blur.getContext("2d").getImageData(0,0,w,h).data;
+  var gdata=gd.data;
+  var out=gctx.createImageData(w,h);var od=out.data;
+  for(var i=0;i<od.length;i+=4){
+    var inv=255-bd[i];var res=inv===255?255:Math.min(255,gdata[i]*255/(255-inv));
+    if(colored){var f=res/255;od[i]=origData.data[i]*f+255*(1-f)*0.15+res*0.0;od[i]=Math.min(255,origData.data[i]*f+res*(1-f));od[i+1]=Math.min(255,origData.data[i+1]*f+res*(1-f));od[i+2]=Math.min(255,origData.data[i+2]*f+res*(1-f))}
+    else{od[i]=od[i+1]=od[i+2]=res}
+    od[i+3]=255;
+  }
+  gctx.putImageData(out,0,0);return gray;
+}
+function fxCharcoal(img,w,h,blurR,line){
+  var c=fxDodge(img,w,h,blurR,false);var ctx=c.getContext("2d");
+  var id=ctx.getImageData(0,0,w,h);var d=id.data;
+  var t=1+line/100;
+  for(var i=0;i<d.length;i+=4){var v=d[i];v=(v-128)*t+108;v=Math.max(0,Math.min(255,v));d[i]=d[i+1]=d[i+2]=v}
+  ctx.putImageData(id,0,0);return c;
+}
+function fxEdge(img,w,h,thresh,invertBlack){
+  var src=document.createElement("canvas");src.width=w;src.height=h;src.getContext("2d").drawImage(img,0,0,w,h);
+  var g=grayArray(src);var s=sobel(g,w,h);
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  var out=ctx.createImageData(w,h);var od=out.data;
+  var th=thresh*2.2;
+  for(var i=0,j=0;i<od.length;i+=4,j++){
+    var edge=s[j]>th;
+    var v=edge?0:255;
+    od[i]=od[i+1]=od[i+2]=v;od[i+3]=255;
+  }
+  ctx.putImageData(out,0,0);return c;
+}
+function fxCrosshatch(img,w,h,thresh){
+  // ink edges + hatching by darkness
+  var edge=fxEdge(img,w,h,thresh,true);var ed=edge.getContext("2d").getImageData(0,0,w,h).data;
+  var src=document.createElement("canvas");src.width=w;src.height=h;src.getContext("2d").drawImage(img,0,0,w,h);
+  var g=grayArray(src);
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  var out=ctx.createImageData(w,h);var od=out.data;
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+    var j=y*w+x;var o=j*4;var lum=g[j];var v=255;
+    if(lum<180&&((x+y)%6===0))v=40;
+    if(lum<120&&((x-y+w)%6===0))v=40;
+    if(lum<70&&((x+2*y)%5===0))v=20;
+    if(ed[o]<128)v=0;
+    od[o]=od[o+1]=od[o+2]=v;od[o+3]=255;
+  }
+  ctx.putImageData(out,0,0);return c;
+}
+function fxStipple(img,w,h,detail){
+  var src=document.createElement("canvas");src.width=w;src.height=h;src.getContext("2d").drawImage(img,0,0,w,h);
+  var g=grayArray(src);
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.fillStyle="#111";
+  var gap=Math.max(2,8-detail);
+  for(var y=0;y<h;y+=gap)for(var x=0;x<w;x+=gap){
+    var lum=g[y*w+x];
+    var prob=(255-lum)/255;
+    if(Math.random()<prob){var r=prob*gap*0.6;ctx.beginPath();ctx.arc(x+Math.random()*gap,y+Math.random()*gap,Math.max(0.4,r),0,6.283);ctx.fill()}
+  }
+  return c;
+}
+function fxWatercolour(img,w,h,blurR){
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  ctx.drawImage(img,0,0,w,h);
+  var id=ctx.getImageData(0,0,w,h);var d=id.data;
+  for(var i=0;i<d.length;i+=4){d[i]=Math.round(d[i]/40)*40;d[i+1]=Math.round(d[i+1]/40)*40;d[i+2]=Math.round(d[i+2]/40)*40}
+  ctx.putImageData(id,0,0);
+  return gaussianCanvas(c,Math.max(1,blurR*0.6));
+}
+function fxOil(img,w,h,detail){
+  var src=document.createElement("canvas");src.width=w;src.height=h;src.getContext("2d").drawImage(img,0,0,w,h);
+  var sd=src.getContext("2d").getImageData(0,0,w,h).data;
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  var out=ctx.createImageData(w,h);var od=out.data;
+  var rad=Math.max(1,Math.round(detail/2));var levels=20;
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+    var hist=[],rs=[],gs=[],bs=[];for(var k=0;k<levels;k++){hist[k]=0;rs[k]=0;gs[k]=0;bs[k]=0}
+    for(var dy=-rad;dy<=rad;dy++)for(var dx=-rad;dx<=rad;dx++){
+      var nx=Math.max(0,Math.min(w-1,x+dx)),ny=Math.max(0,Math.min(h-1,y+dy));
+      var idx=(ny*w+nx)*4;var intensity=Math.round((sd[idx]*0.299+sd[idx+1]*0.587+sd[idx+2]*0.114)/255*(levels-1));
+      hist[intensity]++;rs[intensity]+=sd[idx];gs[intensity]+=sd[idx+1];bs[intensity]+=sd[idx+2];
+    }
+    var mi=0;for(var m=1;m<levels;m++)if(hist[m]>hist[mi])mi=m;
+    var o=(y*w+x)*4;var cnt=hist[mi]||1;
+    od[o]=rs[mi]/cnt;od[o+1]=gs[mi]/cnt;od[o+2]=bs[mi]/cnt;od[o+3]=255;
+  }
+  ctx.putImageData(out,0,0);return c;
+}
+function fxCartoon(img,w,h,thresh,blurR){
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  var sm=gaussianCanvas((function(){var t=document.createElement("canvas");t.width=w;t.height=h;t.getContext("2d").drawImage(img,0,0,w,h);return t})(),Math.max(1,blurR*0.4));
+  ctx.drawImage(sm,0,0);
+  var id=ctx.getImageData(0,0,w,h);var d=id.data;
+  for(var i=0;i<d.length;i+=4){d[i]=Math.round(d[i]/48)*48;d[i+1]=Math.round(d[i+1]/48)*48;d[i+2]=Math.round(d[i+2]/48)*48}
+  ctx.putImageData(id,0,0);
+  var edge=fxEdge(img,w,h,thresh,true);var ed=edge.getContext("2d").getImageData(0,0,w,h).data;
+  var cd=ctx.getImageData(0,0,w,h);var cdd=cd.data;
+  for(var j=0;j<cdd.length;j+=4){if(ed[j]<128){cdd[j]=cdd[j+1]=cdd[j+2]=0}}
+  ctx.putImageData(cd,0,0);return c;
+}
+function fxBlueprint(img,w,h,thresh){
+  var edge=fxEdge(img,w,h,thresh,true);var ed=edge.getContext("2d").getImageData(0,0,w,h).data;
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  var out=ctx.createImageData(w,h);var od=out.data;
+  for(var i=0;i<od.length;i+=4){
+    if(ed[i]<128){od[i]=230;od[i+1]=240;od[i+2]=255}
+    else{od[i]=13;od[i+1]=44;od[i+2]=99}
+    od[i+3]=255;
+  }
+  ctx.putImageData(out,0,0);return c;
+}
+
+function buildEffect(img,w,h){
+  var style=document.getElementById("style").value;
+  var line=+document.getElementById("line").value;
+  var blurR=+document.getElementById("blur").value;
+  var detail=+document.getElementById("detail").value;
+  var c;
+  if(style==="pencil")c=fxDodge(img,w,h,blurR,false);
+  else if(style==="colored")c=fxDodge(img,w,h,blurR,true);
+  else if(style==="charcoal")c=fxCharcoal(img,w,h,blurR,line);
+  else if(style==="ink")c=fxEdge(img,w,h,line,true);
+  else if(style==="crosshatch")c=fxCrosshatch(img,w,h,line);
+  else if(style==="stipple")c=fxStipple(img,w,h,detail);
+  else if(style==="watercolour")c=fxWatercolour(img,w,h,blurR);
+  else if(style==="oil")c=fxOil(img,w,h,detail);
+  else if(style==="cartoon")c=fxCartoon(img,w,h,line,blurR);
+  else if(style==="blueprint")c=fxBlueprint(img,w,h,line);
+  else c=fxDodge(img,w,h,blurR,false);
+  return c;
+}
+
+function applyAdjust(canvas){
+  var con=+document.getElementById("contrast").value,bri=+document.getElementById("brightness").value,inv=document.getElementById("invert").checked;
+  if(con===0&&bri===0&&!inv)return;
+  var w=canvas.width,h=canvas.height;var ctx=canvas.getContext("2d");
+  var id=ctx.getImageData(0,0,w,h);var d=id.data;var factor=(259*(con+255))/(255*(259-con));
+  for(var i=0;i<d.length;i+=4){
+    for(var k=0;k<3;k++){var v=factor*(d[i+k]-128)+128+bri;if(inv)v=255-v;d[i+k]=Math.max(0,Math.min(255,v))}
+  }
+  ctx.putImageData(id,0,0);
+}
+
+function composite(effectCanvas,w,h){
+  var bg=document.getElementById("bg").value;var grain=+document.getElementById("grain").value;
+  var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");
+  if(bg==="transparent"){
+    // keep effect but drop white to transparent based on luminance
+  }else if(bg==="cream"){ctx.fillStyle="#f5ecd7";ctx.fillRect(0,0,w,h)}
+  else{ctx.fillStyle="#ffffff";ctx.fillRect(0,0,w,h)}
+  if(bg==="transparent"){
+    var ed=effectCanvas.getContext("2d").getImageData(0,0,w,h);var d=ed.data;
+    for(var i=0;i<d.length;i+=4){var lum=(d[i]+d[i+1]+d[i+2])/3;d[i+3]=Math.round(255-lum)}
+    ctx.putImageData(ed,0,0);
+  }else{
+    ctx.globalCompositeOperation="multiply";ctx.drawImage(effectCanvas,0,0);ctx.globalCompositeOperation="source-over";
+  }
+  if(grain>0){
+    var g=ctx.getImageData(0,0,w,h);var gd=g.data;var amt=grain/100*35;
+    for(var j=0;j<gd.length;j+=4){var n=(Math.random()-0.5)*amt;gd[j]+=n;gd[j+1]+=n;gd[j+2]+=n}
+    ctx.putImageData(g,0,0);
+  }
+  return c;
+}
+
+// Produce final canvas at given max size (null = full)
+function produce(img,maxDim){
+  var dim=scaledDims(img,maxDim);
+  var fx=buildEffect(img,dim.w,dim.h);
+  applyAdjust(fx);
+  return composite(fx,dim.w,dim.h);
+}
+
+function render(){
+  if(!items.length)return;
+  var img=items[curIdx].img;
+  var oc=document.getElementById("orig");
+  var dim=scaledDims(img,PREVIEW_MAX);
+  oc.width=dim.w;oc.height=dim.h;oc.getContext("2d").drawImage(img,0,0,dim.w,dim.h);
+  var result=produce(img,PREVIEW_MAX);
+  var sc=document.getElementById("sketch");sc.width=result.width;sc.height=result.height;
+  sc.getContext("2d").clearRect(0,0,sc.width,sc.height);sc.getContext("2d").drawImage(result,0,0);
+  if(items.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+" / "+items.length;
+  setupCompareSlider();updateSize();
+}
+
+function setupCompareSlider(){
+  var wrap=document.getElementById("cmpWrap"),top=document.getElementById("cmpTop"),div=document.getElementById("cmpDivider");
+  if(!wrap)return;
+  var sc=document.getElementById("sketch");
+  function fit(){var oc=document.getElementById("orig");var dispW=sc.clientWidth;oc.style.width=dispW+"px";oc.style.height="auto"}
+  fit();window.addEventListener("resize",fit);
+  function mv(clientX){var rect=wrap.getBoundingClientRect();var pct=Math.max(0,Math.min(1,(clientX-rect.left)/rect.width));top.style.width=(pct*100)+"%";div.style.left=(pct*100)+"%"}
+  var dragging=false;
+  div.onmousedown=function(){dragging=true};
+  window.addEventListener("mouseup",function(){dragging=false});
+  window.addEventListener("mousemove",function(e){if(dragging)mv(e.clientX)});
+  div.ontouchstart=function(){dragging=true};
+  window.addEventListener("touchend",function(){dragging=false});
+  wrap.addEventListener("touchmove",function(e){if(dragging){mv(e.touches[0].clientX);e.preventDefault()}});
+}
+
+function currentBlob(cb){
+  var img=items[curIdx].img;
+  var hires=document.getElementById("hires").checked;
+  var canvas=hires?produce(img,null):produce(img,PREVIEW_MAX);
+  var fmt=document.getElementById("fmt").value;var q=+document.getElementById("quality").value/100;
+  canvas.toBlob(function(b){cb(b)},fmt,fmt==="image/png"?undefined:q);
+}
+function updateSize(){
+  if(!items.length)return;
+  // estimate from preview-size render to avoid heavy full render on every slider move
+  var img=items[curIdx].img;var canvas=produce(img,PREVIEW_MAX);
+  var fmt=document.getElementById("fmt").value;var q=+document.getElementById("quality").value/100;
+  canvas.toBlob(function(b){if(b)document.getElementById("sizeInfo").textContent="Approx file size (preview): "+formatSize(b.size)+(document.getElementById("hires").checked?" · full-res export will be larger":"")},fmt,fmt==="image/png"?undefined:q);
+}
+
+function ext(){var f=document.getElementById("fmt").value;return f==="image/png"?"png":f==="image/webp"?"webp":"jpg"}
+
+function dl(){currentBlob(function(b){var base=items[curIdx].name.replace(/\.[^.]+$/,"");download(b,base+"_sketch."+ext())})}
+
+function downloadAllZip(){
+  if(!items.length)return;
+  var bar=document.getElementById("progressBar"),txt=document.getElementById("progressTxt");
+  document.getElementById("progress").style.display="block";
+  var zip=new JSZip();var i=0;var origIdx=curIdx;
+  var hires=document.getElementById("hires").checked;var fmt=document.getElementById("fmt").value;var q=+document.getElementById("quality").value/100;
+  function step(){
+    if(i>=items.length){
+      txt.textContent="Zipping…";
+      zip.generateAsync({type:"blob"}).then(function(blob){download(blob,"sketches.zip");txt.textContent="Done — "+items.length+" images.";curIdx=origIdx;render()});
+      return;
+    }
+    txt.textContent="Processing "+(i+1)+" / "+items.length+"…";bar.style.width=((i/items.length)*100)+"%";
+    var it=items[i];var canvas=hires?produce(it.img,null):produce(it.img,PREVIEW_MAX);
+    canvas.toBlob(function(b){var base=it.name.replace(/\.[^.]+$/,"");zip.file(base+"_sketch."+ext(),b);i++;bar.style.width=((i/items.length)*100)+"%";requestAnimationFrame(function(){setTimeout(step,20)})},fmt,fmt==="image/png"?undefined:q);
+  }
+  step();
+}
+</script>
 </body>
 </html>

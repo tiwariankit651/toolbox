@@ -17,16 +17,53 @@
     <div class="breadcrumb"><a href="../">Home</a> → SQL Formatter</div>
     <div class="tool-section"><h1>🗃️ SQL Formatter & Beautifier</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste messy SQL and get clean, formatted output.</p>
-<textarea id="input" rows="6" placeholder="Paste your SQL query here..."></textarea>
-      <div style="margin:.3rem 0"><button class="btn btn-outline" onclick="document.getElementById('input').value='SELECT u.name, u.email, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 AND u.status = \'active\' ORDER BY o.total DESC LIMIT 20';fmt()" style="font-size:.75rem;padding:.2rem .5rem">📝 Load Example</button></div>
-<div style="margin:.5rem 0;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center"><label style="font-size:.8rem">Indent:</label><select id="indentSize" style="padding:.2rem .4rem;font-size:.8rem"><option value="2">2 spaces</option><option value="4" selected>4 spaces</option></select><label style="font-size:.8rem;margin-left:.5rem"><input type="checkbox" id="autoUpper"> Auto-uppercase keywords</label></div>
-<div class="row" style="margin:.5rem 0"><button class="btn" onclick="fmt()" style="flex:1">✨ Format SQL</button><button class="btn btn-outline" onclick="minify()">⚡ Minify</button><button class="btn btn-outline" onclick="upper()">UPPERCASE Keywords</button></div>
+      <p class="info">Paste messy SQL and get clean, properly structured output — real tokenised formatting, minify, validation, dialects and a query analyser.</p>
+<textarea id="input" rows="6" placeholder="Paste your SQL query here..." oninput="autosave()"></textarea>
+      <div style="margin:.3rem 0;display:flex;flex-wrap:wrap;gap:.3rem">
+        <button class="btn btn-outline" onclick="loadExample()" style="font-size:.75rem;padding:.2rem .5rem">📝 Load Example</button>
+        <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()" style="font-size:.75rem;padding:.2rem .5rem">📂 Upload .sql</button>
+        <input type="file" id="fileInput" accept=".sql,.txt" style="display:none" onchange="uploadFile(event)">
+      </div>
+<div style="margin:.5rem 0;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
+  <label style="font-size:.8rem;margin:0">Indent:</label>
+  <select id="indentSize" onchange="fmt()" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="2">2 spaces</option><option value="4" selected>4 spaces</option><option value="tab">Tab</option></select>
+  <label style="font-size:.8rem;margin:0">Keyword case:</label>
+  <select id="kwCase" onchange="fmt()" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="upper" selected>UPPER</option><option value="lower">lower</option><option value="preserve">Preserve</option></select>
+  <label style="font-size:.8rem;margin:0">Commas:</label>
+  <select id="commaStyle" onchange="fmt()" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="trailing" selected>Trailing</option><option value="leading">Leading</option></select>
+  <label style="font-size:.8rem;margin:0">Max width:</label>
+  <input type="number" id="maxWidth" value="80" min="0" onchange="fmt()" style="width:70px;padding:.2rem .4rem;font-size:.8rem;margin:0">
+  <label style="font-size:.8rem;margin:0">Dialect:</label>
+  <select id="dialect" onchange="fmt()" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="mysql" selected>MySQL</option><option value="postgres">PostgreSQL</option><option value="sqlserver">SQL Server</option><option value="oracle">Oracle</option></select>
+</div>
+<p id="dialectNote" class="info" style="font-size:.75rem;margin:.3rem 0"></p>
+<div class="row" style="margin:.5rem 0"><button class="btn" onclick="fmt()" style="flex:1">✨ Format SQL</button><button class="btn btn-outline" onclick="minify()">⚡ Minify</button><button class="btn btn-outline" onclick="analyse()">🔍 Analyse</button></div>
+<div id="validation" style="display:none;margin:.5rem 0"></div>
 <p style="font-size:.8rem;margin:.4rem 0;color:var(--text2)">Templates:</p>
-<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem"><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('select')">SELECT</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('insert')">INSERT</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('update')">UPDATE</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('delete')">DELETE</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('create')">CREATE TABLE</button></div>
-<div id="highlighted" style="display:none;padding:.8rem;border-radius:6px;background:var(--bg2,#1e1e2e);font-family:monospace;font-size:.85rem;white-space:pre-wrap;overflow-x:auto;line-height:1.5;margin-bottom:.5rem"></div>
+<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem"><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('select')">SELECT</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('join')">JOIN</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('insert')">INSERT</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('update')">UPDATE</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('delete')">DELETE</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('create')">CREATE TABLE</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .4rem" onclick="tpl('cte')">WITH (CTE)</button></div>
+<div id="highlighted" style="padding:.8rem;border-radius:6px;background:var(--bg2,#1e1e2e);font-family:monospace;font-size:.85rem;white-space:pre-wrap;overflow-x:auto;line-height:1.5;margin-bottom:.5rem"></div>
 <textarea id="output" rows="10" readonly></textarea>
-<div class="row"><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('output').value)">📋 Copy</button><button class="btn btn-outline" onclick="toggleHighlight()">🎨 Toggle Highlight</button></div></div>
+<div id="analysis" style="display:none;margin:.5rem 0"></div>
+<div class="row"><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('output').value)">📋 Copy</button><button class="btn btn-outline" onclick="dlSql()">⬇️ Download .sql</button></div></div>
+<div class="tool-section" style="margin-top:1.5rem"><h2>SQL Pattern Reference</h2>
+<h3 style="margin-top:1rem">Joins Explained</h3>
+<ul style="margin-left:1.5rem;line-height:1.9;font-size:.92rem">
+<li><strong>INNER JOIN</strong> — only rows matching in both tables. <code>SELECT * FROM a INNER JOIN b ON a.id = b.a_id</code></li>
+<li><strong>LEFT JOIN</strong> — all rows from the left table, matched rows from the right (NULLs where none match).</li>
+<li><strong>RIGHT JOIN</strong> — all rows from the right table, matched from the left.</li>
+<li><strong>FULL OUTER JOIN</strong> — all rows from both sides, matched where possible.</li>
+<li><strong>CROSS JOIN</strong> — every combination (Cartesian product). Use with care.</li>
+</ul>
+<h3 style="margin-top:1rem">Aggregate Functions</h3>
+<ul style="margin-left:1.5rem;line-height:1.9;font-size:.92rem">
+<li><code>COUNT(*)</code>, <code>SUM(col)</code>, <code>AVG(col)</code>, <code>MIN(col)</code>, <code>MAX(col)</code> — usually paired with <code>GROUP BY</code>.</li>
+<li>Filter groups with <code>HAVING</code>: <code>SELECT dept, COUNT(*) FROM emp GROUP BY dept HAVING COUNT(*) &gt; 5</code></li>
+</ul>
+<h3 style="margin-top:1rem">Window Function Syntax</h3>
+<ul style="margin-left:1.5rem;line-height:1.9;font-size:.92rem">
+<li><code>ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC)</code></li>
+<li><code>RANK()</code>, <code>DENSE_RANK()</code>, <code>LAG(col)</code>, <code>LEAD(col)</code>, <code>SUM(col) OVER (...)</code> for running totals.</li>
+</ul></div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Paste your query:</strong> SQL query 500 characters ki ek line mein hai? Unreadable? Just paste it above</li>
@@ -84,15 +121,258 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>var kw=["SELECT","FROM","WHERE","AND","OR","ORDER BY","GROUP BY","HAVING","LIMIT","OFFSET","JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN","OUTER JOIN","ON","INSERT INTO","VALUES","UPDATE","SET","DELETE FROM","CREATE TABLE","ALTER TABLE","DROP TABLE","AS","IN","NOT","BETWEEN","LIKE","IS NULL","IS NOT NULL","DISTINCT","UNION","EXCEPT","INTERSECT","CASE","WHEN","THEN","ELSE","END","ASC","DESC"];
-function getIndent(){return" ".repeat(parseInt(document.getElementById("indentSize").value))}
-function applyUpper(sql){if(document.getElementById("autoUpper").checked)kw.forEach(function(k){sql=sql.replace(new RegExp("\\b"+k+"\\b","gi"),k)});return sql}
-function fmt(){var sql=applyUpper(document.getElementById("input").value.trim());if(!sql)return;var indent=getIndent();kw.forEach(function(k){sql=sql.replace(new RegExp("\\b"+k+"\\b","gi"),k)});sql=sql.replace(/\s*(SELECT|FROM|WHERE|AND|OR|ORDER BY|GROUP BY|HAVING|LIMIT|JOIN|LEFT JOIN|RIGHT JOIN|INNER JOIN|ON|SET|VALUES)\s*/gi,function(m){return"\n"+m.trim()+"\n"+indent});sql=sql.replace(/^\n+/,"").replace(/\n{3,}/g,"\n\n");document.getElementById("output").value=sql;highlight(sql)}
-function minify(){var sql=applyUpper(document.getElementById("input").value.replace(/--[^\n]*/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/\s+/g," ").trim());document.getElementById("output").value=sql;highlight(sql)}
-function upper(){var sql=document.getElementById("input").value;kw.forEach(function(k){sql=sql.replace(new RegExp("\\b"+k+"\\b","gi"),k)});document.getElementById("output").value=sql;highlight(sql)}
-function highlight(sql){var el=document.getElementById("highlighted");if(el.style.display==="none")return;var h=sql.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");h=h.replace(/(--[^\n]*)/g,'<span style="color:#6a9955">$1</span>');h=h.replace(/(\/\*[\s\S]*?\*\/)/g,'<span style="color:#6a9955">$1</span>');h=h.replace(/('(?:[^'\\]|\\.)*')/g,'<span style="color:#6a8759">$1</span>');h=h.replace(/\b(\d+\.?\d*)\b/g,'<span style="color:#d19a66">$1</span>');var kwPattern=kw.map(function(k){return k.replace(/ /g,"\\s+")}).sort(function(a,b){return b.length-a.length}).join("|");h=h.replace(new RegExp("\\b("+kwPattern+")\\b","gi"),'<span style="color:#569cd6;font-weight:bold">$1</span>');el.innerHTML=h}
-function toggleHighlight(){var el=document.getElementById("highlighted");if(el.style.display==="none"){el.style.display="block";var out=document.getElementById("output").value;if(out)highlight(out)}else{el.style.display="none"}}
-var templates={select:"SELECT column1, column2\nFROM table_name\nWHERE condition\nORDER BY column1 ASC\nLIMIT 10;",insert:"INSERT INTO table_name (column1, column2, column3)\nVALUES ('value1', 'value2', 'value3');",update:"UPDATE table_name\nSET column1 = 'value1', column2 = 'value2'\nWHERE condition;","delete":"DELETE FROM table_name\nWHERE condition;",create:"CREATE TABLE table_name (\n    id INT PRIMARY KEY AUTO_INCREMENT,\n    name VARCHAR(255) NOT NULL,\n    email VARCHAR(255) UNIQUE,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);"};
-function tpl(name){document.getElementById("input").value=templates[name]}</script>
+  <script>
+var $=function(id){return document.getElementById(id)};
+var STORE="sqlFormatterV2";
+// Keyword sets
+var NEWLINE_KW=["SELECT","FROM","WHERE","INNER JOIN","LEFT JOIN","RIGHT JOIN","FULL OUTER JOIN","FULL JOIN","CROSS JOIN","OUTER JOIN","JOIN","GROUP BY","HAVING","ORDER BY","LIMIT","OFFSET","UNION ALL","UNION","EXCEPT","INTERSECT","INSERT INTO","VALUES","UPDATE","SET","DELETE FROM","DELETE","WITH","ON","AND","OR"];
+var ALL_KW=["SELECT","FROM","WHERE","INNER","LEFT","RIGHT","FULL","OUTER","CROSS","JOIN","GROUP","BY","HAVING","ORDER","LIMIT","OFFSET","UNION","ALL","EXCEPT","INTERSECT","INSERT","INTO","VALUES","UPDATE","SET","DELETE","WITH","ON","AND","OR","AS","IN","NOT","BETWEEN","LIKE","IS","NULL","DISTINCT","CASE","WHEN","THEN","ELSE","END","ASC","DESC","EXISTS","COUNT","SUM","AVG","MIN","MAX","OVER","PARTITION","ROW_NUMBER","RANK","DENSE_RANK","LAG","LEAD","PRIMARY","KEY","FOREIGN","REFERENCES","DEFAULT","UNIQUE","CREATE","TABLE","ALTER","DROP","INT","VARCHAR","TEXT","TIMESTAMP","BOOLEAN","DATE"];
+var DIALECT_NOTES={
+mysql:"MySQL: identifiers quoted with backticks (`col`). Supports LIMIT n OFFSET m and AUTO_INCREMENT.",
+postgres:"PostgreSQL: identifiers quoted with double quotes (\"col\"). Uses SERIAL, ILIKE, and rich window functions.",
+sqlserver:"SQL Server (T-SQL): identifiers quoted with brackets ([col]). Uses TOP n instead of LIMIT and IDENTITY.",
+oracle:"Oracle: identifiers quoted with double quotes (\"col\"). Uses ROWNUM / FETCH FIRST n ROWS ONLY and sequences."
+};
+function indentUnit(){var v=$("indentSize").value;return v==="tab"?"\t":" ".repeat(parseInt(v))}
+function updateDialectNote(){$("dialectNote").textContent="ℹ️ "+DIALECT_NOTES[$("dialect").value]}
+// Tokeniser: preserves strings, comments, operators, words
+function tokenize(sql){
+  var toks=[],i=0,n=sql.length;
+  while(i<n){
+    var c=sql[i];
+    if(c===" "||c==="\t"||c==="\n"||c==="\r"){i++;continue}
+    // line comment
+    if(c==="-"&&sql[i+1]==="-"){var j=i;while(j<n&&sql[j]!=="\n")j++;toks.push({t:"comment",v:sql.slice(i,j)});i=j;continue}
+    // block comment
+    if(c==="/"&&sql[i+1]==="*"){var j=i+2;while(j<n&&!(sql[j]==="*"&&sql[j+1]==="/"))j++;j=Math.min(n,j+2);toks.push({t:"comment",v:sql.slice(i,j)});i=j;continue}
+    // string literal
+    if(c==="'"||c==="\""){var q=c,j=i+1;while(j<n){if(sql[j]===q){if(sql[j+1]===q){j+=2;continue}break}j++}if(j>=n){toks.push({t:"string",v:sql.slice(i),unclosed:true});i=n;break}toks.push({t:"string",v:sql.slice(i,j+1)});i=j+1;continue}
+    // backtick / bracket identifiers
+    if(c==="`"){var j=i+1;while(j<n&&sql[j]!=="`")j++;toks.push({t:"ident",v:sql.slice(i,j+1)});i=j+1;continue}
+    if(c==="["){var j=i+1;while(j<n&&sql[j]!=="]")j++;toks.push({t:"ident",v:sql.slice(i,j+1)});i=j+1;continue}
+    // punctuation
+    if(c==="("||c===")"||c===","||c===";"){toks.push({t:c,v:c});i++;continue}
+    // operators
+    if("=<>!+-*/%|&".indexOf(c)>-1){var j=i;while(j<n&&"=<>!+-*/%|&".indexOf(sql[j])>-1)j++;toks.push({t:"op",v:sql.slice(i,j)});i=j;continue}
+    // word (identifier / keyword / number)
+    var j=i;while(j<n&&/[\w.$#]/.test(sql[j]))j++;
+    if(j>i){toks.push({t:"word",v:sql.slice(i,j)});i=j;continue}
+    // fallback single char
+    toks.push({t:"other",v:c});i++;
+  }
+  return toks;
+}
+function isKeyword(w){return ALL_KW.indexOf(w.toUpperCase())>-1}
+function caseKw(w){var cs=$("kwCase").value;if(cs==="upper")return w.toUpperCase();if(cs==="lower")return w.toLowerCase();return w}
+// Multi-word keyword lookahead against upper-cased token stream
+function matchMultiKw(toks,idx){
+  var candidates=["FULL OUTER JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN","CROSS JOIN","OUTER JOIN","FULL JOIN","GROUP BY","ORDER BY","INSERT INTO","DELETE FROM","UNION ALL","PARTITION BY","IS NOT","NOT NULL"];
+  for(var ci=0;ci<candidates.length;ci++){
+    var parts=candidates[ci].split(" ");var ok=true;
+    for(var p=0;p<parts.length;p++){var tk=toks[idx+p];if(!tk||tk.t!=="word"||tk.v.toUpperCase()!==parts[p]){ok=false;break}}
+    if(ok)return{kw:candidates[ci],len:parts.length};
+  }
+  return null;
+}
+function format(sql){
+  var toks=tokenize(sql);
+  var ind=indentUnit();
+  var commaLeading=$("commaStyle").value==="leading";
+  var out="";var depth=0;var parenStack=[];var line="";
+  var newlineHeads=["SELECT","FROM","WHERE","GROUP BY","HAVING","ORDER BY","LIMIT","OFFSET","UNION","UNION ALL","EXCEPT","INTERSECT","INSERT INTO","VALUES","UPDATE","SET","DELETE FROM","WITH"];
+  var joinHeads=["JOIN","INNER JOIN","LEFT JOIN","RIGHT JOIN","FULL JOIN","FULL OUTER JOIN","OUTER JOIN","CROSS JOIN"];
+  function pad(){return ind.repeat(depth)}
+  function flush(){if(line.trim()!==""){out+=pad()+line.trim()+"\n"}line=""}
+  var i=0;
+  while(i<toks.length){
+    var tk=toks[i];
+    if(tk.t==="comment"){flush();out+=pad()+tk.v+"\n";i++;continue}
+    // multi-word keyword
+    var mm=(tk.t==="word")?matchMultiKw(toks,i):null;
+    var kwText=mm?mm.kw:(tk.t==="word"&&isKeyword(tk.v)?tk.v.toUpperCase():null);
+    if(kwText&&(newlineHeads.indexOf(kwText)>-1||joinHeads.indexOf(kwText)>-1)){
+      flush();
+      line=caseKw(kwText);
+      i+=mm?mm.len:1;
+      // SELECT / column-list heads keep items but push following depth for readability handled via commas
+      continue;
+    }
+    if(kwText&&(kwText==="AND"||kwText==="OR"||kwText==="ON")){
+      flush();
+      line=ind+caseKw(kwText);
+      i+=mm?mm.len:1;
+      continue;
+    }
+    if(kwText==="CASE"){line+=(line&&!/[\s(]$/.test(line)?" ":"")+caseKw("CASE");depth++;i+=1;flush();continue}
+    if(kwText==="WHEN"||kwText==="ELSE"){flush();line=caseKw(kwText);i+=1;continue}
+    if(kwText==="END"){flush();depth=Math.max(0,depth-1);line=caseKw("END");i+=1;continue}
+    if(tk.t==="("){
+      line+="(";depth++;parenStack.push(depth);
+      // subquery: if next meaningful token is SELECT/WITH, break line
+      var nx=toks[i+1];
+      if(nx&&nx.t==="word"&&(nx.v.toUpperCase()==="SELECT"||nx.v.toUpperCase()==="WITH")){flush()}
+      i++;continue;
+    }
+    if(tk.t===")"){
+      flush();depth=Math.max(0,depth-1);if(parenStack.length)parenStack.pop();line=")";i++;
+      // attach trailing to same line if simple
+      continue;
+    }
+    if(tk.t===","){
+      if(commaLeading){flush();line=","}
+      else{line+=","; flush();}
+      i++;continue;
+    }
+    if(tk.t===";"){line+=";";flush();i++;continue}
+    // regular token / keyword-in-line
+    var text;
+    if(tk.t==="word"&&isKeyword(tk.v))text=caseKw(tk.v.toUpperCase());
+    else text=tk.v;
+    if(line===""||/[(\s]$/.test(line)||text===","||/^[).,;]/.test(text))line+=text;
+    else line+=" "+text;
+    i++;
+  }
+  flush();
+  out=out.replace(/\n{3,}/g,"\n\n").replace(/[ \t]+\n/g,"\n").trimEnd();
+  // wrap long lines at max width (soft, keyword-aware for AND/OR already handled)
+  var mw=parseInt($("maxWidth").value)||0;
+  if(mw>0){
+    out=out.split("\n").map(function(l){
+      if(l.length<=mw)return l;
+      var lead=l.match(/^\s*/)[0];
+      var parts=l.split(", ");
+      if(parts.length<2)return l;
+      var acc=lead,res=[],cur=lead+"";
+      for(var k=0;k<parts.length;k++){
+        var seg=parts[k]+(k<parts.length-1?",":"");
+        if((cur+seg).length>mw&&cur.trim()!==""){res.push(cur);cur=lead+ind+seg}
+        else cur+=(cur===lead||cur===lead+ind?"":" ")+seg;
+      }
+      res.push(cur);
+      return res.join("\n");
+    }).join("\n");
+  }
+  return out;
+}
+function validate(sql){
+  var msgs=[];
+  var toks=tokenize(sql);
+  // unbalanced parens
+  var depth=0,bad=false;
+  toks.forEach(function(t){if(t.t==="(")depth++;else if(t.t===")"){depth--;if(depth<0)bad=true}});
+  if(bad||depth!==0)msgs.push({level:"error",text:"Unbalanced parentheses ("+(depth>0?depth+" unclosed":"extra closing")+")."});
+  // unclosed string
+  if(toks.some(function(t){return t.t==="string"&&t.unclosed}))msgs.push({level:"error",text:"Unclosed string literal — a quote was never closed."});
+  // missing FROM in SELECT
+  var up=" "+sql.toUpperCase().replace(/\s+/g," ")+" ";
+  if(/\bSELECT\b/.test(up)&&!/\bFROM\b/.test(up)&&!/\bSELECT\s+\d/.test(up)){
+    // allow SELECT of constants; only warn if there are column references
+    msgs.push({level:"warn",text:"SELECT without a FROM clause — is that intentional?"});
+  }
+  return msgs;
+}
+function showValidation(msgs){
+  var box=$("validation");
+  if(!msgs.length){box.style.display="none";box.innerHTML="";return}
+  box.style.display="block";
+  box.innerHTML="";
+  msgs.forEach(function(m){
+    var p=document.createElement("p");p.className="info";p.style.margin=".2rem 0";
+    p.style.color=m.level==="error"?"#e06c75":"#e5c07b";
+    p.textContent=(m.level==="error"?"❌ ":"⚠️ ")+m.text;
+    box.appendChild(p);
+  });
+}
+function fmt(){
+  updateDialectNote();
+  var raw=$("input").value.trim();
+  if(!raw){$("output").value="";$("highlighted").innerHTML="";showValidation([]);return}
+  var msgs=validate(raw);
+  showValidation(msgs);
+  var hasFatal=msgs.some(function(m){return m.level==="error"});
+  var result=hasFatal?raw:format(raw);
+  $("output").value=result;
+  highlight(result);
+  autosave();
+}
+function minify(){
+  updateDialectNote();
+  var toks=tokenize($("input").value);
+  var out="";
+  toks.forEach(function(t){
+    if(t.t==="comment")return; // strip comments safely
+    var piece;
+    if(t.t==="word"&&isKeyword(t.v))piece=caseKw(t.v.toUpperCase());else piece=t.v;
+    if(t.t==="("||t.t===")"||t.t===","||t.t===";"){out=out.replace(/\s$/,"")+t.v+(t.t===","||t.t===";"?" ":"")}
+    else{out+=piece+" "}
+  });
+  out=out.replace(/\s+/g," ").replace(/\(\s+/g,"(").replace(/\s+\)/g,")").trim();
+  $("output").value=out;highlight(out);showValidation([]);autosave();
+}
+function analyse(){
+  var raw=$("input").value.trim();if(!raw){return}
+  var up=raw.toUpperCase();
+  var box=$("analysis");box.style.display="block";
+  var lines=[];
+  // tables via FROM / JOIN / UPDATE / INTO / DELETE FROM
+  var tables=[];var re=/\b(?:FROM|JOIN|UPDATE|INTO|DELETE\s+FROM)\s+([`"\[]?[\w.]+[`"\]]?)/gi,m;
+  while((m=re.exec(raw))!==null){var t=m[1].replace(/[`"\[\]]/g,"");if(tables.indexOf(t)===-1)tables.push(t)}
+  lines.push("<strong>Tables referenced:</strong> "+(tables.length?tables.join(", "):"none detected"));
+  // columns in first SELECT ... FROM
+  var sel=raw.match(/SELECT\s+([\s\S]*?)\s+FROM/i);
+  if(sel){
+    var colsRaw=sel[1].trim();
+    if(colsRaw==="*"||/^\*/.test(colsRaw)){lines.push("<strong>Columns:</strong> all (*)");}
+    else{var cols=colsRaw.split(/,(?![^()]*\))/).map(function(c){return c.trim()}).filter(Boolean);lines.push("<strong>Columns selected:</strong> "+cols.length+" ("+cols.slice(0,8).join(", ")+(cols.length>8?", …":"")+")");}
+  }
+  // join types
+  var joins=[];["INNER JOIN","LEFT JOIN","RIGHT JOIN","FULL OUTER JOIN","CROSS JOIN","OUTER JOIN"].forEach(function(j){if(new RegExp("\\b"+j.replace(/ /g,"\\s+")+"\\b").test(up))joins.push(j)});
+  if(/\bJOIN\b/.test(up)&&!joins.length)joins.push("JOIN");
+  lines.push("<strong>Joins:</strong> "+(joins.length?joins.join(", "):"none"));
+  // SELECT *
+  if(/SELECT\s+\*/i.test(raw))lines.push("<span style='color:#e5c07b'>⚠️ Uses SELECT * — prefer explicit columns for performance and clarity.</span>");
+  // dangerous UPDATE/DELETE without WHERE
+  if(/\bUPDATE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:#e06c75'>❌ UPDATE without WHERE — this updates every row! Add a WHERE clause.</span>");
+  if(/\bDELETE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:#e06c75'>❌ DELETE without WHERE — this deletes every row! Add a WHERE clause.</span>");
+  // complexity
+  var subq=(raw.match(/\(\s*SELECT/gi)||[]).length;
+  var complexity=subq>1||joins.length>2?"High":subq>0||joins.length?"Moderate":"Low";
+  lines.push("<strong>Complexity:</strong> "+complexity+" (subqueries: "+subq+", joins: "+joins.length+")");
+  box.innerHTML=lines.map(function(l){return "<p class='info' style='margin:.25rem 0'>"+l+"</p>"}).join("");
+}
+function highlight(sql){
+  $("highlighted").innerHTML=highlightPreserve(sql);
+}
+function highlightPreserve(sql){
+  // tokenise per-line to keep newlines/indentation intact
+  return sql.split("\n").map(function(line){
+    var toks=tokenize(line);var idx=0,html="";var pos=0;
+    // rebuild using original spacing: simpler — escape then span keywords/strings/comments
+    var esc=line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    esc=esc.replace(/(--[^\n]*)/g,'<span style="color:#6a9955">$1</span>');
+    esc=esc.replace(/('(?:[^'\\]|\\.|'')*')/g,'<span style="color:#98c379">$1</span>');
+    esc=esc.replace(/\b(\d+\.?\d*)\b/g,'<span style="color:#d19a66">$1</span>');
+    var kwPat=ALL_KW.slice().sort(function(a,b){return b.length-a.length}).join("|");
+    esc=esc.replace(new RegExp("\\b("+kwPat+")\\b","gi"),'<span style="color:#569cd6;font-weight:bold">$1</span>');
+    return esc;
+  }).join("\n");
+}
+var templates={
+select:"SELECT column1, column2\nFROM table_name\nWHERE condition\nORDER BY column1 ASC\nLIMIT 10;",
+join:"SELECT o.id, c.name, o.total FROM orders o INNER JOIN customers c ON o.customer_id = c.id WHERE o.total > 100 ORDER BY o.total DESC;",
+insert:"INSERT INTO table_name (column1, column2, column3) VALUES ('value1', 'value2', 'value3');",
+update:"UPDATE table_name SET column1 = 'value1', column2 = 'value2' WHERE id = 1;",
+"delete":"DELETE FROM table_name WHERE id = 1;",
+create:"CREATE TABLE table_name (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
+cte:"WITH ranked AS (SELECT id, name, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS rn FROM employees) SELECT * FROM ranked WHERE rn = 1;"
+};
+function tpl(name){$("input").value=templates[name];fmt()}
+function loadExample(){$("input").value="SELECT u.name, u.email, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 AND u.status = 'active' ORDER BY o.total DESC LIMIT 20";fmt()}
+function uploadFile(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){$("input").value=r.result;fmt()};r.readAsText(f)}
+function dlSql(){var b=new Blob([$("output").value||$("input").value],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="query.sql";a.click();URL.revokeObjectURL(a.href)}
+function autosave(){localStorage.setItem(STORE,JSON.stringify({input:$("input").value,indent:$("indentSize").value,kwCase:$("kwCase").value,comma:$("commaStyle").value,maxWidth:$("maxWidth").value,dialect:$("dialect").value}))}
+function restore(){var d=localStorage.getItem(STORE);if(d){try{var p=JSON.parse(d);$("input").value=p.input||"";if(p.indent)$("indentSize").value=p.indent;if(p.kwCase)$("kwCase").value=p.kwCase;if(p.comma)$("commaStyle").value=p.comma;if(p.maxWidth)$("maxWidth").value=p.maxWidth;if(p.dialect)$("dialect").value=p.dialect}catch(e){}}}
+restore();updateDialectNote();if($("input").value.trim())fmt();
+</script>
 </body>
 </html>
