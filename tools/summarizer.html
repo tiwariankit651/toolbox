@@ -25,22 +25,44 @@
     <div class="tool-section">
       <h1>📝 Article Summarizer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste any article or text. Get key points and summary. Works with English, Hindi, and all languages.</p>
-      <textarea id="input" rows="8" placeholder="Paste your article, essay, or text here..."></textarea>
+      <p class="info">Paste any article or text (or upload a .txt file). Get an extractive summary with adjustable length, output modes, key points, and compression stats. Works with English, Hindi, and other languages.</p>
+      <textarea id="input" rows="8" placeholder="Paste your article, essay, or text here..." oninput="autosave()"></textarea>
+      <div class="row" style="margin:.6rem 0">
+        <label style="flex:0 0 auto">📎 Upload .txt: <input type="file" id="fileInput" accept=".txt,text/plain" onchange="loadFile(event)" style="width:auto;display:inline-block;padding:.3rem"></label>
+      </div>
       <div class="row" style="margin:.8rem 0">
-        <label>Summary length:</label>
-        <select id="length"><option value="3">Short (3 points)</option><option value="5" selected>Medium (5 points)</option><option value="8">Long (8 points)</option><option value="10">Detailed (10 points)</option></select>
-        <label>Format:</label>
-        <select id="sumFormat"><option value="numbered">1. 2. 3. Numbered</option><option value="bullet">• Bullet Points</option><option value="paragraph">Paragraph</option></select>
+        <label>Length by:</label>
+        <select id="lengthMode" onchange="toggleLengthUI()">
+          <option value="percent" selected>Percentage</option>
+          <option value="count">Number of sentences</option>
+        </select>
+        <div id="percentWrap" style="flex:2">
+          <label style="font-size:.85rem" id="sliderLabel">Summary: 25%</label>
+          <input type="range" id="percentSlider" min="10" max="50" step="5" value="25" oninput="updateSliderLabel()" style="width:100%">
+          <div class="row" style="margin:.3rem 0 0">
+            <button class="btn btn-outline" type="button" onclick="setPercent(10)">10%</button>
+            <button class="btn btn-outline" type="button" onclick="setPercent(25)">25%</button>
+            <button class="btn btn-outline" type="button" onclick="setPercent(50)">50%</button>
+          </div>
+        </div>
+        <div id="countWrap" style="flex:1;display:none">
+          <label style="font-size:.85rem">Sentences:</label>
+          <input type="number" id="countInput" min="1" max="50" value="5">
+        </div>
+      </div>
+      <div class="row" style="margin:.8rem 0">
+        <label>Output mode:</label>
+        <select id="sumFormat"><option value="paragraph">Paragraph</option><option value="bullet" selected>• Bullet points</option><option value="highlight">Key sentences highlighted</option></select>
         <button class="btn" onclick="summarize()" style="flex:1">📝 Summarize</button>
       </div>
       <div id="stats" style="display:none;margin-bottom:.8rem"></div>
+      <div id="keypoints" style="display:none;margin-bottom:.8rem"></div>
       <div id="result" style="display:none">
         <h3>Summary</h3>
         <div id="summary" style="background:var(--card);padding:1.2rem;border-radius:12px;line-height:1.8"></div>
         <div class="row" style="margin-top:.8rem">
-          <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('summary').innerText);this.textContent='Copied!';setTimeout(function(){this.textContent='📋 Copy'},1000)">📋 Copy</button>
-          <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('summary').innerText],{type:'text/plain'}),'summary.txt')">💾 Download</button>
+          <button class="btn btn-outline" onclick="copySummary(this)">📋 Copy</button>
+          <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('summary').innerText],{type:'text/plain'}),'summary.txt')">💾 Download .txt</button>
         </div>
       </div>
     </div>
@@ -103,37 +125,127 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+var SUM_KEY="summarizerText";
+var stopWords=new Set(["the","a","an","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","may","might","shall","can","need","dare","ought","used","to","of","in","for","on","with","at","by","from","as","into","through","during","before","after","above","below","between","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","because","but","and","or","if","while","that","this","it","i","me","my","we","our","you","your","he","him","his","she","her","they","them","their","which","what","who","whom","whose","aur","hai","ka","ki","ke","ko","se","mein","par","ye","wo","ek","nahi","ho","tha","thi","hain","kya","bhi","ne","us","un","jab","tab","ab","hi","ya"]);
+function autosave(){try{localStorage.setItem(SUM_KEY,document.getElementById("input").value);}catch(e){}}
+function toggleLengthUI(){
+  var mode=document.getElementById("lengthMode").value;
+  document.getElementById("percentWrap").style.display=mode==="percent"?"block":"none";
+  document.getElementById("countWrap").style.display=mode==="count"?"block":"none";
+}
+function updateSliderLabel(){document.getElementById("sliderLabel").textContent="Summary: "+document.getElementById("percentSlider").value+"%";}
+function setPercent(v){document.getElementById("percentSlider").value=v;updateSliderLabel();}
+function copySummary(btn){navigator.clipboard.writeText(document.getElementById('summary').innerText);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
+function loadFile(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){document.getElementById("input").value=ev.target.result;autosave();};
+  r.readAsText(f);
+}
+function splitSentences(text){
+  // Keep sentence with trailing punctuation where possible
+  var raw=text.replace(/\s+/g,' ').match(/[^.!?।]+[.!?।]+|\S[^.!?।]*$/g)||[];
+  return raw.map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+}
+function tokenize(s){return s.toLowerCase().replace(/[^a-z0-9\u0900-\u097f\s]/g,' ').split(/\s+/).filter(function(w){return w});}
 function summarize(){
   var text=document.getElementById("input").value.trim();
-  if(!text)return alert("Paste some text first!");
-  var maxPoints=+document.getElementById("length").value;
-  var sentences=text.split(/[.!?।\n]+/).map(function(s){return s.trim()}).filter(function(s){return s.length>15});
-  if(!sentences.length)return alert("Text too short to summarize");
-  var words=text.toLowerCase().split(/\s+/);
-  var stopWords=new Set(["the","a","an","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","may","might","shall","can","need","dare","ought","used","to","of","in","for","on","with","at","by","from","as","into","through","during","before","after","above","below","between","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","because","but","and","or","if","while","that","this","it","i","me","my","we","our","you","your","he","him","his","she","her","they","them","their","which","what","who","whom","whose","aur","hai","ka","ki","ke","ko","se","mein","par","ye","wo","ek","nahi","ho","tha","thi","the","hain","kya","bhi","ne","is","us","un","in","jab","tab","ab","to","hi","ya"]);
-  var freq={};words.forEach(function(w){if(w.length>2&&!stopWords.has(w)){freq[w]=(freq[w]||0)+1}});
+  var resultEl=document.getElementById("result"),statsEl=document.getElementById("stats"),kpEl=document.getElementById("keypoints");
+  if(!text){resultEl.style.display="none";statsEl.style.display="none";kpEl.style.display="none";alert("Paste some text first!");return;}
+  var sentences=splitSentences(text);
+  if(sentences.length<2){
+    statsEl.style.display="none";kpEl.style.display="none";
+    resultEl.style.display="block";
+    document.getElementById("summary").innerHTML='<p class="info">⚠️ The text is too short or has no clear sentence breaks to summarize. Add more sentences (separated by . ! ? or new lines) and try again.</p>';
+    return;
+  }
+  // Word frequency (content words)
+  var freq={},maxFreq=0;
+  tokenize(text).forEach(function(w){if(w.length>1&&!stopWords.has(w)){freq[w]=(freq[w]||0)+1;if(freq[w]>maxFreq)maxFreq=freq[w];}});
+  // Normalize frequencies
+  var normFreq={};for(var w in freq){normFreq[w]=freq[w]/maxFreq;}
+  // Title words = first sentence content words (used as proxy for topic)
+  var titleWords=new Set(tokenize(sentences[0]).filter(function(w){return w.length>1&&!stopWords.has(w)}));
+  var n=sentences.length;
+  // Sentence token lists
+  var tokenLists=sentences.map(function(s){return tokenize(s).filter(function(w){return w.length>1&&!stopWords.has(w)})});
+  // Average length for normalization
+  var avgLen=tokenLists.reduce(function(a,t){return a+t.length},0)/n||1;
+  // TextRank-style similarity: overlap between sentences
+  var sim=[];
+  for(var i=0;i<n;i++){sim[i]=0;
+    var setI=new Set(tokenLists[i]);
+    for(var j=0;j<n;j++){if(i===j)continue;
+      var overlap=0;tokenLists[j].forEach(function(w){if(setI.has(w))overlap++;});
+      var denom=Math.log(tokenLists[i].length+1)+Math.log(tokenLists[j].length+1);
+      if(denom>0)sim[i]+=overlap/denom;
+    }
+  }
+  var maxSim=Math.max.apply(null,sim.concat([1]));
   var scored=sentences.map(function(s,i){
-    var sWords=s.toLowerCase().split(/\s+/);
-    var score=0;sWords.forEach(function(w){score+=(freq[w]||0)});
-    if(i<2)score*=1.3;
-    score=score/Math.max(sWords.length,1);
+    var toks=tokenLists[i];
+    var freqScore=toks.reduce(function(a,w){return a+(normFreq[w]||0)},0);
+    freqScore=freqScore/Math.max(toks.length,1); // length normalization
+    var posScore=1-(i/n); // earlier sentences weighted higher
+    var titleScore=0;toks.forEach(function(w){if(titleWords.has(w))titleScore++;});
+    titleScore=titleScore/Math.max(titleWords.size,1);
+    var lenPenalty=1-Math.abs(toks.length-avgLen)/(avgLen*3); // prefer near-average length
+    if(lenPenalty<0)lenPenalty=0;
+    var trScore=(sim[i]||0)/maxSim;
+    var score=freqScore*1.0+posScore*0.35+titleScore*0.25+lenPenalty*0.15+trScore*0.25;
     return{text:s,score:score,idx:i};
   });
-  scored.sort(function(a,b){return b.score-a.score});
-  var topSentences=scored.slice(0,maxPoints);
-  topSentences.sort(function(a,b){return a.idx-b.idx});
-  var origWords=text.split(/\s+/).length;
-  var sumWords=topSentences.reduce(function(a,s){return a+s.text.split(/\s+/).length},0);
-  document.getElementById("stats").style.display="grid";
-  document.getElementById("stats").style.gridTemplateColumns="repeat(3,1fr)";
-  document.getElementById("stats").style.gap=".5rem";
-  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+origWords+'</strong><br><span class="info">Original words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+sumWords+'</strong><br><span class="info">Summary words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+Math.round((1-sumWords/origWords)*100)+'%</strong><br><span class="info">Reduced</span></div>';
-  document.getElementById("result").style.display="block";
+  // Determine how many sentences
+  var count;
+  if(document.getElementById("lengthMode").value==="percent"){
+    var pct=+document.getElementById("percentSlider").value;
+    count=Math.max(1,Math.round(n*pct/100));
+  }else{
+    count=Math.max(1,Math.min(n,+document.getElementById("countInput").value||1));
+  }
+  if(count>n)count=n;
+  var ranked=scored.slice().sort(function(a,b){return b.score-a.score});
+  var chosen=ranked.slice(0,count);
+  var chosenIdx=new Set(chosen.map(function(c){return c.idx}));
+  chosen.sort(function(a,b){return a.idx-b.idx});
+  // Key points: top keywords/phrases
+  var topKw=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+  // Stats
+  var origWords=text.split(/\s+/).filter(function(w){return w}).length;
+  var sumText=chosen.map(function(s){return s.text}).join(" ");
+  var sumWords=sumText.split(/\s+/).filter(function(w){return w}).length;
+  var reduction=origWords?Math.round((1-sumWords/origWords)*100):0;
+  var origRead=Math.max(1,Math.ceil(origWords/200)),sumRead=Math.max(1,Math.ceil(sumWords/200));
+  var saved=Math.max(0,origRead-sumRead);
+  statsEl.style.display="grid";
+  statsEl.style.gridTemplateColumns="repeat(auto-fit,minmax(90px,1fr))";
+  statsEl.style.gap=".5rem";
+  var sc=function(v,l){return '<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+v+'</strong><br><span class="info">'+l+'</span></div>';};
+  statsEl.innerHTML=sc(origWords,"Original words")+sc(sumWords,"Summary words")+sc(reduction+"%","Reduced")+sc(count+"/"+n,"Sentences")+sc("~"+saved+" min","Reading saved");
+  // Key points chips
+  if(topKw.length){
+    kpEl.style.display="block";
+    kpEl.innerHTML='<h3>🔑 Key Points</h3><div style="display:flex;flex-wrap:wrap;gap:.5rem">'+topKw.map(function(k){return '<span style="background:rgba(99,102,241,.15);color:var(--accent);padding:.3rem .7rem;border-radius:20px;font-size:.85rem;font-weight:600">'+esc(k[0])+' <span style="opacity:.7">('+k[1]+')</span></span>'}).join('')+'</div>';
+  }else{kpEl.style.display="none";}
+  // Output
+  resultEl.style.display="block";
   var fmt=document.getElementById("sumFormat").value;
-  if(fmt==="bullet")document.getElementById("summary").innerHTML=topSentences.map(function(s){return '<p style="margin:.4rem 0">• '+s.text+'.</p>'}).join("");
-  else if(fmt==="paragraph")document.getElementById("summary").innerHTML='<p>'+topSentences.map(function(s){return s.text}).join(". ")+'. </p>';
-  else document.getElementById("summary").innerHTML=topSentences.map(function(s,i){return '<p style="margin:.5rem 0"><strong>'+(i+1)+'.</strong> '+s.text+'.</p>'}).join("");
+  var out="";
+  if(fmt==="bullet"){
+    out=chosen.map(function(s){return '<p style="margin:.4rem 0">• '+esc(s.text)+'</p>'}).join("");
+  }else if(fmt==="highlight"){
+    out=sentences.map(function(s,i){
+      if(chosenIdx.has(i))return '<span style="background:rgba(99,102,241,.22);border-radius:4px;padding:.05rem .15rem">'+esc(s)+'</span> ';
+      return '<span style="opacity:.55">'+esc(s)+'</span> ';
+    }).join("");
+    out='<div style="line-height:2">'+out+'</div>';
+  }else{
+    out='<p>'+chosen.map(function(s){return esc(s.text)}).join(" ")+'</p>';
+  }
+  document.getElementById("summary").innerHTML=out;
 }
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+(function(){try{var saved=localStorage.getItem(SUM_KEY);if(saved)document.getElementById("input").value=saved;}catch(e){}toggleLengthUI();updateSliderLabel();})();
   </script>
 </body>
 </html>

@@ -27,6 +27,22 @@
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/percentage-calc">
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .pc-block{border:1px solid rgba(99,102,241,.15);border-radius:var(--radius);padding:1.2rem;margin-top:1.2rem;background:rgba(99,102,241,.04)}
+    .pc-block h2{margin-bottom:.5rem}
+    .pc-out{margin-top:.8rem;display:none}
+    .pc-out.show{display:block}
+    .pc-result{font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .pc-formula{color:var(--text2);font-size:.85rem;margin-top:.35rem;font-family:'Cascadia Code','Fira Code',monospace}
+    .pc-copy{background:var(--card);color:var(--accent);border:1px solid var(--accent);padding:.25rem .7rem;border-radius:8px;cursor:pointer;font-size:.75rem;margin-top:.5rem}
+    .pc-tricks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem}
+    .pc-trick{background:var(--card);border-radius:10px;padding:.5rem .7rem;font-size:.85rem;text-align:center}
+    .pc-trick b{color:var(--accent)}
+    #pc_history .pc-hist-item{background:var(--card);border-radius:10px;padding:.5rem .8rem;margin:.35rem 0;font-size:.85rem;display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+    #pc_history .pc-hist-item span:first-child{color:var(--text2)}
+    .subj-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.3rem 0}
+    .subj-row input{flex:1;min-width:100px}
+  </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head>
 <body>
@@ -37,56 +53,169 @@
     <div class="tool-section">
       <h1>% Percentage Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">All percentage calculations in one place.</p>
+      <p class="info">A complete percentage toolkit — every common percentage calculation in one place, each with the formula shown. All calculations run in your browser.</p>
 
-      <h2 style="margin-top:1.5rem">What is X% of Y?</h2>
-      <div class="row">
-        <input type="number" id="p1" placeholder="X"><span>% of</span><input type="number" id="v1" placeholder="Y">
-        <button class="btn" onclick="document.getElementById('r1').textContent=((+document.getElementById('p1').value/100)*+document.getElementById('v1').value).toFixed(2)">Calculate</button>
-        <strong id="r1" style="font-size:1.2rem;color:var(--accent)">—</strong>
+      <!-- (a) What is X% of Y -->
+      <div class="pc-block">
+        <h2>What is X% of Y?</h2>
+        <div class="row">
+          <input type="number" id="a_x" placeholder="X (percent)"><span>% of</span><input type="number" id="a_y" placeholder="Y (value)">
+          <button class="btn" onclick="pcOf()">Calculate</button>
+        </div>
+        <div id="a_out" class="pc-out"></div>
       </div>
 
-      <h2 style="margin-top:1.5rem">X is what % of Y?</h2>
-      <div class="row">
-        <input type="number" id="v2" placeholder="X"><span>is what % of</span><input type="number" id="v3" placeholder="Y">
-        <button class="btn" onclick="document.getElementById('r2').textContent=((+document.getElementById('v2').value/+document.getElementById('v3').value)*100).toFixed(2)+'%'">Calculate</button>
-        <strong id="r2" style="font-size:1.2rem;color:var(--accent)">—</strong>
+      <!-- (b) X is what percent of Y -->
+      <div class="pc-block">
+        <h2>X is what percent of Y?</h2>
+        <div class="row">
+          <input type="number" id="b_x" placeholder="X"><span>is what % of</span><input type="number" id="b_y" placeholder="Y">
+          <button class="btn" onclick="pcWhat()">Calculate</button>
+        </div>
+        <div id="b_out" class="pc-out"></div>
       </div>
 
-      <h2 style="margin-top:1.5rem">Percentage Change</h2>
-      <div class="row">
-        <input type="number" id="old" placeholder="Old value"><span>→</span><input type="number" id="new2" placeholder="New value">
-        <button class="btn" onclick="const o=+document.getElementById('old').value,n=+document.getElementById('new2').value;var ch=(((n-o)/Math.abs(o))*100).toFixed(2);document.getElementById('r3').textContent=(ch>0?'+':'')+ch+'%'">Calculate</button>
-        <strong id="r3" style="font-size:1.2rem;color:var(--accent)">—</strong>
+      <!-- (c) Percentage increase/decrease between two values -->
+      <div class="pc-block">
+        <h2>Percentage Increase / Decrease</h2>
+        <div class="row">
+          <input type="number" id="c_old" placeholder="Original value"><span>→</span><input type="number" id="c_new" placeholder="New value">
+          <button class="btn" onclick="pcChange()">Calculate</button>
+        </div>
+        <div id="c_out" class="pc-out"></div>
       </div>
 
-      <h2 style="margin-top:1.5rem">Increase/Decrease by %</h2>
-      <div class="row">
-        <input type="number" id="v4" placeholder="Value"><span>+/-</span><input type="number" id="p4" placeholder="%">
-        <button class="btn" onclick="const v=+document.getElementById('v4').value,p=+document.getElementById('p4').value;document.getElementById('r4').textContent='↑ '+(v+v*p/100).toFixed(2)+' | ↓ '+(v-v*p/100).toFixed(2)">Calculate</button>
-        <strong id="r4" style="font-size:1rem;color:var(--accent)">—</strong>
+      <!-- (d) Add or subtract X% from a value -->
+      <div class="pc-block">
+        <h2>Add or Subtract X% from a Value</h2>
+        <div class="row">
+          <input type="number" id="d_v" placeholder="Value"><input type="number" id="d_p" placeholder="Percent %">
+          <button class="btn" onclick="pcAddSub()">Calculate</button>
+        </div>
+        <div id="d_out" class="pc-out"></div>
       </div>
 
-      <h2 style="margin-top:1.5rem">💼 Markup vs Margin</h2>
-      <div class="row">
-        <input type="number" id="cost" placeholder="Cost"><input type="number" id="sell" placeholder="Selling Price">
-        <button class="btn" onclick="var c=+document.getElementById('cost').value,s=+document.getElementById('sell').value;var markup=((s-c)/c*100).toFixed(2),margin=((s-c)/s*100).toFixed(2);document.getElementById('r5').textContent='Markup: '+markup+'% | Margin: '+margin+'%'">Calculate</button>
+      <!-- (e) Reverse percentage -->
+      <div class="pc-block">
+        <h2>Reverse Percentage — Find the Original Value</h2>
+        <p class="info">You have the final value after a % change. Find the value before the change.</p>
+        <div class="row">
+          <input type="number" id="e_final" placeholder="Final value">
+          <select id="e_dir"><option value="inc">after increase of</option><option value="dec">after decrease of</option></select>
+          <input type="number" id="e_p" placeholder="Percent %">
+          <button class="btn" onclick="pcReverse()">Calculate</button>
+        </div>
+        <div id="e_out" class="pc-out"></div>
       </div>
-      <strong id="r5" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
 
-      <h2 style="margin-top:1.5rem">🍽️ Tip Calculator</h2>
-      <div class="row">
-        <input type="number" id="bill" placeholder="Bill amount"><input type="number" id="tipPct" placeholder="Tip %" value="15"><input type="number" id="split" placeholder="Split between" value="1" min="1">
-        <button class="btn" onclick="var b=+document.getElementById('bill').value,t=+document.getElementById('tipPct').value,sp=+document.getElementById('split').value||1;var tip=b*t/100;var total=b+tip;document.getElementById('r6').textContent='Tip: '+tip.toFixed(2)+' | Total: '+total.toFixed(2)+' | Per person: '+(total/sp).toFixed(2)">Calculate</button>
+      <!-- (f) Percentage difference -->
+      <div class="pc-block">
+        <h2>Percentage Difference Between Two Numbers</h2>
+        <p class="info">Symmetric difference relative to the average of the two numbers.</p>
+        <div class="row">
+          <input type="number" id="f_a" placeholder="First number"><input type="number" id="f_b" placeholder="Second number">
+          <button class="btn" onclick="pcDiff()">Calculate</button>
+        </div>
+        <div id="f_out" class="pc-out"></div>
       </div>
-      <strong id="r6" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
 
-      <h2 style="margin-top:1.5rem">🏷️ Discount Calculator</h2>
-      <div class="row">
-        <input type="number" id="origPrice" placeholder="Original Price"><input type="number" id="discPct" placeholder="Discount %">
-        <button class="btn" onclick="var p=+document.getElementById('origPrice').value,d=+document.getElementById('discPct').value;var savings=p*d/100;document.getElementById('r7').textContent='Final: '+(p-savings).toFixed(2)+' | You save: '+savings.toFixed(2)">Calculate</button>
+      <!-- (g) Marks percentage -->
+      <div class="pc-block">
+        <h2>Marks Percentage (Multiple Subjects)</h2>
+        <p class="info">Add each subject's obtained and total marks for the aggregate percentage.</p>
+        <div id="g_rows"></div>
+        <div class="row" style="margin-top:.4rem">
+          <button class="btn btn-outline" onclick="pcAddSubject()">+ Add Subject</button>
+          <button class="btn" onclick="pcMarks()">Calculate Aggregate</button>
+        </div>
+        <div id="g_out" class="pc-out"></div>
       </div>
-      <strong id="r7" style="font-size:1rem;color:var(--accent);display:block;margin-top:.3rem">—</strong>
+
+      <!-- (h) Percentage to fraction/decimal/ratio -->
+      <div class="pc-block">
+        <h2>Percentage → Fraction, Decimal & Ratio</h2>
+        <div class="row">
+          <input type="number" id="h_p" placeholder="Percent %">
+          <button class="btn" onclick="pcConvert()">Convert</button>
+        </div>
+        <div id="h_out" class="pc-out"></div>
+      </div>
+
+      <!-- (i) CGPA <-> percentage -->
+      <div class="pc-block">
+        <h2>CGPA ↔ Percentage</h2>
+        <p class="info">Uses common university formulas. Factor is configurable (default 9.5, as per CBSE).</p>
+        <div class="row">
+          <input type="number" id="i_cgpa" placeholder="CGPA (e.g. 8.2)">
+          <span>× factor</span>
+          <input type="number" id="i_factor" placeholder="9.5" value="9.5">
+          <button class="btn" onclick="pcCgpaToPct()">CGPA → %</button>
+        </div>
+        <div class="row">
+          <input type="number" id="i_pct" placeholder="Percentage %">
+          <button class="btn" onclick="pcPctToCgpa()">% → CGPA</button>
+        </div>
+        <div id="i_out" class="pc-out"></div>
+      </div>
+
+      <!-- (j) Discount -->
+      <div class="pc-block">
+        <h2>Discount Calculator</h2>
+        <div class="row">
+          <input type="number" id="j_orig" placeholder="Original price"><input type="number" id="j_disc" placeholder="Discount %">
+          <button class="btn" onclick="pcDiscount()">Calculate</button>
+        </div>
+        <p class="info" style="margin-top:.6rem">Reverse — find the discount % from two prices:</p>
+        <div class="row">
+          <input type="number" id="j_was" placeholder="Was (original)"><input type="number" id="j_now" placeholder="Now (final)">
+          <button class="btn btn-outline" onclick="pcDiscountReverse()">Find Discount %</button>
+        </div>
+        <div id="j_out" class="pc-out"></div>
+      </div>
+
+      <!-- (k) GST add/remove -->
+      <div class="pc-block">
+        <h2>GST-style Add / Remove Percentage</h2>
+        <div class="row">
+          <input type="number" id="k_amt" placeholder="Amount"><input type="number" id="k_rate" placeholder="Rate %" value="18">
+          <select id="k_mode"><option value="add">Add (exclusive → inclusive)</option><option value="remove">Remove (inclusive → base)</option></select>
+          <button class="btn" onclick="pcGst()">Calculate</button>
+        </div>
+        <div id="k_out" class="pc-out"></div>
+      </div>
+
+      <!-- (l) Profit and loss -->
+      <div class="pc-block">
+        <h2>Profit & Loss Percentage</h2>
+        <div class="row">
+          <input type="number" id="l_cp" placeholder="Cost price (CP)"><input type="number" id="l_sp" placeholder="Selling price (SP)">
+          <button class="btn" onclick="pcProfitLoss()">Calculate</button>
+        </div>
+        <div id="l_out" class="pc-out"></div>
+      </div>
+
+      <!-- Shortcuts / tricks reference -->
+      <div class="pc-block">
+        <h2>⚡ Shortcuts & Tricks (SSC / Banking Aptitude)</h2>
+        <div id="pc_tricks" style="margin-top:.5rem"></div>
+        <h3 style="margin-top:1rem;font-size:1rem">Quick mental-maths tips</h3>
+        <ul style="margin-left:1.5rem;line-height:1.9">
+          <li><strong>x% of y = y% of x</strong> — e.g. 8% of 50 = 50% of 8 = 4.</li>
+          <li>To find <strong>10%</strong>, just move the decimal one place left. 5% is half of that.</li>
+          <li><strong>15% = 10% + 5%</strong> (10% then add its half).</li>
+          <li>A rise of a% then a fall of a% is <strong>never</strong> the original — it drops by a²/100 %.</li>
+          <li>Successive % changes: net = a + b + (a·b)/100.</li>
+        </ul>
+      </div>
+
+      <!-- History -->
+      <div class="pc-block">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+          <h2 style="margin:0">🕘 Calculation History</h2>
+          <button class="btn btn-outline" onclick="pcClearHistory()">Clear</button>
+        </div>
+        <div id="pc_history" style="margin-top:.6rem"></div>
+      </div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -147,5 +276,199 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script>
+  var PC_HKEY="pc_history_v1";
+  function num(id){return parseFloat(document.getElementById(id).value);}
+  function fmt(n){if(!isFinite(n))return "—";return (Math.round(n*10000)/10000).toLocaleString(undefined,{maximumFractionDigits:4});}
+  function show(id,resultText,formula){
+    var box=document.getElementById(id);
+    box.classList.add("show");
+    box.innerHTML="<div class='pc-result'>"+resultText+"</div><div class='pc-formula'>"+formula+"</div>"+
+      "<button class='pc-copy' onclick=\"copyText('"+String(resultText).replace(/'/g,"")+"',this)\">Copy</button>";
+  }
+  function pushHistory(label,value){
+    var h=[];
+    try{h=JSON.parse(localStorage.getItem(PC_HKEY))||[];}catch(e){h=[];}
+    h.unshift({label:label,value:value,t:new Date().toLocaleString()});
+    h=h.slice(0,25);
+    localStorage.setItem(PC_HKEY,JSON.stringify(h));
+    renderHistory();
+  }
+  function renderHistory(){
+    var h=[];
+    try{h=JSON.parse(localStorage.getItem(PC_HKEY))||[];}catch(e){h=[];}
+    var el=document.getElementById("pc_history");
+    if(!h.length){el.innerHTML="<p class='info'>No calculations yet.</p>";return;}
+    el.innerHTML=h.map(function(x){
+      return "<div class='pc-hist-item'><span>"+x.label+"</span><strong>"+x.value+"</strong></div>";
+    }).join("");
+  }
+  function pcClearHistory(){localStorage.removeItem(PC_HKEY);renderHistory();}
+
+  // (a) What is X% of Y
+  function pcOf(){
+    var x=num("a_x"),y=num("a_y");
+    if(isNaN(x)||isNaN(y))return alert("Enter both X and Y");
+    var r=x/100*y;
+    show("a_out",fmt(r),"("+x+" ÷ 100) × "+y+" = "+fmt(r));
+    pushHistory(x+"% of "+y,fmt(r));
+  }
+  // (b) X is what percent of Y
+  function pcWhat(){
+    var x=num("b_x"),y=num("b_y");
+    if(isNaN(x)||isNaN(y))return alert("Enter both X and Y");
+    if(y===0)return alert("Y cannot be zero");
+    var r=x/y*100;
+    show("b_out",fmt(r)+"%","("+x+" ÷ "+y+") × 100 = "+fmt(r)+"%");
+    pushHistory(x+" is what % of "+y,fmt(r)+"%");
+  }
+  // (c) Percentage increase / decrease
+  function pcChange(){
+    var o=num("c_old"),n=num("c_new");
+    if(isNaN(o)||isNaN(n))return alert("Enter both values");
+    if(o===0)return alert("Original value cannot be zero");
+    var ch=(n-o)/Math.abs(o)*100;
+    var dir=ch>=0?"increase":"decrease";
+    show("c_out",(ch>0?"+":"")+fmt(ch)+"% ("+dir+")","(("+n+" − "+o+") ÷ |"+o+"|) × 100 = "+fmt(ch)+"%");
+    pushHistory(o+" → "+n,(ch>0?"+":"")+fmt(ch)+"%");
+  }
+  // (d) Add or subtract X% from a value
+  function pcAddSub(){
+    var v=num("d_v"),p=num("d_p");
+    if(isNaN(v)||isNaN(p))return alert("Enter value and percent");
+    var up=v+v*p/100, down=v-v*p/100;
+    show("d_out","↑ "+fmt(up)+"  |  ↓ "+fmt(down),
+      v+" ± ("+v+" × "+p+" ÷ 100) = "+fmt(up)+" / "+fmt(down));
+    pushHistory(v+" ± "+p+"%","↑ "+fmt(up)+" / ↓ "+fmt(down));
+  }
+  // (e) Reverse percentage
+  function pcReverse(){
+    var f=num("e_final"),p=num("e_p"),dir=document.getElementById("e_dir").value;
+    if(isNaN(f)||isNaN(p))return alert("Enter final value and percent");
+    var orig, formula;
+    if(dir==="inc"){orig=f/(1+p/100);formula=f+" ÷ (1 + "+p+"/100) = "+fmt(orig);}
+    else{orig=f/(1-p/100);formula=f+" ÷ (1 − "+p+"/100) = "+fmt(orig);}
+    show("e_out",fmt(orig),"Original = "+formula);
+    pushHistory("Reverse "+p+"% "+(dir==="inc"?"inc":"dec")+" of final "+f,fmt(orig));
+  }
+  // (f) Percentage difference
+  function pcDiff(){
+    var a=num("f_a"),b=num("f_b");
+    if(isNaN(a)||isNaN(b))return alert("Enter both numbers");
+    var avg=(a+b)/2;
+    if(avg===0)return alert("Average cannot be zero");
+    var d=Math.abs(a-b)/Math.abs(avg)*100;
+    show("f_out",fmt(d)+"%","(|"+a+" − "+b+"| ÷ (("+a+" + "+b+") ÷ 2)) × 100 = "+fmt(d)+"%");
+    pushHistory("% diff of "+a+" & "+b,fmt(d)+"%");
+  }
+  // (g) Marks percentage
+  function pcAddSubject(){
+    var wrap=document.getElementById("g_rows");
+    var div=document.createElement("div");
+    div.className="subj-row";
+    div.innerHTML="<input type='number' placeholder='Obtained' class='g_obt'>"+
+      "<span>/</span><input type='number' placeholder='Total' class='g_tot'>"+
+      "<button class='pc-copy' onclick='this.parentNode.remove()'>×</button>";
+    wrap.appendChild(div);
+  }
+  function pcMarks(){
+    var obt=document.querySelectorAll(".g_obt"),tot=document.querySelectorAll(".g_tot");
+    var sumO=0,sumT=0,valid=false;
+    for(var i=0;i<obt.length;i++){
+      var o=parseFloat(obt[i].value),t=parseFloat(tot[i].value);
+      if(!isNaN(o)&&!isNaN(t)&&t>0){sumO+=o;sumT+=t;valid=true;}
+    }
+    if(!valid)return alert("Enter at least one subject with obtained and total marks");
+    var pct=sumO/sumT*100;
+    show("g_out",fmt(pct)+"%","("+fmt(sumO)+" ÷ "+fmt(sumT)+") × 100 = "+fmt(pct)+"%");
+    pushHistory("Marks "+fmt(sumO)+"/"+fmt(sumT),fmt(pct)+"%");
+  }
+  // (h) Percentage to fraction / decimal / ratio
+  function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a||1;}
+  function pcConvert(){
+    var p=num("h_p");
+    if(isNaN(p))return alert("Enter a percent");
+    var dec=p/100;
+    var numer=Math.round(dec*1000000),denom=1000000;
+    var g=gcd(numer,denom);
+    var fn=numer/g,fd=denom/g;
+    var ratio=fn+":"+fd;
+    show("h_out",p+"% = "+fn+"/"+fd,
+      "Decimal = "+fmt(dec)+" · Fraction = "+fn+"/"+fd+" · Ratio = "+ratio);
+    pushHistory(p+"% to fraction/decimal",fn+"/"+fd+" = "+fmt(dec));
+  }
+  // (i) CGPA <-> percentage
+  function pcCgpaToPct(){
+    var c=num("i_cgpa"),f=num("i_factor");
+    if(isNaN(c))return alert("Enter CGPA");
+    if(isNaN(f)||f<=0){f=9.5;document.getElementById("i_factor").value=9.5;}
+    var pct=c*f;
+    show("i_out",fmt(pct)+"%","CGPA × factor = "+c+" × "+f+" = "+fmt(pct)+"% (per common university formula)");
+    pushHistory("CGPA "+c+" → %",fmt(pct)+"%");
+  }
+  function pcPctToCgpa(){
+    var p=num("i_pct"),f=num("i_factor");
+    if(isNaN(p))return alert("Enter percentage");
+    if(isNaN(f)||f<=0){f=9.5;document.getElementById("i_factor").value=9.5;}
+    var cgpa=p/f;
+    show("i_out",fmt(cgpa)+" CGPA","% ÷ factor = "+p+" ÷ "+f+" = "+fmt(cgpa)+" CGPA (per common university formula)");
+    pushHistory(p+"% → CGPA",fmt(cgpa));
+  }
+  // (j) Discount
+  function pcDiscount(){
+    var o=num("j_orig"),d=num("j_disc");
+    if(isNaN(o)||isNaN(d))return alert("Enter original price and discount %");
+    var saved=o*d/100,final=o-saved;
+    show("j_out","Final: "+fmt(final)+"  |  Saved: "+fmt(saved),
+      o+" − ("+o+" × "+d+"% ) = "+fmt(final)+" ; you save "+fmt(saved));
+    pushHistory(o+" − "+d+"% off","Final "+fmt(final));
+  }
+  function pcDiscountReverse(){
+    var was=num("j_was"),now=num("j_now");
+    if(isNaN(was)||isNaN(now))return alert("Enter both prices");
+    if(was===0)return alert("Original price cannot be zero");
+    var pct=(was-now)/was*100;
+    show("j_out",fmt(pct)+"% off","(("+was+" − "+now+") ÷ "+was+") × 100 = "+fmt(pct)+"%");
+    pushHistory("Discount from "+was+"→"+now,fmt(pct)+"% off");
+  }
+  // (k) GST add/remove
+  function pcGst(){
+    var amt=num("k_amt"),rate=num("k_rate"),mode=document.getElementById("k_mode").value;
+    if(isNaN(amt)||isNaN(rate))return alert("Enter amount and rate");
+    if(mode==="add"){
+      var tax=amt*rate/100,total=amt+tax;
+      show("k_out","Tax: "+fmt(tax)+"  |  Total: "+fmt(total),
+        amt+" + ("+amt+" × "+rate+"% ) = "+fmt(total));
+      pushHistory("GST +"+rate+"% on "+amt,"Total "+fmt(total));
+    }else{
+      var base=amt/(1+rate/100),tax2=amt-base;
+      show("k_out","Base: "+fmt(base)+"  |  Tax: "+fmt(tax2),
+        amt+" ÷ (1 + "+rate+"/100) = "+fmt(base)+" base");
+      pushHistory("Remove "+rate+"% from "+amt,"Base "+fmt(base));
+    }
+  }
+  // (l) Profit and loss
+  function pcProfitLoss(){
+    var cp=num("l_cp"),sp=num("l_sp");
+    if(isNaN(cp)||isNaN(sp))return alert("Enter cost and selling price");
+    if(cp===0)return alert("Cost price cannot be zero");
+    var diff=sp-cp,pct=diff/cp*100;
+    var label=diff>=0?"Profit":"Loss";
+    show("l_out",label+": "+fmt(Math.abs(diff))+" ("+fmt(Math.abs(pct))+"%)",
+      "(("+sp+" − "+cp+") ÷ "+cp+") × 100 = "+fmt(pct)+"%");
+    pushHistory("P/L CP "+cp+" SP "+sp,label+" "+fmt(Math.abs(pct))+"%");
+  }
+
+  // Tricks reference
+  (function(){
+    var tricks=[["1/2","50%"],["1/3","33.33%"],["1/4","25%"],["1/5","20%"],["1/6","16.67%"],
+      ["1/7","14.28%"],["1/8","12.5%"],["1/9","11.11%"],["1/10","10%"],["1/11","9.09%"],
+      ["1/12","8.33%"],["1/16","6.25%"],["1/20","5%"],["3/4","75%"],["2/3","66.67%"],["1/25","4%"]];
+    document.getElementById("pc_tricks").innerHTML="<div class='pc-tricks-grid'>"+
+      tricks.map(function(t){return "<div class='pc-trick'><b>"+t[0]+"</b> = "+t[1]+"</div>";}).join("")+"</div>";
+    pcAddSubject();pcAddSubject();
+    renderHistory();
+  })();
+  </script>
 </body>
 </html>

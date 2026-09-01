@@ -37,12 +37,28 @@
     <div class="tool-section">
       <h1>📊 Word Counter & Readability</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste or type text to get word count, character count, reading time and readability score.</p>
+      <p class="info">Paste or type text for live stats, keyword density, readability scores, and platform character limits. Everything runs in your browser.</p>
       <textarea id="txt" placeholder="Type or paste your text here..." oninput="analyze()" style="min-height:200px"></textarea>
+      <div class="row" style="margin:.6rem 0">
+        <button class="btn btn-outline" onclick="toCase('upper')">UPPERCASE</button>
+        <button class="btn btn-outline" onclick="toCase('lower')">lowercase</button>
+        <button class="btn btn-outline" onclick="toCase('title')">Title Case</button>
+        <button class="btn btn-outline" onclick="toCase('sentence')">Sentence case</button>
+        <button class="btn btn-outline" onclick="cleanSpaces()">🧹 Remove Extra Spaces</button>
+      </div>
+      <div class="row" style="margin:.6rem 0">
+        <button class="btn" onclick="copyText()">📋 Copy</button>
+        <button class="btn" onclick="downloadTxt()">💾 Download .txt</button>
+        <button class="btn" onclick="clearText()">🗑️ Clear</button>
+        <button id="exportBtn" class="btn" onclick="exportReport()" style="display:none">📥 Export Report</button>
+        <button id="csvBtn" class="btn" onclick="exportCSV()" style="display:none">📊 Frequency CSV</button>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0" id="stats"></div>
+      <div id="limits" style="margin-top:1rem"></div>
+      <div id="readability" style="margin-top:1rem"></div>
       <div id="keywords" style="margin-top:1rem"></div>
+      <div id="phrases" style="margin-top:1rem"></div>
       <div id="sentenceAnalysis" style="margin-top:1rem"></div>
-      <button id="exportBtn" onclick="exportReport()" style="display:none;margin-top:1rem;padding:.6rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">📥 Export Report</button>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -87,71 +103,189 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const stopWords=new Set(["the","be","to","of","and","a","in","that","have","i","it","for","not","on","with","he","as","you","do","at","this","but","his","by","from","they","we","her","she","or","an","will","my","one","all","would","there","their","what","so","up","out","if","about","who","get","which","go","me","when","make","can","like","time","no","just","him","know","take","people","into","year","your","good","some","could","them","see","other","than","then","now","look","only","come","its","over","think","also","back","after","use","two","how","our","work","first","well","way","even","new","want","because","any","these","give","day","most","us","is","was","are","been","has","had","were","did","does","being","am","more","very","much","many","such","own","same","should","still","may","here","where","while","each","too","those","through","down","between","both","few","before","since","must","under","during","without","again","off","once","another","never","always","already","often","yet","around","every","until","upon","however","although","though","whether","else","within","along","among","across","toward","above","below","against","behind","beyond","near","next","last","might","shall","let","got","seem","keep","need","say","tell","ask","try","call","find","put","run","set","turn","show","play","move","live","feel","hold","bring","happen","write","provide","sit","stand","lose","pay","meet","include","continue","learn","change","lead","begin","help","talk","stop","read","spend","grow","open","walk","win","teach","offer","remember","love","consider","appear","buy","wait","serve","die","send","expect","build","stay","fall","cut","reach","remain","suggest","raise","pass","sell","require","report","decide","pull"]);
+var stopWords=new Set(["the","be","to","of","and","a","in","that","have","i","it","for","not","on","with","he","as","you","do","at","this","but","his","by","from","they","we","her","she","or","an","will","my","one","all","would","there","their","what","so","up","out","if","about","who","get","which","go","me","when","make","can","like","time","no","just","him","know","take","people","into","year","your","good","some","could","them","see","other","than","then","now","look","only","come","its","over","think","also","back","after","use","two","how","our","work","first","well","way","even","new","want","because","any","these","give","day","most","us","is","was","are","been","has","had","were","did","does","being","am","more","very","much","many","such","own","same","should","still","may","here","where","while","each","too","those","through","down","between","both","few","before","since","must","under","during","without","again","off","once","another","never","always","already","often","yet","around","every","until","upon","however","although","though","whether","else","within","along","among","across","toward","above","below","against","behind","beyond","near","next","last","might","shall","let","got","seem","keep","need","say","tell","ask","try","call","find","put","run","set","turn","show","play","move","live","feel","hold","bring","happen","write","provide","sit","stand","lose","pay","meet","include","continue","learn","change","lead","begin","help","talk","stop","read","spend","grow","open","walk","win","teach","offer","remember","love","consider","appear","buy","wait","serve","die","send","expect","build","stay","fall","cut","reach","remain","suggest","raise","pass","sell","require","report","decide","pull"]);
+var LIMITS=[["Twitter / X",280],["Instagram Caption",2200],["Instagram Bio",150],["Meta Description",160],["Title Tag",60],["SMS",160],["LinkedIn Post",3000],["YouTube Description",5000]];
+var STORAGE_KEY="wordCounterText";
 var reportData={};
+var useStopWords=true;
+function countSyllables(w){w=w.toLowerCase().replace(/[^a-z]/g,'');if(!w)return 0;var m=w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'').match(/[aeiouy]{1,2}/g);return m?m.length:1;}
 function analyze(){
-  const t=document.getElementById("txt").value;
-  const words=t.trim()?t.trim().split(/\s+/).length:0;
-  const chars=t.length;
-  const charsNoSpace=t.replace(/\s/g,'').length;
-  const sentenceList=t.match(/[^.!?]+[.!?]+/g)||[];
-  const sentences=sentenceList.length||(t.trim()?1:0);
-  const paragraphs=t.trim()?t.trim().split(/\n\s*\n/).length:0;
-  const readMin=Math.ceil(words/200);
-  const speakMin=Math.ceil(words/130);
-  const syllables=t.trim()?t.trim().split(/\s+/).reduce((a,w)=>{const m=w.toLowerCase().replace(/[^a-z]/g,'').match(/[aeiouy]+/g);return a+(m?m.length:1)},0):0;
-  const flesch=words>0?Math.round(206.835-1.015*(words/(sentences||1))-84.6*(syllables/words)):0;
-  const avgParaLen=paragraphs>0?Math.round(words/paragraphs):0;
-  const s=document.getElementById("stats");
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  s.innerHTML=card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Avg Para Length",avgParaLen+" words")+card("Read Time",readMin+" min")+card("Speak Time",speakMin+" min")+card("Readability",flesch>60?"Easy ("+flesch+")":flesch>30?"Medium ("+flesch+")":"Hard ("+flesch+")");
+  var el=document.getElementById("txt");
+  var t=el?el.value:"";
+  try{localStorage.setItem(STORAGE_KEY,t);}catch(e){}
+  var wordArr=t.trim()?t.trim().split(/\s+/):[];
+  var words=wordArr.length;
+  var chars=t.length;
+  var charsNoSpace=t.replace(/\s/g,'').length;
+  var sentenceList=t.match(/[^.!?]+[.!?]+/g)||[];
+  var sentences=sentenceList.length||(t.trim()?1:0);
+  var paragraphs=t.trim()?t.trim().split(/\n\s*\n/).length:0;
+  var lines=t?t.split(/\n/).length:0;
+  var readMin=Math.max(words?1:0,Math.ceil(words/200));
+  var speakMin=Math.max(words?1:0,Math.ceil(words/130));
+  var lowerWords=wordArr.map(function(w){return w.toLowerCase().replace(/[^a-z0-9']/g,'')}).filter(function(w){return w});
+  var uniqueWords=new Set(lowerWords).size;
+  var totalLen=lowerWords.reduce(function(a,w){return a+w.length},0);
+  var avgWordLen=lowerWords.length?(totalLen/lowerWords.length).toFixed(1):0;
+  var longestWord=lowerWords.reduce(function(a,w){return w.length>a.length?w:a},"");
+  var syllables=wordArr.reduce(function(a,w){return a+countSyllables(w)},0);
+  // Sentence analysis
+  var avgSentLen=0,longestSent="",longestSentLen=0;
+  if(sentenceList.length>0){
+    var totalW=0;
+    sentenceList.forEach(function(s){var wc=s.trim().split(/\s+/).length;totalW+=wc;if(wc>longestSentLen){longestSentLen=wc;longestSent=s.trim()}});
+    avgSentLen=Math.round(totalW/sentenceList.length);
+  }
+  var avgSentLenExact=sentences?words/sentences:0;
+  // Readability scores
+  var fre=0,fkgl=0,fog=0;
+  if(words>0&&sentences>0){
+    fre=Math.round(206.835-1.015*(words/sentences)-84.6*(syllables/words));
+    fkgl=(0.39*(words/sentences)+11.8*(syllables/words)-15.59);
+    fkgl=Math.round(fkgl*10)/10;
+    var complex=wordArr.filter(function(w){return countSyllables(w)>=3}).length;
+    fog=Math.round((0.4*((words/sentences)+100*(complex/words)))*10)/10;
+  }
+  var card=function(l,v){return "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";};
+  document.getElementById("stats").innerHTML=
+    card("Words",words)+card("Characters",chars)+card("No Spaces",charsNoSpace)+
+    card("Sentences",sentences)+card("Paragraphs",paragraphs)+card("Lines",lines)+
+    card("Unique Words",uniqueWords)+card("Avg Word Length",avgWordLen)+
+    card("Avg Sentence Length",avgSentLen+" words")+
+    card("Longest Word",longestWord?esc(longestWord):"—")+
+    card("Read Time",readMin+" min")+card("Speak Time",speakMin+" min");
+
+  // Character limit presets
+  var limHtml='<h3>📏 Character Limits</h3>';
+  LIMITS.forEach(function(p){
+    var name=p[0],lim=p[1],rem=lim-chars,pct=Math.min(chars/lim*100,100);
+    var over=chars>lim;
+    var barColor=over?"#f44336":"var(--accent)";
+    limHtml+='<div style="margin:.5rem 0"><div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.2rem"><span style="font-weight:600">'+name+' <span class="info">('+lim+')</span></span><span style="color:'+(over?"#f44336":"var(--text2)")+'">'+(over?("Over by "+(-rem)):(rem+" left"))+'</span></div><div style="height:8px;background:var(--card);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:4px;transition:width .2s"></div></div></div>';
+  });
+  document.getElementById("limits").innerHTML=chars>0?limHtml:'';
+
+  // Readability scores with interpretation
+  var rHtml='';
+  if(words>0&&sentences>0){
+    rHtml='<h3>📖 Readability Scores</h3><div style="display:grid;grid-template-columns:1fr;gap:.5rem">';
+    rHtml+=scoreCard("Flesch Reading Ease",fre,freInterpret(fre));
+    rHtml+=scoreCard("Flesch-Kincaid Grade Level",fkgl,gradeInterpret(fkgl));
+    rHtml+=scoreCard("Gunning Fog Index",fog,gradeInterpret(fog));
+    rHtml+='</div>';
+  }
+  document.getElementById("readability").innerHTML=rHtml;
 
   // Keyword density
-  var kwHtml='';
-  var topKeywords=[];
-  if(words>5){
+  var kwHtml='',topKeywords=[];
+  if(words>3){
     var freq={};
-    t.toLowerCase().replace(/[^a-z\s]/g,"").split(/\s+/).forEach(function(w){if(w.length>2&&!stopWords.has(w))freq[w]=(freq[w]||0)+1});
-    topKeywords=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+    lowerWords.forEach(function(w){if(w.length>1&&(!useStopWords||!stopWords.has(w)))freq[w]=(freq[w]||0)+1});
+    topKeywords=Object.entries(freq).sort(function(a,b){return b[1]-a[1]}).slice(0,15);
     if(topKeywords.length){
-      kwHtml='<h3>🔑 Top Keywords</h3>';
-      topKeywords.forEach(function(k){var pct=(k[1]/words*100).toFixed(1);kwHtml+='<div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><span style="min-width:100px;font-weight:600">'+k[0]+'</span><div style="flex:1;height:8px;background:var(--border);border-radius:4px"><div style="height:100%;width:'+Math.min(pct*10,100)+'%;background:var(--accent);border-radius:4px"></div></div><span class="info">'+k[1]+' ('+pct+'%)</span></div>'});
+      kwHtml='<h3>🔑 Keyword Density (Top 15) <label style="font-size:.8rem;font-weight:400;margin-left:.5rem"><input type="checkbox" id="swToggle" '+(useStopWords?'checked':'')+' onchange="toggleStop()" style="width:auto;margin:0 .3rem 0 0"> Filter stop words</label></h3>';
+      kwHtml+='<table style="width:100%;border-collapse:collapse;font-size:.9rem"><thead><tr style="text-align:left;border-bottom:1px solid rgba(255,255,255,.1)"><th style="padding:.4rem">Word</th><th style="padding:.4rem">Count</th><th style="padding:.4rem">Density</th></tr></thead><tbody>';
+      topKeywords.forEach(function(k){var pct=(k[1]/words*100).toFixed(1);kwHtml+='<tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:.4rem;font-weight:600">'+esc(k[0])+'</td><td style="padding:.4rem">'+k[1]+'</td><td style="padding:.4rem"><div style="display:flex;align-items:center;gap:.5rem"><div style="flex:1;height:8px;background:var(--card);border-radius:4px;min-width:60px"><div style="height:100%;width:'+Math.min(pct*10,100)+'%;background:var(--gradient);border-radius:4px"></div></div><span class="info" style="min-width:44px">'+pct+'%</span></div></td></tr>'});
+      kwHtml+='</tbody></table>';
     }
   }
   document.getElementById("keywords").innerHTML=kwHtml;
 
-  // Sentence analysis
+  // Phrase frequency (2-word and 3-word)
+  var phHtml='';
+  if(lowerWords.length>3){
+    var content=lowerWords.filter(function(w){return w.length>1});
+    var bi=ngrams(content,2),tri=ngrams(content,3);
+    if(bi.length||tri.length){
+      phHtml='<h3>🔗 Phrase Frequency</h3><div class="row" style="align-items:flex-start">';
+      phHtml+='<div style="min-width:200px"><strong>2-word phrases</strong>'+(bi.length?phraseList(bi):'<p class="info">None repeated</p>')+'</div>';
+      phHtml+='<div style="min-width:200px"><strong>3-word phrases</strong>'+(tri.length?phraseList(tri):'<p class="info">None repeated</p>')+'</div>';
+      phHtml+='</div>';
+    }
+  }
+  document.getElementById("phrases").innerHTML=phHtml;
+
+  // Sentence analysis (longest)
   var saHtml='';
-  var avgSentLen=0,longestSent='';
-  if(sentenceList.length>0){
-    var longest={len:0,text:''};
-    var totalWords=0;
-    sentenceList.forEach(function(s){var wc=s.trim().split(/\s+/).length;totalWords+=wc;if(wc>longest.len){longest.len=wc;longest.text=s.trim()}});
-    avgSentLen=Math.round(totalWords/sentenceList.length);
-    longestSent=longest.text;
-    saHtml='<h3>📝 Sentence Analysis</h3><p><strong>Average sentence length:</strong> '+avgSentLen+' words</p><p><strong>Longest sentence ('+longest.len+' words):</strong></p><p style="background:var(--card);padding:.8rem;border-radius:8px;border-left:3px solid var(--accent)">'+longest.text+'</p>';
+  if(longestSent){
+    saHtml='<h3>📝 Longest Sentence ('+longestSentLen+' words)</h3><p style="background:var(--card);padding:.8rem;border-radius:8px;border-left:3px solid var(--accent)">'+esc(longestSent)+'</p>';
   }
   document.getElementById("sentenceAnalysis").innerHTML=saHtml;
 
-  // Export button visibility
   document.getElementById("exportBtn").style.display=words>0?'inline-block':'none';
-
-  // Store report data
-  reportData={words,chars,charsNoSpace,sentences,paragraphs,avgParaLen,readMin,speakMin,flesch,topKeywords,avgSentLen,longestSent};
+  document.getElementById("csvBtn").style.display=topKeywords.length?'inline-block':'none';
+  reportData={words:words,chars:chars,charsNoSpace:charsNoSpace,sentences:sentences,paragraphs:paragraphs,lines:lines,uniqueWords:uniqueWords,avgWordLen:avgWordLen,longestWord:longestWord,readMin:readMin,speakMin:speakMin,fre:fre,fkgl:fkgl,fog:fog,topKeywords:topKeywords,avgSentLen:avgSentLen,longestSent:longestSent};
 }
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ngrams(arr,n){
+  var counts={};
+  for(var i=0;i+n<=arr.length;i++){
+    var slice=arr.slice(i,i+n);
+    if(slice.every(function(w){return !stopWords.has(w)})){
+      var key=slice.join(' ');counts[key]=(counts[key]||0)+1;
+    }
+  }
+  return Object.entries(counts).filter(function(e){return e[1]>1}).sort(function(a,b){return b[1]-a[1]}).slice(0,8);
+}
+function phraseList(list){
+  return '<div style="margin-top:.4rem">'+list.map(function(p){return '<div style="display:flex;justify-content:space-between;background:var(--card);padding:.3rem .6rem;border-radius:6px;margin:.2rem 0;font-size:.85rem"><span>'+esc(p[0])+'</span><span class="info">'+p[1]+'</span></div>'}).join('')+'</div>';
+}
+function scoreCard(name,val,interp){
+  return '<div style="background:var(--card);padding:.8rem 1rem;border-radius:10px;border-left:3px solid var(--accent)"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">'+name+'</span><span style="font-size:1.2rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+val+'</span></div><div class="info" style="margin:.3rem 0 0">'+interp+'</div></div>';
+}
+function freInterpret(s){
+  if(s>=90)return "Very easy to read. Understood by an average 11-year-old.";
+  if(s>=70)return "Easy to read. Conversational English for consumers.";
+  if(s>=60)return "Plain English. Easily understood by 13-15 year olds.";
+  if(s>=50)return "Fairly difficult. Understood by high-school students.";
+  if(s>=30)return "Difficult. Best understood by college students.";
+  if(s>=10)return "Very difficult. Best for university graduates.";
+  return "Extremely difficult. Suited to professionals and specialists.";
+}
+function gradeInterpret(g){
+  if(g<=6)return "Reads at a grade "+g+" level — simple and accessible.";
+  if(g<=9)return "Grade "+g+" level — suitable for a general audience.";
+  if(g<=12)return "Grade "+g+" level — high-school reading difficulty.";
+  if(g<=16)return "Grade "+g+" level — college reading difficulty.";
+  return "Grade "+g+" level — postgraduate/complex reading.";
+}
+function toggleStop(){useStopWords=document.getElementById("swToggle").checked;analyze();}
+function toCase(mode){
+  var el=document.getElementById("txt");var t=el.value;
+  if(mode==='upper')t=t.toUpperCase();
+  else if(mode==='lower')t=t.toLowerCase();
+  else if(mode==='title')t=t.replace(/\w\S*/g,function(w){return w.charAt(0).toUpperCase()+w.substr(1).toLowerCase()});
+  else if(mode==='sentence'){t=t.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g,function(c){return c.toUpperCase()});}
+  el.value=t;analyze();
+}
+function cleanSpaces(){var el=document.getElementById("txt");el.value=el.value.replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{3,}/g,'\n\n').trim();analyze();}
+function copyText(){var t=document.getElementById("txt").value;navigator.clipboard.writeText(t);showToast("Copied!");}
+function downloadTxt(){var blob=new Blob([document.getElementById("txt").value],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='text.txt';a.click();}
+function clearText(){document.getElementById("txt").value='';try{localStorage.removeItem(STORAGE_KEY);}catch(e){}analyze();}
+function showToast(msg){var d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(function(){d.remove()},1500);}
 function exportReport(){
   var r=reportData;
   var txt="=== Word Counter Report ===\n\n";
   txt+="Words: "+r.words+"\nCharacters: "+r.chars+"\nCharacters (no spaces): "+r.charsNoSpace+"\n";
-  txt+="Sentences: "+r.sentences+"\nParagraphs: "+r.paragraphs+"\nAvg Paragraph Length: "+r.avgParaLen+" words\n";
-  txt+="Reading Time: "+r.readMin+" min\nSpeaking Time: "+r.speakMin+" min\n";
-  txt+="Readability (Flesch): "+r.flesch+"\n\n";
+  txt+="Sentences: "+r.sentences+"\nParagraphs: "+r.paragraphs+"\nLines: "+r.lines+"\n";
+  txt+="Unique words: "+r.uniqueWords+"\nAvg word length: "+r.avgWordLen+"\nLongest word: "+r.longestWord+"\n";
+  txt+="Avg sentence length: "+r.avgSentLen+" words\n";
+  txt+="Reading time: "+r.readMin+" min\nSpeaking time: "+r.speakMin+" min\n\n";
+  txt+="--- Readability ---\nFlesch Reading Ease: "+r.fre+" ("+freInterpret(r.fre)+")\n";
+  txt+="Flesch-Kincaid Grade: "+r.fkgl+"\nGunning Fog Index: "+r.fog+"\n\n";
   if(r.topKeywords.length){txt+="--- Top Keywords ---\n";r.topKeywords.forEach(function(k){txt+=k[0]+": "+k[1]+" ("+(k[1]/r.words*100).toFixed(1)+"%)\n"});txt+="\n";}
-  if(r.avgSentLen){txt+="--- Sentence Analysis ---\nAvg Sentence Length: "+r.avgSentLen+" words\nLongest Sentence: "+r.longestSent+"\n";}
+  if(r.longestSent){txt+="--- Longest Sentence ---\n"+r.longestSent+"\n";}
   var blob=new Blob([txt],{type:'text/plain'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='word-counter-report.txt';a.click();
 }
-analyze();
+function exportCSV(){
+  var r=reportData;if(!r.topKeywords||!r.topKeywords.length)return;
+  var csv="Word,Count,Density(%)\n";
+  r.topKeywords.forEach(function(k){csv+='"'+k[0].replace(/"/g,'""')+'",'+k[1]+','+(k[1]/r.words*100).toFixed(2)+"\n"});
+  var blob=new Blob([csv],{type:'text/csv'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='word-frequency.csv';a.click();
+}
+(function(){try{var saved=localStorage.getItem(STORAGE_KEY);if(saved)document.getElementById("txt").value=saved;}catch(e){}analyze();})();
   </script>
 </body>
 </html>

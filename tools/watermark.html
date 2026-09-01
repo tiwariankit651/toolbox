@@ -35,13 +35,26 @@
     .wm-row label{min-width:90px;font-weight:600;font-size:.9rem}
     .wm-row input[type=range]{flex:1;min-width:120px}
     .pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:200px}
-    .pos-grid button{padding:.4rem;border:2px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:.7rem}
+    .pos-grid button{padding:.4rem;border:2px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:.7rem;color:var(--text)}
     .pos-grid button.active{border-color:var(--accent);background:var(--accent);color:#fff}
-    #canvas{max-width:100%;border-radius:10px;border:1px solid var(--border);margin-top:1rem;display:none}
-    .tab-btns{display:flex;gap:.5rem;margin-bottom:.8rem}
-    .tab-btns button{padding:.5rem 1rem;border:2px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-weight:600}
+    #canvas{max-width:100%;border-radius:10px;border:1px solid var(--border);margin-top:1rem;display:none;cursor:move;touch-action:none}
+    .tab-btns{display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap}
+    .tab-btns button{padding:.5rem 1rem;border:2px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-weight:600;color:var(--text)}
     .tab-btns button.active{border-color:var(--accent);background:var(--accent);color:#fff}
-    .tab-panel{display:none}.tab-panel.active{display:block}
+    .wm-fieldset{border:1px solid var(--border);border-radius:10px;padding:.8rem;margin:.4rem 0}
+    .wm-fieldset legend{font-weight:700;font-size:.85rem;padding:0 .4rem;color:var(--accent)}
+    .wm-fieldset.disabled{opacity:.45;pointer-events:none}
+    .wm-row input[type=text],.wm-row select{padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+    .wm-chk{min-width:auto;display:flex;align-items:center;gap:.4rem;font-weight:500}
+    .wm-queue{margin-top:1rem;display:flex;flex-direction:column;gap:.5rem}
+    .wm-qitem{display:flex;align-items:center;gap:.7rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.5rem .7rem}
+    .wm-qitem img{width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0}
+    .wm-qitem .qname{flex:1;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .wm-qitem .qstatus{font-size:.75rem;color:var(--text2);min-width:70px;text-align:right}
+    .wm-qitem .qstatus.done{color:#4caf50}
+    .wm-mini{padding:.35rem .7rem;font-size:.8rem;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+    .wm-swatch{display:inline-block;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);vertical-align:middle}
+    #dragHint{font-size:.75rem;color:var(--text2);margin-top:.3rem;text-align:center}
   </style>
 </head>
 <body>
@@ -51,41 +64,91 @@
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>💧 Watermark Adder</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Add text or image watermarks to your photos. All processing in your browser.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop your image here<input type="file" id="inp" accept="image/*"></div>
+      <p class="info">Add text and/or image watermarks to your photos — position, tile, batch, and export. All processing happens in your browser.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop one or more images here (batch supported)<input type="file" id="inp" accept="image/*" multiple></div>
 
       <div class="wm-controls" id="controls" style="display:none">
         <div class="tab-btns">
-          <button class="active" onclick="switchTab('text')">Text Watermark</button>
-          <button onclick="switchTab('image')">Image Watermark</button>
+          <button type="button" class="active" id="tabTextBtn" onclick="switchTab('text')">Text Watermark</button>
+          <button type="button" id="tabImageBtn" onclick="switchTab('image')">Logo Watermark</button>
+          <button type="button" id="tabBothBtn" onclick="switchTab('both')">Both</button>
         </div>
 
-        <div class="tab-panel active" id="tab-text">
-          <div class="wm-row"><label>Text:</label><input type="text" id="wmText" value="© My Photo" style="flex:1;padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border)"></div>
-          <div class="wm-row"><label>Font Size: <strong id="fsVal">40</strong></label><input type="range" id="fontSize" min="20" max="80" value="40"></div>
-          <div class="wm-row"><label>Opacity: <strong id="opVal">0.5</strong></label><input type="range" id="opacity" min="10" max="100" value="50"></div>
-          <div class="wm-row"><label>Color:</label><input type="color" id="wmColor" value="#ffffff"></div>
-        </div>
-
-        <div class="tab-panel" id="tab-image">
-          <div class="wm-row"><label>Logo:</label><input type="file" id="logoInp" accept="image/*"><span id="logoName" class="info"></span></div>
-          <div class="wm-row"><label>Opacity: <strong id="opVal2">0.5</strong></label><input type="range" id="opacity2" min="10" max="100" value="50"></div>
-          <div class="wm-row"><label>Size: <strong id="szVal">20</strong>%</label><input type="range" id="logoSize" min="5" max="50" value="20"></div>
-        </div>
-
-        <div class="wm-row"><label>Position:</label>
-          <div class="pos-grid" id="posGrid">
-            <button data-pos="top-left">↖ TL</button><button data-pos="top-center">↑ TC</button><button data-pos="top-right">↗ TR</button>
-            <button data-pos="middle-left">← ML</button><button data-pos="center" class="active">● C</button><button data-pos="middle-right">→ MR</button>
-            <button data-pos="bottom-left">↙ BL</button><button data-pos="bottom-center">↓ BC</button><button data-pos="bottom-right" >↘ BR</button>
+        <fieldset class="wm-fieldset" id="fsText">
+          <legend>Text Watermark</legend>
+          <div class="wm-row"><label class="wm-chk"><input type="checkbox" id="textOn" checked> Enable text</label></div>
+          <div class="wm-row"><label>Text:</label><input type="text" id="wmText" value="© My Photo" style="flex:1"></div>
+          <div class="wm-row"><label>Font:</label>
+            <select id="wmFont">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="Impact, sans-serif">Impact</option>
+            </select>
           </div>
+          <div class="wm-row"><label>Font Size: <strong id="fsVal">40</strong></label><input type="range" id="fontSize" min="10" max="160" value="40"></div>
+          <div class="wm-row"><label>Opacity: <strong id="opVal">0.50</strong></label><input type="range" id="opacity" min="5" max="100" value="50"></div>
+          <div class="wm-row"><label>Color:</label><input type="color" id="wmColor" value="#ffffff"></div>
+          <div class="wm-row">
+            <label class="wm-chk"><input type="checkbox" id="wmBold" checked> Bold</label>
+            <label class="wm-chk"><input type="checkbox" id="wmItalic"> Italic</label>
+            <label class="wm-chk"><input type="checkbox" id="wmOutline" checked> Outline / shadow</label>
+          </div>
+          <div class="wm-row"><label>Rotation: <strong id="rotVal">0</strong>°</label><input type="range" id="wmRot" min="-90" max="90" value="0"></div>
+        </fieldset>
+
+        <fieldset class="wm-fieldset disabled" id="fsImage">
+          <legend>Logo Watermark</legend>
+          <div class="wm-row"><label class="wm-chk"><input type="checkbox" id="logoOn"> Enable logo</label></div>
+          <div class="wm-row"><label>Logo:</label><input type="file" id="logoInp" accept="image/*"><span id="logoName" class="info"></span></div>
+          <div class="wm-row"><label>Opacity: <strong id="opVal2">0.50</strong></label><input type="range" id="opacity2" min="5" max="100" value="50"></div>
+          <div class="wm-row"><label>Size: <strong id="szVal">20</strong>%</label><input type="range" id="logoSize" min="3" max="60" value="20"></div>
+          <div class="wm-row"><label>Rotation: <strong id="logoRotVal">0</strong>°</label><input type="range" id="logoRot" min="-90" max="90" value="0"></div>
+        </fieldset>
+
+        <fieldset class="wm-fieldset">
+          <legend>Placement</legend>
+          <div class="wm-row"><label>Position:</label>
+            <div class="pos-grid" id="posGrid">
+              <button type="button" data-pos="top-left">↖ TL</button><button type="button" data-pos="top-center">↑ TC</button><button type="button" data-pos="top-right">↗ TR</button>
+              <button type="button" data-pos="middle-left">← ML</button><button type="button" data-pos="center" class="active">● C</button><button type="button" data-pos="middle-right">→ MR</button>
+              <button type="button" data-pos="bottom-left">↙ BL</button><button type="button" data-pos="bottom-center">↓ BC</button><button type="button" data-pos="bottom-right">↘ BR</button>
+            </div>
+          </div>
+          <div class="wm-row"><label>Padding: <strong id="padVal">20</strong>px</label><input type="range" id="wmPad" min="0" max="120" value="20"></div>
+          <div class="wm-row"><label class="wm-chk"><input type="checkbox" id="tiled"> Tile / repeat across whole image</label></div>
+          <div class="wm-row" id="tileOpts" style="display:none"><label>Tile spacing: <strong id="tileGapVal">80</strong></label><input type="range" id="tileGap" min="20" max="300" value="80"></div>
+          <div class="wm-row" id="tileAngleOpts" style="display:none"><label>Tile angle: <strong id="tileAngVal">-30</strong>°</label><input type="range" id="tileAng" min="-90" max="90" value="-30"></div>
+          <div id="dragHint">Tip: drag the watermark on the preview to fine-tune its position (non-tiled mode).</div>
+        </fieldset>
+
+        <fieldset class="wm-fieldset">
+          <legend>Output</legend>
+          <div class="wm-row"><label>Format:</label>
+            <select id="outFormat">
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WEBP</option>
+            </select>
+          </div>
+          <div class="wm-row" id="qualityRow"><label>Quality: <strong id="qVal">0.92</strong></label><input type="range" id="quality" min="30" max="100" value="92"></div>
+          <div class="wm-row"><span class="info" id="sizeInfo"></span></div>
+        </fieldset>
+
+        <div class="wm-row" style="gap:.5rem">
+          <button type="button" class="btn" onclick="processAll()" style="flex:1">Apply to All &amp; Prepare Downloads</button>
+          <button type="button" class="wm-mini" onclick="resetDefaults()">↺ Reset defaults</button>
         </div>
-        <div class="wm-row"><label><input type="checkbox" id="tiled"> Tile / Repeat watermark across image</label></div>
-        <button class="btn" onclick="applyWatermark()" style="width:100%">Apply Watermark</button>
       </div>
 
       <canvas id="canvas"></canvas>
-      <button class="btn" id="dlBtn" onclick="downloadResult()" style="width:100%;margin-top:.5rem;display:none">💾 Download</button>
+      <button class="btn" id="dlBtn" onclick="downloadCurrent()" style="width:100%;margin-top:.5rem;display:none">💾 Download this image</button>
+
+      <div class="wm-queue" id="queue" style="display:none"></div>
+      <button class="btn btn-outline" id="zipBtn" onclick="downloadZip()" style="width:100%;margin-top:.5rem;display:none">🗜️ Download all as ZIP</button>
     </div>
 
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -156,98 +219,288 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
-var mainImg=null,logoImg=null,currentTab='text',position='center';
+var files=[],mainImg=null,logoImg=null,position='center';
+var freeOffset=null; // {x,y} in image px, top-left of watermark bbox when dragged
+var results=[]; // {name, blob, url}
 
-setupDrop('drop','inp',function(f){
-  loadImage(f[0]).then(function(img){mainImg=img;document.getElementById('controls').style.display='';applyWatermark()});
+var defaults={wmText:'© My Photo',wmFont:'Arial, sans-serif',fontSize:40,opacity:50,wmColor:'#ffffff',wmBold:true,wmItalic:false,wmOutline:true,wmRot:0,opacity2:50,logoSize:20,logoRot:0,wmPad:20,tiled:false,tileGap:80,tileAng:-30,outFormat:'image/jpeg',quality:92,textOn:true,logoOn:false};
+
+setupDrop('drop','inp',function(fl){
+  var arr=Array.prototype.slice.call(fl).filter(function(f){return f.type.indexOf('image/')===0});
+  if(!arr.length)return;
+  files=arr;
+  loadImage(files[0]).then(function(img){
+    mainImg=img;freeOffset=null;
+    document.getElementById('controls').style.display='';
+    renderQueue();
+    updatePreview();
+  });
 });
 
 document.getElementById('logoInp').addEventListener('change',function(e){
   if(!e.target.files[0])return;
   document.getElementById('logoName').textContent=e.target.files[0].name;
-  loadImage(e.target.files[0]).then(function(img){logoImg=img;if(mainImg)applyWatermark()});
+  document.getElementById('logoOn').checked=true;syncFieldsets();
+  loadImage(e.target.files[0]).then(function(img){logoImg=img;updatePreview()});
 });
 
-function switchTab(t){currentTab=t;
-  document.querySelectorAll('.tab-btns button').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase().includes(t))});
-  document.getElementById('tab-text').classList.toggle('active',t==='text');
-  document.getElementById('tab-image').classList.toggle('active',t==='image');
-  if(mainImg)applyWatermark();
+function switchTab(t){
+  document.getElementById('tabTextBtn').classList.toggle('active',t==='text');
+  document.getElementById('tabImageBtn').classList.toggle('active',t==='image');
+  document.getElementById('tabBothBtn').classList.toggle('active',t==='both');
+  document.getElementById('textOn').checked=(t==='text'||t==='both');
+  document.getElementById('logoOn').checked=(t==='image'||t==='both');
+  syncFieldsets();updatePreview();
+}
+function syncFieldsets(){
+  document.getElementById('fsText').classList.toggle('disabled',!document.getElementById('textOn').checked);
+  document.getElementById('fsImage').classList.toggle('disabled',!document.getElementById('logoOn').checked);
 }
 
 document.getElementById('posGrid').addEventListener('click',function(e){
   var btn=e.target.closest('button');if(!btn)return;
   document.querySelectorAll('.pos-grid button').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');position=btn.dataset.pos;if(mainImg)applyWatermark();
+  btn.classList.add('active');position=btn.dataset.pos;freeOffset=null;updatePreview();
 });
 
-['wmText','fontSize','opacity','wmColor','tiled'].forEach(function(id){
-  document.getElementById(id).addEventListener('input',function(){
-    document.getElementById('fsVal').textContent=document.getElementById('fontSize').value;
-    document.getElementById('opVal').textContent=(document.getElementById('opacity').value/100).toFixed(2);
-    if(mainImg)applyWatermark();
-  });
+// Live-update bindings
+var liveIds=['wmText','wmFont','fontSize','opacity','wmColor','wmBold','wmItalic','wmOutline','wmRot','opacity2','logoSize','logoRot','wmPad','tiled','tileGap','tileAng','outFormat','quality','textOn','logoOn'];
+liveIds.forEach(function(id){
+  var el=document.getElementById(id);
+  var ev=(el.type==='checkbox'||el.tagName==='SELECT')?'change':'input';
+  el.addEventListener(ev,function(){onControlChange(id)});
 });
-['opacity2','logoSize'].forEach(function(id){
-  document.getElementById(id).addEventListener('input',function(){
-    document.getElementById('opVal2').textContent=(document.getElementById('opacity2').value/100).toFixed(2);
-    document.getElementById('szVal').textContent=document.getElementById('logoSize').value;
-    if(mainImg)applyWatermark();
-  });
-});
-document.getElementById('tiled').addEventListener('change',function(){if(mainImg)applyWatermark()});
+function onControlChange(id){
+  document.getElementById('fsVal').textContent=document.getElementById('fontSize').value;
+  document.getElementById('opVal').textContent=(document.getElementById('opacity').value/100).toFixed(2);
+  document.getElementById('rotVal').textContent=document.getElementById('wmRot').value;
+  document.getElementById('opVal2').textContent=(document.getElementById('opacity2').value/100).toFixed(2);
+  document.getElementById('szVal').textContent=document.getElementById('logoSize').value;
+  document.getElementById('logoRotVal').textContent=document.getElementById('logoRot').value;
+  document.getElementById('padVal').textContent=document.getElementById('wmPad').value;
+  document.getElementById('tileGapVal').textContent=document.getElementById('tileGap').value;
+  document.getElementById('tileAngVal').textContent=document.getElementById('tileAng').value;
+  document.getElementById('qVal').textContent=(document.getElementById('quality').value/100).toFixed(2);
+  var tiled=document.getElementById('tiled').checked;
+  document.getElementById('tileOpts').style.display=tiled?'':'none';
+  document.getElementById('tileAngleOpts').style.display=tiled?'':'none';
+  document.getElementById('qualityRow').style.display=document.getElementById('outFormat').value==='image/png'?'none':'';
+  if(id==='textOn'||id==='logoOn')syncFieldsets();
+  if(id==='tiled')freeOffset=null;
+  updatePreview();
+}
 
-function getXY(w,h,ww,wh){
-  var pad=20,x=pad,y=pad;
-  if(position.includes('center')&&!position.includes('left')&&!position.includes('right'))x=(w-ww)/2;
-  if(position.includes('right'))x=w-ww-pad;
-  if(position.includes('middle')||position==='center')y=(h-wh)/2;
-  if(position.includes('bottom'))y=h-wh-pad;
-  if(position==='top-center')y=pad;
+function opts(){
+  return{
+    textOn:document.getElementById('textOn').checked,
+    logoOn:document.getElementById('logoOn').checked,
+    text:document.getElementById('wmText').value||'Watermark',
+    font:document.getElementById('wmFont').value,
+    fs:+document.getElementById('fontSize').value,
+    op:document.getElementById('opacity').value/100,
+    color:document.getElementById('wmColor').value,
+    bold:document.getElementById('wmBold').checked,
+    italic:document.getElementById('wmItalic').checked,
+    outline:document.getElementById('wmOutline').checked,
+    rot:+document.getElementById('wmRot').value,
+    op2:document.getElementById('opacity2').value/100,
+    logoSz:document.getElementById('logoSize').value/100,
+    logoRot:+document.getElementById('logoRot').value,
+    pad:+document.getElementById('wmPad').value,
+    tiled:document.getElementById('tiled').checked,
+    tileGap:+document.getElementById('tileGap').value,
+    tileAng:+document.getElementById('tileAng').value*Math.PI/180
+  };
+}
+
+function anchorXY(w,h,ww,wh,pad){
+  var x=pad,y=pad;
+  if(position==='top-center'||position==='center'||position==='bottom-center')x=(w-ww)/2;
+  if(position.indexOf('right')>-1)x=w-ww-pad;
+  if(position.indexOf('middle')>-1||position==='center')y=(h-wh)/2;
+  if(position.indexOf('bottom')>-1)y=h-wh-pad;
   return[x,y];
 }
 
-function applyWatermark(){
-  var c=document.getElementById('canvas'),ctx=c.getContext('2d');
-  c.width=mainImg.width;c.height=mainImg.height;
-  ctx.drawImage(mainImg,0,0);
-  var tiled=document.getElementById('tiled').checked;
-
-  if(currentTab==='text'){
-    var text=document.getElementById('wmText').value||'Watermark';
-    var fs=+document.getElementById('fontSize').value;
-    var op=document.getElementById('opacity').value/100;
-    var color=document.getElementById('wmColor').value;
-    ctx.font='bold '+fs+'px sans-serif';ctx.fillStyle=color;ctx.globalAlpha=op;
-    var tw=ctx.measureText(text).width,th=fs;
-    if(tiled){
-      ctx.save();ctx.rotate(-Math.PI/6);
-      for(var y=-c.height;y<c.height*2;y+=th*3)for(var x=-c.width;x<c.width*2;x+=tw+60)ctx.fillText(text,x,y);
+// Draw watermark onto ctx for an image of given width/height
+function drawWatermark(ctx,cw,ch,o){
+  var scale=cw/ (mainImg?mainImg.width:cw); // keep sizing relative to source image
+  // TEXT
+  if(o.textOn){
+    ctx.save();
+    var style=(o.italic?'italic ':'')+(o.bold?'bold ':'')+o.fs+'px '+o.font;
+    ctx.font=style;ctx.textBaseline='top';ctx.fillStyle=o.color;ctx.globalAlpha=o.op;
+    var tw=ctx.measureText(o.text).width,th=o.fs;
+    if(o.tiled){
+      ctx.globalAlpha=o.op;ctx.save();
+      var cx=cw/2,cy=ch/2;
+      ctx.translate(cx,cy);ctx.rotate(o.tileAng);ctx.translate(-cx,-cy);
+      var stepX=tw+o.tileGap,stepY=th+o.tileGap;
+      for(var y=-ch;y<ch*2;y+=stepY)for(var x=-cw;x<cw*2;x+=stepX){
+        if(o.outline){ctx.lineWidth=Math.max(1,o.fs/16);ctx.strokeStyle='rgba(0,0,0,.6)';ctx.strokeText(o.text,x,y)}
+        ctx.fillText(o.text,x,y);
+      }
       ctx.restore();
     }else{
-      var pos=getXY(c.width,c.height,tw,th);
-      ctx.fillText(text,pos[0],pos[1]+th);
+      var pos;
+      if(freeOffset){pos=[freeOffset.x,freeOffset.y]}else{pos=anchorXY(cw,ch,tw,th,o.pad)}
+      ctx.translate(pos[0]+tw/2,pos[1]+th/2);ctx.rotate(o.rot*Math.PI/180);
+      if(o.outline){ctx.lineWidth=Math.max(1,o.fs/16);ctx.strokeStyle='rgba(0,0,0,.6)';ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=o.fs/8;ctx.strokeText(o.text,-tw/2,-th/2)}
+      ctx.fillText(o.text,-tw/2,-th/2);
     }
-  }else if(currentTab==='image'&&logoImg){
-    var op2=document.getElementById('opacity2').value/100;
-    var sz=document.getElementById('logoSize').value/100;
-    var lw=c.width*sz,lh=logoImg.height*(lw/logoImg.width);
-    ctx.globalAlpha=op2;
-    if(tiled){
-      for(var y=0;y<c.height;y+=lh*1.5)for(var x=0;x<c.width;x+=lw*1.5)ctx.drawImage(logoImg,x,y,lw,lh);
-    }else{
-      var pos=getXY(c.width,c.height,lw,lh);
-      ctx.drawImage(logoImg,pos[0],pos[1],lw,lh);
-    }
+    ctx.restore();
   }
-  ctx.globalAlpha=1;
-  c.style.display='block';document.getElementById('dlBtn').style.display='';
+  // LOGO
+  if(o.logoOn&&logoImg){
+    ctx.save();ctx.globalAlpha=o.op2;
+    var lw=cw*o.logoSz,lh=logoImg.height*(lw/logoImg.width);
+    if(o.tiled){
+      var cx=cw/2,cy=ch/2;ctx.translate(cx,cy);ctx.rotate(o.tileAng);ctx.translate(-cx,-cy);
+      for(var y=-ch;y<ch*2;y+=lh+o.tileGap)for(var x=-cw;x<cw*2;x+=lw+o.tileGap)ctx.drawImage(logoImg,x,y,lw,lh);
+    }else{
+      var lpos;
+      if(freeOffset&&!o.textOn){lpos=[freeOffset.x,freeOffset.y]}else{lpos=anchorXY(cw,ch,lw,lh,o.pad)}
+      ctx.translate(lpos[0]+lw/2,lpos[1]+lh/2);ctx.rotate(o.logoRot*Math.PI/180);
+      ctx.drawImage(logoImg,-lw/2,-lh/2,lw,lh);
+    }
+    ctx.restore();
+  }
 }
 
-function downloadResult(){
-  var c=document.getElementById('canvas');
-  c.toBlob(function(blob){download(blob,'watermarked.png')},'image/png');
+function renderTo(img,o){
+  var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+  var ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+  drawWatermark(ctx,c.width,c.height,o);
+  return c;
+}
+
+var previewTimer=null;
+function updatePreview(){
+  if(!mainImg)return;
+  clearTimeout(previewTimer);
+  previewTimer=setTimeout(function(){
+    var o=opts();
+    var src=document.getElementById('canvas');
+    src.width=mainImg.width;src.height=mainImg.height;
+    var ctx=src.getContext('2d');ctx.drawImage(mainImg,0,0);
+    drawWatermark(ctx,src.width,src.height,o);
+    src.style.display='block';
+    document.getElementById('dlBtn').style.display='';
+    estimateSize();
+  },40);
+}
+
+function encodeCanvas(canvas){
+  var o=opts();var fmt=document.getElementById('outFormat').value;
+  var q=document.getElementById('quality').value/100;
+  return new Promise(function(res){canvas.toBlob(function(b){res(b)},fmt,fmt==='image/png'?undefined:q)});
+}
+
+function estimateSize(){
+  var canvas=document.getElementById('canvas');
+  encodeCanvas(canvas).then(function(b){if(b)document.getElementById('sizeInfo').textContent='Estimated output size: '+formatSize(b.size)});
+}
+
+function extFor(fmt){return fmt==='image/png'?'png':fmt==='image/webp'?'webp':'jpg'}
+
+function downloadCurrent(){
+  var canvas=document.getElementById('canvas');var fmt=document.getElementById('outFormat').value;
+  encodeCanvas(canvas).then(function(b){download(b,'watermarked.'+extFor(fmt))});
+}
+
+// BATCH
+function renderQueue(){
+  var q=document.getElementById('queue');
+  if(!files.length){q.style.display='none';return;}
+  q.style.display='';q.innerHTML='';
+  files.forEach(function(f,i){
+    var item=document.createElement('div');item.className='wm-qitem';
+    var img=document.createElement('img');img.src=URL.createObjectURL(f);
+    var name=document.createElement('div');name.className='qname';name.textContent=f.name;
+    var status=document.createElement('div');status.className='qstatus';status.id='qs'+i;status.textContent='queued';
+    var dl=document.createElement('button');dl.className='wm-mini';dl.textContent='⬇';dl.style.display='none';dl.id='qd'+i;
+    dl.onclick=function(){if(results[i])download(results[i].blob,results[i].name)};
+    item.appendChild(img);item.appendChild(name);item.appendChild(status);item.appendChild(dl);
+    q.appendChild(item);
+  });
+}
+
+function processAll(){
+  var fmt=document.getElementById('outFormat').value;var ext=extFor(fmt);
+  results=[];
+  document.getElementById('zipBtn').style.display='none';
+  var chain=Promise.resolve();
+  files.forEach(function(f,i){
+    chain=chain.then(function(){
+      var st=document.getElementById('qs'+i);if(st)st.textContent='processing…';
+      return loadImage(f).then(function(img){
+        var savedMain=mainImg;mainImg=img; // sizing reference
+        var canvas=renderTo(img,opts());
+        mainImg=savedMain;
+        return encodeCanvas(canvas).then(function(blob){
+          var base=f.name.replace(/\.[^.]+$/,'');
+          results[i]={name:base+'-watermarked.'+ext,blob:blob,url:URL.createObjectURL(blob)};
+          if(st){st.textContent='done · '+formatSize(blob.size);st.classList.add('done')}
+          var dl=document.getElementById('qd'+i);if(dl)dl.style.display='';
+        });
+      });
+    });
+  });
+  chain.then(function(){
+    if(files.length>1)document.getElementById('zipBtn').style.display='';
+  });
+}
+
+function downloadZip(){
+  if(typeof JSZip==='undefined'){alert('ZIP library failed to load. Please download files individually.');return;}
+  var zip=new JSZip();var any=false;
+  results.forEach(function(r){if(r){zip.file(r.name,r.blob);any=true}});
+  if(!any){alert('Run "Apply to All" first.');return;}
+  zip.generateAsync({type:'blob'}).then(function(blob){download(blob,'watermarked-images.zip')});
+}
+
+// Drag-to-position on preview (non-tiled)
+(function(){
+  var canvas=document.getElementById('canvas');var dragging=false;
+  function toImgCoords(e){
+    var r=canvas.getBoundingClientRect();
+    var cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    var cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+    return{x:cx*(canvas.width/r.width),y:cy*(canvas.height/r.height)};
+  }
+  function start(e){if(!mainImg||opts().tiled)return;dragging=true;e.preventDefault();move(e)}
+  function move(e){if(!dragging)return;var p=toImgCoords(e);freeOffset={x:p.x-40,y:p.y-20};updatePreview()}
+  function end(){dragging=false}
+  canvas.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',end);
+})();
+
+function resetDefaults(){
+  document.getElementById('wmText').value=defaults.wmText;
+  document.getElementById('wmFont').value=defaults.wmFont;
+  document.getElementById('fontSize').value=defaults.fontSize;
+  document.getElementById('opacity').value=defaults.opacity;
+  document.getElementById('wmColor').value=defaults.wmColor;
+  document.getElementById('wmBold').checked=defaults.wmBold;
+  document.getElementById('wmItalic').checked=defaults.wmItalic;
+  document.getElementById('wmOutline').checked=defaults.wmOutline;
+  document.getElementById('wmRot').value=defaults.wmRot;
+  document.getElementById('opacity2').value=defaults.opacity2;
+  document.getElementById('logoSize').value=defaults.logoSize;
+  document.getElementById('logoRot').value=defaults.logoRot;
+  document.getElementById('wmPad').value=defaults.wmPad;
+  document.getElementById('tiled').checked=defaults.tiled;
+  document.getElementById('tileGap').value=defaults.tileGap;
+  document.getElementById('tileAng').value=defaults.tileAng;
+  document.getElementById('outFormat').value=defaults.outFormat;
+  document.getElementById('quality').value=defaults.quality;
+  document.getElementById('textOn').checked=defaults.textOn;
+  document.getElementById('logoOn').checked=defaults.logoOn;
+  position='center';freeOffset=null;
+  document.querySelectorAll('.pos-grid button').forEach(function(b){b.classList.toggle('active',b.dataset.pos==='center')});
+  onControlChange('reset');
 }
   </script>
 </body>

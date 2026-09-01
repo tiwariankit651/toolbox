@@ -27,6 +27,17 @@
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/age-calculator">
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .ac-block{border:1px solid rgba(99,102,241,.15);border-radius:var(--radius);padding:1.2rem;margin-top:1.2rem;background:rgba(99,102,241,.04)}
+    .ac-block h2{margin-bottom:.6rem}
+    .ac-out{margin-top:.6rem}
+    .ac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:.6rem 0}
+    .ac-note{color:var(--text2);font-size:.82rem;margin-top:.5rem;line-height:1.7}
+    .ac-elig-ok{color:#4caf50;font-weight:700}
+    .ac-elig-no{color:#ec4899;font-weight:700}
+    .ac-copy{background:var(--card);color:var(--accent);border:1px solid var(--accent);padding:.3rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;margin-top:.5rem}
+    #ac_histList .ac-hist{background:var(--card);border-radius:10px;padding:.5rem .8rem;margin:.3rem 0;font-size:.85rem}
+  </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head>
 <body>
@@ -37,19 +48,66 @@
     <div class="tool-section">
       <h1>🎂 Age Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Enter your date of birth to calculate exact age, zodiac signs, and more.</p>
+      <p class="info">Enter your date of birth for exact age, birthday countdown, zodiac, exam eligibility and more. Everything runs in your browser.</p>
       <div class="row">
         <label>Date of Birth:</label>
         <input type="date" id="dob" style="flex:2">
         <button class="btn" onclick="calc()">Calculate</button>
       </div>
-      <div class="row">
-        <label>Age on specific date:</label>
-        <input type="date" id="targetDate" style="flex:2" placeholder="Optional">
-        <button class="btn" onclick="calcAt()">Calculate At Date</button>
+      <div id="result" class="ac-grid"></div>
+      <button id="copyBtn" class="ac-copy" style="display:none" onclick="copyAge()">Copy Summary</button>
+
+      <!-- (d) Age on a specific date -->
+      <div class="ac-block">
+        <h2>📅 Age on a Specific Date (past or future)</h2>
+        <div class="row">
+          <label>Target date:</label>
+          <input type="date" id="targetDate" style="flex:2">
+          <button class="btn" onclick="calcAt()">Calculate</button>
+        </div>
+        <div id="resultAt" class="ac-grid"></div>
       </div>
-      <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
-      <div id="resultAt" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin:1rem 0"></div>
+
+      <!-- (e) Exam eligibility -->
+      <div class="ac-block">
+        <h2>🎯 Exam Eligibility Checker (age as on cutoff date)</h2>
+        <p class="info">Indian government exams calculate age as on a specific cutoff date. Enter the cutoff and the exam's age limits.</p>
+        <div class="row">
+          <label>Cutoff date:</label>
+          <input type="date" id="cutoff" style="flex:2">
+        </div>
+        <div class="row">
+          <input type="number" id="minAge" placeholder="Min age (years)"><input type="number" id="maxAge" placeholder="Max age (years)">
+          <button class="btn" onclick="checkEligibility()">Check</button>
+        </div>
+        <div id="eligOut" class="ac-out"></div>
+        <div class="ac-note"><strong>Category relaxation (informational):</strong> OBC typically +3 years, SC/ST typically +5 years, PwD relaxations vary. Always confirm with the official notification — actual relaxations differ per exam.</div>
+      </div>
+
+      <!-- (f) Age difference between two people -->
+      <div class="ac-block">
+        <h2>👥 Age Difference Between Two People</h2>
+        <div class="row">
+          <label>Person 1 DOB:</label><input type="date" id="p1dob" style="flex:2">
+        </div>
+        <div class="row">
+          <label>Person 2 DOB:</label><input type="date" id="p2dob" style="flex:2">
+          <button class="btn" onclick="ageDiff()">Compare</button>
+        </div>
+        <div id="diffOut" class="ac-out"></div>
+      </div>
+
+      <!-- (h) Retirement countdown -->
+      <div class="ac-block">
+        <h2>🏖️ Retirement Countdown</h2>
+        <div class="row">
+          <label>Retirement age:</label>
+          <input type="number" id="retAge" placeholder="60" value="60" style="flex:2">
+          <button class="btn" onclick="retirement()">Calculate</button>
+        </div>
+        <p class="info">Uses the Date of Birth entered above.</p>
+        <div id="retOut" class="ac-out"></div>
+      </div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -94,11 +152,18 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
+const AC_DOB_KEY="ac_last_dob";
+const AC_HIST_KEY="ac_history_v1";
+let lastSummary="";
+
+const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.4rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";
 
 function getZodiac(m,d){
   const signs=[["Capricorn",20],["Aquarius",19],["Pisces",20],["Aries",20],["Taurus",21],["Gemini",21],["Cancer",22],["Leo",23],["Virgo",23],["Libra",23],["Scorpio",22],["Sagittarius",22],["Capricorn",32]];
   return d>signs[m][1]?signs[m+1][0]:signs[m][0];
+}
+function getBirthstone(m){
+  return["Garnet","Amethyst","Aquamarine","Diamond","Emerald","Pearl","Ruby","Peridot","Sapphire","Opal","Topaz","Turquoise"][m];
 }
 function getChinese(y){
   return["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"][y%12];
@@ -115,6 +180,7 @@ function calc(){
   if(isNaN(dob))return alert("Select a valid date");
   const now=new Date();
   if(dob>now)return alert("Date of birth cannot be in the future!");
+  localStorage.setItem(AC_DOB_KEY,document.getElementById("dob").value);
   const{y,m,d}=ageBetween(dob,now);
   const totalDays=Math.floor((now-dob)/864e5);
   const totalMonths=y*12+m;
@@ -124,32 +190,120 @@ function calc(){
   const nextBday=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
   if(nextBday<=now)nextBday.setFullYear(nextBday.getFullYear()+1);
   const daysToB=Math.ceil((nextBday-now)/864e5);
-  const dayName=dob.toLocaleDateString("en-US",{weekday:"long"});
+  const bdayWeekday=nextBday.toLocaleDateString("en-US",{weekday:"long"});
+  const bornWeekday=dob.toLocaleDateString("en-US",{weekday:"long"});
   const western=getZodiac(dob.getMonth(),dob.getDate());
+  const stone=getBirthstone(dob.getMonth());
   const chinese=getChinese(dob.getFullYear());
 
   document.getElementById("result").innerHTML=
     card("Years",y)+card("Months",m)+card("Days",d)+
     card("Next Birthday",daysToB+" days")+
+    card("Next B'day Falls On",bdayWeekday)+
+    card("Born On (weekday)",bornWeekday)+
     card("Total Months",totalMonths.toLocaleString())+card("Total Weeks",totalWeeks.toLocaleString())+
     card("Total Days",totalDays.toLocaleString())+card("Total Hours",totalHours.toLocaleString())+
     card("Total Minutes",totalMinutes.toLocaleString())+
-    card("Western Zodiac",western)+card("Chinese Zodiac",chinese)+
-    card("Born On",dayName);
+    card("Western Zodiac",western)+card("Birthstone",stone)+card("Chinese Zodiac",chinese);
   document.getElementById("resultAt").innerHTML="";
+
+  lastSummary="Age: "+y+"y "+m+"m "+d+"d | Total days: "+totalDays.toLocaleString()+
+    " | Next birthday in "+daysToB+" days ("+bdayWeekday+") | Born on "+bornWeekday+
+    " | Zodiac: "+western+", "+chinese+" | Birthstone: "+stone;
+  document.getElementById("copyBtn").style.display="inline-block";
+  saveHistory(document.getElementById("dob").value,y+"y "+m+"m "+d+"d");
 }
+
+function copyAge(){copyText(lastSummary,document.getElementById("copyBtn"));}
 
 function calcAt(){
   const dob=new Date(document.getElementById("dob").value);
   const target=new Date(document.getElementById("targetDate").value);
   if(isNaN(dob))return alert("Select a date of birth first");
   if(isNaN(target))return alert("Select a target date");
-  if(target<dob)return alert("Target date must be after date of birth");
-  const{y,m,d}=ageBetween(dob,target);
-  const totalDays=Math.floor((target-dob)/864e5);
-  document.getElementById("resultAt").innerHTML="<h3 style='grid-column:1/-1;margin:0'>Age on "+target.toLocaleDateString()+"</h3>"+
+  let out="";
+  const future=target>=dob;
+  const a=future?dob:target,b=future?target:dob;
+  const{y,m,d}=ageBetween(a,b);
+  const totalDays=Math.floor(Math.abs(target-dob)/864e5);
+  const weekday=target.toLocaleDateString("en-US",{weekday:"long"});
+  const label=future?"Age on "+target.toLocaleDateString():"Time before birth on "+target.toLocaleDateString();
+  document.getElementById("resultAt").innerHTML="<h3 style='grid-column:1/-1;margin:0'>"+label+" ("+weekday+")</h3>"+
     card("Years",y)+card("Months",m)+card("Days",d)+card("Total Days",totalDays.toLocaleString());
 }
+
+function checkEligibility(){
+  const dob=new Date(document.getElementById("dob").value);
+  const cutoff=new Date(document.getElementById("cutoff").value);
+  if(isNaN(dob))return alert("Select a date of birth first");
+  if(isNaN(cutoff))return alert("Select a cutoff date");
+  if(cutoff<dob)return alert("Cutoff date must be after date of birth");
+  const{y,m,d}=ageBetween(dob,cutoff);
+  const minAge=parseFloat(document.getElementById("minAge").value);
+  const maxAge=parseFloat(document.getElementById("maxAge").value);
+  const decimalAge=y+m/12+d/365;
+  let html="<div class='ac-grid'>"+card("Age as on cutoff",y+"y "+m+"m "+d+"d")+"</div>";
+  if(!isNaN(minAge)||!isNaN(maxAge)){
+    const okMin=isNaN(minAge)||decimalAge>=minAge;
+    const okMax=isNaN(maxAge)||decimalAge<=maxAge;
+    const eligible=okMin&&okMax;
+    let margin="";
+    if(!isNaN(maxAge)){
+      const marginYears=maxAge-decimalAge;
+      const ay=Math.floor(Math.abs(marginYears)),am=Math.round((Math.abs(marginYears)-ay)*12);
+      margin=marginYears>=0?("You are within the upper limit by ~"+ay+"y "+am+"m."):("You exceed the upper limit by ~"+ay+"y "+am+"m.");
+    }
+    html+="<p style='margin-top:.6rem;font-size:1.1rem' class='"+(eligible?"ac-elig-ok":"ac-elig-no")+"'>"+
+      (eligible?"✔ Eligible":"✘ Not eligible")+"</p><p class='ac-note'>"+margin+
+      "</p><p class='ac-note'>With category relaxation your effective max limit may be higher (OBC +3, SC/ST +5) — verify with the official notification.</p>";
+  }
+  document.getElementById("eligOut").innerHTML=html;
+}
+
+function ageDiff(){
+  const p1=new Date(document.getElementById("p1dob").value);
+  const p2=new Date(document.getElementById("p2dob").value);
+  if(isNaN(p1)||isNaN(p2))return alert("Enter both dates of birth");
+  const older=p1<p2?p1:p2,younger=p1<p2?p2:p1;
+  const{y,m,d}=ageBetween(older,younger);
+  const totalDays=Math.floor((younger-older)/864e5);
+  document.getElementById("diffOut").innerHTML="<div class='ac-grid'>"+
+    card("Difference",y+"y "+m+"m "+d+"d")+card("Total Days",totalDays.toLocaleString())+"</div>"+
+    "<p class='ac-note'>Person born on "+older.toLocaleDateString()+" is older.</p>";
+}
+
+function retirement(){
+  const dob=new Date(document.getElementById("dob").value);
+  const retAge=parseFloat(document.getElementById("retAge").value);
+  if(isNaN(dob))return alert("Select a date of birth first");
+  if(isNaN(retAge)||retAge<=0)return alert("Enter a valid retirement age");
+  const retDate=new Date(dob.getFullYear()+Math.floor(retAge),dob.getMonth(),dob.getDate());
+  const now=new Date();
+  if(retDate<=now){
+    document.getElementById("retOut").innerHTML="<p class='ac-note'>Based on age "+retAge+", the retirement date ("+retDate.toLocaleDateString()+") has already passed.</p>";
+    return;
+  }
+  const{y,m,d}=ageBetween(now,retDate);
+  const totalDays=Math.floor((retDate-now)/864e5);
+  document.getElementById("retOut").innerHTML="<div class='ac-grid'>"+
+    card("Retirement Date",retDate.toLocaleDateString())+
+    card("Time Left",y+"y "+m+"m "+d+"d")+
+    card("Days Left",totalDays.toLocaleString())+"</div>";
+}
+
+function saveHistory(dobStr,ageStr){
+  let h=[];
+  try{h=JSON.parse(localStorage.getItem(AC_HIST_KEY))||[];}catch(e){h=[];}
+  h.unshift({dob:dobStr,age:ageStr,t:new Date().toLocaleString()});
+  h=h.slice(0,10);
+  localStorage.setItem(AC_HIST_KEY,JSON.stringify(h));
+}
+
+// Restore last used DOB
+(function(){
+  const last=localStorage.getItem(AC_DOB_KEY);
+  if(last)document.getElementById("dob").value=last;
+})();
   </script>
 </body>
 </html>

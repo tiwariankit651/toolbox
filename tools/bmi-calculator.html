@@ -27,6 +27,23 @@
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/bmi-calculator">
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .bmi-block{border:1px solid rgba(99,102,241,.15);border-radius:var(--radius);padding:1.2rem;margin-top:1.2rem;background:rgba(99,102,241,.04)}
+    .bmi-block h2{margin-bottom:.6rem}
+    .bmi-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin-top:.8rem}
+    .bmi-card{background:var(--card);padding:1rem;border-radius:12px;text-align:center}
+    .bmi-card .v{font-size:1.3rem;font-weight:700;color:var(--accent)}
+    .bmi-two{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.6rem}
+    @media(max-width:600px){.bmi-two{grid-template-columns:1fr}}
+    .bmi-std{background:var(--card);border-radius:12px;padding:1rem}
+    .bmi-std h3{font-size:.95rem;margin-bottom:.4rem}
+    .bmi-note{color:var(--text2);font-size:.82rem;line-height:1.7;margin-top:.5rem}
+    .bmi-disclaimer{border:1px solid rgba(236,72,153,.35);background:rgba(236,72,153,.06);border-radius:12px;padding:1rem;margin-top:1rem;font-size:.85rem;line-height:1.6}
+    .bmi-copy{background:var(--card);color:var(--accent);border:1px solid var(--accent);padding:.3rem .8rem;border-radius:8px;cursor:pointer;font-size:.8rem;margin-top:.6rem}
+    #bmiHistList .bmi-hist{background:var(--card);border-radius:10px;padding:.5rem .8rem;margin:.3rem 0;font-size:.85rem;display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+    .bmi-gauge{height:16px;border-radius:8px;background:linear-gradient(to right,#6366f1,#4caf50,#ff9800,#ec4899);margin:1rem 0;position:relative}
+    .bmi-gauge .ptr{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #333;position:absolute;top:-1px;transform:translateX(-50%);transition:left .4s}
+  </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head>
 <body>
@@ -37,28 +54,82 @@
     <div class="tool-section">
       <h1>⚖️ BMI Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Enter your height and weight to calculate Body Mass Index.</p>
+      <p class="info">Enter your details for BMI with WHO and Asian/Indian cutoffs, healthy weight range, BMR, TDEE, ideal weight, body-fat estimate and more. All calculations run in your browser.</p>
       <div class="row" style="margin-bottom:.5rem">
         <label>Unit:</label>
-        <select id="unit" onchange="toggleUnit()"><option value="metric">Metric (kg/cm)</option><option value="imperial">Imperial (lbs/in)</option></select>
+        <select id="unit" onchange="toggleUnit()"><option value="metric">Metric (kg/cm)</option><option value="imperial">Imperial (lbs/ft-in)</option></select>
       </div>
       <div class="row">
-        <label id="hLabel">Height (cm):</label>
-        <input type="number" id="height" placeholder="170" style="flex:2">
+        <label>Gender:</label>
+        <select id="gender"><option value="male">Male</option><option value="female">Female</option></select>
+        <label>Age:</label>
+        <input type="number" id="age" placeholder="30">
+      </div>
+      <!-- Metric height -->
+      <div class="row" id="rowHeightMetric">
+        <label>Height (cm):</label>
+        <input type="number" id="heightCm" placeholder="170" style="flex:2">
+      </div>
+      <!-- Imperial height -->
+      <div class="row" id="rowHeightImperial" style="display:none">
+        <label>Height:</label>
+        <input type="number" id="heightFt" placeholder="ft"><input type="number" id="heightIn" placeholder="in">
       </div>
       <div class="row">
         <label id="wLabel">Weight (kg):</label>
         <input type="number" id="weight" placeholder="70" style="flex:2">
       </div>
-      <div class="row"><button class="btn" onclick="calc()" style="flex:1">Calculate BMI</button></div>
+      <div class="row">
+        <label>Activity level:</label>
+        <select id="activity">
+          <option value="1.2">Sedentary (little/no exercise)</option>
+          <option value="1.375">Light (1–3 days/week)</option>
+          <option value="1.55" selected>Moderate (3–5 days/week)</option>
+          <option value="1.725">Active (6–7 days/week)</option>
+          <option value="1.9">Very active (physical job/2x training)</option>
+        </select>
+      </div>
+      <p class="info" style="margin-top:.6rem">Optional — for US Navy body-fat estimate (measure in cm):</p>
+      <div class="row">
+        <label id="waistLabel">Waist:</label><input type="number" id="waist" placeholder="cm">
+        <label id="neckLabel">Neck:</label><input type="number" id="neck" placeholder="cm">
+        <label id="hipLabel">Hip (female):</label><input type="number" id="hip" placeholder="cm">
+      </div>
+      <div class="row"><button class="btn" onclick="calc()" style="flex:1">Calculate</button></div>
+
       <div id="result" style="display:none;margin-top:1rem">
         <div style="text-align:center;padding:1.5rem;background:var(--card);border-radius:12px">
-          <div id="bmiVal" style="font-size:2.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+          <div id="bmiVal" style="font-size:2.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"></div>
           <div id="bmiCat" style="font-size:1.2rem;margin:.5rem 0"></div>
-          <div id="bmiBar" style="height:12px;border-radius:6px;background:linear-gradient(to right,#2196f3,#4caf50,#ff9800,#f44336);margin:1rem 0;position:relative"><div id="bmiPointer" style="width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #333;position:absolute;top:-1px;transform:translateX(-50%)"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>
+          <div class="bmi-gauge"><div id="bmiPointer" class="ptr"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2)"><span>Under</span><span>Normal</span><span>Over</span><span>Obese</span></div>
         </div>
-        <div id="info" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem;margin-top:1rem"></div>
+
+        <!-- WHO vs Asian/Indian cutoffs side by side -->
+        <div class="bmi-two">
+          <div class="bmi-std"><h3>WHO (International)</h3><div id="whoCat" class="bmi-note"></div></div>
+          <div class="bmi-std"><h3>Asian / Indian cutoffs</h3><div id="asianCat" class="bmi-note"></div></div>
+        </div>
+
+        <div id="info" class="bmi-cards"></div>
+
+        <button class="bmi-copy" onclick="copyBmi()">Copy Summary</button>
+
+        <div class="bmi-disclaimer">
+          <strong>⚕️ Medical disclaimer:</strong> These figures are estimates for general information only, not a medical diagnosis. BMI does not account for muscle mass, bone density or fat distribution. Consult a qualified doctor before making health decisions.
+        </div>
+        <div class="bmi-note">
+          <strong>Children & teens:</strong> For anyone under 18, BMI is interpreted using age- and sex-specific BMI-for-age percentiles, not these adult categories. This tool is intended for adults.
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="bmi-block">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+          <h2 style="margin:0">📈 BMI History</h2>
+          <button class="bmi-copy" onclick="clearBmiHistory()">Clear</button>
+        </div>
+        <div id="bmiHistList" style="margin-top:.6rem"></div>
       </div>
     </div>
     <div style="min-height:90px"></div>
@@ -130,39 +201,193 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+var BMI_LAST="bmi_last_inputs";
+var BMI_HIST="bmi_history_v1";
+var bmiSummary="";
+
 function toggleUnit(){
-  const m=document.getElementById("unit").value==="metric";
-  document.getElementById("hLabel").textContent=m?"Height (cm):":"Height (inches):";
+  var m=document.getElementById("unit").value==="metric";
+  document.getElementById("rowHeightMetric").style.display=m?"":"none";
+  document.getElementById("rowHeightImperial").style.display=m?"none":"";
   document.getElementById("wLabel").textContent=m?"Weight (kg):":"Weight (lbs):";
-  document.getElementById("height").placeholder=m?"170":"67";
   document.getElementById("weight").placeholder=m?"70":"154";
 }
+
+function num(id){return parseFloat(document.getElementById(id).value);}
+
+// returns height in cm and weight in kg from current inputs
+function getMetric(){
+  var unit=document.getElementById("unit").value,h,w;
+  if(unit==="metric"){
+    h=num("heightCm");
+    w=num("weight");
+  }else{
+    var ft=num("heightFt")||0, inch=num("heightIn")||0;
+    h=(ft*12+inch)*2.54;
+    w=num("weight")*0.453592;
+  }
+  return{h:h,w:w};
+}
+
+function bmiCard(l,v){return "<div class='bmi-card'><div class='v'>"+v+"</div><div class='info'>"+l+"</div></div>";}
+
 function calc(){
-  let h=+document.getElementById("height").value,w=+document.getElementById("weight").value;
-  if(!h||!w)return alert("Enter both height and weight");
-  if(document.getElementById("unit").value==="imperial"){h=h*2.54;w=w*0.453592}
-  const bmi=w/((h/100)**2);
-  let cat,color;
-  if(bmi<18.5){cat="Underweight";color="#2196f3"}
-  else if(bmi<25){cat="Normal weight";color="#4caf50"}
-  else if(bmi<30){cat="Overweight";color="#ff9800"}
-  else{cat="Obese";color="#f44336"}
+  var mw=getMetric();
+  var h=mw.h,w=mw.w;
+  if(!h||!w||h<=0||w<=0)return alert("Enter a valid height and weight");
+  var age=num("age");if(isNaN(age)||age<=0)age=30;
+  var gender=document.getElementById("gender").value;
+  var hm=h/100;
+  var bmi=w/(hm*hm);
+
+  // Gauge + primary category (WHO)
+  var cat,color;
+  if(bmi<18.5){cat="Underweight";color="#6366f1";}
+  else if(bmi<25){cat="Normal weight";color="#4caf50";}
+  else if(bmi<30){cat="Overweight";color="#ff9800";}
+  else{cat="Obese";color="#ec4899";}
   document.getElementById("bmiVal").textContent=bmi.toFixed(1);
   document.getElementById("bmiCat").innerHTML="<span style='color:"+color+";font-weight:600'>"+cat+"</span>";
-  const pct=Math.min(Math.max((bmi-15)/25*100,0),100);
+  var pct=Math.min(Math.max((bmi-15)/25*100,0),100);
   document.getElementById("bmiPointer").style.left=pct+"%";
-  const hm=h/100;
-  const normalLow=(18.5*hm*hm).toFixed(1);
-  const normalHigh=(24.9*hm*hm).toFixed(1);
-  // BMR calculation (Mifflin-St Jeor)
-  var age=document.getElementById("age")?30:30;
-  var bmrMale=Math.round(10*w+6.25*h-5*age+5);
-  var bmrFemale=Math.round(10*w+6.25*h-5*age-161);
-  var idealLow=(18.5*hm*hm).toFixed(1);
-  const card=(l,v)=>"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.3rem;font-weight:700;color:var(--accent)'>"+v+"</div><div class='info'>"+l+"</div></div>";
-  document.getElementById("info").innerHTML=card("Your BMI",bmi.toFixed(1))+card("Category",cat)+card("Healthy Weight",normalLow+" - "+normalHigh+" kg")+card("Ideal Weight",idealLow+" - "+normalHigh+" kg")+card("BMR (Male)",bmrMale+" cal/day")+card("BMR (Female)",bmrFemale+" cal/day");
+
+  // WHO categories text
+  document.getElementById("whoCat").innerHTML=
+    "Underweight &lt; 18.5<br>Normal 18.5–24.9<br>Overweight 25–29.9<br>Obese ≥ 30<br><strong>You: "+cat+"</strong>";
+  // Asian/Indian cutoffs
+  var asian;
+  if(bmi<18.5)asian="Underweight";
+  else if(bmi<23)asian="Normal";
+  else if(bmi<25)asian="Overweight (at risk)";
+  else asian="Obese";
+  document.getElementById("asianCat").innerHTML=
+    "Underweight &lt; 18.5<br>Normal 18.5–22.9<br>Overweight 23–24.9<br>Obese ≥ 25<br><strong>You: "+asian+"</strong>";
+
+  // Healthy weight range (WHO 18.5–24.9)
+  var lowKg=18.5*hm*hm, highKg=24.9*hm*hm;
+  var toChange="";
+  if(w<lowKg)toChange="Gain ~"+(lowKg-w).toFixed(1)+" kg to reach healthy range";
+  else if(w>highKg)toChange="Lose ~"+(w-highKg).toFixed(1)+" kg to reach healthy range";
+  else toChange="You are within the healthy range";
+
+  // BMR (Mifflin-St Jeor)
+  var bmr=gender==="male"?(10*w+6.25*h-5*age+5):(10*w+6.25*h-5*age-161);
+  var activity=parseFloat(document.getElementById("activity").value)||1.55;
+  var tdee=bmr*activity;
+
+  // Ideal body weight — Devine & Robinson (uses height over 5ft = 60in)
+  var inchesTotal=h/2.54;
+  var over60=Math.max(inchesTotal-60,0);
+  var devine=gender==="male"?(50+2.3*over60):(45.5+2.3*over60);
+  var robinson=gender==="male"?(52+1.9*over60):(49+1.7*over60);
+
+  // Waist-to-height ratio
+  var waist=num("waist"),neck=num("neck"),hip=num("hip");
+  var whtr=(!isNaN(waist)&&waist>0)?(waist/h):NaN;
+  var whtrText=isNaN(whtr)?"—":whtr.toFixed(2)+(whtr>=0.5?" (elevated risk)":" (healthy)");
+
+  // Waist-to-hip ratio
+  var whr=(!isNaN(waist)&&!isNaN(hip)&&hip>0)?(waist/hip):NaN;
+  var whrText="—";
+  if(!isNaN(whr)){
+    var whrRisk;
+    if(gender==="male")whrRisk=whr>0.9?" (high risk)":" (lower risk)";
+    else whrRisk=whr>0.85?" (high risk)":" (lower risk)";
+    whrText=whr.toFixed(2)+whrRisk;
+  }
+
+  // Body fat % — US Navy if measurements present, else BMI-based (Deurenberg)
+  var bodyFat, bfMethod;
+  if(!isNaN(waist)&&!isNaN(neck)&&waist>0&&neck>0&&(gender==="male"||(!isNaN(hip)&&hip>0))){
+    if(gender==="male"){
+      bodyFat=495/(1.0324-0.19077*Math.log10(waist-neck)+0.15456*Math.log10(h))-450;
+    }else{
+      bodyFat=495/(1.29579-0.35004*Math.log10(waist+hip-neck)+0.22100*Math.log10(h))-450;
+    }
+    bfMethod="US Navy";
+  }else{
+    var sex=gender==="male"?1:0;
+    bodyFat=1.20*bmi+0.23*age-10.8*sex-5.4;
+    bfMethod="BMI-based (Deurenberg)";
+  }
+  bodyFat=Math.max(bodyFat,0);
+
+  document.getElementById("info").innerHTML=
+    bmiCard("BMI",bmi.toFixed(1))+
+    bmiCard("WHO Category",cat)+
+    bmiCard("Asian/Indian Category",asian)+
+    bmiCard("Healthy Weight Range",lowKg.toFixed(1)+"–"+highKg.toFixed(1)+" kg")+
+    bmiCard("Adjustment",toChange)+
+    bmiCard("BMR (Mifflin-St Jeor)",Math.round(bmr)+" cal/day")+
+    bmiCard("TDEE (maintenance)",Math.round(tdee)+" cal/day")+
+    bmiCard("Ideal Weight (Devine)",devine.toFixed(1)+" kg")+
+    bmiCard("Ideal Weight (Robinson)",robinson.toFixed(1)+" kg")+
+    bmiCard("Body Fat % ("+bfMethod+")",bodyFat.toFixed(1)+"%")+
+    bmiCard("Waist-to-Height",whtrText)+
+    bmiCard("Waist-to-Hip",whrText);
+
   document.getElementById("result").style.display="block";
+
+  bmiSummary="BMI "+bmi.toFixed(1)+" ("+cat+", Asian: "+asian+") | Healthy range "+
+    lowKg.toFixed(1)+"–"+highKg.toFixed(1)+" kg | BMR "+Math.round(bmr)+
+    " cal | TDEE "+Math.round(tdee)+" cal | Body fat ~"+bodyFat.toFixed(1)+"%";
+
+  saveInputs();
+  saveHistory(bmi,cat);
 }
+
+function copyBmi(){copyText(bmiSummary,event.target);}
+
+function saveInputs(){
+  var data={
+    unit:document.getElementById("unit").value,
+    gender:document.getElementById("gender").value,
+    age:document.getElementById("age").value,
+    heightCm:document.getElementById("heightCm").value,
+    heightFt:document.getElementById("heightFt").value,
+    heightIn:document.getElementById("heightIn").value,
+    weight:document.getElementById("weight").value,
+    activity:document.getElementById("activity").value,
+    waist:document.getElementById("waist").value,
+    neck:document.getElementById("neck").value,
+    hip:document.getElementById("hip").value
+  };
+  localStorage.setItem(BMI_LAST,JSON.stringify(data));
+}
+
+function restoreInputs(){
+  var data;
+  try{data=JSON.parse(localStorage.getItem(BMI_LAST));}catch(e){data=null;}
+  if(!data)return;
+  Object.keys(data).forEach(function(k){
+    var el=document.getElementById(k);
+    if(el&&data[k]!=null&&data[k]!=="")el.value=data[k];
+  });
+  toggleUnit();
+}
+
+function saveHistory(bmi,cat){
+  var h=[];
+  try{h=JSON.parse(localStorage.getItem(BMI_HIST))||[];}catch(e){h=[];}
+  h.unshift({bmi:bmi.toFixed(1),cat:cat,date:new Date().toLocaleDateString()});
+  h=h.slice(0,15);
+  localStorage.setItem(BMI_HIST,JSON.stringify(h));
+  renderHistory();
+}
+
+function renderHistory(){
+  var h=[];
+  try{h=JSON.parse(localStorage.getItem(BMI_HIST))||[];}catch(e){h=[];}
+  var el=document.getElementById("bmiHistList");
+  if(!h.length){el.innerHTML="<p class='info'>No entries yet. Calculate to start tracking.</p>";return;}
+  el.innerHTML=h.map(function(x){
+    return "<div class='bmi-hist'><span>"+x.date+"</span><strong>BMI "+x.bmi+" — "+x.cat+"</strong></div>";
+  }).join("");
+}
+
+function clearBmiHistory(){localStorage.removeItem(BMI_HIST);renderHistory();}
+
+(function(){restoreInputs();renderHistory();})();
   </script>
 </body>
 </html>

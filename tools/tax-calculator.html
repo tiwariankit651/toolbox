@@ -25,31 +25,51 @@
     <div class="tool-section">
       <h1>💰 Income Tax Calculator — India FY 2025-26</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Compare tax under Old and New regime. Enter your annual income and deductions.</p>
-      <div class="row"><label>Annual Income (Rs.):</label><input type="number" id="income" placeholder="e.g. 1000000" style="flex:2"></div>
+      <p class="info">Compare Old vs New regime side by side for <strong>Assessment Year 2026-27 (FY 2025-26)</strong>. Slabs can change in the Union Budget — verify before filing.</p>
+      <div style="background:var(--card);border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:8px;margin:.6rem 0;font-size:.85rem;color:var(--text2)">⚠️ <strong>Disclaimer:</strong> Results are estimates for planning only. This is not financial or tax advice. Please confirm your actual tax liability with a qualified chartered accountant or tax professional before filing.</div>
+
+      <h3 style="margin:1rem 0 .5rem">Income</h3>
+      <div class="row"><label>Gross Salary (annual ₹):</label><input type="number" id="income" placeholder="e.g. 1000000" style="flex:2"></div>
+      <div class="row"><label>Other Income (₹):</label><input type="number" id="otherInc" value="0" style="flex:2"></div>
       <div class="row"><label>Age group:</label><select id="age"><option value="general">Below 60</option><option value="senior">60-80 (Senior)</option><option value="supersenior">Above 80 (Super Senior)</option></select></div>
+
       <h3 style="margin:1rem 0 .5rem">Deductions (Old Regime only)</h3>
-      <p class="info" style="margin-bottom:.5rem">📌 Standard Deduction: ₹50,000 (Old) / ₹75,000 (New) — automatically applied in calculation</p>
-      <div class="row"><label>80C (LIC, PPF, ELSS):</label><input type="number" id="d80c" value="150000" style="flex:2"></div>
-      <div class="row"><label>80D (Health Insurance):</label><input type="number" id="d80d" value="25000" style="flex:2"></div>
+      <p class="info" style="margin-bottom:.5rem">📌 Standard Deduction: ₹50,000 (Old) / ₹75,000 (New) — automatically applied.</p>
+      <div class="row"><label>80C (LIC, PPF, ELSS):</label><input type="number" id="d80c" value="150000" style="flex:2"><span class="info" style="min-width:90px">max ₹1.5L</span></div>
+      <div class="row"><label>80D — Self &amp; family:</label><input type="number" id="d80dSelf" value="25000" style="flex:2"></div>
+      <div class="row"><label>80D — Parents:</label><input type="number" id="d80dParents" value="0" style="flex:2"></div>
+      <div class="row"><label>80CCD(1B) NPS:</label><input type="number" id="d80ccd" value="0" style="flex:2"><span class="info" style="min-width:90px">max ₹50K</span></div>
+      <div class="row"><label>80TTA/TTB (interest):</label><input type="number" id="d80tta" value="0" style="flex:2"></div>
+      <div class="row"><label>Home Loan Interest 24(b):</label><input type="number" id="d24b" value="0" style="flex:2"><span class="info" style="min-width:90px">max ₹2L</span></div>
+      <div class="row"><label>80E Education Loan Interest:</label><input type="number" id="d80e" value="0" style="flex:2"></div>
+      <div class="row"><label>80G Donations:</label><input type="number" id="d80g" value="0" style="flex:2"></div>
       <div class="row"><label>HRA Exemption:</label><input type="number" id="dhra" value="0" style="flex:2"><button class="btn btn-outline" onclick="calcHRA()" style="font-size:.8rem">Calculate HRA</button></div>
       <div id="hraCalc" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin:.3rem 0">
         <div class="row"><label>Basic Salary (monthly):</label><input type="number" id="hraBasic" placeholder="e.g. 30000" style="flex:2"></div>
         <div class="row"><label>HRA Received (monthly):</label><input type="number" id="hraReceived" placeholder="e.g. 15000" style="flex:2"></div>
         <div class="row"><label>Rent Paid (monthly):</label><input type="number" id="hraRent" placeholder="e.g. 12000" style="flex:2"></div>
         <div class="row"><label>Metro city?</label><select id="hraMetro"><option value="yes">Yes (50% of basic)</option><option value="no">No (40% of basic)</option></select></div>
-        <button class="btn" onclick="doHRA()" style="margin-top:.3rem;font-size:.85rem">Calculate & Apply</button>
+        <button class="btn" onclick="doHRA()" style="margin-top:.3rem;font-size:.85rem">Calculate &amp; Apply</button>
         <div id="hraResult" class="info" style="margin-top:.3rem"></div>
       </div>
       <div class="row"><label>Other Deductions:</label><input type="number" id="dother" value="0" style="flex:2"></div>
       <button class="btn" onclick="calc()" style="width:100%;margin-top:1rem">Calculate Tax</button>
+
       <div id="result" style="display:none;margin-top:1.5rem">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #6366f1"><h3>Old Regime</h3><div id="oldTax" style="font-size:1.8rem;font-weight:700;color:#6366f1"></div><div class="info">Tax payable</div><div id="oldEffective" style="margin-top:.5rem"></div></div>
-          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #4caf50"><h3>New Regime</h3><div id="newTax" style="font-size:1.8rem;font-weight:700;color:#4caf50"></div><div class="info">Tax payable</div><div id="newEffective" style="margin-top:.5rem"></div></div>
+          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #6366f1"><h3>Old Regime</h3><div id="oldTax" style="font-size:1.8rem;font-weight:700;color:#6366f1"></div><div class="info">Total tax payable</div><div id="oldEffective" style="margin-top:.5rem"></div><div id="oldInhand" class="info" style="margin-top:.3rem"></div></div>
+          <div style="background:var(--card);padding:1.2rem;border-radius:12px;text-align:center;border-top:3px solid #8b5cf6"><h3>New Regime</h3><div id="newTax" style="font-size:1.8rem;font-weight:700;color:#8b5cf6"></div><div class="info">Total tax payable</div><div id="newEffective" style="margin-top:.5rem"></div><div id="newInhand" class="info" style="margin-top:.3rem"></div></div>
         </div>
         <div id="recommendation" style="text-align:center;margin-top:1rem;padding:1rem;background:var(--card);border-radius:12px;font-weight:600"></div>
-        <div id="slabs" style="margin-top:1rem"></div>
+        <h3 style="margin:1.2rem 0 .5rem">Comparison</h3>
+        <div id="compareBars"></div>
+        <h3 style="margin:1.2rem 0 .5rem">Full Breakdown</h3>
+        <div id="breakdown" style="overflow-x:auto"></div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem">
+          <button class="btn" onclick="window.print()">🖨️ Download / Print PDF</button>
+          <button class="btn btn-outline" onclick="copySummary()">📋 Copy Summary</button>
+        </div>
+        <div id="copyMsg" class="info" style="margin-top:.5rem"></div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -100,46 +120,148 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function fmt(n){return "Rs. "+n.toLocaleString("en-IN")}
-function calcOld(taxable,age){
+// ---- Indian number formatting (lakh/crore) ----
+function inr(n){n=Math.round(n||0);var neg=n<0;n=Math.abs(n);var s=n.toString();var last3=s.length>3?s.substring(s.length-3):s;var rest=s.length>3?s.substring(0,s.length-3):"";if(rest)last3=","+last3;rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",");return (neg?"-":"")+rest+last3}
+function fmt(n){return "₹"+inr(n)}
+function words(n){n=Math.round(n||0);if(n===0)return "Zero Rupees";var neg=n<0;n=Math.abs(n);var out="";var cr=Math.floor(n/10000000);n%=10000000;var lk=Math.floor(n/100000);n%=100000;var th=Math.floor(n/1000);n%=1000;var hd=Math.floor(n/100);var rem=n%100;
+if(cr)out+=cr+" Crore ";if(lk)out+=lk+" Lakh ";if(th)out+=th+" Thousand ";if(hd)out+=hd+" Hundred ";if(rem)out+=rem+" ";return (neg?"Minus ":"")+out.trim()+" Rupees"}
+
+// ---- Slab-wise tax computation returning steps ----
+function slabTax(taxable,slabs){var tax=0,prev=0,steps=[];for(var i=0;i<slabs.length;i++){var limit=slabs[i][0],rate=slabs[i][1];if(taxable<=prev)break;var upper=Math.min(taxable,limit);var amt=upper-prev;var t=amt*rate;if(amt>0&&rate>=0){steps.push({from:prev,to:upper,rate:rate,amt:amt,tax:t})}tax+=t;prev=limit;if(taxable<=limit)break}return {tax:tax,steps:steps}}
+
+function surcharge(tax,ti){var rate=0;if(ti>50000000)rate=0.37;else if(ti>20000000)rate=0.25;else if(ti>10000000)rate=0.15;else if(ti>5000000)rate=0.10;return tax*rate}
+
+// ---- Old regime ----
+function computeOld(gross,age,ded){
+  var std=50000;
+  var totalDed=std+ded.total;
+  var taxable=Math.max(gross-totalDed,0);
   var exempt=age==="senior"?300000:age==="supersenior"?500000:250000;
   var slabs=[[exempt,0],[500000,0.05],[1000000,0.20],[Infinity,0.30]];
-  var tax=0,prev=0;
-  for(var i=0;i<slabs.length;i++){var limit=slabs[i][0],rate=slabs[i][1];if(taxable<=limit){tax+=(taxable-prev)*rate;break}else{tax+=(limit-prev)*rate;prev=limit}}
-  if(taxable<=500000)tax=0;
-  tax+=tax*0.04;return Math.round(tax);
+  var r=slabTax(taxable,slabs);
+  var baseTax=r.tax;
+  var rebate=0;
+  if(taxable<=500000){rebate=Math.min(baseTax,12500);}
+  var afterRebate=Math.max(baseTax-rebate,0);
+  var sur=surcharge(afterRebate,taxable);
+  var cess=(afterRebate+sur)*0.04;
+  var total=Math.round(afterRebate+sur+cess);
+  return {std:std,totalDed:totalDed,taxable:taxable,steps:r.steps,baseTax:baseTax,rebate:rebate,afterRebate:afterRebate,surcharge:sur,cess:cess,total:total};
 }
-function calcNew(income){
-  var std=75000;var taxable=Math.max(income-std,0);
-  var slabs=[[300000,0],[700000,0.05],[1000000,0.10],[1200000,0.15],[1500000,0.20],[Infinity,0.30]];
-  var tax=0,prev=0;
-  for(var i=0;i<slabs.length;i++){var limit=slabs[i][0],rate=slabs[i][1];if(taxable<=limit){tax+=(taxable-prev)*rate;break}else{tax+=(limit-prev)*rate;prev=limit}}
-  if(taxable<=700000)tax=0;
-  tax+=tax*0.04;return Math.round(tax);
+// ---- New regime (FY 2025-26 / AY 2026-27) ----
+function computeNew(gross){
+  var std=75000;
+  var taxable=Math.max(gross-std,0);
+  var slabs=[[400000,0],[800000,0.05],[1200000,0.10],[1600000,0.15],[2000000,0.20],[2400000,0.25],[Infinity,0.30]];
+  var r=slabTax(taxable,slabs);
+  var baseTax=r.tax;
+  var rebate=0;
+  if(taxable<=1200000){rebate=Math.min(baseTax,60000);}
+  var afterRebate=Math.max(baseTax-rebate,0);
+  var sur=surcharge(afterRebate,taxable);
+  var cess=(afterRebate+sur)*0.04;
+  var total=Math.round(afterRebate+sur+cess);
+  return {std:std,totalDed:std,taxable:taxable,steps:r.steps,baseTax:baseTax,rebate:rebate,afterRebate:afterRebate,surcharge:sur,cess:cess,total:total};
 }
-function calcHRA(){document.getElementById("hraCalc").style.display=document.getElementById("hraCalc").style.display==="none"?"block":"none"}
-function doHRA(){var basic=+document.getElementById("hraBasic").value*12;var received=+document.getElementById("hraReceived").value*12;var rent=+document.getElementById("hraRent").value*12;var metro=document.getElementById("hraMetro").value==="yes"?0.5:0.4;var a=received;var b=metro*basic;var c=rent-0.1*basic;var exempt=Math.max(0,Math.min(a,b,c));document.getElementById("dhra").value=Math.round(exempt);document.getElementById("hraResult").textContent="HRA Exemption: ₹"+Math.round(exempt).toLocaleString("en-IN")+" (Min of: ₹"+Math.round(a).toLocaleString("en-IN")+", ₹"+Math.round(b).toLocaleString("en-IN")+", ₹"+Math.round(Math.max(0,c)).toLocaleString("en-IN")+")"}
+
+function calcHRA(){var e=document.getElementById("hraCalc");e.style.display=e.style.display==="none"?"block":"none"}
+function doHRA(){var basic=+document.getElementById("hraBasic").value*12;var received=+document.getElementById("hraReceived").value*12;var rent=+document.getElementById("hraRent").value*12;var metro=document.getElementById("hraMetro").value==="yes"?0.5:0.4;var a=received;var b=metro*basic;var c=rent-0.1*basic;var exempt=Math.max(0,Math.min(a,b,c));document.getElementById("dhra").value=Math.round(exempt);document.getElementById("hraResult").textContent="HRA Exemption: "+fmt(exempt)+" (Min of: "+fmt(a)+", "+fmt(b)+", "+fmt(Math.max(0,c))+")";save()}
+
+var FIELDS=["income","otherInc","age","d80c","d80dSelf","d80dParents","d80ccd","d80tta","d24b","d80e","d80g","dhra","dother","hraBasic","hraReceived","hraRent","hraMetro"];
+function save(){try{var o={};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});localStorage.setItem("taxCalc",JSON.stringify(o))}catch(e){}}
+function load(){try{var o=JSON.parse(localStorage.getItem("taxCalc")||"{}");FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]})}catch(e){}}
+
+var lastSummary="";
 function calc(){
-  var income=+document.getElementById("income").value;if(!income)return alert("Enter your income");
+  var salary=+document.getElementById("income").value;
+  var other=+document.getElementById("otherInc").value||0;
+  if(!salary&&!other)return alert("Enter your income");
+  var gross=salary+other;
   var age=document.getElementById("age").value;
   var d80c=Math.min(+document.getElementById("d80c").value||0,150000);
-  var d80d=+document.getElementById("d80d").value||0;
+  var d80dSelf=+document.getElementById("d80dSelf").value||0;
+  var d80dParents=+document.getElementById("d80dParents").value||0;
+  var d80ccd=Math.min(+document.getElementById("d80ccd").value||0,50000);
+  var d80tta=+document.getElementById("d80tta").value||0;
+  var d24b=Math.min(+document.getElementById("d24b").value||0,200000);
+  var d80e=+document.getElementById("d80e").value||0;
+  var d80g=+document.getElementById("d80g").value||0;
   var dhra=+document.getElementById("dhra").value||0;
   var dother=+document.getElementById("dother").value||0;
-  var oldStd=50000;
-  var oldTaxable=Math.max(income-oldStd-d80c-d80d-dhra-dother,0);
-  var oldTax=calcOld(oldTaxable,age);
-  var newTax=calcNew(income);
+  var dedTotal=d80c+d80dSelf+d80dParents+d80ccd+d80tta+d24b+d80e+d80g+dhra+dother;
+
+  var oldR=computeOld(gross,age,{total:dedTotal});
+  var newR=computeNew(gross);
+
   document.getElementById("result").style.display="block";
-  document.getElementById("oldTax").textContent=fmt(oldTax);
-  document.getElementById("newTax").textContent=fmt(newTax);
-  document.getElementById("oldEffective").textContent="Effective rate: "+(income?((oldTax/income)*100).toFixed(1):0)+"%";
-  document.getElementById("newEffective").textContent="Effective rate: "+(income?((newTax/income)*100).toFixed(1):0)+"%";
-  var diff=Math.abs(oldTax-newTax);
-  if(oldTax<newTax)document.getElementById("recommendation").innerHTML='✅ <span style="color:#6366f1">Old Regime</span> saves you '+fmt(diff)+' more!';
-  else if(newTax<oldTax)document.getElementById("recommendation").innerHTML='✅ <span style="color:#4caf50">New Regime</span> saves you '+fmt(diff)+' more!';
-  else document.getElementById("recommendation").textContent="Both regimes result in same tax.";
+  document.getElementById("oldTax").textContent=fmt(oldR.total);
+  document.getElementById("newTax").textContent=fmt(newR.total);
+  document.getElementById("oldEffective").textContent="Effective rate: "+(gross?((oldR.total/gross)*100).toFixed(1):0)+"%";
+  document.getElementById("newEffective").textContent="Effective rate: "+(gross?((newR.total/gross)*100).toFixed(1):0)+"%";
+  var oldInhandA=gross-oldR.total,newInhandA=gross-newR.total;
+  document.getElementById("oldInhand").textContent="In-hand: "+fmt(oldInhandA/12)+"/mo · "+fmt(oldInhandA)+"/yr";
+  document.getElementById("newInhand").textContent="In-hand: "+fmt(newInhandA/12)+"/mo · "+fmt(newInhandA)+"/yr";
+
+  var diff=Math.abs(oldR.total-newR.total);
+  var rec=document.getElementById("recommendation");
+  if(oldR.total<newR.total)rec.innerHTML='✅ <span style="color:#6366f1">Old Regime</span> saves you '+fmt(diff)+' more!<br><span class="info">('+words(diff)+')</span>';
+  else if(newR.total<oldR.total)rec.innerHTML='✅ <span style="color:#8b5cf6">New Regime</span> saves you '+fmt(diff)+' more!<br><span class="info">('+words(diff)+')</span>';
+  else rec.textContent="Both regimes result in the same tax.";
+
+  // comparison bars
+  var maxT=Math.max(oldR.total,newR.total,1);
+  var bars='<div style="display:flex;flex-direction:column;gap:.6rem">';
+  bars+=barRow("Old Regime",oldR.total,maxT,"#6366f1");
+  bars+=barRow("New Regime",newR.total,maxT,"#8b5cf6");
+  bars+='</div>';
+  document.getElementById("compareBars").innerHTML=bars;
+
+  document.getElementById("breakdown").innerHTML=breakdownTable(gross,salary,other,oldR,newR);
+
+  lastSummary=buildSummary(gross,oldR,newR,diff);
+  document.getElementById("copyMsg").textContent="";
+  save();
 }
+function barRow(label,val,max,color){var pct=Math.max(2,val/max*100);return '<div><div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.2rem"><span>'+label+'</span><span>'+fmt(val)+'</span></div><div style="background:var(--card);border-radius:6px;overflow:hidden;height:22px"><div style="width:'+pct+'%;background:'+color+';height:100%"></div></div></div>'}
+
+function slabRows(steps){var h="";steps.forEach(function(s){if(s.rate>0){h+='<tr><td style="padding:.35rem .5rem">'+fmt(s.from)+' – '+fmt(s.to)+' @ '+(s.rate*100)+'%</td><td style="padding:.35rem .5rem;text-align:right">'+fmt(s.tax)+'</td></tr>'}});if(!h)h='<tr><td style="padding:.35rem .5rem" colspan="2">No tax at slab level (income within exempt limit)</td></tr>';return h}
+
+function breakdownTable(gross,salary,other,o,n){
+  function col(r){return '<td style="padding:.4rem .6rem;text-align:right">'+fmt(r)+'</td>'}
+  var h='<table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:.9rem">';
+  h+='<tr style="background:rgba(99,102,241,.15)"><th style="padding:.5rem .6rem;text-align:left">Particulars</th><th style="padding:.5rem .6rem;text-align:right">Old Regime</th><th style="padding:.5rem .6rem;text-align:right">New Regime</th></tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Gross Income (salary '+fmt(salary)+' + other '+fmt(other)+')</td>'+col(gross)+col(gross)+'</tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Total Deductions (incl. std. deduction)</td>'+col(o.totalDed)+col(n.totalDed)+'</tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem"><strong>Taxable Income</strong></td>'+col(o.taxable)+col(n.taxable)+'</tr>';
+  h+='</table>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">';
+  h+='<div><h4 style="margin:.2rem 0;color:#6366f1">Old Regime — slab computation</h4><table style="width:100%;border-collapse:collapse;font-size:.85rem">'+slabRows(o.steps)+'</table></div>';
+  h+='<div><h4 style="margin:.2rem 0;color:#8b5cf6">New Regime — slab computation</h4><table style="width:100%;border-collapse:collapse;font-size:.85rem">'+slabRows(n.steps)+'</table></div>';
+  h+='</div>';
+  h+='<table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:.9rem;margin-top:1rem">';
+  h+='<tr style="background:rgba(139,92,246,.15)"><th style="padding:.5rem .6rem;text-align:left">Tax Computation</th><th style="padding:.5rem .6rem;text-align:right">Old</th><th style="padding:.5rem .6rem;text-align:right">New</th></tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Tax before rebate</td>'+col(o.baseTax)+col(n.baseTax)+'</tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Rebate u/s 87A</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(o.rebate)+'</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(n.rebate)+'</td></tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Surcharge</td>'+col(o.surcharge)+col(n.surcharge)+'</tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Health &amp; Education Cess 4%</td>'+col(o.cess)+col(n.cess)+'</tr>';
+  h+='<tr style="border-top:1px solid var(--card);font-weight:700"><td style="padding:.4rem .6rem">Total Tax Payable</td>'+col(o.total)+col(n.total)+'</tr>';
+  h+='</table>';
+  h+='<p class="info" style="margin-top:.5rem">Old regime tax in words: <strong>'+words(o.total)+'</strong><br>New regime tax in words: <strong>'+words(n.total)+'</strong></p>';
+  return h;
+}
+function buildSummary(gross,o,n,diff){
+  var better=o.total<n.total?"Old Regime":n.total<o.total?"New Regime":"Either (equal)";
+  return "Income Tax Estimate (AY 2026-27)\n"+
+  "Gross Income: "+fmt(gross)+"\n\n"+
+  "OLD REGIME\n Taxable: "+fmt(o.taxable)+"\n Total Tax: "+fmt(o.total)+" ("+words(o.total)+")\n\n"+
+  "NEW REGIME\n Taxable: "+fmt(n.taxable)+"\n Total Tax: "+fmt(n.total)+" ("+words(n.total)+")\n\n"+
+  "Recommended: "+better+" (saves "+fmt(diff)+")\n\n"+
+  "Estimate only — not tax advice. Confirm with a professional.";
+}
+function copySummary(){if(!lastSummary){document.getElementById("copyMsg").textContent="Calculate first.";return}var done=function(){document.getElementById("copyMsg").textContent="✅ Summary copied!"};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastSummary).then(done,function(){fallbackCopy(lastSummary,done)})}else{fallbackCopy(lastSummary,done)}}
+function fallbackCopy(t,cb){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);cb()}
+
+document.addEventListener("DOMContentLoaded",function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener("input",save)})});
   </script>
 </body>
 </html>

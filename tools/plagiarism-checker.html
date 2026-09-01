@@ -10,6 +10,18 @@
   <meta property="og:title" content="Plagiarism Checker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/plagiarism-checker"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/plagiarism-checker"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Plagiarism Checker","url":"https://freetoolhubs.com/tools/plagiarism-checker","applicationCategory":"UtilityApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free plagiarism and text similarity checker. Compare two texts with multiple similarity methods."}</script>
+  <style>
+    .notice-box{border:1px solid var(--accent);background:rgba(99,102,241,.08);border-radius:var(--radius);padding:1rem 1.1rem;margin:1rem 0;font-size:.9rem}
+    .notice-box p{margin:.5rem 0 0;color:var(--text2)}
+    .mode-tabs{display:flex;gap:.5rem;margin:1rem 0;flex-wrap:wrap}
+    .mode-tab{padding:.55rem 1rem;border:2px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-weight:600;color:var(--text)}
+    .mode-tab.active{border-color:var(--accent);background:var(--accent);color:#fff}
+    mark.mtext{background:#a5d6a7;color:#000;border-radius:3px;padding:0 2px}
+    mark.mgram{background:#ffe082;color:#000;border-radius:3px;padding:0 2px}
+    .rep-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;margin:.5rem 0;font-size:.9rem}
+    .rep-item .rep-loc{color:var(--text2);font-size:.8rem}
+    .gram-chip{display:inline-block;background:rgba(139,92,246,.15);color:var(--accent2);border-radius:6px;padding:.2rem .5rem;margin:.2rem;font-size:.8rem}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -18,20 +30,64 @@
     <div class="tool-section">
       <h1>🔍 Plagiarism / Text Similarity Checker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Compare two texts to find similarity using multiple methods. All processing in your browser.</p>
-      <label><strong>Text 1 (Original):</strong></label>
-      <textarea id="text1" rows="6" style="width:100%;margin:.5rem 0;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.95rem;resize:vertical" placeholder="Paste the original text here..."></textarea>
-      <label><strong>Text 2 (To Check):</strong></label>
-      <textarea id="text2" rows="6" style="width:100%;margin:.5rem 0;padding:.7rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.95rem;resize:vertical" placeholder="Paste the text to check here..."></textarea>
-      <button class="btn" onclick="checkPlagiarism()" style="width:100%;margin-top:.5rem">🔍 Check Similarity</button>
+      <p class="info">Compare two texts or check one document for internal repetition — using real similarity algorithms. All processing happens in your browser.</p>
+
+      <div class="notice-box">
+        <strong>⚠️ What this tool does — and does not do.</strong>
+        <p>This tool compares the text <em>you</em> provide and finds internal repetition within a single document. It uses genuine algorithms — Jaccard similarity, cosine similarity, longest common substring, and shared n-grams. <strong>It does NOT search the internet or any academic database.</strong> It cannot tell you whether your text matches a source you have not pasted in. It is <strong>not a substitute for institutional tools like Turnitin.</strong> Use it to compare drafts, spot accidental copying, and reduce repetition in your own writing.</p>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" id="tabCompareBtn" onclick="setMode('compare')">🔀 Compare Two Texts</button>
+        <button type="button" class="mode-tab" id="tabSelfBtn" onclick="setMode('self')">🔁 Self-Check (one document)</button>
+      </div>
+
+      <div id="mode-compare">
+        <label><strong>Text 1 (Original):</strong></label>
+        <textarea id="text1" rows="6" placeholder="Paste the original text here..."></textarea>
+        <label><strong>Text 2 (To Check):</strong></label>
+        <textarea id="text2" rows="6" placeholder="Paste the text to check here..."></textarea>
+        <button class="btn" onclick="checkPlagiarism()" style="width:100%;margin-top:.5rem">🔍 Compare Similarity</button>
+      </div>
+
+      <div id="mode-self" style="display:none">
+        <label><strong>Your document:</strong></label>
+        <textarea id="selfText" rows="10" placeholder="Paste your essay or document here to detect internal repetition..."></textarea>
+        <div class="row" style="margin:.5rem 0">
+          <label>Near-duplicate threshold: <strong id="thrVal">70</strong>%</label>
+          <input type="range" id="selfThr" min="50" max="95" value="70">
+        </div>
+        <button class="btn" onclick="selfCheck()" style="width:100%;margin-top:.5rem">🔁 Check for Repetition</button>
+      </div>
+
       <div id="result" style="display:none;margin-top:1.5rem">
         <div id="verdict" style="text-align:center;padding:1rem;border-radius:12px;background:var(--card);margin-bottom:1rem"></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem;margin-bottom:1rem" id="stats"></div>
-        <h3>Highlighted Matches</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div><strong>Text 1:</strong><div id="hl1" style="background:var(--card);padding:.8rem;border-radius:8px;margin-top:.3rem;white-space:pre-wrap;font-size:.9rem;max-height:300px;overflow-y:auto"></div></div>
-          <div><strong>Text 2:</strong><div id="hl2" style="background:var(--card);padding:.8rem;border-radius:8px;margin-top:.3rem;white-space:pre-wrap;font-size:.9rem;max-height:300px;overflow-y:auto"></div></div>
+        <div id="ngramBreak"></div>
+        <div id="matchArea">
+          <h3>Highlighted Matches</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem" id="matchGrid">
+            <div><strong>Text 1:</strong><div id="hl1" style="background:var(--card);padding:.8rem;border-radius:8px;margin-top:.3rem;white-space:pre-wrap;font-size:.9rem;max-height:300px;overflow-y:auto"></div></div>
+            <div><strong>Text 2:</strong><div id="hl2" style="background:var(--card);padding:.8rem;border-radius:8px;margin-top:.3rem;white-space:pre-wrap;font-size:.9rem;max-height:300px;overflow-y:auto"></div></div>
+          </div>
         </div>
+        <div id="selfArea" style="display:none"></div>
+        <div id="styleStats" style="margin-top:1rem"></div>
+        <div class="row" style="margin-top:1rem">
+          <button class="btn btn-outline" onclick="copyReport(this)">📋 Copy Report</button>
+          <button class="btn btn-outline" onclick="downloadReport()">💾 Download .txt</button>
+        </div>
+      </div>
+
+      <div class="tool-section" style="margin-top:1.5rem;padding:1.2rem;background:var(--card)">
+        <h3 style="margin-top:0">✍️ How to fix similarity: paraphrase &amp; cite properly</h3>
+        <ul style="margin-left:1.2rem;line-height:1.9;font-size:.92rem">
+          <li><strong>Rewrite in your own words</strong> — read the source, close it, then write the idea from memory. Don't just swap a few synonyms; that is still plagiarism.</li>
+          <li><strong>Change structure, not just words</strong> — combine or split sentences and reorder ideas so the phrasing is genuinely yours.</li>
+          <li><strong>Always cite the source</strong> — even a good paraphrase needs a citation. Only common knowledge is exempt.</li>
+          <li><strong>Quote directly</strong> when the exact wording matters — use quotation marks and a citation.</li>
+          <li>Need help? Try our <a href="/tools/paraphraser">Paraphraser</a> to rephrase your own drafts, and the <a href="/tools/citation-generator">Citation Generator</a> to format references correctly.</li>
+        </ul>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -97,17 +153,234 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function normalize(t){return t.toLowerCase().replace(/[^\w\s]/g,'').trim()}
+var mode='compare';
+var lastReport='';
+
+function setMode(m){
+  mode=m;
+  document.getElementById('tabCompareBtn').classList.toggle('active',m==='compare');
+  document.getElementById('tabSelfBtn').classList.toggle('active',m==='self');
+  document.getElementById('mode-compare').style.display=m==='compare'?'':'none';
+  document.getElementById('mode-self').style.display=m==='self'?'':'none';
+  document.getElementById('result').style.display='none';
+}
+document.getElementById('selfThr').addEventListener('input',function(){document.getElementById('thrVal').textContent=this.value});
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function normalize(t){return t.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim()}
 function getWords(t){return normalize(t).split(/\s+/).filter(Boolean)}
-function getSentences(t){return t.split(/[.!?]+/).map(function(s){return s.trim()}).filter(function(s){return s.length>3})}
+function getSentences(t){return t.split(/(?<=[.!?])\s+/).map(function(s){return s.trim()}).filter(function(s){return s.replace(/[^\w]/g,'').length>3})}
 function getNgrams(words,n){var ng=[];for(var i=0;i<=words.length-n;i++)ng.push(words.slice(i,i+n).join(' '));return ng}
-function jaccard(a,b){var setA=new Set(a),setB=new Set(b),inter=0;setA.forEach(function(w){if(setB.has(w))inter++});return inter/(setA.size+setB.size-inter||1)}
-function sentenceSimilarity(s1,s2){var w1=getWords(s1),w2=getWords(s2);if(w1.length<3)return 0;var common=0;w1.forEach(function(w){if(w2.indexOf(w)!==-1)common++});return common/Math.max(w1.length,w2.length)}
-function checkPlagiarism(){var t1=document.getElementById('text1').value,t2=document.getElementById('text2').value;if(!t1||!t2)return alert('Please enter both texts.');var w1=getWords(t1),w2=getWords(t2);var jaccardScore=jaccard(w1,w2);var s1=getSentences(t1),s2=getSentences(t2);var matchedS1=new Set(),matchedS2=new Set(),matchCount=0;for(var i=0;i<s1.length;i++){for(var j=0;j<s2.length;j++){if(sentenceSimilarity(s1[i],s2[j])>0.7){matchedS1.add(i);matchedS2.add(j);matchCount++}}}var sentScore=matchCount/Math.max(s1.length,s2.length,1);var ng3a=getNgrams(w1,3),ng3b=getNgrams(w2,3);var ng5a=getNgrams(w1,5),ng5b=getNgrams(w2,5);var ng3score=jaccard(ng3a,ng3b),ng5score=jaccard(ng5a,ng5b);var overall=Math.round((jaccardScore*0.3+sentScore*0.4+(ng3score+ng5score)/2*0.3)*100);var verdict,color;if(overall<15){verdict='✅ Original';color='#4caf50'}else if(overall<30){verdict='🟡 Low Similarity';color='#ff9800'}else if(overall<60){verdict='🟠 Moderate Similarity';color='#f57c00'}else{verdict='🔴 High Similarity';color='#f44336'}
-document.getElementById('result').style.display='block';document.getElementById('verdict').innerHTML='<div style="font-size:2rem;font-weight:700;color:'+color+'">'+overall+'%</div><div style="font-size:1.2rem;margin-top:.3rem">'+verdict+'</div>';
-document.getElementById('stats').innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+Math.round(jaccardScore*100)+'%</div><div class="info">Word Overlap</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+matchCount+'</div><div class="info">Matching Sentences</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+Math.round(ng3score*100)+'%</div><div class="info">3-gram Overlap</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+Math.round(ng5score*100)+'%</div><div class="info">5-gram Overlap</div></div>';
-var hl1='',hl2='';for(var i=0;i<s1.length;i++){hl1+=matchedS1.has(i)?'<mark style="background:#a5d6a7;color:#000;border-radius:3px;padding:0 2px">'+s1[i]+'.</mark> ':s1[i]+'. '}for(var j=0;j<s2.length;j++){hl2+=matchedS2.has(j)?'<mark style="background:#a5d6a7;color:#000;border-radius:3px;padding:0 2px">'+s2[j]+'.</mark> ':s2[j]+'. '}
-document.getElementById('hl1').innerHTML=hl1;document.getElementById('hl2').innerHTML=hl2}
+
+function jaccard(a,b){var setA=new Set(a),setB=new Set(b),inter=0;setA.forEach(function(w){if(setB.has(w))inter++});var uni=setA.size+setB.size-inter;return uni?inter/uni:0}
+
+function termFreq(words){var m={};words.forEach(function(w){m[w]=(m[w]||0)+1});return m}
+function cosine(a,b){
+  var fa=termFreq(a),fb=termFreq(b),keys={};
+  Object.keys(fa).forEach(function(k){keys[k]=1});Object.keys(fb).forEach(function(k){keys[k]=1});
+  var dot=0,na=0,nb=0;
+  Object.keys(keys).forEach(function(k){var x=fa[k]||0,y=fb[k]||0;dot+=x*y;na+=x*x;nb+=y*y});
+  return(na&&nb)?dot/(Math.sqrt(na)*Math.sqrt(nb)):0;
+}
+
+// Longest common substring on word arrays -> returns length in words
+function lcsWords(a,b){
+  var m=a.length,n=b.length;if(!m||!n)return 0;
+  var prev=new Array(n+1).fill(0),best=0;
+  for(var i=1;i<=m;i++){
+    var cur=new Array(n+1).fill(0);
+    for(var j=1;j<=n;j++){
+      if(a[i-1]===b[j-1]){cur[j]=prev[j-1]+1;if(cur[j]>best)best=cur[j]}
+    }
+    prev=cur;
+  }
+  return best;
+}
+
+function sharedNgrams(a,b,n){
+  var setB=new Set(getNgrams(b,n)),seen={},shared=[];
+  getNgrams(a,n).forEach(function(g){if(setB.has(g)&&!seen[g]){seen[g]=1;shared.push(g)}});
+  return shared;
+}
+
+function sentenceSimilarity(s1,s2){
+  var w1=getWords(s1),w2=getWords(s2);if(w1.length<3||w2.length<3)return 0;
+  return jaccard(w1,w2);
+}
+
+// Readability / style
+function readability(text){
+  var words=getWords(text);var sentences=getSentences(text);
+  var wc=words.length,sc=Math.max(sentences.length,1);
+  var syll=0;words.forEach(function(w){syll+=countSyll(w)});
+  var flesch=206.835-1.015*(wc/sc)-84.6*(syll/Math.max(wc,1));
+  flesch=Math.max(0,Math.min(100,Math.round(flesch)));
+  var avgLen=(wc/sc).toFixed(1);
+  var uniq=new Set(words).size;
+  var diversity=wc?Math.round(uniq/wc*100):0;
+  return{wc:wc,sc:sc,avgLen:avgLen,flesch:flesch,diversity:diversity,uniq:uniq};
+}
+function countSyll(w){w=w.toLowerCase().replace(/[^a-z]/g,'');if(w.length<=3)return 1;w=w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'').replace(/^y/,'');var m=w.match(/[aeiouy]{1,2}/g);return m?m.length:1}
+
+function highlight(sentences,matchedSet,cls){
+  var out='';for(var i=0;i<sentences.length;i++){
+    var s=esc(sentences[i]);
+    out+=matchedSet.has(i)?'<mark class="'+cls+'">'+s+'</mark> ':s+' ';
+  }
+  return out;
+}
+
+function checkPlagiarism(){
+  var t1=document.getElementById('text1').value,t2=document.getElementById('text2').value;
+  if(!t1.trim()||!t2.trim())return alert('Please enter both texts.');
+  var w1=getWords(t1),w2=getWords(t2);
+  var jac=jaccard(w1,w2);
+  var cos=cosine(w1,w2);
+  var lcs=lcsWords(w1,w2);
+  var lcsPct=Math.min(w1.length,w2.length)?lcs/Math.min(w1.length,w2.length):0;
+  var s1=getSentences(t1),s2=getSentences(t2);
+  var matchedS1=new Set(),matchedS2=new Set(),matchCount=0;
+  for(var i=0;i<s1.length;i++)for(var j=0;j<s2.length;j++){
+    if(sentenceSimilarity(s1[i],s2[j])>0.6){matchedS1.add(i);matchedS2.add(j);matchCount++}
+  }
+  var ng3=sharedNgrams(w1,w2,3),ng5=sharedNgrams(w1,w2,5);
+  var ng3score=jaccard(getNgrams(w1,3),getNgrams(w2,3));
+  var ng5score=jaccard(getNgrams(w1,5),getNgrams(w2,5));
+  var overall=Math.round((jac*0.25+cos*0.25+lcsPct*0.2+(ng3score+ng5score)/2*0.3)*100);
+  overall=Math.max(0,Math.min(100,overall));
+  var verdict,color;
+  if(overall<15){verdict='✅ Likely Original';color='#4caf50'}
+  else if(overall<30){verdict='🟡 Low Similarity';color='#ff9800'}
+  else if(overall<60){verdict='🟠 Moderate Similarity';color='#f57c00'}
+  else{verdict='🔴 High Similarity';color='#f44336'}
+
+  document.getElementById('result').style.display='block';
+  document.getElementById('matchArea').style.display='';
+  document.getElementById('selfArea').style.display='none';
+  document.getElementById('verdict').innerHTML='<div style="font-size:2rem;font-weight:700;color:'+color+'">'+overall+'%</div><div style="font-size:1.15rem;margin-top:.3rem">'+verdict+'</div><div class="info" style="margin-top:.3rem">Similarity between the two texts you provided (not a web search).</div>';
+
+  function stat(v,l){return'<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+v+'</div><div class="info">'+l+'</div></div>'}
+  document.getElementById('stats').innerHTML=
+    stat(Math.round(jac*100)+'%','Jaccard (word sets)')+
+    stat(Math.round(cos*100)+'%','Cosine (term freq)')+
+    stat(lcs+' words','Longest Common Run')+
+    stat(matchCount,'Matching Sentences')+
+    stat(Math.round(ng3score*100)+'%','3-gram Overlap')+
+    stat(Math.round(ng5score*100)+'%','5-gram Overlap');
+
+  var gramHtml='<h3>Shared Phrases (n-grams)</h3><p class="info">These are exact word sequences appearing in both texts — the signal real detectors rely on.</p>';
+  gramHtml+='<div><strong>3-word overlaps ('+ng3.length+'):</strong><br>'+(ng3.length?ng3.slice(0,40).map(function(g){return'<span class="gram-chip">'+esc(g)+'</span>'}).join(''):'<span class="info">none</span>')+'</div>';
+  gramHtml+='<div style="margin-top:.6rem"><strong>5-word overlaps ('+ng5.length+'):</strong><br>'+(ng5.length?ng5.slice(0,25).map(function(g){return'<span class="gram-chip">'+esc(g)+'</span>'}).join(''):'<span class="info">none</span>')+'</div>';
+  document.getElementById('ngramBreak').innerHTML=gramHtml;
+
+  document.getElementById('hl1').innerHTML=highlight(s1,matchedS1,'mtext');
+  document.getElementById('hl2').innerHTML=highlight(s2,matchedS2,'mtext');
+
+  var r1=readability(t1),r2=readability(t2);
+  document.getElementById('styleStats').innerHTML=
+    '<h3>Readability &amp; Style</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem">'+
+    stat(r1.wc+' / '+r2.wc,'Words (T1/T2)')+
+    stat(r1.avgLen+' / '+r2.avgLen,'Avg words/sentence')+
+    stat(r1.flesch+' / '+r2.flesch,'Reading ease (0-100)')+
+    stat(r1.diversity+'% / '+r2.diversity+'%','Vocabulary diversity')+
+    '</div>';
+
+  lastReport=buildCompareReport(overall,verdict,jac,cos,lcs,matchCount,ng3,ng5,r1,r2);
+}
+
+function selfCheck(){
+  var t=document.getElementById('selfText').value;
+  if(!t.trim())return alert('Please paste a document.');
+  var thr=document.getElementById('selfThr').value/100;
+  var sentences=getSentences(t);
+  var exactMap={},dupExact=[];
+  var nearPairs=[];
+  for(var i=0;i<sentences.length;i++){
+    var key=normalize(sentences[i]);
+    if(exactMap[key]!==undefined){dupExact.push({a:exactMap[key],b:i,text:sentences[i]})}
+    else exactMap[key]=i;
+  }
+  for(var i=0;i<sentences.length;i++)for(var j=i+1;j<sentences.length;j++){
+    var sim=sentenceSimilarity(sentences[i],sentences[j]);
+    if(sim>=thr&&normalize(sentences[i])!==normalize(sentences[j])){
+      nearPairs.push({a:i,b:j,sim:Math.round(sim*100),ta:sentences[i],tb:sentences[j]});
+    }
+  }
+  // overused phrases: 3-grams appearing 3+ times
+  var words=getWords(t);var counts={};
+  getNgrams(words,3).forEach(function(g){counts[g]=(counts[g]||0)+1});
+  var overused=Object.keys(counts).filter(function(g){return counts[g]>=3}).sort(function(a,b){return counts[b]-counts[a]}).slice(0,25);
+
+  var repScore=Math.min(100,Math.round((dupExact.length*8+nearPairs.length*4+overused.length*2)));
+  var color=repScore<15?'#4caf50':repScore<40?'#ff9800':'#f44336';
+  var verdict=repScore<15?'✅ Low Repetition':repScore<40?'🟡 Some Repetition':'🔴 High Repetition';
+
+  document.getElementById('result').style.display='block';
+  document.getElementById('matchArea').style.display='none';
+  document.getElementById('ngramBreak').innerHTML='';
+  document.getElementById('selfArea').style.display='block';
+  document.getElementById('verdict').innerHTML='<div style="font-size:2rem;font-weight:700;color:'+color+'">'+verdict+'</div><div class="info" style="margin-top:.3rem">Internal repetition within your document (repetition index '+repScore+').</div>';
+
+  function stat(v,l){return'<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-weight:700;color:var(--accent)">'+v+'</div><div class="info">'+l+'</div></div>'}
+  document.getElementById('stats').innerHTML=
+    stat(sentences.length,'Sentences')+
+    stat(dupExact.length,'Duplicate sentences')+
+    stat(nearPairs.length,'Near-duplicate pairs')+
+    stat(overused.length,'Overused phrases');
+
+  var html='';
+  html+='<h3>Duplicated Sentences</h3>';
+  if(dupExact.length){dupExact.forEach(function(d){html+='<div class="rep-item"><div class="rep-loc">Sentence #'+(d.a+1)+' repeated at #'+(d.b+1)+'</div>'+esc(d.text)+'</div>'})}
+  else html+='<p class="info">None found.</p>';
+  html+='<h3>Near-Duplicate Sentences (≥'+Math.round(thr*100)+'% similar)</h3>';
+  if(nearPairs.length){nearPairs.slice(0,50).forEach(function(p){html+='<div class="rep-item"><div class="rep-loc">Sentences #'+(p.a+1)+' &amp; #'+(p.b+1)+' — '+p.sim+'% similar</div>• '+esc(p.ta)+'<br>• '+esc(p.tb)+'</div>'})}
+  else html+='<p class="info">None found above the threshold.</p>';
+  html+='<h3>Overused Phrases (appear 3+ times)</h3>';
+  html+=overused.length?('<div>'+overused.map(function(g){return'<span class="gram-chip">'+esc(g)+' ×'+counts[g]+'</span>'}).join('')+'</div>'):'<p class="info">None found.</p>';
+  document.getElementById('selfArea').innerHTML=html;
+
+  var r=readability(t);
+  document.getElementById('styleStats').innerHTML=
+    '<h3>Readability &amp; Style</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem">'+
+    stat(r.wc,'Words')+stat(r.avgLen,'Avg words/sentence')+stat(r.flesch,'Reading ease (0-100)')+stat(r.diversity+'%','Vocabulary diversity')+'</div>';
+
+  lastReport=buildSelfReport(repScore,verdict,sentences.length,dupExact,nearPairs,overused,counts,r);
+}
+
+function buildCompareReport(overall,verdict,jac,cos,lcs,matchCount,ng3,ng5,r1,r2){
+  var L=[];
+  L.push('TEXT SIMILARITY REPORT (Compare Mode)');
+  L.push('Note: This compares only the two texts you provided. It does NOT search the internet or any database.');
+  L.push('======================================');
+  L.push('Overall similarity: '+overall+'%  ('+verdict.replace(/[^\x00-\x7F]/g,'').trim()+')');
+  L.push('Jaccard (word sets): '+Math.round(jac*100)+'%');
+  L.push('Cosine (term frequency): '+Math.round(cos*100)+'%');
+  L.push('Longest common run: '+lcs+' words');
+  L.push('Matching sentences: '+matchCount);
+  L.push('Shared 3-grams: '+ng3.length+'  |  Shared 5-grams: '+ng5.length);
+  L.push('');
+  L.push('Readability — Text 1: '+r1.wc+' words, avg '+r1.avgLen+' w/sentence, reading ease '+r1.flesch+', diversity '+r1.diversity+'%');
+  L.push('Readability — Text 2: '+r2.wc+' words, avg '+r2.avgLen+' w/sentence, reading ease '+r2.flesch+', diversity '+r2.diversity+'%');
+  if(ng5.length){L.push('');L.push('Shared 5-word phrases:');ng5.slice(0,30).forEach(function(g){L.push('  - '+g)})}
+  return L.join('\n');
+}
+function buildSelfReport(score,verdict,total,dup,near,overused,counts,r){
+  var L=[];
+  L.push('SELF-CHECK REPORT (Internal Repetition)');
+  L.push('Note: This checks repetition within one document. It does NOT search the internet or any database.');
+  L.push('======================================');
+  L.push('Repetition index: '+score+'  ('+verdict.replace(/[^\x00-\x7F]/g,'').trim()+')');
+  L.push('Total sentences: '+total);
+  L.push('Duplicate sentences: '+dup.length+'  |  Near-duplicate pairs: '+near.length+'  |  Overused phrases: '+overused.length);
+  L.push('Readability: '+r.wc+' words, avg '+r.avgLen+' w/sentence, reading ease '+r.flesch+', diversity '+r.diversity+'%');
+  if(dup.length){L.push('');L.push('Duplicated sentences:');dup.forEach(function(d){L.push('  #'+(d.a+1)+' == #'+(d.b+1)+': '+d.text)})}
+  if(near.length){L.push('');L.push('Near-duplicate pairs:');near.slice(0,50).forEach(function(p){L.push('  #'+(p.a+1)+' ~ #'+(p.b+1)+' ('+p.sim+'%)')})}
+  if(overused.length){L.push('');L.push('Overused phrases:');overused.forEach(function(g){L.push('  "'+g+'" x'+counts[g])})}
+  return L.join('\n');
+}
+
+function copyReport(btn){if(!lastReport)return;copyText(lastReport,btn)}
+function downloadReport(){if(!lastReport)return;download(new Blob([lastReport],{type:'text/plain'}),'similarity-report.txt')}
 </script>
 </body>
 </html>

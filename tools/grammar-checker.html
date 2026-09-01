@@ -18,9 +18,15 @@
       <h1>✏️ Grammar & Style Checker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
       <p class="info">Paste your text to check for common grammar errors, style issues, readability, and writing quality.</p>
-      <textarea id="input" rows="8" placeholder="Paste your text here..."></textarea>
-      <button class="btn" onclick="check()" style="width:100%;margin-top:.5rem">✏️ Check Grammar</button>
+      <div style="background:rgba(99,102,241,.1);border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:8px;font-size:.85rem;margin:.5rem 0">ℹ️ <strong>Rule-based checker, not AI.</strong> It catches common, high-confidence mistakes but may miss errors or context — always review suggestions before applying. Your text never leaves your browser.</div>
+      <textarea id="input" rows="8" placeholder="Paste your text here..." oninput="autosave()"></textarea>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn" onclick="check()" style="flex:2">✏️ Check Grammar</button>
+        <button class="btn btn-outline" onclick="copyCorrected(this)">📋 Copy Corrected</button>
+        <button class="btn btn-outline" onclick="downloadCorrected()">💾 Download .txt</button>
+      </div>
       <div id="stats" style="display:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-top:1rem"></div>
+      <div id="typeCounts" style="margin-top:.8rem"></div>
       <div id="result" style="margin-top:1rem"></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -82,129 +88,62 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var rules=[
-  {p:/\s{2,}/g,m:"Double space detected",fix:"Use single space",t:"spacing"},
-  {p:/[.!?]\s+[a-z]/g,m:"Sentence should start with capital letter",fix:"Capitalize after period",t:"capitalization"},
-  {p:/\bi\b(?!')/g,m:"'i' should be capitalized to 'I'",fix:"Use 'I' instead of 'i'",t:"capitalization"},
-  {p:/\b(teh|hte|adn|taht|wiht|thier|recieve|occured|seperate|definately|accomodate|occurence|neccessary|goverment|enviroment)\b/gi,m:"Possible misspelling",fix:"Check spelling",t:"spelling"},
-  {p:/\b(very unique|very perfect|most unique|more better|more worse|most best)\b/gi,m:"Redundant modifier",fix:"Remove 'very/more/most' — word is already absolute",t:"style"},
-  {p:/\b(utilize|utilise)\b/gi,m:"Wordy — use 'use' instead",fix:"Replace with 'use'",t:"style"},
-  {p:/\b(in order to)\b/gi,m:"Wordy phrase",fix:"Replace with 'to'",t:"style"},
-  {p:/\b(at this point in time)\b/gi,m:"Wordy phrase",fix:"Replace with 'now'",t:"style"},
-  {p:/\b(due to the fact that)\b/gi,m:"Wordy phrase",fix:"Replace with 'because'",t:"style"},
-  {p:/\b(a large number of)\b/gi,m:"Wordy phrase",fix:"Replace with 'many'",t:"style"},
-  {p:/\b(is|are|was|were|been|being)\s+\w+ed\b/gi,m:"Possible passive voice",fix:"Consider using active voice",t:"style"},
-  {p:/[,]{2,}/g,m:"Multiple commas",fix:"Use single comma",t:"punctuation"},
-  {p:/[.]{2}(?!\.)/g,m:"Double period",fix:"Use single period or ellipsis (...)",t:"punctuation"},
-  {p:/\b(alot)\b/gi,m:"'alot' is not a word",fix:"Use 'a lot' (two words)",t:"spelling"},
-  {p:/\b(could of|would of|should of)\b/gi,m:"Incorrect phrase",fix:"Use 'could have/would have/should have'",t:"grammar"},
-  {p:/\btheir\s+(is|are|was|were|going|doing)\b/gi,m:"Did you mean 'there' or 'they're'?",fix:"their=possession, there=place, they're=they are",t:"grammar"},
-  {p:/\bthere\s+(car|house|book|dog|cat|name|phone|work|job|idea)\b/gi,m:"Did you mean 'their'?",fix:"their=possession, there=place",t:"grammar"},
-  {p:/\byour\s+(a|an|the|going|doing|welcome|right|wrong)\b/gi,m:"Did you mean 'you're'?",fix:"your=possession, you're=you are",t:"grammar"},
-  {p:/\byou're\s+(own|self|book|car|house|phone|name)\b/gi,m:"Did you mean 'your'?",fix:"your=possession, you're=you are",t:"grammar"},
-  {p:/\bits\s+(a|the|not|been|going)\b/gi,m:"Did you mean 'it's'?",fix:"its=possession, it's=it is",t:"grammar"},
-  {p:/\bit's\s+(own)\b/gi,m:"Did you mean 'its'?",fix:"its=possession, it's=it is",t:"grammar"},
-  {p:/\b(irregardless)\b/gi,m:"'Irregardless' is not standard",fix:"Use 'regardless'",t:"grammar"},
-  {p:/\b(supposably)\b/gi,m:"'Supposably' — did you mean 'supposedly'?",fix:"Use 'supposedly'",t:"spelling"},
-  {p:/\b(would of|could of|should of|must of)\b/gi,m:"Incorrect — use 'have' not 'of'",fix:"would have, could have, should have",t:"grammar"},
-  {p:/\b(me and \w+)\b/gi,m:"Put yourself last in compound subjects",fix:"Use '[person] and I' or '[person] and me'",t:"grammar"},
-  {p:/\b(firstly|secondly|thirdly)\b/gi,m:"Wordy — simpler form preferred",fix:"Use 'first, second, third'",t:"style"},
-  {p:/\b(very good|very bad|very big|very small|very happy|very sad)\b/gi,m:"Weak modifier — use a stronger word",fix:"Replace 'very good' with 'excellent', 'very bad' with 'terrible', etc.",t:"style"},
-  {p:/\b(in my opinion|I think that|I believe that|I feel that)\b/gi,m:"Unnecessary qualifier — state directly",fix:"Remove and state the point directly",t:"style"},
-  {p:/\b(basically|literally)\b/gi,m:"Filler word — consider removing",fix:"Remove for cleaner writing",t:"style"},
-  {p:/\b(a lot of|lots of)\b/gi,m:"Informal — use precise quantity",fix:"Use 'many', 'several', 'numerous'",t:"style"},
-  {p:/\b(neccesary|neccessary|necesary)\b/gi,m:"Misspelling of 'necessary'",fix:"Correct: necessary",t:"spelling"},
-  {p:/\b(goverment|govermnent|governmnet)\b/gi,m:"Misspelling of 'government'",fix:"Correct: government",t:"spelling"},
-  {p:/\b(enviroment|enviornment|enviorment)\b/gi,m:"Misspelling of 'environment'",fix:"Correct: environment",t:"spelling"},
-  {p:/\b(acheive|acheieve|achive)\b/gi,m:"Misspelling of 'achieve'",fix:"Correct: achieve",t:"spelling"},
-  {p:/\b(beleive|belive|beleave)\b/gi,m:"Misspelling of 'believe'",fix:"Correct: believe",t:"spelling"},
-  {p:/\b(begining|begginning|beggining)\b/gi,m:"Misspelling of 'beginning'",fix:"Correct: beginning",t:"spelling"},
-  {p:/\b(calender|calandar|calander)\b/gi,m:"Misspelling of 'calendar'",fix:"Correct: calendar",t:"spelling"},
-  {p:/\b(commitee|comittee|committe)\b/gi,m:"Misspelling of 'committee'",fix:"Correct: committee",t:"spelling"},
-  {p:/\b(concious|concience|consious)\b/gi,m:"Misspelling of 'conscious/conscience'",fix:"Correct: conscious or conscience",t:"spelling"},
-  {p:/\b(definately|definatly|defintely)\b/gi,m:"Misspelling of 'definitely'",fix:"Correct: definitely",t:"spelling"},
-  {p:/\b(dissapear|dissappear|disapear)\b/gi,m:"Misspelling of 'disappear'",fix:"Correct: disappear",t:"spelling"},
-  {p:/\b(embarass|embarras|embaress)\b/gi,m:"Misspelling of 'embarrass'",fix:"Correct: embarrass",t:"spelling"},
-  {p:/\b(existance|existense|existince)\b/gi,m:"Misspelling of 'existence'",fix:"Correct: existence",t:"spelling"},
-  {p:/\b(foriegn|forein|foregin)\b/gi,m:"Misspelling of 'foreign'",fix:"Correct: foreign",t:"spelling"},
-  {p:/\b(gaurd|gard|gurad)\b/gi,m:"Misspelling of 'guard'",fix:"Correct: guard",t:"spelling"},
-  {p:/\b(independant|indipendent|independet)\b/gi,m:"Misspelling of 'independent'",fix:"Correct: independent",t:"spelling"},
-  {p:/\b(knowlege|knowlede|knowlegde)\b/gi,m:"Misspelling of 'knowledge'",fix:"Correct: knowledge",t:"spelling"},
-  {p:/\b(maintainance|maintanance|maintenence)\b/gi,m:"Misspelling of 'maintenance'",fix:"Correct: maintenance",t:"spelling"},
-  {p:/\b(priviledge|privelege|privilage)\b/gi,m:"Misspelling of 'privilege'",fix:"Correct: privilege",t:"spelling"},
-  {p:/\b(occassion|ocasion|occation)\b/gi,m:"Misspelling of 'occasion'",fix:"Correct: occasion",t:"spelling"},
-  {p:/\b(occurr|ocur|occurence)\b/gi,m:"Misspelling of 'occur/occurrence'",fix:"Correct: occur / occurrence",t:"spelling"},
-  {p:/\b(perseverence|perseverance|perseverense)\b/gi,m:"Misspelling of 'perseverance'",fix:"Correct: perseverance",t:"spelling"},
-  {p:/\b(posession|possesion|posesion)\b/gi,m:"Misspelling of 'possession'",fix:"Correct: possession",t:"spelling"},
-  {p:/\b(publically|publicaly)\b/gi,m:"Misspelling of 'publicly'",fix:"Correct: publicly",t:"spelling"},
-  {p:/\b(recomend|reccommend|recommand)\b/gi,m:"Misspelling of 'recommend'",fix:"Correct: recommend",t:"spelling"},
-  {p:/\b(refered|reffered|refferred)\b/gi,m:"Misspelling of 'referred'",fix:"Correct: referred",t:"spelling"},
-  {p:/\b(relevent|relavent|revelant)\b/gi,m:"Misspelling of 'relevant'",fix:"Correct: relevant",t:"spelling"},
-  {p:/\b(religous|religius|relgious)\b/gi,m:"Misspelling of 'religious'",fix:"Correct: religious",t:"spelling"},
-  {p:/\b(rythm|rhythem|rythym)\b/gi,m:"Misspelling of 'rhythm'",fix:"Correct: rhythm",t:"spelling"},
-  {p:/\b(seize|sieze)\b/gi,m:"Misspelling of 'seize'",fix:"Correct: seize",t:"spelling"},
-  {p:/\b(succesful|successfull|sucessful)\b/gi,m:"Misspelling of 'successful'",fix:"Correct: successful",t:"spelling"},
-  {p:/\b(suprise|surprize|surprice)\b/gi,m:"Misspelling of 'surprise'",fix:"Correct: surprise",t:"spelling"},
-  {p:/\b(tommorow|tommorrow|tomorow)\b/gi,m:"Misspelling of 'tomorrow'",fix:"Correct: tomorrow",t:"spelling"},
-  {p:/\b(untill|untl|til)\b/gi,m:"Misspelling of 'until'",fix:"Correct: until",t:"spelling"},
-  {p:/\b(wierd|wired|werid)\b/gi,m:"Misspelling of 'weird'",fix:"Correct: weird",t:"spelling"},
-  {p:/\b(writting|writeing|writen)\b/gi,m:"Misspelling of 'writing/written'",fix:"Correct: writing / written",t:"spelling"},
-  {p:/\b(arguement|arguemnt)\b/gi,m:"Misspelling of 'argument'",fix:"Correct: argument",t:"spelling"},
-  {p:/\b(assasination|assasinate|assasins)\b/gi,m:"Misspelling of 'assassination'",fix:"Correct: assassination",t:"spelling"},
-  {p:/\b(buisness|bussiness|busness)\b/gi,m:"Misspelling of 'business'",fix:"Correct: business",t:"spelling"},
-  {p:/\b(catagory|catagories|categorie)\b/gi,m:"Misspelling of 'category'",fix:"Correct: category",t:"spelling"},
-  {p:/\b(collegue|colleage|collaegue)\b/gi,m:"Misspelling of 'colleague'",fix:"Correct: colleague",t:"spelling"},
-  {p:/\b(comparision|comparision|comparsion)\b/gi,m:"Misspelling of 'comparison'",fix:"Correct: comparison",t:"spelling"},
-  {p:/\b(completly|completley|compleatly)\b/gi,m:"Misspelling of 'completely'",fix:"Correct: completely",t:"spelling"},
-  {p:/\b(concensus|consencus|concencus)\b/gi,m:"Misspelling of 'consensus'",fix:"Correct: consensus",t:"spelling"},
-  {p:/\b(desparate|despirate|desprate)\b/gi,m:"Misspelling of 'desperate'",fix:"Correct: desperate",t:"spelling"},
-  {p:/\b(develope|devellop|devlop)\b/gi,m:"Misspelling of 'develop'",fix:"Correct: develop",t:"spelling"},
-  {p:/\b(dilemna|dilema|dillema)\b/gi,m:"Misspelling of 'dilemma'",fix:"Correct: dilemma",t:"spelling"},
-  {p:/\b(disipline|disiplin|disciplin)\b/gi,m:"Misspelling of 'discipline'",fix:"Correct: discipline",t:"spelling"},
-  {p:/\b(efficent|efficiant|effecient)\b/gi,m:"Misspelling of 'efficient'",fix:"Correct: efficient",t:"spelling"},
-  {p:/\b(excercise|exersize|exercize)\b/gi,m:"Misspelling of 'exercise'",fix:"Correct: exercise",t:"spelling"},
-  {p:/\b(experiance|expirience|expirence)\b/gi,m:"Misspelling of 'experience'",fix:"Correct: experience",t:"spelling"},
-  {p:/\b(facinate|fasinate|fascnate)\b/gi,m:"Misspelling of 'fascinate'",fix:"Correct: fascinate",t:"spelling"},
-  {p:/\b(gauruntee|guarentee|garantee)\b/gi,m:"Misspelling of 'guarantee'",fix:"Correct: guarantee",t:"spelling"},
-  {p:/\b(harrass|harras|haras)\b/gi,m:"Misspelling of 'harass'",fix:"Correct: harass",t:"spelling"},
-  {p:/\b(hygeine|hygene|hygine)\b/gi,m:"Misspelling of 'hygiene'",fix:"Correct: hygiene",t:"spelling"},
-  {p:/\b(immediatly|imediately|immedately)\b/gi,m:"Misspelling of 'immediately'",fix:"Correct: immediately",t:"spelling"},
-  {p:/\b(intelligance|inteligence|intellegence)\b/gi,m:"Misspelling of 'intelligence'",fix:"Correct: intelligence",t:"spelling"},
-  {p:/\b(jewellry|jewlery|jewlry)\b/gi,m:"Misspelling of 'jewelry'",fix:"Correct: jewelry",t:"spelling"},
-  {p:/\b(judgement|jugement|judgmnt)\b/gi,m:"Misspelling of 'judgment'",fix:"Correct: judgment",t:"spelling"},
-  {p:/\b(liason|liasion|liaision)\b/gi,m:"Misspelling of 'liaison'",fix:"Correct: liaison",t:"spelling"},
-  {p:/\b(libary|libery|liberry)\b/gi,m:"Misspelling of 'library'",fix:"Correct: library",t:"spelling"},
-  {p:/\b(millenium|milennium|milenium)\b/gi,m:"Misspelling of 'millennium'",fix:"Correct: millennium",t:"spelling"},
-  {p:/\b(mischevious|mischevous|mischievious)\b/gi,m:"Misspelling of 'mischievous'",fix:"Correct: mischievous",t:"spelling"},
-  {p:/\b(neice|niece|neece)\b/gi,m:"Misspelling of 'niece'",fix:"Correct: niece",t:"spelling"},
-  {p:/\b(noticable|noticible|noticeble)\b/gi,m:"Misspelling of 'noticeable'",fix:"Correct: noticeable",t:"spelling"},
-  {p:/\b(paralel|parrallel|paralell)\b/gi,m:"Misspelling of 'parallel'",fix:"Correct: parallel",t:"spelling"},
-  {p:/\b(parliment|parlament|parliment)\b/gi,m:"Misspelling of 'parliament'",fix:"Correct: parliament",t:"spelling"},
-  {p:/\b(particurly|particulary|particulerly)\b/gi,m:"Misspelling of 'particularly'",fix:"Correct: particularly",t:"spelling"},
-  {p:/\b(persistant|persistance|persistense)\b/gi,m:"Misspelling of 'persistent'",fix:"Correct: persistent",t:"spelling"},
-  {p:/\b(pharoah|pharoah|pharoh)\b/gi,m:"Misspelling of 'pharaoh'",fix:"Correct: pharaoh",t:"spelling"},
-  {p:/\b(pronounciation|pronouncation)\b/gi,m:"Misspelling of 'pronunciation'",fix:"Correct: pronunciation",t:"spelling"},
-  {p:/\b(questionaire|questionnare|questionair)\b/gi,m:"Misspelling of 'questionnaire'",fix:"Correct: questionnaire",t:"spelling"},
-  {p:/\b(reciept|recipt|receit)\b/gi,m:"Misspelling of 'receipt'",fix:"Correct: receipt",t:"spelling"},
-  {p:/\b(resistence|resistense|resitance)\b/gi,m:"Misspelling of 'resistance'",fix:"Correct: resistance",t:"spelling"},
-  {p:/\b(responsable|responsibile|responisble)\b/gi,m:"Misspelling of 'responsible'",fix:"Correct: responsible",t:"spelling"},
-  {p:/\b(restraunt|restarant|resturant)\b/gi,m:"Misspelling of 'restaurant'",fix:"Correct: restaurant",t:"spelling"},
-  {p:/\b(sacrilegious|sacreligious|sacraligious)\b/gi,m:"Misspelling of 'sacrilegious'",fix:"Correct: sacrilegious",t:"spelling"},
-  {p:/\b(shedule|scedule|schedual)\b/gi,m:"Misspelling of 'schedule'",fix:"Correct: schedule",t:"spelling"},
-  {p:/\b(sentance|sentense|sentince)\b/gi,m:"Misspelling of 'sentence'",fix:"Correct: sentence",t:"spelling"},
-  {p:/\b(speach|speach|speetch)\b/gi,m:"Misspelling of 'speech'",fix:"Correct: speech",t:"spelling"},
-  {p:/\b(strenght|stength|stregnth)\b/gi,m:"Misspelling of 'strength'",fix:"Correct: strength",t:"spelling"},
-  {p:/\b(tendancy|tendancy|tendencey)\b/gi,m:"Misspelling of 'tendency'",fix:"Correct: tendency",t:"spelling"},
-  {p:/\b(therefor|therfore|therfor)\b/gi,m:"Misspelling of 'therefore'",fix:"Correct: therefore",t:"spelling"},
-  {p:/\b(threshhold|thresold|treshold)\b/gi,m:"Misspelling of 'threshold'",fix:"Correct: threshold",t:"spelling"},
-  {p:/\b(tounge|toungue|tonge)\b/gi,m:"Misspelling of 'tongue'",fix:"Correct: tongue",t:"spelling"},
-  {p:/\b(tyrany|tyranny|tyrrany)\b/gi,m:"Misspelling of 'tyranny'",fix:"Correct: tyranny",t:"spelling"},
-  {p:/\b(unecessary|unnecesary|unneccessary)\b/gi,m:"Misspelling of 'unnecessary'",fix:"Correct: unnecessary",t:"spelling"},
-  {p:/\b(vaccuum|vacum|vaccum)\b/gi,m:"Misspelling of 'vacuum'",fix:"Correct: vacuum",t:"spelling"},
-  {p:/\b(vehical|vehicel|vehicule)\b/gi,m:"Misspelling of 'vehicle'",fix:"Correct: vehicle",t:"spelling"},
-  {p:/\b(visious|viscious|vicsious)\b/gi,m:"Misspelling of 'vicious'",fix:"Correct: vicious",t:"spelling"},
-  {p:/\b(wether|wheather|wheter)\b/gi,m:"Misspelling of 'whether/weather'",fix:"Correct: whether (if) or weather (climate)",t:"spelling"}
+var GC_KEY="grammarCheckerText";
+function autosave(){try{localStorage.setItem(GC_KEY,document.getElementById("input").value);}catch(e){}}
+// High-confidence common misspellings -> correction (word-boundary, case-insensitive)
+var MISSPELL={recieve:"receive",seperate:"separate",occured:"occurred",definately:"definitely",accomodate:"accommodate",neccessary:"necessary",untill:"until",alot:"a lot",becuase:"because",thier:"their",teh:"the",adn:"and",wiht:"with",goverment:"government",enviroment:"environment",acheive:"achieve",beleive:"believe",begining:"beginning",tommorow:"tomorrow",wierd:"weird",arguement:"argument",publically:"publicly",occurence:"occurrence"};
+// Indian-English specific phrase fixes
+var INDIAN=[
+  {re:/\bdiscuss about\b/gi,fix:"discuss",msg:"'discuss about' is redundant — 'discuss' already means 'talk about'"},
+  {re:/\breturn back\b/gi,fix:"return",msg:"'return back' is redundant — use 'return'"},
+  {re:/\brevert back\b/gi,fix:"revert",msg:"'revert back' is redundant — use 'revert' or 'reply'"},
+  {re:/\breason is because\b/gi,fix:"reason is that",msg:"'reason is because' is redundant — use 'reason is that'"},
+  {re:/\bcousin brother\b/gi,fix:"cousin",msg:"'cousin brother' — standard English is just 'cousin'"},
+  {re:/\bcousin sister\b/gi,fix:"cousin",msg:"'cousin sister' — standard English is just 'cousin'"},
+  {re:/\bgood in (english|maths|math|science|studies)\b/gi,fix:function(m,s){return "good at "+s;},msg:"Use 'good at' rather than 'good in'"}
 ];
+// Rule set. Each rule: p (regex, global), m (message), t (type), and optionally rep(match)->replacement string.
+var rules=[
+  // Spacing & punctuation (high confidence)
+  {p:/\s{2,}/g,m:"Double space detected",fix:"Use a single space",t:"spacing",rep:function(){return " "}},
+  {p:/\s+([,.;:!?])/g,m:"Space before punctuation",fix:"Remove the space before punctuation",t:"punctuation",rep:function(m){return m.trim()}},
+  {p:/([,.;:!?])(?=[A-Za-z])/g,m:"Missing space after punctuation",fix:"Add a space after the punctuation",t:"punctuation",rep:function(m,g1){return g1+" "}},
+  {p:/([!?]){2,}/g,m:"Repeated punctuation",fix:"Use a single punctuation mark",t:"punctuation",rep:function(m,g1){return g1}},
+  {p:/[.]{2}(?!\.)/g,m:"Double period",fix:"Use a single period (or … for an ellipsis)",t:"punctuation",rep:function(){return "."}},
+  {p:/[,]{2,}/g,m:"Multiple commas",fix:"Use a single comma",t:"punctuation",rep:function(){return ","}},
+  // Double words e.g. "the the"
+  {p:/\b(\w+)\s+\1\b/gi,m:"Repeated word",fix:"Remove the duplicated word",t:"grammar",rep:function(m,g1){return g1}},
+  // a / an before vowel sounds (conservative — plain vowel letters, skip tricky h/u)
+  {p:/\ba\s+(?=[aeiou])/gi,m:"Use 'an' before a vowel sound",fix:"Change 'a' to 'an'",t:"grammar",rep:function(m){return m.replace(/^a/i,'an').replace(/^A/,'An')}},
+  {p:/\ban\s+(?=[bcdfgjklmnpqrstvwxyz])/gi,m:"Use 'a' before a consonant sound",fix:"Change 'an' to 'a'",t:"grammar",rep:function(m){return m.replace(/^an/i,'a').replace(/^An/,'A')}},
+  // could of / would of / should of
+  {p:/\b(could|would|should|must)\s+of\b/gi,m:"Should be 'have', not 'of'",fix:"Use 'have' (e.g. 'could have')",t:"grammar",rep:function(m,g1){return g1+" have"}},
+  // Obvious subject-verb agreement: he/she/it + plural verb form (very small, safe set)
+  {p:/\b(he|she|it)\s+(are|were|have|do|go|say|make|take|come|know|want|need)\b/gi,m:"Subject-verb agreement — singular subject needs singular verb",fix:"Match the verb to the singular subject (e.g. 'he is', 'she has', 'it does')",t:"grammar"},
+  // Confused words — PRESERVED narrow, high-confidence context patterns (do NOT broaden)
+  {p:/\btheir\s+(is|are|was|were|going|doing)\b/gi,m:"Did you mean 'there' or 'they're'?",fix:"their = possession, there = place, they're = they are",t:"grammar"},
+  {p:/\bthere\s+(car|house|book|dog|cat|name|phone|work|job|idea)\b/gi,m:"Did you mean 'their'?",fix:"their = possession, there = place",t:"grammar"},
+  {p:/\byour\s+(going|doing|welcome|right|wrong)\b/gi,m:"Did you mean 'you're'?",fix:"your = possession, you're = you are",t:"grammar"},
+  {p:/\byou're\s+(own|book|car|house|phone|name)\b/gi,m:"Did you mean 'your'?",fix:"your = possession, you're = you are",t:"grammar"},
+  {p:/\bits\s+(a|the|not|been|going)\b/gi,m:"Did you mean 'it's'?",fix:"its = possession, it's = it is",t:"grammar"},
+  {p:/\bit's\s+own\b/gi,m:"Did you mean 'its'?",fix:"its = possession, it's = it is",t:"grammar"},
+  // Style
+  {p:/\b(very|really|basically|actually|literally)\b/gi,m:"Filler word — consider removing",fix:"Remove for tighter writing",t:"style"},
+  {p:/\b(is|are|was|were|been|being)\s+\w+ed\b(\s+by\b)?/gi,m:"Possible passive voice",fix:"Consider rewriting in active voice",t:"style"}
+];
+// Build misspelling rules
+Object.keys(MISSPELL).forEach(function(bad){
+  rules.push({p:new RegExp("\\b"+bad+"\\b","gi"),m:"Common misspelling of '"+MISSPELL[bad]+"'",fix:"Correct to '"+MISSPELL[bad]+"'",t:"spelling",rep:function(m){return matchCase(m,MISSPELL[bad])}});
+});
+// Build Indian-English rules
+INDIAN.forEach(function(r){
+  rules.push({p:r.re,m:r.msg,fix:typeof r.fix==="function"?"Use the standard form":"Use '"+r.fix+"'",t:"style",rep:r.fix});
+});
+function matchCase(src,repl){
+  if(src===src.toUpperCase())return repl.toUpperCase();
+  if(src[0]===src[0].toUpperCase())return repl.charAt(0).toUpperCase()+repl.slice(1);
+  return repl;
+}
 function fleschKincaid(text){
   var sentences=text.split(/[.!?]+/).filter(function(s){return s.trim()});
   var words=text.split(/\s+/).filter(function(w){return w.length>0});
@@ -213,55 +152,126 @@ function fleschKincaid(text){
   var score=206.835-1.015*(words.length/sentences.length)-84.6*(syllables/words.length);
   return Math.max(0,Math.min(100,Math.round(score)));
 }
+// Missing capital at sentence start (report only — used to avoid overlap complexity)
+function checkCapitals(text){
+  var issues=[],re=/(^|[.!?]\s+)([a-z])/g,m;
+  while((m=re.exec(text))!==null){
+    var pos=m.index+m[1].length;
+    issues.push({pos:pos,len:1,text:m[2],msg:"Sentence should start with a capital letter",fix:"Capitalize '"+m[2]+"'",type:"capitalization",rep:m[2].toUpperCase()});
+  }
+  return issues;
+}
+// lowercase standalone 'i'
+function checkI(text){
+  var issues=[],re=/\bi\b(?!['A-Za-z])/g,m;
+  while((m=re.exec(text))!==null){issues.push({pos:m.index,len:1,text:"i",msg:"'i' should be capitalized to 'I'",fix:"Use 'I'",type:"capitalization",rep:"I"});}
+  return issues;
+}
 function checkSentenceLength(text){
   var issues=[];var sentences=text.split(/(?<=[.!?])\s+/);var pos=0;
-  sentences.forEach(function(s){var wc=s.split(/\s+/).filter(function(w){return w}).length;if(wc>40){issues.push({pos:pos,len:s.length,text:s.substring(0,50)+"...",msg:"Sentence is "+wc+" words long (over 40)",fix:"Break into shorter sentences for readability",type:"readability"})}pos+=s.length+1});
+  sentences.forEach(function(s){var wc=s.split(/\s+/).filter(function(w){return w}).length;if(wc>30){issues.push({pos:pos,len:Math.min(s.length,40),text:s.substring(0,40)+(s.length>40?"...":""),msg:"Long sentence ("+wc+" words, over 30)",fix:"Break into shorter sentences for readability",type:"style"})}pos+=s.length+1});
   return issues;
 }
 function checkRepetition(text){
-  var issues=[];var sentences=text.split(/(?<=[.!?])\s+/);
+  var issues=[];var sentences=text.split(/(?<=[.!?])\s+/);var seenWords={};
   for(var i=0;i<sentences.length;i++){
-    var window=sentences.slice(Math.max(0,i-1),i+2).join(' ').toLowerCase();
-    var words=window.replace(/[^a-z\s]/g,'').split(/\s+/).filter(function(w){return w.length>4});
+    var win=sentences.slice(Math.max(0,i-1),i+2).join(' ').toLowerCase();
+    var words=win.replace(/[^a-z\s]/g,'').split(/\s+/).filter(function(w){return w.length>4});
     var freq={};words.forEach(function(w){freq[w]=(freq[w]||0)+1});
-    for(var w in freq){if(freq[w]>=3){var idx=text.toLowerCase().indexOf(w);if(idx>-1){issues.push({pos:idx,len:w.length,text:w,msg:"'"+w+"' repeated "+freq[w]+" times in nearby sentences",fix:"Use synonyms or restructure to reduce repetition",type:"readability"});delete freq[w]}}}
+    for(var w in freq){if(freq[w]>=3&&!seenWords[w]){var idx=text.toLowerCase().indexOf(w);if(idx>-1){issues.push({pos:idx,len:w.length,text:w,msg:"'"+w+"' overused ("+freq[w]+" times nearby)",fix:"Use synonyms or restructure to reduce repetition",type:"style"});seenWords[w]=true;}}}
   }
-  var seen={};return issues.filter(function(i){if(seen[i.text])return false;seen[i.text]=true;return true});
+  return issues;
 }
 function qualityScore(text,issueCount){
   var words=text.split(/\s+/).filter(function(w){return w}).length;if(!words)return 0;
   var fk=fleschKincaid(text);var issueRatio=issueCount/Math.max(words,1);
-  var score=100-Math.round(issueRatio*500);
-  if(fk<30)score-=15;else if(fk<50)score-=5;
+  var score=100-Math.round(issueRatio*400);
+  if(fk<30)score-=10;else if(fk<50)score-=4;
   return Math.max(0,Math.min(100,score));
+}
+var currentIssues=[],currentText="";
+function collectIssues(text){
+  var issues=[];
+  rules.forEach(function(r){
+    r.p.lastIndex=0;var match;
+    while((match=r.p.exec(text))!==null){
+      if(match[0].length===0){r.p.lastIndex++;continue;}
+      var rep=null;
+      if(r.rep!==undefined){rep=(typeof r.rep==="function")?r.rep.apply(null,match):r.rep;}
+      issues.push({pos:match.index,len:match[0].length,text:match[0],msg:r.m,fix:r.fix,type:r.t,rep:rep});
+      if(!r.p.global)break;
+    }
+  });
+  issues=issues.concat(checkCapitals(text),checkI(text),checkSentenceLength(text),checkRepetition(text));
+  // Dedupe by pos+type
+  var seen={};issues=issues.filter(function(i){var k=i.pos+"-"+i.type+"-"+i.text;if(seen[k])return false;seen[k]=true;return true;});
+  issues.sort(function(a,b){return a.pos-b.pos});
+  return issues;
+}
+var TYPE_COLORS={spelling:"#f44336",grammar:"#ff9800",style:"var(--accent)",punctuation:"var(--accent2)",spacing:"#607d8b",capitalization:"#ff5722"};
+var TYPE_HEX={spelling:"#f44336",grammar:"#ff9800",style:"#6366f1",punctuation:"#8b5cf6",spacing:"#607d8b",capitalization:"#ff5722"};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sentenceContext(text,pos,len){
+  var start=text.lastIndexOf('.',pos);var q=text.lastIndexOf('\n',pos);
+  start=Math.max(start,q,text.lastIndexOf('!',pos),text.lastIndexOf('?',pos));start=start<0?0:start+1;
+  var end=text.length;[/\./,/!/,/\?/,/\n/].forEach(function(){});
+  var e=pos+len;while(e<text.length&&!/[.!?\n]/.test(text[e]))e++;if(e<text.length)e++;
+  var ctx=text.substring(start,e).trim();
+  var rel=pos-start-(text.substring(start,pos).length-text.substring(start,pos).trimStart().length);
+  // Rebuild highlight safely by splitting on absolute positions
+  var before=text.substring(start,pos),mid=text.substring(pos,pos+len),after=text.substring(pos+len,e);
+  return esc(before.replace(/^\s+/,''))+'<mark style="background:rgba(99,102,241,.3);color:inherit;padding:0 2px;border-radius:3px">'+esc(mid)+'</mark>'+esc(after);
 }
 function check(){
   var text=document.getElementById("input").value;
-  if(!text.trim())return alert("Paste some text first");
-  var issues=[];
-  rules.forEach(function(r){
-    var match;while((match=r.p.exec(text))!==null){
-      if(r.t==="grammar"||r.t==="spelling"||r.t==="punctuation"||r.t==="spacing"||r.t==="capitalization"||(r.t==="style"&&match[0].length>3)){
-        issues.push({pos:match.index,len:match[0].length,text:match[0],msg:r.m,fix:r.fix,type:r.t});
-      }
-    }
-  });
-  issues=issues.concat(checkSentenceLength(text));
-  issues=issues.concat(checkRepetition(text));
-  var seen={};issues=issues.filter(function(i){var k=i.pos+"-"+i.type;if(seen[k])return false;seen[k]=true;return true});
-  issues.sort(function(a,b){return a.pos-b.pos});
+  if(!text.trim()){document.getElementById("result").innerHTML='';document.getElementById("stats").style.display="none";document.getElementById("typeCounts").innerHTML='';return alert("Paste some text first");}
+  currentText=text;
+  currentIssues=collectIssues(text);
+  render();
+}
+function render(){
+  var text=currentText;var issues=currentIssues;
   var words=text.split(/\s+/).filter(function(w){return w}).length;
   var fk=fleschKincaid(text);
-  var qs=qualityScore(text,issues.length);
-  var colors={spelling:"#f44336",grammar:"#ff9800",style:"#6366f1",punctuation:"#9c27b0",spacing:"#607d8b",capitalization:"#ff5722",readability:"#009688"};
+  var active=issues.filter(function(i){return !i.ignored&&!i.applied;});
+  var qs=qualityScore(text,active.length);
   document.getElementById("stats").style.display="grid";
-  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+words+'</strong><br><span class="info">Words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+issues.length+'</strong><br><span class="info">Issues</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+fk+'</strong><br><span class="info">Readability (FK)</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+qs+'/100</strong><br><span class="info">Quality Score</span></div>';
-  if(issues.length===0){document.getElementById("result").innerHTML='<p style="color:#4caf50;text-align:center;font-size:1.2rem;margin:1rem 0">✅ No issues found! Your text looks good.</p>';return}
-  var html='<h3>Issues Found ('+issues.length+')</h3>';
-  issues.forEach(function(i){
-    html+='<div style="background:var(--card);padding:.8rem;border-radius:8px;margin:.4rem 0;border-left:3px solid '+colors[i.type]+'"><span style="background:'+colors[i.type]+'22;color:'+colors[i.type]+';padding:.1rem .4rem;border-radius:4px;font-size:.75rem;text-transform:uppercase">'+i.type+'</span> <strong>"'+i.text+'"</strong><br><span class="info">'+i.msg+'</span><br><span style="color:#4caf50;font-size:.85rem">💡 '+i.fix+'</span></div>';
+  document.getElementById("stats").innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+words+'</strong><br><span class="info">Words</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+active.length+'</strong><br><span class="info">Issues</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+fk+'</strong><br><span class="info">Readability (FK)</span></div><div style="background:var(--card);padding:.6rem;border-radius:8px;text-align:center"><strong>'+qs+'/100</strong><br><span class="info">Writing Score</span></div>';
+  // Type counts
+  var counts={};active.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
+  var tc='';Object.keys(counts).forEach(function(t){tc+='<span style="display:inline-flex;align-items:center;gap:4px;background:'+TYPE_HEX[t]+'22;color:'+TYPE_HEX[t]+';padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600;margin:.2rem .3rem .2rem 0;text-transform:uppercase">'+t+': '+counts[t]+'</span>';});
+  document.getElementById("typeCounts").innerHTML=tc;
+  if(active.length===0){document.getElementById("result").innerHTML='<p style="color:#4caf50;text-align:center;font-size:1.2rem;margin:1rem 0">✅ No issues found! Your text looks good.</p>';return;}
+  var html='<h3>Issues Found ('+active.length+')</h3>';
+  issues.forEach(function(i,idx){
+    if(i.ignored||i.applied)return;
+    var color=TYPE_HEX[i.type]||"#607d8b";
+    html+='<div style="background:var(--card);padding:.9rem;border-radius:8px;margin:.5rem 0;border-left:3px solid '+color+'">';
+    html+='<span style="background:'+color+'22;color:'+color+';padding:.1rem .4rem;border-radius:4px;font-size:.72rem;text-transform:uppercase;font-weight:600">'+i.type+'</span> ';
+    html+='<strong>"'+esc(i.text)+'"</strong>';
+    html+='<div style="margin:.4rem 0;font-size:.9rem;background:var(--surface);padding:.5rem;border-radius:6px">'+sentenceContext(text,i.pos,i.len)+'</div>';
+    html+='<span class="info">'+esc(i.msg)+'</span><br>';
+    html+='<span style="color:#4caf50;font-size:.85rem">💡 '+esc(i.fix)+'</span>';
+    html+='<div class="row" style="margin-top:.5rem">';
+    if(i.rep!==null&&i.rep!==undefined)html+='<button class="btn btn-outline" style="flex:0 0 auto;padding:.4rem .9rem;font-size:.8rem" onclick="applyFix('+idx+')">✔ Apply fix</button>';
+    html+='<button class="btn btn-outline" style="flex:0 0 auto;padding:.4rem .9rem;font-size:.8rem" onclick="ignoreIssue('+idx+')">✕ Ignore</button>';
+    html+='</div></div>';
   });
   document.getElementById("result").innerHTML=html;
 }
+function applyFix(idx){
+  var i=currentIssues[idx];if(!i||i.rep===null||i.rep===undefined)return;
+  var t=currentText;
+  currentText=t.substring(0,i.pos)+i.rep+t.substring(i.pos+i.len);
+  document.getElementById("input").value=currentText;
+  autosave();
+  // Recompute all issues on the updated text (positions shift, so re-collect)
+  currentIssues=collectIssues(currentText);
+  render();
+}
+function ignoreIssue(idx){currentIssues[idx].ignored=true;render();}
+function copyCorrected(btn){navigator.clipboard.writeText(document.getElementById("input").value);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
+function downloadCorrected(){var blob=new Blob([document.getElementById("input").value],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='corrected.txt';a.click();}
+(function(){try{var s=localStorage.getItem(GC_KEY);if(s)document.getElementById("input").value=s;}catch(e){}})();
   </script>
 </body></html>

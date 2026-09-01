@@ -37,13 +37,64 @@
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>💰 Salary Calculator (CTC to In-Hand)</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Enter your CTC and get a detailed breakdown of your monthly and annual in-hand salary with tax calculations.</p>
-      <div class="row"><label style="min-width:140px">Annual CTC (₹)</label><input type="number" id="ctc" placeholder="e.g. 1200000" style="flex:1;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
-      <div class="row"><label style="min-width:140px">Basic % of CTC</label><input type="number" id="basicPct" value="40" style="width:80px;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
-      <div class="row"><label style="min-width:140px">HRA % of Basic</label><input type="number" id="hraPct" value="50" style="width:80px;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
-      <div class="row"><label style="min-width:140px">PF % of Basic</label><input type="number" id="pfPct" value="12" style="width:80px;padding:.6rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)"></div>
-      <button class="btn" onclick="calculate()" style="width:100%">Calculate Salary</button>
+      <p class="info">Full CTC → in-hand breakdown with PF, gratuity, professional tax, and income tax. Includes reverse mode, hike calculator, and offer comparison.</p>
+      <div style="background:var(--card);border-left:3px solid var(--accent);padding:.7rem 1rem;border-radius:8px;margin:.6rem 0;font-size:.85rem;color:var(--text2)">⚠️ <strong>Disclaimer:</strong> Results are estimates for planning only. This is not financial or tax advice. Actual in-hand salary depends on your company's structure and policies — please confirm with your HR or a qualified professional.</div>
+
+      <div class="row" style="flex-wrap:wrap;gap:.4rem">
+        <button class="btn" id="mCalc" onclick="setMode('calc')">CTC → In-Hand</button>
+        <button class="btn btn-outline" id="mRev" onclick="setMode('rev')">Reverse (In-Hand → CTC)</button>
+        <button class="btn btn-outline" id="mHike" onclick="setMode('hike')">Appraisal / Hike</button>
+        <button class="btn btn-outline" id="mOffer" onclick="setMode('offer')">Compare Offers</button>
+      </div>
+
+      <!-- shared component config -->
+      <div id="configBox" style="background:var(--card);padding:.8rem;border-radius:8px;margin:.6rem 0">
+        <h4 style="margin:.2rem 0">Component assumptions</h4>
+        <div class="row"><label style="min-width:150px">Basic % of CTC</label><input type="number" id="basicPct" value="45" style="width:80px"></div>
+        <div class="row"><label style="min-width:150px">HRA % of Basic</label><input type="number" id="hraPct" value="50" style="width:80px"></div>
+        <div class="row"><label style="min-width:150px">Employee PF % of Basic</label><input type="number" id="pfPct" value="12" style="width:80px"></div>
+        <div class="row"><label style="min-width:150px">Gratuity % of Basic</label><input type="number" id="gratPct" value="4.81" style="width:80px"></div>
+        <div class="row"><label style="min-width:150px">LTA (annual ₹)</label><input type="number" id="lta" value="0" style="width:120px"></div>
+        <div class="row"><label style="min-width:150px">State (Prof. Tax)</label><select id="ptState">
+          <option value="0">None / Not applicable</option>
+          <option value="2400">Maharashtra (₹2,400/yr)</option>
+          <option value="2400">Karnataka (₹2,400/yr)</option>
+          <option value="2496">West Bengal (₹2,496/yr)</option>
+          <option value="2400">Tamil Nadu (₹2,400/yr)</option>
+          <option value="2400">Telangana (₹2,400/yr)</option>
+          <option value="2400">Andhra Pradesh (₹2,400/yr)</option>
+          <option value="2500">Gujarat (₹2,500/yr)</option>
+          <option value="2400">Madhya Pradesh (₹2,400/yr)</option>
+        </select></div>
+        <div class="row"><label style="min-width:150px">ESI applicable?</label><select id="esi"><option value="no">No</option><option value="yes">Yes (gross ≤ ₹21,000/mo)</option></select></div>
+        <div class="row"><label style="min-width:150px">Other monthly deductions (₹)</label><input type="number" id="otherDed" value="0" style="width:120px"></div>
+        <div class="row"><label style="min-width:150px">Tax regime</label><select id="regime"><option value="new">New Regime</option><option value="old">Old Regime</option></select></div>
+        <div class="row"><label style="min-width:150px">Override annual tax (₹)</label><input type="number" id="taxOverride" placeholder="leave blank to auto-estimate" style="flex:1"></div>
+      </div>
+
+      <div id="calcFields">
+        <div class="row"><label style="min-width:150px">Input type</label><select id="inputType"><option value="ctc">Annual CTC</option><option value="grossMonthly">Gross Monthly</option></select></div>
+        <div class="row"><label style="min-width:150px">Amount (₹)</label><input type="number" id="ctc" placeholder="e.g. 1200000" style="flex:1"></div>
+      </div>
+      <div id="revFields" style="display:none">
+        <div class="row"><label style="min-width:150px">Desired monthly in-hand (₹)</label><input type="number" id="targetInhand" placeholder="e.g. 70000" style="flex:1"></div>
+      </div>
+      <div id="hikeFields" style="display:none">
+        <div class="row"><label style="min-width:150px">Current annual CTC (₹)</label><input type="number" id="curCtc" placeholder="e.g. 1200000" style="flex:1"></div>
+        <div class="row"><label style="min-width:150px">Hike %</label><input type="number" id="hikePct" value="20" style="width:100px"></div>
+      </div>
+      <div id="offerFields" style="display:none">
+        <div class="row"><label style="min-width:150px">Offer A — CTC (₹)</label><input type="number" id="offerA" placeholder="e.g. 1200000" style="flex:1"></div>
+        <div class="row"><label style="min-width:150px">Offer B — CTC (₹)</label><input type="number" id="offerB" placeholder="e.g. 1400000" style="flex:1"></div>
+      </div>
+
+      <button class="btn" onclick="run()" style="width:100%;margin-top:.6rem">Calculate</button>
       <div id="result" style="margin-top:1rem"></div>
+      <div id="actions" style="display:none;gap:.6rem;flex-wrap:wrap;margin-top:1rem">
+        <button class="btn" onclick="window.print()">🖨️ Download / Print PDF</button>
+        <button class="btn btn-outline" onclick="copySummary()">📋 Copy Summary</button>
+        <span id="copyMsg" class="info"></span>
+      </div>
     </div>
 
     <div class="tool-section" style="margin-top:1.5rem"><h2>✅ Benefits</h2>
@@ -109,74 +160,172 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function taxNewRegime(income){
-  var std=75000;var ti=Math.max(0,income-std);
-  var slabs=[[400000,0],[400000,0.05],[400000,0.10],[400000,0.15],[400000,0.20],[400000,0.25],[Infinity,0.30]];
-  var tax=0,rem=ti;
-  for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}
-  return tax;
+function inr(n){n=Math.round(n||0);var neg=n<0;n=Math.abs(n);var s=n.toString();var last3=s.length>3?s.substring(s.length-3):s;var rest=s.length>3?s.substring(0,s.length-3):"";if(rest)last3=","+last3;rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",");return (neg?"-":"")+rest+last3}
+function fmt(n){return '₹'+inr(n)}
+function words(n){n=Math.round(n||0);if(n===0)return "Zero Rupees";var neg=n<0;n=Math.abs(n);var out="";var cr=Math.floor(n/10000000);n%=10000000;var lk=Math.floor(n/100000);n%=100000;var th=Math.floor(n/1000);n%=1000;var hd=Math.floor(n/100);var rem=n%100;if(cr)out+=cr+" Crore ";if(lk)out+=lk+" Lakh ";if(th)out+=th+" Thousand ";if(hd)out+=hd+" Hundred ";if(rem)out+=rem+" ";return (neg?"Minus ":"")+out.trim()+" Rupees"}
+
+function taxNewRegime(income){var std=75000;var ti=Math.max(0,income-std);var slabs=[[400000,0],[400000,0.05],[400000,0.10],[400000,0.15],[400000,0.20],[400000,0.25],[Infinity,0.30]];var tax=0,rem=ti;for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}if(ti<=1200000)tax=Math.max(0,tax-Math.min(tax,60000));return tax*1.04}
+function taxOldRegime(income){var std=50000;var sec80c=150000;var ti=Math.max(0,income-std-sec80c);var slabs=[[250000,0],[250000,0.05],[500000,0.20],[Infinity,0.30]];var tax=0,rem=ti;for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}if(ti<=500000)tax=Math.max(0,tax-Math.min(tax,12500));return tax*1.04}
+
+function cfg(){return {
+  basicPct:+document.getElementById('basicPct').value/100,
+  hraPct:+document.getElementById('hraPct').value/100,
+  pfPct:+document.getElementById('pfPct').value/100,
+  gratPct:+document.getElementById('gratPct').value/100,
+  lta:+document.getElementById('lta').value||0,
+  pt:+document.getElementById('ptState').value||0,
+  esi:document.getElementById('esi').value==='yes',
+  otherDed:(+document.getElementById('otherDed').value||0),
+  regime:document.getElementById('regime').value,
+  taxOverride:document.getElementById('taxOverride').value
+}}
+
+// Core: given annual CTC, return full component breakdown
+function breakup(ctc,c){
+  var basic=ctc*c.basicPct;
+  var hra=basic*c.hraPct;
+  var pfEmployer=basic*c.pfPct;
+  var pfEmployee=basic*c.pfPct;
+  var gratuity=basic*c.gratPct;
+  var lta=c.lta;
+  var special=ctc-basic-hra-pfEmployer-gratuity-lta;
+  if(special<0)special=0;
+  var grossAnnual=basic+hra+special+lta; // employer PF & gratuity are CTC but not gross salary
+  var grossMonthly=grossAnnual/12;
+  var esiEmployee=(c.esi&&grossMonthly<=21000)?grossAnnual*0.0075:0;
+  var pt=c.pt;
+  var tax;
+  if(c.taxOverride!==''&&!isNaN(+c.taxOverride)){tax=+c.taxOverride}
+  else{tax=c.regime==='old'?taxOldRegime(grossAnnual):taxNewRegime(grossAnnual)}
+  var totalDeduction=pfEmployee+pt+esiEmployee+tax+c.otherDed*12;
+  var inHandAnnual=grossAnnual-totalDeduction;
+  return {ctc:ctc,basic:basic,hra:hra,special:special,lta:lta,pfEmployer:pfEmployer,pfEmployee:pfEmployee,gratuity:gratuity,gross:grossAnnual,esi:esiEmployee,pt:pt,tax:tax,otherDed:c.otherDed*12,totalDeduction:totalDeduction,inHandAnnual:inHandAnnual,inHandMonthly:inHandAnnual/12};
 }
-function taxOldRegime(income){
-  var std=50000;var sec80c=150000;var ti=Math.max(0,income-std-sec80c);
-  var slabs=[[250000,0],[250000,0.05],[500000,0.20],[Infinity,0.30]];
-  var tax=0,rem=ti;
-  for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}
-  return tax;
+
+var mode='calc';
+function setMode(m){mode=m;
+  document.getElementById('calcFields').style.display=m==='calc'?'':'none';
+  document.getElementById('revFields').style.display=m==='rev'?'':'none';
+  document.getElementById('hikeFields').style.display=m==='hike'?'':'none';
+  document.getElementById('offerFields').style.display=m==='offer'?'':'none';
+  ['calc','rev','hike','offer'].forEach(function(x){document.getElementById('m'+x.charAt(0).toUpperCase()+x.slice(1)).className=(x===m)?'btn':'btn btn-outline'});
+  save();
 }
-function fmt(n){return '₹'+Math.round(n).toLocaleString('en-IN')}
-function calculate(){
-  var ctc=+document.getElementById('ctc').value;
-  if(!ctc||ctc<=0){document.getElementById('result').innerHTML='<p style="color:#e74c3c">Please enter a valid CTC amount</p>';return}
-  var basicPct=+document.getElementById('basicPct').value/100;
-  var hraPct=+document.getElementById('hraPct').value/100;
-  var pfPct=+document.getElementById('pfPct').value/100;
 
-  var basic=ctc*basicPct;
-  var hra=basic*hraPct;
-  var pfEmployee=basic*pfPct;
-  var pfEmployer=basic*pfPct;
-  var specialAllowance=ctc-basic-hra-pfEmployer;
-  if(specialAllowance<0)specialAllowance=0;
-
-  var profTaxAnnual=2400;
-  var grossSalary=basic+hra+specialAllowance;
-  var taxableIncome=grossSalary;
-
-  var taxNew=taxNewRegime(taxableIncome);
-  var taxOld=taxOldRegime(taxableIncome);
-
-  var annualDeductionsNew=pfEmployee+profTaxAnnual+taxNew;
-  var annualDeductionsOld=pfEmployee+profTaxAnnual+taxOld;
-  var inHandAnnualNew=grossSalary-annualDeductionsNew;
-  var inHandAnnualOld=grossSalary-annualDeductionsOld;
-  var inHandMonthlyNew=inHandAnnualNew/12;
-  var inHandMonthlyOld=inHandAnnualOld/12;
-
-  var html='<div style="background:var(--card);padding:1.2rem;border-radius:10px;margin-bottom:1rem;text-align:center">';
-  html+='<h3 style="margin:0 0 .5rem">Monthly In-Hand Salary</h3>';
-  html+='<div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap">';
-  html+='<div><span class="info">New Regime</span><br><strong style="font-size:1.4rem;color:#27ae60">'+fmt(inHandMonthlyNew)+'</strong></div>';
-  html+='<div><span class="info">Old Regime</span><br><strong style="font-size:1.4rem;color:#2980b9">'+fmt(inHandMonthlyOld)+'</strong></div>';
-  html+='</div></div>';
-
-  html+='<table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden">';
-  html+='<tr style="background:var(--border)"><th style="padding:.6rem;text-align:left">Component</th><th style="padding:.6rem;text-align:right">Monthly</th><th style="padding:.6rem;text-align:right">Annual</th></tr>';
-  var rows=[
-    ['Basic Salary',basic/12,basic],
-    ['HRA',hra/12,hra],
-    ['Special Allowance',specialAllowance/12,specialAllowance],
-    ['<strong>Gross Salary</strong>',grossSalary/12,grossSalary],
-    ['PF (Employee)',pfEmployee/12,pfEmployee],
-    ['PF (Employer)',pfEmployer/12,pfEmployer],
-    ['Professional Tax',200,profTaxAnnual],
-    ['Income Tax (New Regime)',taxNew/12,taxNew],
-    ['Income Tax (Old Regime)',taxOld/12,taxOld],
-    ['<strong>In-Hand (New Regime)</strong>',inHandMonthlyNew,inHandAnnualNew],
-    ['<strong>In-Hand (Old Regime)</strong>',inHandMonthlyOld,inHandAnnualOld]
-  ];
-  rows.forEach(function(r){html+='<tr style="border-top:1px solid var(--border)"><td style="padding:.5rem">'+r[0]+'</td><td style="padding:.5rem;text-align:right">'+fmt(r[1])+'</td><td style="padding:.5rem;text-align:right">'+fmt(r[2])+'</td></tr>'});
-  html+='</table>';
+var lastSummary='';
+function run(){
+  var c=cfg();var html='';var actions=document.getElementById('actions');
+  if(mode==='calc'){
+    var typ=document.getElementById('inputType').value;var amt=+document.getElementById('ctc').value;
+    if(!amt||amt<=0){return err('Please enter a valid amount')}
+    var ctc=typ==='ctc'?amt:monthlyGrossToCtc(amt,c);
+    var b=breakup(ctc,c);
+    html=summaryCard(b)+splitBar(b)+breakdownTable(b);
+    lastSummary=textSummary(b);
+  } else if(mode==='rev'){
+    var target=+document.getElementById('targetInhand').value;
+    if(!target||target<=0){return err('Enter desired monthly in-hand')}
+    var ctc=solveCtcForInhand(target*12,c);
+    var b=breakup(ctc,c);
+    html='<div style="background:var(--card);padding:1rem;border-radius:10px;margin-bottom:1rem;text-align:center"><h3 style="margin:.2rem 0">Required CTC</h3><div style="font-size:1.6rem;font-weight:700;color:var(--accent)">'+fmt(ctc)+'/yr</div><div class="info">'+words(ctc)+'</div><div class="info" style="margin-top:.3rem">to get ≈ '+fmt(b.inHandMonthly)+'/mo in-hand</div></div>'+breakdownTable(b);
+    lastSummary="Reverse Salary: to take home "+fmt(target)+"/mo you need CTC ≈ "+fmt(ctc)+"/yr ("+words(ctc)+").";
+  } else if(mode==='hike'){
+    var cur=+document.getElementById('curCtc').value;var hp=+document.getElementById('hikePct').value||0;
+    if(!cur||cur<=0){return err('Enter current CTC')}
+    var newCtc=cur*(1+hp/100);
+    var bOld=breakup(cur,c),bNew=breakup(newCtc,c);
+    html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">'+
+      miniCard('Current',cur,bOld.inHandMonthly,'#6366f1')+
+      miniCard('After '+hp+'% hike',newCtc,bNew.inHandMonthly,'#8b5cf6')+'</div>'+
+      '<div style="background:var(--card);padding:1rem;border-radius:10px;text-align:center">Monthly in-hand increase: <strong>'+fmt(bNew.inHandMonthly-bOld.inHandMonthly)+'</strong></div>'+
+      '<h3 style="margin:1rem 0 .5rem">New package breakdown</h3>'+breakdownTable(bNew);
+    lastSummary="Hike: CTC "+fmt(cur)+" +"+hp+"% = "+fmt(newCtc)+". New in-hand ≈ "+fmt(bNew.inHandMonthly)+"/mo ("+words(bNew.inHandMonthly)+").";
+  } else if(mode==='offer'){
+    var a=+document.getElementById('offerA').value,bo=+document.getElementById('offerB').value;
+    if(!a||!bo){return err('Enter both offer CTCs')}
+    var ba=breakup(a,c),bb=breakup(bo,c);
+    html=offerTable(ba,bb);
+    var winner=ba.inHandAnnual>bb.inHandAnnual?'Offer A':bb.inHandAnnual>ba.inHandAnnual?'Offer B':'Both equal';
+    lastSummary="Offer A CTC "+fmt(a)+" → "+fmt(ba.inHandMonthly)+"/mo | Offer B CTC "+fmt(bo)+" → "+fmt(bb.inHandMonthly)+"/mo. Higher in-hand: "+winner+".";
+  }
   document.getElementById('result').innerHTML=html;
+  actions.style.display='flex';
+  document.getElementById('copyMsg').textContent='';
+  save();
 }
+function err(m){document.getElementById('result').innerHTML='<p style="color:#e74c3c">'+m+'</p>';document.getElementById('actions').style.display='none'}
+
+function monthlyGrossToCtc(gm,c){
+  // gross annual = basic+hra+special+lta; ctc = gross + employerPF + gratuity
+  // Approximate: search ctc so breakup.gross ≈ gm*12
+  var target=gm*12,lo=target,hi=target*2,ctc=target*1.15;
+  for(var i=0;i<40;i++){ctc=(lo+hi)/2;var g=breakup(ctc,c).gross;if(g>target)hi=ctc;else lo=ctc}
+  return ctc;
+}
+function solveCtcForInhand(targetAnnual,c){
+  var lo=targetAnnual,hi=targetAnnual*3,ctc=targetAnnual*1.5;
+  for(var i=0;i<50;i++){ctc=(lo+hi)/2;var ih=breakup(ctc,c).inHandAnnual;if(ih>targetAnnual)hi=ctc;else lo=ctc}
+  return Math.round(ctc);
+}
+
+function summaryCard(b){
+  return '<div style="background:var(--card);padding:1.2rem;border-radius:10px;margin-bottom:1rem;text-align:center">'+
+  '<h3 style="margin:0 0 .3rem">Monthly In-Hand Salary</h3>'+
+  '<div style="font-size:1.7rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+fmt(b.inHandMonthly)+'</div>'+
+  '<div class="info">'+words(b.inHandMonthly)+'</div>'+
+  '<div class="info" style="margin-top:.4rem">Annual in-hand: '+fmt(b.inHandAnnual)+' · CTC: '+fmt(b.ctc)+'</div></div>';
+}
+function miniCard(label,ctc,inhand,color){return '<div style="background:var(--card);padding:1rem;border-radius:10px;text-align:center;border-top:3px solid '+color+'"><div class="info">'+label+'</div><div style="font-weight:700">CTC '+fmt(ctc)+'</div><div style="font-size:1.2rem;font-weight:700;color:'+color+'">'+fmt(inhand)+'/mo</div></div>'}
+
+function splitBar(b){
+  var earn=b.gross;var ded=b.totalDeduction;var tot=earn||1;
+  var eP=Math.max(2,(earn-ded)/tot*100),dP=Math.max(2,ded/tot*100);
+  return '<h3 style="margin:.5rem 0">Earnings vs Deductions (annual)</h3>'+
+  '<div style="display:flex;height:28px;border-radius:8px;overflow:hidden"><div style="background:#6366f1;width:'+eP+'%"></div><div style="background:#8b5cf6;width:'+dP+'%"></div></div>'+
+  '<div style="display:flex;justify-content:space-between;font-size:.8rem;margin-top:.3rem"><span>🟦 Take-home '+fmt(earn-ded)+'</span><span>🟪 Deductions '+fmt(ded)+'</span></div>';
+}
+function breakdownTable(b){
+  var rows=[
+    ['Basic Salary',b.basic/12,b.basic],
+    ['HRA',b.hra/12,b.hra],
+    ['Special Allowance',b.special/12,b.special],
+    ['LTA',b.lta/12,b.lta],
+    ['<strong>Gross Salary</strong>',b.gross/12,b.gross],
+    ['PF — Employee',b.pfEmployee/12,b.pfEmployee],
+    ['PF — Employer (part of CTC)',b.pfEmployer/12,b.pfEmployer],
+    ['Gratuity (part of CTC)',b.gratuity/12,b.gratuity],
+    ['Professional Tax',b.pt/12,b.pt],
+    ['ESI (Employee)',b.esi/12,b.esi],
+    ['Income Tax',b.tax/12,b.tax],
+    ['Other Deductions',b.otherDed/12,b.otherDed],
+    ['<strong>Total Deductions</strong>',b.totalDeduction/12,b.totalDeduction],
+    ['<strong>In-Hand Salary</strong>',b.inHandMonthly,b.inHandAnnual]
+  ];
+  var h='<h3 style="margin:.8rem 0 .4rem">Detailed Breakdown</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden">';
+  h+='<tr style="background:rgba(99,102,241,.15)"><th style="padding:.5rem;text-align:left">Component</th><th style="padding:.5rem;text-align:right">Monthly</th><th style="padding:.5rem;text-align:right">Annual</th></tr>';
+  rows.forEach(function(r){h+='<tr style="border-top:1px solid rgba(148,148,184,.15)"><td style="padding:.45rem .5rem">'+r[0]+'</td><td style="padding:.45rem .5rem;text-align:right">'+fmt(r[1])+'</td><td style="padding:.45rem .5rem;text-align:right">'+fmt(r[2])+'</td></tr>'});
+  h+='</table></div><p class="info" style="margin-top:.4rem">In-hand in words: <strong>'+words(b.inHandAnnual)+'</strong> per year.</p>';
+  return h;
+}
+function offerTable(a,b){
+  var rows=[['CTC',a.ctc,b.ctc],['Gross Salary',a.gross,b.gross],['Income Tax',a.tax,b.tax],['PF (Employee)',a.pfEmployee,b.pfEmployee],['Total Deductions',a.totalDeduction,b.totalDeduction],['Annual In-Hand',a.inHandAnnual,b.inHandAnnual],['Monthly In-Hand',a.inHandMonthly,b.inHandMonthly]];
+  var winner=a.inHandAnnual>b.inHandAnnual?'A':b.inHandAnnual>a.inHandAnnual?'B':'=';
+  var h='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden">';
+  h+='<tr style="background:rgba(99,102,241,.15)"><th style="padding:.5rem;text-align:left">Metric</th><th style="padding:.5rem;text-align:right">Offer A</th><th style="padding:.5rem;text-align:right">Offer B</th></tr>';
+  rows.forEach(function(r){h+='<tr style="border-top:1px solid rgba(148,148,184,.15)"><td style="padding:.45rem .5rem">'+r[0]+'</td><td style="padding:.45rem .5rem;text-align:right">'+fmt(r[1])+'</td><td style="padding:.45rem .5rem;text-align:right">'+fmt(r[2])+'</td></tr>'});
+  h+='</table></div>';
+  h+='<div style="text-align:center;margin-top:1rem;padding:1rem;background:var(--card);border-radius:10px;font-weight:600">'+(winner==='='?'Both offers give the same in-hand.':'✅ Offer '+winner+' gives higher in-hand ('+fmt(Math.abs(a.inHandMonthly-b.inHandMonthly))+'/mo more)')+'</div>';
+  return h;
+}
+function textSummary(b){
+  return "Salary Breakdown (estimate)\nCTC: "+fmt(b.ctc)+"\nGross: "+fmt(b.gross)+"\nIncome Tax: "+fmt(b.tax)+"\nEmployee PF: "+fmt(b.pfEmployee)+"\nProf Tax: "+fmt(b.pt)+"\nTotal Deductions: "+fmt(b.totalDeduction)+"\nIn-Hand: "+fmt(b.inHandMonthly)+"/mo · "+fmt(b.inHandAnnual)+"/yr\n("+words(b.inHandAnnual)+")\n\nEstimate only — not financial advice. Confirm with HR/a professional.";
+}
+function copySummary(){if(!lastSummary){document.getElementById('copyMsg').textContent='Calculate first.';return}var done=function(){document.getElementById('copyMsg').textContent='✅ Copied!'};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastSummary).then(done,function(){fallbackCopy(lastSummary,done)})}else{fallbackCopy(lastSummary,done)}}
+function fallbackCopy(t,cb){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb()}
+
+var FIELDS=['basicPct','hraPct','pfPct','gratPct','lta','ptState','esi','otherDed','regime','taxOverride','inputType','ctc','targetInhand','curCtc','hikePct','offerA','offerB'];
+function save(){try{var o={mode:mode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});localStorage.setItem('salaryCalc',JSON.stringify(o))}catch(e){}}
+function load(){try{var o=JSON.parse(localStorage.getItem('salaryCalc')||'{}');FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setMode(o.mode)}catch(e){}}
+document.addEventListener('DOMContentLoaded',function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',save)})});
 </script>
 </body></html>
