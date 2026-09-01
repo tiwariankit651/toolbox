@@ -37,28 +37,57 @@
     <div class="tool-section">
       <h1>📚 Citation Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Generate properly formatted citations for your assignments and research papers.</p>
+      <p class="info">Generate properly formatted citations in APA, MLA, Chicago, Harvard, IEEE &amp; Vancouver — for books, journals, websites, videos and more.</p>
+      <div class="row"><label>Citation Style:</label>
+        <select id="fmt" onchange="renderFields()"><option value="apa">APA 7th</option><option value="mla">MLA 9th</option><option value="chicago-nb">Chicago (Notes-Bibliography)</option><option value="chicago-ad">Chicago (Author-Date)</option><option value="harvard">Harvard</option><option value="ieee">IEEE</option><option value="vancouver">Vancouver</option></select>
+      </div>
       <div class="row"><label>Source Type:</label>
-        <select id="srcType"><option value="book">Book</option><option value="website">Website</option><option value="journal">Journal Article</option></select>
+        <select id="srcType" onchange="renderFields()">
+          <option value="book">Book</option>
+          <option value="chapter">Book Chapter</option>
+          <option value="journal">Journal Article</option>
+          <option value="website">Website / Web Page</option>
+          <option value="newspaper">Newspaper Article</option>
+          <option value="thesis">Thesis / Dissertation</option>
+          <option value="conference">Conference Paper</option>
+          <option value="report">Report</option>
+          <option value="gov">Government Document</option>
+          <option value="youtube">YouTube Video</option>
+          <option value="podcast">Podcast</option>
+          <option value="interview">Interview</option>
+        </select>
       </div>
-      <div class="row"><label>Format:</label>
-        <select id="fmt"><option value="apa">APA 7th</option><option value="mla">MLA 9th</option><option value="chicago">Chicago</option></select>
+      <div style="background:var(--card);border-radius:var(--radius);padding:.8rem 1rem;margin:.6rem 0">
+        <label style="font-size:.85rem;color:var(--text2)">🔎 DOI / ISBN helper (offline — no automatic lookup)</label>
+        <input type="text" id="doiIsbn" placeholder="Paste a DOI or ISBN…" oninput="doiHint()" style="margin-top:.4rem">
+        <div id="doiHintBox" class="info" style="margin-top:.3rem"></div>
       </div>
-      <input type="text" id="author" placeholder="Author(s) — e.g. Sharma, R. K.">
-      <input type="text" id="title" placeholder="Title of work">
-      <input type="number" id="year" placeholder="Year (e.g. 2024)">
-      <input type="text" id="publisher" placeholder="Publisher / Website name">
-      <input type="url" id="url" placeholder="URL (for websites)">
-      <input type="text" id="journal" placeholder="Journal name (for articles)">
-      <div class="row"><input type="text" id="vol" placeholder="Volume"><input type="text" id="pages" placeholder="Pages (e.g. 12-25)"></div>
-      <button class="btn" onclick="generate()" style="margin-top:.5rem">Generate Citation</button>
-      <button class="btn btn-outline" onclick="addToBib()" style="margin-top:.5rem">+ Add to Bibliography</button>
+      <div id="fieldArea"></div>
+      <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
+        <button class="btn" onclick="generate()">Generate Citation</button>
+        <button class="btn btn-outline" onclick="addToBib()">+ Add to Bibliography</button>
+        <button class="btn btn-outline" onclick="clearForm()">Clear Fields</button>
+      </div>
       <div id="result" style="margin:1rem 0"></div>
       <div id="bibSection" style="display:none;margin-top:1rem">
         <h3>📚 Bibliography (<span id="bibCount">0</span> sources)</h3>
         <div id="bibList" style="background:var(--card);padding:1rem;border-radius:8px;font-family:serif;line-height:2"></div>
-        <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('bibList').innerText)">📋 Copy All</button><button class="btn btn-outline" onclick="download(new Blob([document.getElementById('bibList').innerText]),('bibliography.txt'))">💾 Download</button><button class="btn btn-outline" onclick="bibItems=[];renderBib()" style="color:#f44336">🗑️ Clear</button></div>
+        <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="copyBib()">📋 Copy All</button>
+          <button class="btn btn-outline" onclick="downloadBib()">💾 .txt</button>
+          <button class="btn btn-outline" onclick="downloadBibTeX()">📦 BibTeX</button>
+          <button class="btn btn-outline" onclick="clearBib()" style="border-color:#f44336;color:#f44336">🗑️ Clear</button>
+        </div>
       </div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📖 Citation Style Quick Reference</h2>
+      <p class="info">Not sure which style to use? Here is when each is typically required and the mistakes to avoid.</p>
+      <details><summary><strong>APA 7th</strong> — Psychology, education, social &amp; health sciences</summary><p>Author-date system. Reference list sorted alphabetically. In-text: (Author, Year). Common mistakes: forgetting the year, not using a hanging indent, and italicising the wrong element (book/journal titles are italic, article titles are not).</p></details>
+      <details><summary><strong>MLA 9th</strong> — Humanities, literature, languages</summary><p>Author-page system. Works Cited list. In-text: (Author 42). Use "et al." for 3+ authors. Common mistakes: adding the year in the in-text citation, and omitting the medium/container.</p></details>
+      <details><summary><strong>Chicago</strong> — History, arts (two variants)</summary><p>Notes-Bibliography uses footnotes/endnotes plus a bibliography (common in humanities). Author-Date uses (Author Year) parenthetical citations (common in sciences). Common mistake: mixing the two systems in one paper.</p></details>
+      <details><summary><strong>Harvard</strong> — Widely used in UK/Australia, business &amp; sciences</summary><p>Author-date, similar to APA but with variations by institution. In-text: (Author Year). Common mistake: assuming one universal Harvard format — always check your institution's guide.</p></details>
+      <details><summary><strong>IEEE</strong> — Engineering, computer science, electronics</summary><p>Numbered system. References listed in the order cited, in-text as [1], [2]. Common mistake: sorting references alphabetically instead of by citation order.</p></details>
+      <details><summary><strong>Vancouver</strong> — Medicine &amp; biomedical sciences</summary><p>Numbered system like IEEE. In-text as superscript or (1). Journal names are abbreviated. Common mistake: not abbreviating journal titles and mis-ordering references.</p></details>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -120,30 +149,316 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function g(id){return document.getElementById(id).value.trim()}
-function generate(){
-  const a=g('author'),t=g('title'),y=g('year'),p=g('publisher'),u=g('url'),j=g('journal'),v=g('vol'),pg=g('pages');
-  const fmt=g('fmt'),src=g('srcType');
-  if(!a||!t)return alert('Enter at least author and title');
-  let cite='';
-  if(fmt==='apa'){
-    if(src==='book')cite=a+' ('+y+'). <em>'+t+'</em>. '+p+'.';
-    else if(src==='website')cite=a+' ('+y+'). '+t+'. '+p+'. '+(u?u:'');
-    else cite=a+' ('+y+'). '+t+'. <em>'+j+'</em>'+(v?', '+v:'')+''+(pg?', '+pg:'')+'.';
-  }else if(fmt==='mla'){
-    if(src==='book')cite=a+'. <em>'+t+'</em>. '+p+', '+y+'.';
-    else if(src==='website')cite=a+'. "'+t+'." <em>'+p+'</em>, '+y+(u?', '+u:'')+'.';
-    else cite=a+'. "'+t+'." <em>'+j+'</em>, vol. '+v+', '+y+', pp. '+pg+'.';
-  }else{
-    if(src==='book')cite=a+'. <em>'+t+'</em>. '+p+', '+y+'.';
-    else if(src==='website')cite=a+'. "'+t+'." '+p+'. '+(u?'Accessed '+y+'. '+u:'');
-    else cite=a+'. "'+t+'." <em>'+j+'</em> '+v+' ('+y+'): '+pg+'.';
-  }
-  document.getElementById('result').innerHTML='<div class="result-box" style="line-height:1.8;font-family:serif;font-size:1rem">'+cite+'<button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.innerText)">Copy</button></div>';
+// ---------- Field definitions per source type ----------
+var FIELD_DEFS={
+  author:{ph:"Author(s) — e.g. Sharma, R. K.; Verma, A."},
+  title:{ph:"Title of work"},
+  year:{ph:"Year (e.g. 2024)"},
+  publisher:{ph:"Publisher"},
+  journal:{ph:"Journal name"},
+  vol:{ph:"Volume"},
+  issue:{ph:"Issue"},
+  pages:{ph:"Pages (e.g. 12-25)"},
+  url:{ph:"URL"},
+  accessed:{ph:"Date accessed (e.g. 15 May 2024)"},
+  edition:{ph:"Edition (e.g. 2nd)"},
+  chapterTitle:{ph:"Chapter title"},
+  editor:{ph:"Editor(s) of book"},
+  bookTitle:{ph:"Book title"},
+  newspaper:{ph:"Newspaper name"},
+  university:{ph:"University / Institution"},
+  degree:{ph:"Degree (e.g. PhD, Master's thesis)"},
+  conference:{ph:"Conference name"},
+  location:{ph:"Location / City"},
+  institution:{ph:"Issuing organisation / Institution"},
+  reportNo:{ph:"Report number"},
+  channel:{ph:"Channel / Uploader name"},
+  showTitle:{ph:"Podcast / Show title"},
+  episode:{ph:"Episode number / title"},
+  interviewer:{ph:"Interviewer name"},
+  medium:{ph:"Medium (e.g. Personal interview)"},
+  doi:{ph:"DOI (optional)"}
+};
+var SRC_FIELDS={
+  book:["author","title","year","publisher","edition","location"],
+  chapter:["author","chapterTitle","editor","bookTitle","year","publisher","pages","location"],
+  journal:["author","title","journal","year","vol","issue","pages","doi"],
+  website:["author","title","publisher","year","url","accessed"],
+  newspaper:["author","title","newspaper","year","url","pages"],
+  thesis:["author","title","year","degree","university"],
+  conference:["author","title","conference","year","location","pages"],
+  report:["author","title","year","institution","reportNo","url"],
+  gov:["author","title","year","institution","url"],
+  youtube:["channel","title","year","url"],
+  podcast:["author","title","showTitle","episode","year","url"],
+  interview:["author","title","interviewer","year","medium"]
+};
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderFields(){
+  var src=document.getElementById('srcType').value;
+  var fields=SRC_FIELDS[src]||[];
+  var html='';
+  fields.forEach(function(f){
+    var d=FIELD_DEFS[f]||{ph:f};
+    var type=(f==='url'||f==='doi')?'url':(f==='year'?'text':'text');
+    html+='<input type="'+type+'" id="f_'+f+'" placeholder="'+d.ph+'">';
+  });
+  document.getElementById('fieldArea').innerHTML=html;
 }
+function fv(id){var el=document.getElementById('f_'+id);return el?el.value.trim():'';}
+function clearForm(){renderFields();document.getElementById('result').innerHTML='';}
+// ---------- Author formatting ----------
+function splitAuthors(raw){
+  if(!raw)return [];
+  return raw.split(/;|&|\band\b/).map(function(s){return s.trim();}).filter(Boolean);
+}
+// APA: Surname, I. I. — with & before last; et al. rules for 21+
+function authorsAPA(raw){
+  var a=splitAuthors(raw);
+  if(!a.length)return '';
+  if(a.length===1)return a[0];
+  if(a.length>=2&&a.length<=20){
+    return a.slice(0,-1).join(', ')+', & '+a[a.length-1];
+  }
+  // 21+ authors: first 19, ellipsis, last
+  return a.slice(0,19).join(', ')+', … '+a[a.length-1];
+}
+// MLA: first author + "et al." for 3+, "and" for 2
+function authorsMLA(raw){
+  var a=splitAuthors(raw);
+  if(!a.length)return '';
+  if(a.length===1)return a[0];
+  if(a.length===2)return a[0]+', and '+a[1];
+  return a[0]+', et al.';
+}
+// Chicago/Harvard: list with 'and' before last
+function authorsList(raw){
+  var a=splitAuthors(raw);
+  if(!a.length)return '';
+  if(a.length===1)return a[0];
+  if(a.length===2)return a[0]+' and '+a[1];
+  return a.slice(0,-1).join(', ')+', and '+a[a.length-1];
+}
+function authorsNumbered(raw){
+  var a=splitAuthors(raw);
+  if(!a.length)return '';
+  if(a.length<=6)return a.join(', ');
+  return a.slice(0,6).join(', ')+', et al.';
+}
+function firstSurname(raw){
+  var a=splitAuthors(raw);
+  if(!a.length)return '';
+  return a[0].split(',')[0].trim();
+}
+function I(txt){return '<em>'+esc(txt)+'</em>';} // italic marker for HTML
+// ---------- Citation builders ----------
+// Each returns {html: citation with <em>, intext: string}
+function buildCitation(fmt,src){
+  var f={};['author','title','year','publisher','journal','vol','issue','pages','url','accessed','edition','chapterTitle','editor','bookTitle','newspaper','university','degree','conference','location','institution','reportNo','channel','showTitle','episode','interviewer','medium','doi'].forEach(function(k){f[k]=fv(k);});
+  var y=f.year||'n.d.';
+  var out={html:'',intext:''};
+  var au;
+  // ---- APA / Harvard / Chicago Author-Date share author-date logic with variations ----
+  if(fmt==='apa'){
+    au=authorsAPA(f.author);
+    if(src==='book')out.html=au+' ('+y+'). '+I(f.title)+(f.edition?' ('+esc(f.edition)+' ed.)':'')+'. '+esc(f.publisher)+'.';
+    else if(src==='chapter')out.html=au+' ('+y+'). '+esc(f.chapterTitle)+'. In '+esc(f.editor)+' (Ed.), '+I(f.bookTitle)+(f.pages?' (pp. '+esc(f.pages)+')':'')+'. '+esc(f.publisher)+'.';
+    else if(src==='journal')out.html=au+' ('+y+'). '+esc(f.title)+'. '+I(f.journal)+(f.vol?', '+I(f.vol):'')+(f.issue?'('+esc(f.issue)+')':'')+(f.pages?', '+esc(f.pages):'')+'.'+(f.doi?' https://doi.org/'+esc(f.doi):'');
+    else if(src==='website')out.html=au+' ('+y+'). '+I(f.title)+'. '+esc(f.publisher)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='newspaper')out.html=au+' ('+y+'). '+esc(f.title)+'. '+I(f.newspaper)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='thesis')out.html=au+' ('+y+'). '+I(f.title)+' ['+esc(f.degree||'Doctoral dissertation')+', '+esc(f.university)+'].';
+    else if(src==='conference')out.html=au+' ('+y+'). '+I(f.title)+' [Conference paper]. '+esc(f.conference)+(f.location?', '+esc(f.location):'')+'.';
+    else if(src==='report')out.html=au+' ('+y+'). '+I(f.title)+(f.reportNo?' ('+esc(f.reportNo)+')':'')+'. '+esc(f.institution)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='gov')out.html=(f.author?authorsAPA(f.author):esc(f.institution))+' ('+y+'). '+I(f.title)+'. '+esc(f.institution)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='youtube')out.html=esc(f.channel)+' ('+y+'). '+I(f.title)+' [Video]. YouTube.'+(f.url?' '+esc(f.url):'');
+    else if(src==='podcast')out.html=au+' ('+y+'). '+esc(f.title)+(f.episode?' (No. '+esc(f.episode)+')':'')+' [Audio podcast episode]. In '+I(f.showTitle)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='interview')out.html=au+' ('+y+'). '+esc(f.title||'Interview')+' [Interview]'+(f.interviewer?' by '+esc(f.interviewer):'')+'.';
+    out.intext='('+firstSurname(f.author||f.channel||f.institution)+', '+y+')';
+  }
+  else if(fmt==='harvard'){
+    au=authorsList(f.author);
+    if(src==='book')out.html=au+' ('+y+') '+I(f.title)+(f.edition?', '+esc(f.edition)+' edn':'')+', '+esc(f.publisher)+(f.location?', '+esc(f.location):'')+'.';
+    else if(src==='chapter')out.html=au+' ('+y+') \''+esc(f.chapterTitle)+'\', in '+esc(f.editor)+' (ed.) '+I(f.bookTitle)+', '+esc(f.publisher)+(f.pages?', pp. '+esc(f.pages):'')+'.';
+    else if(src==='journal')out.html=au+' ('+y+') \''+esc(f.title)+'\', '+I(f.journal)+', '+esc(f.vol)+(f.issue?'('+esc(f.issue)+')':'')+(f.pages?', pp. '+esc(f.pages):'')+'.';
+    else if(src==='website')out.html=au+' ('+y+') '+I(f.title)+'.'+(f.accessed?' (Accessed: '+esc(f.accessed)+')':'')+(f.url?' Available at: '+esc(f.url):'')+'.';
+    else if(src==='newspaper')out.html=au+' ('+y+') \''+esc(f.title)+'\', '+I(f.newspaper)+(f.pages?', p. '+esc(f.pages):'')+'.';
+    else if(src==='thesis')out.html=au+' ('+y+') '+I(f.title)+', '+esc(f.degree||'PhD thesis')+', '+esc(f.university)+'.';
+    else if(src==='conference')out.html=au+' ('+y+') \''+esc(f.title)+'\', '+I(f.conference)+(f.location?', '+esc(f.location):'')+(f.pages?', pp. '+esc(f.pages):'')+'.';
+    else if(src==='report')out.html=au+' ('+y+') '+I(f.title)+(f.reportNo?', '+esc(f.reportNo):'')+', '+esc(f.institution)+'.';
+    else if(src==='gov')out.html=(f.author?au:esc(f.institution))+' ('+y+') '+I(f.title)+', '+esc(f.institution)+'.'+(f.url?' Available at: '+esc(f.url):'');
+    else if(src==='youtube')out.html=esc(f.channel)+' ('+y+') '+I(f.title)+'. Available at: '+esc(f.url)+'.';
+    else if(src==='podcast')out.html=au+' ('+y+') \''+esc(f.title)+'\', '+I(f.showTitle)+(f.episode?', episode '+esc(f.episode):'')+'.'+(f.url?' Available at: '+esc(f.url):'');
+    else if(src==='interview')out.html=au+' ('+y+') Interview'+(f.interviewer?' with '+esc(f.interviewer):'')+', '+esc(f.title||'')+'.';
+    out.intext='('+firstSurname(f.author||f.channel||f.institution)+' '+y+')';
+  }
+  else if(fmt==='chicago-ad'){
+    au=authorsList(f.author);
+    if(src==='book')out.html=au+'. '+y+'. '+I(f.title)+'. '+esc(f.publisher)+'.';
+    else if(src==='chapter')out.html=au+'. '+y+'. "'+esc(f.chapterTitle)+'." In '+I(f.bookTitle)+', edited by '+esc(f.editor)+(f.pages?', '+esc(f.pages):'')+'. '+esc(f.publisher)+'.';
+    else if(src==='journal')out.html=au+'. '+y+'. "'+esc(f.title)+'." '+I(f.journal)+' '+esc(f.vol)+(f.issue?', no. '+esc(f.issue):'')+(f.pages?': '+esc(f.pages):'')+'.';
+    else if(src==='website')out.html=au+'. '+y+'. "'+esc(f.title)+'." '+esc(f.publisher)+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='newspaper')out.html=au+'. '+y+'. "'+esc(f.title)+'." '+I(f.newspaper)+'.';
+    else if(src==='thesis')out.html=au+'. '+y+'. "'+esc(f.title)+'." '+esc(f.degree||'PhD diss.')+', '+esc(f.university)+'.';
+    else if(src==='conference')out.html=au+'. '+y+'. "'+esc(f.title)+'." Paper presented at '+esc(f.conference)+(f.location?', '+esc(f.location):'')+'.';
+    else if(src==='report')out.html=au+'. '+y+'. '+I(f.title)+'. '+esc(f.institution)+(f.reportNo?', '+esc(f.reportNo):'')+'.';
+    else if(src==='gov')out.html=(f.author?au:esc(f.institution))+'. '+y+'. '+I(f.title)+'. '+esc(f.institution)+'.';
+    else if(src==='youtube')out.html=esc(f.channel)+'. '+y+'. "'+esc(f.title)+'." YouTube video.'+(f.url?' '+esc(f.url):'');
+    else if(src==='podcast')out.html=au+'. '+y+'. "'+esc(f.title)+'." '+I(f.showTitle)+(f.episode?', episode '+esc(f.episode):'')+'.';
+    else if(src==='interview')out.html=au+'. '+y+'. Interview'+(f.interviewer?' by '+esc(f.interviewer):'')+'.';
+    out.intext='('+firstSurname(f.author||f.channel||f.institution)+' '+y+')';
+  }
+  else if(fmt==='chicago-nb'){
+    au=authorsList(f.author);
+    if(src==='book')out.html=au+'. '+I(f.title)+'. '+esc(f.location?f.location+': ':'')+esc(f.publisher)+', '+y+'.';
+    else if(src==='chapter')out.html=au+'. "'+esc(f.chapterTitle)+'." In '+I(f.bookTitle)+', edited by '+esc(f.editor)+(f.pages?', '+esc(f.pages):'')+'. '+esc(f.publisher)+', '+y+'.';
+    else if(src==='journal')out.html=au+'. "'+esc(f.title)+'." '+I(f.journal)+' '+esc(f.vol)+(f.issue?', no. '+esc(f.issue):'')+' ('+y+')'+(f.pages?': '+esc(f.pages):'')+'.';
+    else if(src==='website')out.html=au+'. "'+esc(f.title)+'." '+esc(f.publisher)+'. '+(f.accessed?'Accessed '+esc(f.accessed)+'. ':'')+(f.url?esc(f.url):'')+'.';
+    else if(src==='newspaper')out.html=au+'. "'+esc(f.title)+'." '+I(f.newspaper)+', '+y+'.';
+    else if(src==='thesis')out.html=au+'. "'+esc(f.title)+'." '+esc(f.degree||'PhD diss.')+', '+esc(f.university)+', '+y+'.';
+    else if(src==='conference')out.html=au+'. "'+esc(f.title)+'." Paper presented at '+esc(f.conference)+(f.location?', '+esc(f.location):'')+', '+y+'.';
+    else if(src==='report')out.html=au+'. '+I(f.title)+'. '+esc(f.institution)+(f.reportNo?', '+esc(f.reportNo):'')+', '+y+'.';
+    else if(src==='gov')out.html=(f.author?au:esc(f.institution))+'. '+I(f.title)+'. '+esc(f.institution)+', '+y+'.';
+    else if(src==='youtube')out.html=esc(f.channel)+'. "'+esc(f.title)+'." YouTube video, '+y+'.'+(f.url?' '+esc(f.url):'');
+    else if(src==='podcast')out.html=au+'. "'+esc(f.title)+'." '+I(f.showTitle)+(f.episode?', episode '+esc(f.episode):'')+', '+y+'.';
+    else if(src==='interview')out.html=au+'. Interview'+(f.interviewer?' by '+esc(f.interviewer):'')+', '+y+'.';
+    out.intext='Footnote: '+au+', '+(f.title?'"'+esc(f.title)+'," ':'')+esc(f.publisher||f.journal||'')+', '+y+'.';
+  }
+  else if(fmt==='mla'){
+    au=authorsMLA(f.author);
+    if(src==='book')out.html=au+'. '+I(f.title)+'. '+esc(f.publisher)+', '+y+'.';
+    else if(src==='chapter')out.html=au+'. "'+esc(f.chapterTitle)+'." '+I(f.bookTitle)+', edited by '+esc(f.editor)+', '+esc(f.publisher)+', '+y+(f.pages?', pp. '+esc(f.pages):'')+'.';
+    else if(src==='journal')out.html=au+'. "'+esc(f.title)+'." '+I(f.journal)+', vol. '+esc(f.vol)+(f.issue?', no. '+esc(f.issue):'')+', '+y+(f.pages?', pp. '+esc(f.pages):'')+'.';
+    else if(src==='website')out.html=au+'. "'+esc(f.title)+'." '+I(f.publisher)+', '+y+(f.url?', '+esc(f.url):'')+(f.accessed?'. Accessed '+esc(f.accessed):'')+'.';
+    else if(src==='newspaper')out.html=au+'. "'+esc(f.title)+'." '+I(f.newspaper)+', '+y+(f.pages?', p. '+esc(f.pages):'')+'.';
+    else if(src==='thesis')out.html=au+'. '+I(f.title)+'. '+y+'. '+esc(f.university)+', '+esc(f.degree||'PhD dissertation')+'.';
+    else if(src==='conference')out.html=au+'. "'+esc(f.title)+'." '+I(f.conference)+', '+y+(f.location?', '+esc(f.location):'')+'.';
+    else if(src==='report')out.html=au+'. '+I(f.title)+'. '+esc(f.institution)+', '+y+(f.reportNo?', '+esc(f.reportNo):'')+'.';
+    else if(src==='gov')out.html=(f.author?au:esc(f.institution))+'. '+I(f.title)+'. '+esc(f.institution)+', '+y+'.';
+    else if(src==='youtube')out.html='"'+esc(f.title)+'." '+I('YouTube')+', uploaded by '+esc(f.channel)+', '+y+(f.url?', '+esc(f.url):'')+'.';
+    else if(src==='podcast')out.html=au+'. "'+esc(f.title)+'." '+I(f.showTitle)+(f.episode?', episode '+esc(f.episode):'')+', '+y+(f.url?', '+esc(f.url):'')+'.';
+    else if(src==='interview')out.html=au+'. "'+esc(f.title||'Interview')+'." '+(f.interviewer?'Interview by '+esc(f.interviewer)+'. ':'')+y+'.';
+    out.intext='('+firstSurname(f.author||f.channel||f.institution)+(f.pages?' '+esc(f.pages):'')+')';
+  }
+  else if(fmt==='ieee'||fmt==='vancouver'){
+    au=authorsNumbered(f.author);
+    if(fmt==='ieee'){
+      if(src==='book')out.html=au+', '+I(f.title)+(f.edition?', '+esc(f.edition)+' ed':'')+'. '+esc(f.location?f.location+': ':'')+esc(f.publisher)+', '+y+'.';
+      else if(src==='chapter')out.html=au+', "'+esc(f.chapterTitle)+'," in '+I(f.bookTitle)+', '+esc(f.editor)+', Ed. '+esc(f.publisher)+', '+y+(f.pages?', pp. '+esc(f.pages):'')+'.';
+      else if(src==='journal')out.html=au+', "'+esc(f.title)+'," '+I(f.journal)+', vol. '+esc(f.vol)+(f.issue?', no. '+esc(f.issue):'')+(f.pages?', pp. '+esc(f.pages):'')+', '+y+'.';
+      else if(src==='website')out.html=au+', "'+esc(f.title)+'," '+esc(f.publisher)+', '+y+'. [Online]. Available: '+esc(f.url)+(f.accessed?'. [Accessed: '+esc(f.accessed)+']':'')+'.';
+      else if(src==='newspaper')out.html=au+', "'+esc(f.title)+'," '+I(f.newspaper)+', '+y+(f.pages?', p. '+esc(f.pages):'')+'.';
+      else if(src==='thesis')out.html=au+', "'+esc(f.title)+'," '+esc(f.degree||'Ph.D. dissertation')+', '+esc(f.university)+', '+y+'.';
+      else if(src==='conference')out.html=au+', "'+esc(f.title)+'," in '+I(f.conference)+', '+esc(f.location)+', '+y+(f.pages?', pp. '+esc(f.pages):'')+'.';
+      else if(src==='report')out.html=au+', "'+esc(f.title)+'," '+esc(f.institution)+(f.reportNo?', Rep. '+esc(f.reportNo):'')+', '+y+'.';
+      else if(src==='gov')out.html=(f.author?au:esc(f.institution))+', "'+esc(f.title)+'," '+esc(f.institution)+', '+y+'.'+(f.url?' [Online]. Available: '+esc(f.url):'');
+      else if(src==='youtube')out.html=esc(f.channel)+', "'+esc(f.title)+'," YouTube, '+y+'. [Online]. Available: '+esc(f.url)+'.';
+      else if(src==='podcast')out.html=au+', "'+esc(f.title)+'," '+I(f.showTitle)+(f.episode?', ep. '+esc(f.episode):'')+', '+y+'.';
+      else if(src==='interview')out.html=au+', '+esc(f.medium||'Private communication')+', '+y+'.';
+      out.intext='[#] (replace # with the reference number)';
+    } else {
+      // Vancouver
+      if(src==='book')out.html=au+'. '+esc(f.title)+'. '+esc(f.edition?f.edition+' ed. ':'')+esc(f.location?f.location+': ':'')+esc(f.publisher)+'; '+y+'.';
+      else if(src==='chapter')out.html=au+'. '+esc(f.chapterTitle)+'. In: '+esc(f.editor)+', editor. '+esc(f.bookTitle)+'. '+esc(f.publisher)+'; '+y+(f.pages?'. p. '+esc(f.pages):'')+'.';
+      else if(src==='journal')out.html=au+'. '+esc(f.title)+'. '+esc(f.journal)+'. '+y+';'+esc(f.vol)+(f.issue?'('+esc(f.issue)+')':'')+(f.pages?':'+esc(f.pages):'')+'.';
+      else if(src==='website')out.html=au+'. '+esc(f.title)+' [Internet]. '+esc(f.publisher)+'; '+y+(f.accessed?' [cited '+esc(f.accessed)+']':'')+'. Available from: '+esc(f.url)+'.';
+      else if(src==='newspaper')out.html=au+'. '+esc(f.title)+'. '+esc(f.newspaper)+'. '+y+(f.pages?':'+esc(f.pages):'')+'.';
+      else if(src==='thesis')out.html=au+'. '+esc(f.title)+' ['+esc(f.degree||'dissertation')+']. '+esc(f.university)+'; '+y+'.';
+      else if(src==='conference')out.html=au+'. '+esc(f.title)+'. In: '+esc(f.conference)+'; '+y+'; '+esc(f.location)+'.';
+      else if(src==='report')out.html=au+'. '+esc(f.title)+'. '+esc(f.institution)+'; '+y+(f.reportNo?'. Report No.: '+esc(f.reportNo):'')+'.';
+      else if(src==='gov')out.html=(f.author?au:esc(f.institution))+'. '+esc(f.title)+'. '+esc(f.institution)+'; '+y+'.';
+      else if(src==='youtube')out.html=esc(f.channel)+'. '+esc(f.title)+' [video]. YouTube; '+y+'. Available from: '+esc(f.url)+'.';
+      else if(src==='podcast')out.html=au+'. '+esc(f.title)+' [podcast]. '+esc(f.showTitle)+'; '+y+'.';
+      else if(src==='interview')out.html=au+'. '+esc(f.medium||'Interview')+'. '+y+'.';
+      out.intext='(#) (replace # with the reference number)';
+    }
+  }
+  return out;
+}
+var lastCite=null;
+function generate(){
+  var fmt=document.getElementById('fmt').value;
+  var src=document.getElementById('srcType').value;
+  if(!fv('author')&&!fv('channel')&&!fv('institution')&&!fv('title')){return alert('Please fill in at least an author/organisation and a title.');}
+  var c=buildCitation(fmt,src);
+  lastCite=c;
+  var plain=htmlToPlain(c.html);
+  document.getElementById('result').innerHTML=
+    '<div class="result-box" style="line-height:1.9;font-family:serif;font-size:1rem">'+c.html+
+    '<button class="copy-btn" onclick="copyText('+JSON.stringify(plain).replace(/"/g,'&quot;')+')">Copy</button></div>'+
+    '<div class="info" style="margin-top:.5rem"><strong>In-text / footnote:</strong> '+esc(c.intext)+' '+
+    '<button class="btn btn-outline" style="padding:.2rem .6rem;font-size:.75rem" onclick="copyText('+JSON.stringify(c.intext).replace(/"/g,'&quot;')+')">Copy</button></div>';
+}
+function htmlToPlain(html){var d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
+function copyText(t){navigator.clipboard.writeText(t);}
+// ---------- DOI / ISBN helper ----------
+function doiHint(){
+  var v=document.getElementById('doiIsbn').value.trim();
+  var box=document.getElementById('doiHintBox');
+  if(!v){box.textContent='';return;}
+  var isISBN=/^(97(8|9))?[-\s0-9Xx]{9,17}$/.test(v)&&/\d/.test(v)&&v.replace(/[-\sXx]/g,'').length>=10;
+  var isDOI=/^10\.\d{4,9}\//.test(v)||/doi\.org\/10\./.test(v);
+  if(isDOI){
+    box.innerHTML='This looks like a <strong>DOI</strong>. Automatic lookup is not available offline. Please fill in: author, article title, journal name, year, volume, issue, and pages. Paste the DOI into the DOI field of a journal article.';
+  } else if(isISBN){
+    box.innerHTML='This looks like an <strong>ISBN</strong>. Automatic lookup is not available offline. Please fill in: author(s), book title, publisher, edition and year for a Book source type.';
+  } else {
+    box.innerHTML='Enter a valid DOI (e.g. 10.1000/xyz) or ISBN. Note: this tool does not fetch data online — the fields must be filled in manually.';
+  }
+}
+// ---------- Bibliography ----------
 var bibItems=[];
-function addToBib(){var r=document.getElementById("result").innerText;if(!r)return alert("Generate a citation first");bibItems.push(r.replace("Copy","").trim());renderBib()}
-function renderBib(){document.getElementById("bibSection").style.display=bibItems.length?"block":"none";document.getElementById("bibCount").textContent=bibItems.length;document.getElementById("bibList").innerHTML=bibItems.map(function(b,i){return "<div style=\"margin-bottom:.5rem\">"+(i+1)+". "+b+"</div>"}).join("")}
+function loadBib(){try{var s=localStorage.getItem('citeBib');if(s)bibItems=JSON.parse(s);}catch(e){bibItems=[];}renderBib();}
+function saveBib(){try{localStorage.setItem('citeBib',JSON.stringify(bibItems));}catch(e){}}
+function addToBib(){
+  if(!lastCite)return alert('Generate a citation first.');
+  bibItems.push({html:lastCite.html,plain:htmlToPlain(lastCite.html),fmt:document.getElementById('fmt').value});
+  saveBib();renderBib();
+}
+function isNumbered(fmt){return fmt==='ieee'||fmt==='vancouver';}
+function renderBib(){
+  document.getElementById('bibSection').style.display=bibItems.length?'block':'none';
+  document.getElementById('bibCount').textContent=bibItems.length;
+  var arr=bibItems.slice();
+  var numbered=arr.length&&isNumbered(arr[arr.length-1].fmt);
+  if(!numbered){
+    // sort alphabetically by plain text
+    arr.sort(function(a,b){return a.plain.toLowerCase().localeCompare(b.plain.toLowerCase());});
+  }
+  var html=arr.map(function(b){
+    var origIdx=bibItems.indexOf(b);
+    return '<div style="margin-bottom:.6rem;display:flex;gap:.5rem;align-items:flex-start">'+
+      '<span style="flex:1">'+(numbered?'['+(origIdx+1)+'] ':'')+b.html+'</span>'+
+      '<button class="btn btn-outline" style="padding:.15rem .5rem;font-size:.7rem;flex:0" onclick="editBib('+origIdx+')">✏️</button>'+
+      '<button class="btn btn-outline" style="padding:.15rem .5rem;font-size:.7rem;flex:0;border-color:#f44336;color:#f44336" onclick="delBib('+origIdx+')">✕</button>'+
+      '</div>';
+  }).join('');
+  document.getElementById('bibList').innerHTML=html;
+}
+function delBib(i){bibItems.splice(i,1);saveBib();renderBib();}
+function editBib(i){
+  var cur=bibItems[i].plain;
+  var v=prompt('Edit this citation (plain text):',cur);
+  if(v!==null){bibItems[i].plain=v.trim();bibItems[i].html=esc(v.trim());saveBib();renderBib();}
+}
+function clearBib(){if(confirm('Clear the entire bibliography?')){bibItems=[];saveBib();renderBib();}}
+function bibPlainList(){
+  var arr=bibItems.slice();
+  var numbered=arr.length&&isNumbered(arr[arr.length-1].fmt);
+  if(!numbered)arr.sort(function(a,b){return a.plain.toLowerCase().localeCompare(b.plain.toLowerCase());});
+  return arr.map(function(b,i){return (numbered?'['+(i+1)+'] ':'')+b.plain;}).join('\n\n');
+}
+function copyBib(){navigator.clipboard.writeText(bibPlainList());}
+function downloadBib(){download(new Blob([bibPlainList()],{type:'text/plain'}),'bibliography.txt');}
+function downloadBibTeX(){
+  var out=bibItems.map(function(b,i){
+    var key='ref'+(i+1);
+    var p=b.plain.replace(/[{}]/g,'');
+    return '@misc{'+key+',\n  note = {'+p+'}\n}';
+  }).join('\n\n');
+  download(new Blob([out],{type:'text/plain'}),'bibliography.bib');
+}
+renderFields();
+loadBib();
   </script>
 </body>
 </html>

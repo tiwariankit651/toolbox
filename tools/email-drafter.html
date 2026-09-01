@@ -17,19 +17,36 @@
     <div class="tool-section">
       <h1>📧 Email Drafter</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#8b5cf6" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#6366f1" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Select a template, fill details, and get a professional email ready to send.</p>
-      <div class="row"><label>Template:</label><select id="tmpl" onchange="loadTmpl()">
-        <option value="follow">HR Follow-up</option><option value="leave">Leave Application</option><option value="resign">Resignation</option><option value="inquiry">Job Inquiry</option><option value="thank">Thank You (Post Interview)</option><option value="intro">Self Introduction</option><option value="apology">Apology / Sorry</option><option value="meeting">Meeting Request</option><option value="recommend">Recommendation Request</option><option value="complaint">Complaint / Escalation</option><option value="intern">Internship Application</option>
-      </select>
-      <label>Tone:</label><select id="tone" onchange="updatePreview()"><option value="formal">Formal</option><option value="friendly">Friendly</option><option value="urgent">Urgent</option></select></div>
-      <input type="text" id="name" placeholder="Your Name" oninput="updatePreview()">
-      <input type="text" id="to" placeholder="Recipient Name / Sir/Madam" oninput="updatePreview()">
-      <input type="text" id="company" placeholder="Company Name" oninput="updatePreview()">
-      <input type="text" id="position" placeholder="Position / Department" oninput="updatePreview()">
-      <input type="text" id="extra" placeholder="Additional detail (date/reason)" oninput="updatePreview()">
+      <p class="info">Pick a template, fill the fields, adjust tone &amp; length, and get a professional email ready to copy, download or open in your mail app.</p>
+      <div class="row"><label>Category:</label><select id="cat" onchange="loadCat()"></select>
+        <label>Template:</label><select id="tmpl" onchange="loadTmpl()"></select></div>
+      <div class="row">
+        <label>Tone:</label><select id="tone" onchange="updatePreview()"><option value="formal">Formal</option><option value="semi">Semi-formal</option><option value="friendly">Friendly</option></select>
+        <label>Length:</label><select id="length" onchange="updatePreview()"><option value="concise">Concise</option><option value="detailed">Detailed</option></select>
+        <label>Indian context:</label><select id="indian" onchange="updatePreview()"><option value="off">Off</option><option value="on">On (Respected Sir/Madam)</option></select>
+      </div>
+      <div class="info" id="indianNote">Indian-context phrasing (e.g. "Respected Sir/Madam") is best for academic and government correspondence. Turn it off for most corporate/Western business emails, which prefer "Dear [Name]".</div>
+      <div id="fieldArea" style="margin-top:.6rem"></div>
+      <div class="row" style="margin-top:.5rem"><label>Subject:</label><select id="subjSel" onchange="updatePreview()"></select></div>
       <h3 style="margin-top:1rem">Preview</h3>
       <div id="preview" style="background:#fff;color:#000;padding:1.5rem;border-radius:8px;font-family:Arial;line-height:1.8;white-space:pre-wrap"></div>
-      <div class="row" style="margin-top:.5rem"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('preview').textContent)">📋 Copy Email</button></div>
+      <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
+        <button class="btn" onclick="copyEmail()">📋 Copy Email</button>
+        <button class="btn btn-outline" onclick="downloadEmail()">💾 .txt</button>
+        <button class="btn btn-outline" onclick="mailtoEmail()">✉️ Open in Mail App</button>
+        <button class="btn btn-outline" onclick="saveDraft()">📥 Save Draft</button>
+      </div>
+      <div id="draftsBox" style="margin-top:1rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>✅ Email Best-Practices Checklist</h2>
+      <ul style="margin-left:1.3rem;line-height:2">
+        <li>Clear, specific subject line — the reader should know the topic at a glance.</li>
+        <li>One main ask per email — don't bury multiple requests.</li>
+        <li>Polite greeting and a courteous close.</li>
+        <li>Proofread for spelling, grammar and the recipient's name.</li>
+        <li>Mention attachments — and actually attach them before sending.</li>
+        <li>Keep it concise; use short paragraphs.</li>
+      </ul>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Professional email likhna nahi aata? Koi baat nahi — template select karo, details bharo, email ready. HR follow-up ho ya resignation, sab milega yahan.</p>
@@ -89,23 +106,215 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var templates={
-follow:"Subject: Follow-up on {position} Application\n\nDear {to},\n\nI hope this email finds you well. I am writing to follow up on my application for the {position} position at {company}, submitted on {extra}.\n\nI remain very interested in this opportunity and would appreciate any update on the status of my application.\n\nThank you for your time and consideration.\n\nBest regards,\n{name}",
-leave:"Subject: Leave Application — {extra}\n\nDear {to},\n\nI am writing to request leave from {extra} due to personal reasons. I will ensure all my pending work is completed before my leave begins.\n\nKindly approve my leave application.\n\nThank you,\n{name}\n{position}, {company}",
-resign:"Subject: Resignation — {name}\n\nDear {to},\n\nI am writing to formally resign from my position as {position} at {company}, effective {extra}.\n\nI am grateful for the opportunities and experiences during my time here. I will ensure a smooth transition of my responsibilities.\n\nThank you for your support and guidance.\n\nSincerely,\n{name}",
-inquiry:"Subject: Inquiry About {position} Opportunities\n\nDear {to},\n\nI am writing to inquire about potential openings for {position} at {company}. I have experience in {extra} and believe I could be a valuable addition to your team.\n\nI have attached my resume for your reference. I would welcome the opportunity to discuss this further.\n\nBest regards,\n{name}",
-thank:"Subject: Thank You — {position} Interview\n\nDear {to},\n\nThank you for taking the time to interview me for the {position} position at {company} on {extra}. I enjoyed learning more about the role and your team.\n\nI am very enthusiastic about this opportunity and look forward to hearing from you.\n\nBest regards,\n{name}",
-intro:"Subject: Introduction — {name}\n\nDear {to},\n\nI am {name}, currently working as {position} at {company}. {extra}\n\nI would love to connect and explore potential collaboration opportunities.\n\nBest regards,\n{name}",
-apology:"Subject: Apology Regarding {extra}\n\nDear {to},\n\nI sincerely apologize for {extra}. I understand the inconvenience caused and take full responsibility.\n\nI assure you this will not happen again. Please let me know if there is anything I can do to make it right.\n\nSincerely,\n{name}\n{position}, {company}",
-meeting:"Subject: Meeting Request — {extra}\n\nDear {to},\n\nI would like to schedule a meeting to discuss {extra}. Could you please share your availability for this week?\n\nI am flexible with timing and can adjust to your schedule.\n\nThank you,\n{name}\n{position}, {company}",
-recommend:"Subject: Request for Recommendation\n\nDear {to},\n\nI hope this email finds you well. I am applying for {position} at {company} and would be grateful if you could provide a recommendation letter or reference.\n\n{extra}\n\nI understand this is a significant ask and truly appreciate your time and support.\n\nWarm regards,\n{name}",
-complaint:"Subject: Complaint Regarding {extra}\n\nDear {to},\n\nI am writing to bring to your attention an issue regarding {extra} at {company}.\n\nDespite previous attempts to resolve this, the problem persists. I request your immediate attention and a resolution at the earliest.\n\nPlease acknowledge receipt of this email.\n\nRegards,\n{name}\n{position}",
-intern:"Subject: Internship Application — {position}\n\nDear {to},\n\nI am writing to express my interest in an internship opportunity at {company} in the {position} department.\n\nI am currently {extra} and eager to gain practical experience. I am a quick learner and willing to contribute meaningfully to your team.\n\nI have attached my resume for your reference. I would be grateful for the opportunity to discuss this further.\n\nThank you for your consideration.\n\nBest regards,\n{name}"
+// ---------- Tone-based greeting/closing ----------
+function greeting(to){
+  var t=document.getElementById('tone').value;
+  var indian=document.getElementById('indian').value==='on';
+  var name=to||'Sir/Madam';
+  if(indian)return 'Respected '+ (to?to:'Sir/Madam');
+  if(t==='friendly')return 'Hi '+ (to?to:'there');
+  if(t==='semi')return 'Hello '+ (to?to:'there');
+  return 'Dear '+ name;
+}
+function closing(){
+  var t=document.getElementById('tone').value;
+  if(t==='friendly')return 'Best,';
+  if(t==='semi')return 'Kind regards,';
+  return 'Sincerely,';
+}
+// ---------- Template library ----------
+// Each template: {label, fields:[{id,ph}], subjects:[], build(v,{concise})->body}
+var LIB={
+  Job:{label:'Job',templates:{
+    application:{label:'Job Application',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position applied for'},{id:'company',ph:'Company name'},{id:'to',ph:'Recipient (e.g. Hiring Manager)'},{id:'skills',ph:'Key skills / experience'}],
+      subjects:function(v){return ['Application for '+P(v.position)+' Position','Applying for '+P(v.position)+' — '+P(v.name),P(v.position)+' Application - '+P(v.name)];},
+      build:function(v,c){return c?('I am writing to apply for the '+P(v.position)+' role at '+P(v.company)+'. With experience in '+P(v.skills)+', I believe I am a strong fit. My resume is attached for your review.'):('I am writing to express my strong interest in the '+P(v.position)+' position at '+P(v.company)+'.\n\nWith a background in '+P(v.skills)+', I am confident I can contribute meaningfully to your team. I have attached my resume and would welcome the opportunity to discuss how my experience aligns with your needs.\n\nThank you for considering my application.');}},
+    followup:{label:'Follow-up After Interview',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position'},{id:'company',ph:'Company'},{id:'to',ph:'Interviewer name'},{id:'date',ph:'Interview date'}],
+      subjects:function(v){return ['Following Up — '+P(v.position)+' Interview','Thank You & Follow-up: '+P(v.position),'Checking In on '+P(v.position)+' Role'];},
+      build:function(v,c){return c?('Thank you again for interviewing me for the '+P(v.position)+' role on '+P(v.date)+'. I remain very interested and would appreciate any update on the next steps.'):('Thank you for taking the time to speak with me about the '+P(v.position)+' position at '+P(v.company)+' on '+P(v.date)+'.\n\nOur conversation reinforced my enthusiasm for the role. I would be grateful for any update on the hiring timeline, and I am happy to provide any further information you may need.');}},
+    thankyou:{label:'Thank-You After Interview',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position'},{id:'company',ph:'Company'},{id:'to',ph:'Interviewer name'}],
+      subjects:function(v){return ['Thank You — '+P(v.position)+' Interview','Great Speaking With You','Appreciation for Your Time'];},
+      build:function(v,c){return c?('Thank you for the opportunity to interview for the '+P(v.position)+' role. I enjoyed our conversation and am excited about the possibility of joining '+P(v.company)+'.'):('Thank you for taking the time to meet with me regarding the '+P(v.position)+' position at '+P(v.company)+'.\n\nI truly enjoyed learning more about the team and the role. The conversation strengthened my interest, and I am confident I could add value. Please let me know if there is anything else you need from me.');}},
+    accept:{label:'Accepting Offer',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position'},{id:'company',ph:'Company'},{id:'to',ph:'Recipient'},{id:'date',ph:'Start date'}],
+      subjects:function(v){return ['Acceptance of '+P(v.position)+' Offer','Accepting the '+P(v.position)+' Offer — '+P(v.name),'Offer Acceptance'];},
+      build:function(v,c){return c?('I am delighted to formally accept the '+P(v.position)+' offer at '+P(v.company)+'. I look forward to starting on '+P(v.date)+'.'):('I am delighted to formally accept your offer for the '+P(v.position)+' position at '+P(v.company)+'.\n\nThank you for this opportunity. I confirm my start date as '+P(v.date)+' and look forward to contributing to the team. Please let me know if you need any documents or information before I begin.');}},
+    decline:{label:'Declining Offer',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position'},{id:'company',ph:'Company'},{id:'to',ph:'Recipient'}],
+      subjects:function(v){return [P(v.position)+' Offer — Decision','Regarding the '+P(v.position)+' Offer','Thank You for the Offer'];},
+      build:function(v,c){return c?('Thank you for offering me the '+P(v.position)+' role at '+P(v.company)+'. After careful thought, I have decided to decline. I appreciate your time and hope to stay in touch.'):('Thank you very much for offering me the '+P(v.position)+' position at '+P(v.company)+'.\n\nAfter careful consideration, I have decided not to accept the offer at this time. This was not an easy decision, and I am grateful for the opportunity and the time your team invested. I hope our paths may cross again in the future.');}},
+    salary:{label:'Salary Negotiation',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Position'},{id:'company',ph:'Company'},{id:'to',ph:'Recipient'},{id:'amount',ph:'Desired figure / range'}],
+      subjects:function(v){return ['Regarding the '+P(v.position)+' Offer','Discussing Compensation — '+P(v.position),'Offer Discussion'];},
+      build:function(v,c){return c?('Thank you for the '+P(v.position)+' offer. I am very keen to join. Based on my experience and market rates, I would like to discuss a compensation of '+P(v.amount)+'. Would that be possible?'):('Thank you for extending the offer for the '+P(v.position)+' role at '+P(v.company)+' — I am genuinely excited about the opportunity.\n\nBefore I confirm, I would like to discuss the compensation. Given my experience and the responsibilities of the role, I was hoping for '+P(v.amount)+'. I am confident we can reach a figure that works for both sides and I remain very enthusiastic about joining.');}},
+    resign:{label:'Resignation',fields:[{id:'name',ph:'Your name'},{id:'position',ph:'Your position'},{id:'company',ph:'Company'},{id:'to',ph:'Manager name'},{id:'date',ph:'Last working day'}],
+      subjects:function(v){return ['Resignation — '+P(v.name),'Notice of Resignation','Resignation Letter — '+P(v.position)];},
+      build:function(v,c){return c?('Please accept this as formal notice of my resignation from the '+P(v.position)+' role at '+P(v.company)+', effective '+P(v.date)+'. Thank you for the opportunities.'):('I am writing to formally resign from my position as '+P(v.position)+' at '+P(v.company)+', with my last working day being '+P(v.date)+'.\n\nI am sincerely grateful for the opportunities and support during my time here. I will do everything I can to ensure a smooth handover of my responsibilities before I leave.');}},
+    reference:{label:'Reference Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Referee name'},{id:'position',ph:'Role you are applying for'},{id:'detail',ph:'Context / deadline'}],
+      subjects:function(v){return ['Request for a Reference','Would You Be a Reference for Me?','Reference Request — '+P(v.name)];},
+      build:function(v,c){return c?('I am applying for '+P(v.position)+' and would be grateful if you could act as a reference for me. '+P(v.detail)):('I hope you are well. I am currently applying for '+P(v.position)+' and would be honoured if you would be willing to serve as a reference.\n\n'+P(v.detail)+'\n\nI understand this is a favour and would be happy to share more about the role or my recent work to make it easier for you.');}}
+  }},
+  Academic:{label:'Academic',templates:{
+    leave:{label:'Leave Application to Principal/HOD',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Principal / HOD'},{id:'className',ph:'Class / Roll no.'},{id:'reason',ph:'Reason for leave'},{id:'dates',ph:'Leave dates'}],
+      subjects:function(v){return ['Leave Application — '+P(v.dates),'Request for Leave','Application for Leave of Absence'];},
+      build:function(v,c){return c?('I request leave from '+P(v.dates)+' due to '+P(v.reason)+'. Kindly grant me permission.'):('I respectfully request leave of absence from '+P(v.dates)+' as '+P(v.reason)+'.\n\nI will ensure that I complete any missed work and catch up with the syllabus. Kindly grant me permission for the same. I shall be highly obliged.');}},
+    bonafide:{label:'Request for Bonafide Certificate',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Principal / Registrar'},{id:'className',ph:'Class / Course & Roll no.'},{id:'purpose',ph:'Purpose (bank/visa/scholarship)'}],
+      subjects:function(v){return ['Request for Bonafide Certificate','Application for Bonafide Certificate','Bonafide Certificate — '+P(v.name)];},
+      build:function(v,c){return c?('I request a bonafide certificate for '+P(v.purpose)+'. My details: '+P(v.className)+'. Kindly issue it at the earliest.'):('I am a student of '+P(v.className)+' at your institution. I kindly request you to issue me a bonafide certificate, which I require for '+P(v.purpose)+'.\n\nI would be grateful if the certificate could be issued at your earliest convenience. Thank you.');}},
+    internEnq:{label:'Internship Enquiry',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Recipient'},{id:'org',ph:'Organisation'},{id:'field',ph:'Field / department'},{id:'duration',ph:'Availability / duration'}],
+      subjects:function(v){return ['Internship Enquiry — '+P(v.field),'Seeking Internship Opportunity','Internship Application — '+P(v.name)];},
+      build:function(v,c){return c?('I am interested in an internship in '+P(v.field)+' at '+P(v.org)+'. I am available '+P(v.duration)+'. My resume is attached.'):('I am writing to enquire about internship opportunities in '+P(v.field)+' at '+P(v.org)+'.\n\nI am keen to gain hands-on experience and am available '+P(v.duration)+'. I have attached my resume and would be grateful for the chance to contribute and learn from your team.');}},
+    profResearch:{label:'Professor Research Enquiry',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Professor name'},{id:'topic',ph:'Research area of interest'},{id:'background',ph:'Your background'}],
+      subjects:function(v){return ['Enquiry About Research in '+P(v.topic),'Prospective Research Student','Interest in Your Work on '+P(v.topic)];},
+      build:function(v,c){return c?('I am very interested in your research on '+P(v.topic)+'. My background is in '+P(v.background)+'. I would love to discuss opportunities to work with you.'):('I have been following your work on '+P(v.topic)+' with great interest.\n\nMy background is in '+P(v.background)+', and I am eager to contribute to research in this area. I would be grateful for the opportunity to discuss any openings in your group or ways I might get involved. I have attached my CV for your reference.');}},
+    extension:{label:'Assignment Extension Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Professor / Instructor'},{id:'course',ph:'Course / assignment'},{id:'reason',ph:'Reason'},{id:'newDate',ph:'Requested new date'}],
+      subjects:function(v){return ['Extension Request — '+P(v.course),'Request for Assignment Extension','Deadline Extension: '+P(v.course)];},
+      build:function(v,c){return c?('I request a short extension on '+P(v.course)+' until '+P(v.newDate)+' due to '+P(v.reason)+'. Thank you for understanding.'):('I am writing to request an extension on the '+P(v.course)+' assignment, currently due shortly.\n\nUnfortunately, '+P(v.reason)+'. I would be grateful if the deadline could be extended to '+P(v.newDate)+'. I am committed to submitting quality work and appreciate your understanding.');}},
+    recLetter:{label:'Recommendation Letter Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Professor name'},{id:'program',ph:'Program / scholarship'},{id:'deadline',ph:'Deadline'}],
+      subjects:function(v){return ['Request for Recommendation Letter','LOR Request — '+P(v.program),'Would You Recommend Me for '+P(v.program)+'?'];},
+      build:function(v,c){return c?('I am applying to '+P(v.program)+' (deadline '+P(v.deadline)+') and would be grateful for a letter of recommendation from you.'):('I am applying to '+P(v.program)+' and would be deeply grateful if you would write a letter of recommendation on my behalf.\n\nThe deadline is '+P(v.deadline)+'. I am happy to share my CV, statement of purpose, and a summary of my work with you to make the process easier. Thank you for considering my request.');}}
+  }},
+  Business:{label:'Business',templates:{
+    proposal:{label:'Client Proposal',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Client name'},{id:'company',ph:'Your company'},{id:'service',ph:'Service / solution'}],
+      subjects:function(v){return ['Proposal: '+P(v.service),P(v.company)+' — Proposal for '+P(v.to),'A Proposal to Help With '+P(v.service)];},
+      build:function(v,c){return c?('Please find our proposal for '+P(v.service)+' attached. We are confident '+P(v.company)+' can deliver strong results and would love to discuss it.'):('Thank you for the opportunity to submit a proposal. Based on our discussion, we have prepared a plan for '+P(v.service)+', attached for your review.\n\nAt '+P(v.company)+', we focus on measurable outcomes and a smooth working relationship. I would welcome the chance to walk you through the details at your convenience.');}},
+    quotation:{label:'Quotation',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Client name'},{id:'company',ph:'Your company'},{id:'item',ph:'Product / service'},{id:'amount',ph:'Quoted amount'}],
+      subjects:function(v){return ['Quotation for '+P(v.item),'Price Quote — '+P(v.item),P(v.company)+' Quotation'];},
+      build:function(v,c){return c?('Please find our quotation for '+P(v.item)+': '+P(v.amount)+'. This is valid for 30 days. Let me know if you would like to proceed.'):('Thank you for your enquiry. Please find below our quotation for '+P(v.item)+':\n\nAmount: '+P(v.amount)+'\n\nThis quote is valid for 30 days and inclusive of standard terms. Do let me know if you have any questions or would like to adjust the scope.');}},
+    invoiceReminder:{label:'Invoice Reminder',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Client name'},{id:'invoice',ph:'Invoice number'},{id:'amount',ph:'Amount due'},{id:'due',ph:'Due date'}],
+      subjects:function(v){return ['Reminder: Invoice '+P(v.invoice),'Invoice '+P(v.invoice)+' — Payment Reminder','Gentle Reminder: '+P(v.amount)+' Due'];},
+      build:function(v,c){return c?('This is a friendly reminder that invoice '+P(v.invoice)+' for '+P(v.amount)+' was due on '+P(v.due)+'. Kindly arrange payment at your convenience.'):('I hope you are well. This is a gentle reminder regarding invoice '+P(v.invoice)+' for '+P(v.amount)+', which was due on '+P(v.due)+'.\n\nIf the payment has already been made, please disregard this message. Otherwise, I would be grateful if you could arrange it at your earliest convenience. Do let me know if you need another copy of the invoice.');}},
+    paymentFollow:{label:'Payment Follow-up',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Client name'},{id:'invoice',ph:'Invoice number'},{id:'amount',ph:'Amount overdue'}],
+      subjects:function(v){return ['Overdue Payment — Invoice '+P(v.invoice),'Follow-up on Outstanding Payment','Payment Status: Invoice '+P(v.invoice)];},
+      build:function(v,c){return c?('Our records show invoice '+P(v.invoice)+' for '+P(v.amount)+' remains outstanding. Please advise on the payment status.'):('I am following up regarding invoice '+P(v.invoice)+' for '+P(v.amount)+', which now appears overdue.\n\nWe value our relationship and want to resolve this smoothly. Could you please confirm the expected payment date, or let me know if there is any issue we can help with? Thank you for your prompt attention.');}},
+    complaint:{label:'Complaint',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Recipient / company'},{id:'issue',ph:'Issue / product'},{id:'detail',ph:'Details / order no.'}],
+      subjects:function(v){return ['Complaint Regarding '+P(v.issue),'Issue With '+P(v.issue),'Formal Complaint — '+P(v.detail)];},
+      build:function(v,c){return c?('I wish to raise a complaint about '+P(v.issue)+'. '+P(v.detail)+'. I request a prompt resolution.'):('I am writing to formally raise a complaint regarding '+P(v.issue)+'.\n\n'+P(v.detail)+'\n\nThis has caused considerable inconvenience, and I would appreciate your prompt attention to resolving the matter. Please acknowledge receipt of this email and advise on the next steps.');}},
+    apology:{label:'Apology to Client',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Client name'},{id:'company',ph:'Your company'},{id:'issue',ph:'What went wrong'}],
+      subjects:function(v){return ['Our Sincere Apologies','Apology Regarding '+P(v.issue),'We Are Sorry — '+P(v.company)];},
+      build:function(v,c){return c?('Please accept our sincere apologies for '+P(v.issue)+'. We take full responsibility and are working to make it right.'):('On behalf of '+P(v.company)+', I sincerely apologise for '+P(v.issue)+'.\n\nWe understand the inconvenience this has caused and take full responsibility. We are taking immediate steps to resolve the matter and to ensure it does not happen again. Please let me know how we can make things right — your trust is important to us.');}},
+    meeting:{label:'Meeting Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Recipient'},{id:'topic',ph:'Meeting topic'},{id:'when',ph:'Proposed time(s)'}],
+      subjects:function(v){return ['Meeting Request: '+P(v.topic),'Can We Meet to Discuss '+P(v.topic)+'?','Scheduling a Meeting'];},
+      build:function(v,c){return c?('I would like to schedule a meeting to discuss '+P(v.topic)+'. Would '+P(v.when)+' work for you?'):('I would like to arrange a meeting to discuss '+P(v.topic)+'.\n\nWould any of the following work for you: '+P(v.when)+'? I am happy to adjust to your schedule and can meet in person or over a call — whichever is more convenient.');}},
+    partnership:{label:'Partnership Enquiry',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Recipient'},{id:'company',ph:'Your company'},{id:'idea',ph:'Partnership idea'}],
+      subjects:function(v){return ['Partnership Opportunity','Exploring a Partnership With '+P(v.to),P(v.company)+' — Collaboration Enquiry'];},
+      build:function(v,c){return c?('I represent '+P(v.company)+' and see strong potential in a partnership around '+P(v.idea)+'. Could we explore this together?'):('I am reaching out from '+P(v.company)+' as I believe there is a valuable opportunity for us to collaborate.\n\nSpecifically, I see potential in '+P(v.idea)+'. I would love to explore how a partnership could benefit both organisations. Would you be open to a short introductory call?');}}
+  }},
+  Workplace:{label:'Workplace',templates:{
+    leave:{label:'Leave Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Manager name'},{id:'dates',ph:'Leave dates'},{id:'reason',ph:'Reason'}],
+      subjects:function(v){return ['Leave Request — '+P(v.dates),'Application for Leave','Requesting Leave: '+P(v.dates)];},
+      build:function(v,c){return c?('I would like to request leave from '+P(v.dates)+' due to '+P(v.reason)+'. I will ensure my work is covered.'):('I am writing to request leave from '+P(v.dates)+' as '+P(v.reason)+'.\n\nI will ensure all pending tasks are completed or handed over before I leave, and I will remain reachable for anything urgent. Kindly approve my request. Thank you.');}},
+    wfh:{label:'Work-From-Home Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Manager name'},{id:'dates',ph:'Date(s)'},{id:'reason',ph:'Reason'}],
+      subjects:function(v){return ['Work-From-Home Request — '+P(v.dates),'WFH Request','Remote Work on '+P(v.dates)];},
+      build:function(v,c){return c?('I would like to work from home on '+P(v.dates)+' due to '+P(v.reason)+'. I will be fully available online.'):('I would like to request permission to work from home on '+P(v.dates)+' as '+P(v.reason)+'.\n\nI will be fully available on email and calls during working hours and will ensure there is no impact on deliverables. Please let me know if this is acceptable.');}},
+    appraisal:{label:'Appraisal Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Manager name'},{id:'achievements',ph:'Key achievements'}],
+      subjects:function(v){return ['Request for Performance Review','Appraisal Discussion','Reviewing My Contributions'];},
+      build:function(v,c){return c?('I would like to request a performance review meeting. Recent highlights: '+P(v.achievements)+'. Thank you.'):('I would like to request a meeting to discuss my performance and growth.\n\nOver the recent period, I have '+P(v.achievements)+'. I would welcome your feedback and the chance to discuss my development and compensation. Please let me know a convenient time.');}},
+    handover:{label:'Handover Email',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Recipient / team'},{id:'role',ph:'Role / tasks'},{id:'contact',ph:'Contact for queries'}],
+      subjects:function(v){return ['Handover — '+P(v.role),'Work Handover Notes','Transition & Handover'];},
+      build:function(v,c){return c?('Here is the handover for '+P(v.role)+'. For queries, please reach '+P(v.contact)+'.'):('As I transition out of my current responsibilities, please find below the handover for '+P(v.role)+'.\n\nI have documented ongoing tasks, key contacts and pending items (attached). For any clarifications, please reach out to '+P(v.contact)+'. Thank you all for the support.');}},
+    introTeam:{label:'Introduction to Team',fields:[{id:'name',ph:'Your name'},{id:'role',ph:'Your role'},{id:'about',ph:'A little about you'}],
+      subjects:function(v){return ['Hello from '+P(v.name),'Introduction — '+P(v.name)+', '+P(v.role),'Excited to Join the Team'];},
+      build:function(v,c){return c?('I am '+P(v.name)+', joining as '+P(v.role)+'. '+P(v.about)+' Looking forward to working with you all.'):('I am delighted to introduce myself as the new '+P(v.role)+'. My name is '+P(v.name)+'.\n\n'+P(v.about)+'\n\nI am really looking forward to getting to know everyone and contributing to the team. Please feel free to reach out any time.');}}
+  }},
+  Customer:{label:'Customer Service',templates:{
+    refund:{label:'Refund Request',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Support / company'},{id:'order',ph:'Order / reference no.'},{id:'reason',ph:'Reason for refund'}],
+      subjects:function(v){return ['Refund Request — Order '+P(v.order),'Requesting a Refund','Refund for Order '+P(v.order)];},
+      build:function(v,c){return c?('I would like to request a refund for order '+P(v.order)+' due to '+P(v.reason)+'. Please advise on the process.'):('I am writing to request a refund for order '+P(v.order)+'.\n\nThe reason is: '+P(v.reason)+'. As per your refund policy, I would be grateful if you could process this at the earliest and confirm the timeline. Please let me know if you need any further details.');}},
+    escalation:{label:'Complaint Escalation',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Escalation team / manager'},{id:'ticket',ph:'Ticket / case no.'},{id:'issue',ph:'Unresolved issue'}],
+      subjects:function(v){return ['Escalation: Case '+P(v.ticket),'Unresolved Issue — '+P(v.issue),'Requesting Escalation of '+P(v.ticket)];},
+      build:function(v,c){return c?('I am escalating case '+P(v.ticket)+' regarding '+P(v.issue)+', which remains unresolved. I request urgent attention.'):('I am writing to escalate my ongoing issue (case '+P(v.ticket)+') regarding '+P(v.issue)+'.\n\nDespite prior contact, this has not been resolved, and it continues to cause inconvenience. I would appreciate your urgent attention and a clear resolution timeline. Please treat this as a priority.');}},
+    cancel:{label:'Subscription Cancellation',fields:[{id:'name',ph:'Your name'},{id:'to',ph:'Support / company'},{id:'account',ph:'Account / subscription ID'},{id:'reason',ph:'Reason (optional)'}],
+      subjects:function(v){return ['Subscription Cancellation Request','Cancelling My Subscription — '+P(v.account),'Please Cancel Account '+P(v.account)];},
+      build:function(v,c){return c?('I would like to cancel my subscription ('+P(v.account)+'). Please confirm the cancellation and stop future billing.'):('I would like to cancel my subscription associated with account '+P(v.account)+'.\n\n'+(v.reason?'Reason: '+P(v.reason)+'. ':'')+'Please confirm that the cancellation has been processed and that no further charges will be applied. Kindly also share any final billing details.');}}
+  }}
 };
-function loadTmpl(){updatePreview()}
-function updatePreview(){var t=templates[document.getElementById("tmpl").value];var n=document.getElementById("name").value||"[Your Name]";var to=document.getElementById("to").value||"[Recipient]";var co=document.getElementById("company").value||"[Company]";var pos=document.getElementById("position").value||"[Position]";var ex=document.getElementById("extra").value||"[Detail]";
-t=t.replace(/{name}/g,n).replace(/{to}/g,to).replace(/{company}/g,co).replace(/{position}/g,pos).replace(/{extra}/g,ex);
-document.getElementById("preview").textContent=t}
-loadTmpl();
+function P(v){return v&&v.trim()?v.trim():'';}
+// ---------- UI wiring ----------
+function fillFieldValue(id){var el=document.getElementById('ef_'+id);return el?el.value:'';}
+function loadCat(){
+  var cat=document.getElementById('cat').value;
+  var tsel=document.getElementById('tmpl');
+  var tpls=LIB[cat].templates;
+  tsel.innerHTML=Object.keys(tpls).map(function(k){return '<option value="'+k+'">'+tpls[k].label+'</option>';}).join('');
+  loadTmpl();
+}
+function currentTmpl(){var cat=document.getElementById('cat').value;var key=document.getElementById('tmpl').value;return LIB[cat].templates[key];}
+function loadTmpl(){
+  var t=currentTmpl();
+  document.getElementById('fieldArea').innerHTML=t.fields.map(function(f){
+    return '<input type="text" id="ef_'+f.id+'" placeholder="'+f.ph+'" oninput="updateSubjects();updatePreview()">';
+  }).join('');
+  updateSubjects();
+  updatePreview();
+}
+function collect(){
+  var t=currentTmpl();var v={};
+  t.fields.forEach(function(f){v[f.id]=fillFieldValue(f.id);});
+  return v;
+}
+function updateSubjects(){
+  var t=currentTmpl();var v=collect();
+  var subs=t.subjects(v);
+  var sel=document.getElementById('subjSel');
+  var prev=sel.selectedIndex;
+  sel.innerHTML=subs.map(function(s,i){return '<option value="'+i+'">'+s.replace(/"/g,'&quot;')+'</option>';}).join('');
+  if(prev>=0&&prev<subs.length)sel.selectedIndex=prev;
+}
+function ph(v,fb){return v&&v.trim()?v.trim():('['+fb+']');}
+function composed(){
+  var t=currentTmpl();var v=collect();
+  var subs=t.subjects(v);
+  var si=parseInt(document.getElementById('subjSel').value,10)||0;
+  var subject=subs[si]||subs[0]||'';
+  var concise=document.getElementById('length').value==='concise';
+  var toName=v.to||v.name||'';
+  var body=t.build(v,concise);
+  var sign=v.name||'[Your Name]';
+  var email='Subject: '+subject+'\n\n'+greeting(v.to)+',\n\n'+body+'\n\n'+closing()+'\n'+sign;
+  return {subject:subject,body:email};
+}
+function updatePreview(){
+  document.getElementById('preview').textContent=composed().body;
+}
+function copyEmail(){navigator.clipboard.writeText(composed().body);}
+function downloadEmail(){download(new Blob([composed().body],{type:'text/plain'}),'email.txt');}
+function mailtoEmail(){
+  var c=composed();
+  // body without the leading "Subject: ..." line
+  var bodyOnly=c.body.replace(/^Subject:.*\n\n/,'');
+  var link='mailto:?subject='+encodeURIComponent(c.subject)+'&body='+encodeURIComponent(bodyOnly);
+  window.location.href=link;
+}
+// ---------- Drafts ----------
+function getDrafts(){try{return JSON.parse(localStorage.getItem('emailDrafts'))||[];}catch(e){return [];}}
+function setDrafts(d){try{localStorage.setItem('emailDrafts',JSON.stringify(d));}catch(e){}}
+function saveDraft(){
+  var c=composed();
+  var drafts=getDrafts();
+  drafts.unshift({subject:c.subject,body:c.body,ts:new Date().toLocaleString()});
+  setDrafts(drafts.slice(0,50));
+  renderDrafts();
+}
+function renderDrafts(){
+  var drafts=getDrafts();
+  var box=document.getElementById('draftsBox');
+  if(!drafts.length){box.innerHTML='';return;}
+  box.innerHTML='<h3>📥 Saved Drafts ('+drafts.length+')</h3>'+drafts.map(function(d,i){
+    return '<div style="background:var(--card);border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;display:flex;gap:.5rem;align-items:center">'+
+      '<span style="flex:1;font-size:.85rem"><strong>'+escH(d.subject)+'</strong><br><span style="color:var(--text2)">'+escH(d.ts)+'</span></span>'+
+      '<button class="btn btn-outline" style="padding:.2rem .55rem;font-size:.72rem" onclick="loadDraft('+i+')">Load</button>'+
+      '<button class="btn btn-outline" style="padding:.2rem .55rem;font-size:.72rem;border-color:#f44336;color:#f44336" onclick="delDraft('+i+')">✕</button>'+
+      '</div>';
+  }).join('');
+}
+function escH(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function loadDraft(i){var d=getDrafts()[i];if(d){document.getElementById('preview').textContent=d.body;}}
+function delDraft(i){var d=getDrafts();d.splice(i,1);setDrafts(d);renderDrafts();}
+function indianNoteToggle(){/* note always visible; kept for clarity */}
+// ---------- init ----------
+(function init(){
+  var csel=document.getElementById('cat');
+  csel.innerHTML=Object.keys(LIB).map(function(k){return '<option value="'+k+'">'+LIB[k].label+'</option>';}).join('');
+  loadCat();
+  renderDrafts();
+})();
   </script>
 </body></html>

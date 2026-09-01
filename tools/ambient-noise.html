@@ -18,16 +18,74 @@
     <div class="tool-section" style="text-align:center">
       <h1>🎧 Ambient Noise Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
-      <p class="info">Mix sounds for focus, study, sleep, or relaxation. Click to toggle, adjust volume.</p>
-      <div id="sounds" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin:1.5rem 0"></div>
-      <div class="row" style="justify-content:center;margin-top:1rem">
+      <p class="info">Mix procedurally-generated sounds for focus, study, sleep, or relaxation. Adjust each volume, save custom mixes, set a sleep timer, or run a Pomodoro session. All audio is generated in your browser — no files, no uploads.</p>
+
+      <div style="text-align:center;margin:.5rem 0"><canvas id="viz" width="600" height="70" style="width:100%;max-width:600px;height:70px;border:1px solid var(--border);border-radius:10px;background:var(--card)"></canvas></div>
+
+      <div class="row" style="justify-content:center;flex-wrap:wrap;gap:.6rem;margin:.8rem 0">
+        <button class="btn" onclick="startAudio()" id="startBtn">▶ Start / Enable Audio</button>
         <button class="btn btn-outline" onclick="stopAll()">⏹ Stop All</button>
-        <div><label>Master Volume</label><input type="range" id="master" min="0" max="100" value="70" oninput="updateMaster()" style="width:150px"></div>
       </div>
-      <div id="timer" style="margin-top:1rem">
-        <label>Sleep Timer:</label>
-        <select id="sleepTimer" onchange="setTimer()"><option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">1 hour</option><option value="120">2 hours</option></select>
-        <span id="timerDisplay" class="info"></span>
+
+      <div style="margin:.8rem 0">
+        <label>Master Volume: <span id="masterVal">70</span>%</label>
+        <input type="range" id="master" min="0" max="100" value="70" oninput="updateMaster()" style="width:100%">
+      </div>
+
+      <div style="margin-top:1rem">
+        <h3 style="margin:0 0 .5rem;text-align:left">🎚️ Sound Mixer</h3>
+        <div id="sounds" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem"></div>
+      </div>
+
+      <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;text-align:left">
+        <h3 style="margin:0 0 .5rem">🎛️ Preset Mixes</h3>
+        <div class="row" style="flex-wrap:wrap;gap:.4rem">
+          <button class="btn btn-outline" onclick="applyPreset('focus')" style="font-size:.85rem">🎯 Deep Focus</button>
+          <button class="btn btn-outline" onclick="applyPreset('rainy')" style="font-size:.85rem">🌧️ Rainy Study</button>
+          <button class="btn btn-outline" onclick="applyPreset('library')" style="font-size:.85rem">📚 Library</button>
+          <button class="btn btn-outline" onclick="applyPreset('sleep')" style="font-size:.85rem">😴 Sleep</button>
+          <button class="btn btn-outline" onclick="applyPreset('cafe')" style="font-size:.85rem">☕ Cafe Work</button>
+        </div>
+        <div class="row" style="flex-wrap:wrap;gap:.4rem;margin-top:.6rem;align-items:center">
+          <input type="text" id="mixName" placeholder="Name this mix..." style="flex:1;min-width:140px">
+          <button class="btn btn-outline" onclick="saveMix()" style="font-size:.85rem">💾 Save Custom Mix</button>
+        </div>
+        <div id="customMixes" style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem"></div>
+      </div>
+
+      <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;text-align:left">
+        <h3 style="margin:0 0 .5rem">⏰ Sleep Timer</h3>
+        <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
+          <select id="sleepTimer" onchange="setSleepTimer()">
+            <option value="0">Off</option>
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">60 min</option>
+            <option value="90">90 min</option>
+            <option value="custom">Custom…</option>
+          </select>
+          <input type="number" id="customMins" min="1" max="600" placeholder="min" style="width:80px;display:none" onchange="setSleepTimer()">
+          <span id="sleepDisplay" class="info"></span>
+        </div>
+        <p class="info" style="font-size:.8rem;margin:.4rem 0 0">Audio fades out smoothly and stops when the timer ends.</p>
+      </div>
+
+      <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;text-align:left">
+        <h3 style="margin:0 0 .5rem">🍅 Pomodoro (optional)</h3>
+        <p class="info" style="font-size:.83rem;margin:0 0 .5rem">Plays your mix during focus, pauses during breaks, with a gentle chime at each transition.</p>
+        <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
+          <div style="flex:1;min-width:110px"><label style="font-size:.82rem">Focus (min)</label><input type="number" id="pomoFocus" min="1" max="120" value="25" style="width:100%"></div>
+          <div style="flex:1;min-width:110px"><label style="font-size:.82rem">Break (min)</label><input type="number" id="pomoBreak" min="1" max="60" value="5" style="width:100%"></div>
+        </div>
+        <div class="row" style="gap:.5rem;margin-top:.6rem">
+          <button class="btn" onclick="togglePomodoro()" id="pomoBtn" style="flex:1">▶ Start Pomodoro</button>
+        </div>
+        <div id="pomoDisplay" class="info" style="margin-top:.5rem;text-align:center;font-size:1rem"></div>
+      </div>
+
+      <div class="info" style="margin-top:1rem;font-size:.82rem;border-top:1px solid var(--border);padding-top:.8rem">
+        <strong>🎧 About the binaural tones:</strong> The binaural option plays two slightly different frequencies (one per ear) and only produces the intended effect when you wear <strong>stereo headphones</strong>. Binaural beats are popular for focus and relaxation but are <strong>not a medically proven treatment</strong> — enjoy them as background sound, not medicine.
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -88,45 +146,377 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var actx=null,nodes={},active={};
+var actx=null,masterGain=null,analyser=null;
+var active={};            // id -> {source, gain, targetVol}
+var started=false;
+var FADE=0.8;             // seconds
+var origTitle=document.title;
+
+// ---------- Sound generators (procedural, no files) ----------
+function noiseBuffer(ctx,seconds,fn){
+  var buf=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate);
+  var d=buf.getChannelData(0);
+  fn(d,ctx.sampleRate);
+  return buf;
+}
+function bufSource(ctx,buf){var s=ctx.createBufferSource();s.buffer=buf;s.loop=true;return s}
+
 var soundDefs=[
-  {id:"white",name:"White Noise",emoji:"📻",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=buf;n.loop=true;return n}},
-  {id:"brown",name:"Brown Noise",emoji:"🟤",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);var v=0;for(var i=0;i<d.length;i++){v+=(Math.random()*2-1)*0.02;v=Math.max(-1,Math.min(1,v));d[i]=v}n.buffer=buf;n.loop=true;return n}},
-  {id:"pink",name:"Pink Noise",emoji:"🩷",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);var d=buf.getChannelData(0);var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.969*b2+w*0.153852;b3=0.8665*b3+w*0.3104856;b4=0.55*b4+w*0.5329522;b5=-0.7616*b5-w*0.016898;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;b6=w*0.115926}n.buffer=buf;n.loop=true;return n}},
-  {id:"rain",name:"Rain",emoji:"🌧️",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(2,ctx.sampleRate*3,ctx.sampleRate);for(var ch=0;ch<2;ch++){var d=buf.getChannelData(ch);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.15;if(Math.random()<0.003)d[i]+=Math.random()*0.6;if(Math.random()<0.0005)d[i]+=Math.random()*1.0}}n.buffer=buf;n.loop=true;return n}},
-  {id:"wind",name:"Wind",emoji:"💨",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate);var d=buf.getChannelData(0);var v=0;var speed=0;for(var i=0;i<d.length;i++){speed+=(Math.random()-0.5)*0.001;speed*=0.999;v+=speed+(Math.random()*2-1)*0.003;v*=0.997;d[i]=v*3+Math.sin(i/3000)*0.15*Math.random()}n.buffer=buf;n.loop=true;return n}},
-  {id:"fire",name:"Campfire",emoji:"🔥",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.1;if(Math.random()<0.008)d[i]=Math.random()*0.7;if(Math.random()<0.002)d[i]+=Math.sin(i*0.3)*0.4*Math.exp(-Math.random()*5)}n.buffer=buf;n.loop=true;return n}},
-  {id:"birds",name:"Birds",emoji:"🐦",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=0;if(Math.random()<0.002){var freq=1500+Math.random()*3000;var dur=800+Math.random()*1500;for(var j=0;j<dur&&i+j<d.length;j++){d[i+j]+=Math.sin(j*freq/ctx.sampleRate*Math.PI*2)*0.5*Math.exp(-j/400)*(1+0.3*Math.sin(j*0.05))}i+=dur}}n.buffer=buf;n.loop=true;return n}},
-  {id:"ocean",name:"Ocean Waves",emoji:"🌊",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*8,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){var cycle=i/(ctx.sampleRate*4);var wave=Math.pow(Math.sin(cycle*Math.PI),2);d[i]=(Math.random()*2-1)*0.35*wave+Math.sin(i*0.001)*0.05*wave}n.buffer=buf;n.loop=true;return n}},
-  {id:"cafe",name:"Cafe",emoji:"☕",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(2,ctx.sampleRate*4,ctx.sampleRate);for(var ch=0;ch<2;ch++){var d=buf.getChannelData(ch);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.08;if(Math.random()<0.001)d[i]+=Math.random()*0.3;if(Math.random()<0.0005){for(var j=0;j<500&&i+j<d.length;j++)d[i+j]+=Math.sin(j*0.05)*0.15*Math.exp(-j/200)}}}n.buffer=buf;n.loop=true;return n}},
-  {id:"thunder",name:"Thunder",emoji:"⛈️",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*6,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.1;if(Math.random()<0.0002){for(var j=0;j<ctx.sampleRate*2&&i+j<d.length;j++)d[i+j]+=(Math.random()*2-1)*0.6*Math.exp(-j/(ctx.sampleRate*0.3))}}n.buffer=buf;n.loop=true;return n}},
-  {id:"train",name:"Train",emoji:"🚂",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){var beat=Math.sin(i/(ctx.sampleRate*0.3)*Math.PI*2);d[i]=(Math.random()*2-1)*0.1*(0.5+0.5*Math.abs(beat))+beat*0.05}n.buffer=buf;n.loop=true;return n}},
-  {id:"night",name:"Night",emoji:"🌙",gen:function(ctx){var n=ctx.createBufferSource();var buf=ctx.createBuffer(1,ctx.sampleRate*5,ctx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.03;if(Math.random()<0.001){var freq=2000+Math.random()*4000;for(var j=0;j<1000&&i+j<d.length;j++)d[i+j]+=Math.sin(j*freq/ctx.sampleRate*Math.PI*2)*0.2*Math.exp(-j/300)}}n.buffer=buf;n.loop=true;return n}}
+  {id:"white",name:"White Noise",emoji:"📻",gen:function(ctx){
+    return bufSource(ctx,noiseBuffer(ctx,2,function(d){for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.5}));
+  }},
+  {id:"pink",name:"Pink Noise",emoji:"🩷",gen:function(ctx){
+    return bufSource(ctx,noiseBuffer(ctx,3,function(d){
+      var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.969*b2+w*0.153852;b3=0.8665*b3+w*0.3104856;b4=0.55*b4+w*0.5329522;b5=-0.7616*b5-w*0.016898;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;b6=w*0.115926}
+    }));
+  }},
+  {id:"brown",name:"Brown Noise",emoji:"🟤",gen:function(ctx){
+    return bufSource(ctx,noiseBuffer(ctx,3,function(d){var v=0;for(var i=0;i<d.length;i++){v+=(Math.random()*2-1)*0.02;v=Math.max(-1,Math.min(1,v));d[i]=v*3.5}}));
+  }},
+  {id:"rain",name:"Rain",emoji:"🌧️",gen:function(ctx){
+    // filtered noise + gentle amplitude modulation
+    var src=bufSource(ctx,noiseBuffer(ctx,3,function(d){for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.5;if(Math.random()<0.004)d[i]+=Math.random()*0.5}}));
+    var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;
+    var hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=400;
+    var mod=ctx.createGain();mod.gain.value=0.8;
+    var lfo=ctx.createOscillator();lfo.frequency.value=0.2;var lfoG=ctx.createGain();lfoG.gain.value=0.15;
+    lfo.connect(lfoG);lfoG.connect(mod.gain);lfo.start();
+    src.connect(hp);hp.connect(lp);lp.connect(mod);
+    src._chainOut=mod;src._extra=[lfo];
+    return src;
+  }},
+  {id:"ocean",name:"Ocean Waves",emoji:"🌊",gen:function(ctx){
+    var src=bufSource(ctx,noiseBuffer(ctx,4,function(d){for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.5}));
+    var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;
+    var amp=ctx.createGain();amp.gain.value=0.3;
+    var lfo=ctx.createOscillator();lfo.type='sine';lfo.frequency.value=0.12;var lg=ctx.createGain();lg.gain.value=0.3;
+    lfo.connect(lg);lg.connect(amp.gain);lfo.start();
+    src.connect(lp);lp.connect(amp);
+    src._chainOut=amp;src._extra=[lfo];
+    return src;
+  }},
+  {id:"wind",name:"Wind",emoji:"💨",gen:function(ctx){
+    var src=bufSource(ctx,noiseBuffer(ctx,4,function(d){for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.5}));
+    var bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=500;bp.Q.value=0.6;
+    var amp=ctx.createGain();amp.gain.value=0.5;
+    var lfo=ctx.createOscillator();lfo.frequency.value=0.08;var lg=ctx.createGain();lg.gain.value=350;
+    lfo.connect(lg);lg.connect(bp.frequency);lfo.start();
+    src.connect(bp);bp.connect(amp);
+    src._chainOut=amp;src._extra=[lfo];
+    return src;
+  }},
+  {id:"fan",name:"Fan / AC Hum",emoji:"🌀",gen:function(ctx){
+    var src=bufSource(ctx,noiseBuffer(ctx,3,function(d){for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.4}));
+    var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=650;
+    var hum=ctx.createOscillator();hum.type='sine';hum.frequency.value=110;var humG=ctx.createGain();humG.gain.value=0.05;
+    hum.connect(humG);
+    var mix=ctx.createGain();mix.gain.value=0.7;
+    src.connect(lp);lp.connect(mix);humG.connect(mix);hum.start();
+    src._chainOut=mix;src._extra=[hum];
+    return src;
+  }},
+  {id:"cafe",name:"Cafe Murmur",emoji:"☕",gen:function(ctx){
+    var src=bufSource(ctx,noiseBuffer(ctx,4,function(d){for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.5;if(Math.random()<0.001)d[i]+=Math.random()*0.4}}));
+    var bp1=ctx.createBiquadFilter();bp1.type='bandpass';bp1.frequency.value=500;bp1.Q.value=1.2;
+    var bp2=ctx.createBiquadFilter();bp2.type='bandpass';bp2.frequency.value=1200;bp2.Q.value=1.5;
+    var g1=ctx.createGain();g1.gain.value=0.5;var g2=ctx.createGain();g2.gain.value=0.35;
+    var mix=ctx.createGain();mix.gain.value=0.7;
+    src.connect(bp1);bp1.connect(g1);g1.connect(mix);
+    src.connect(bp2);bp2.connect(g2);g2.connect(mix);
+    var lfo=ctx.createOscillator();lfo.frequency.value=0.3;var lg=ctx.createGain();lg.gain.value=0.15;
+    lfo.connect(lg);lg.connect(mix.gain);lfo.start();
+    src._chainOut=mix;src._extra=[lfo];
+    return src;
+  }},
+  {id:"fire",name:"Fireplace",emoji:"🔥",gen:function(ctx){
+    // base hiss + random crackle impulses baked into buffer
+    var src=bufSource(ctx,noiseBuffer(ctx,4,function(d){for(var i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*0.15;if(Math.random()<0.01)d[i]+=(Math.random()*2-1)*0.9;if(Math.random()<0.002){for(var j=0;j<300&&i+j<d.length;j++)d[i+j]+=(Math.random()*2-1)*0.6*Math.exp(-j/60)}}}));
+    var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3000;
+    var amp=ctx.createGain();amp.gain.value=0.8;
+    src.connect(lp);lp.connect(amp);
+    src._chainOut=amp;
+    return src;
+  }},
+  {id:"binaural",name:"Binaural Tones",emoji:"🎧",gen:function(ctx){
+    // two oscillators panned L/R with small frequency difference
+    var oscL=ctx.createOscillator();oscL.type='sine';oscL.frequency.value=200;
+    var oscR=ctx.createOscillator();oscR.type='sine';oscR.frequency.value=210; // 10 Hz beat
+    var panL=ctx.createStereoPanner?ctx.createStereoPanner():null;
+    var panR=ctx.createStereoPanner?ctx.createStereoPanner():null;
+    var mix=ctx.createGain();mix.gain.value=0.35;
+    if(panL&&panR){panL.pan.value=-1;panR.pan.value=1;oscL.connect(panL);panL.connect(mix);oscR.connect(panR);panR.connect(mix)}
+    else{oscL.connect(mix);oscR.connect(mix)}
+    oscL.start();oscR.start();
+    // fake a source object so start()/stop() interface works
+    var fake={_chainOut:mix,_extra:[oscR],_osc:oscL,start:function(){},stop:function(){try{oscL.stop();oscR.stop()}catch(e){}},connect:function(){},disconnect:function(){}};
+    return fake;
+  }}
 ];
+
+// ---------- Build mixer UI ----------
 var container=document.getElementById("sounds");
 soundDefs.forEach(function(s){
   var div=document.createElement("div");
   div.id="card_"+s.id;
-  div.style.cssText="background:var(--card);padding:1.2rem;border-radius:12px;cursor:pointer;transition:all .2s;border:2px solid transparent";
-  div.innerHTML='<div style="font-size:2.5rem">'+s.emoji+'</div><div style="font-weight:600;margin:.3rem 0">'+s.name+'</div><input type="range" min="0" max="100" value="50" style="width:100%" onclick="event.stopPropagation()" oninput="setVol(\''+s.id+'\',this.value)">';
-  div.onclick=function(){toggleSound(s.id)};
+  div.style.cssText="background:var(--card);padding:1rem .9rem;border-radius:12px;transition:border-color .2s;border:2px solid transparent;text-align:center";
+  div.innerHTML=
+    '<div style="font-size:2.2rem">'+s.emoji+'</div>'+
+    '<div style="font-weight:600;margin:.3rem 0;font-size:.9rem">'+s.name+'</div>'+
+    '<input type="range" id="vol_'+s.id+'" min="0" max="100" value="50" style="width:100%" oninput="setVol(\''+s.id+'\',this.value)">'+
+    '<div style="display:flex;gap:.4rem;margin-top:.4rem">'+
+      '<button class="btn btn-outline" style="flex:1;font-size:.78rem;padding:.35rem" onclick="toggleSound(\''+s.id+'\')" id="btn_'+s.id+'">Play</button>'+
+      '<button class="btn btn-outline" style="font-size:.78rem;padding:.35rem" onclick="muteSound(\''+s.id+'\')" id="mute_'+s.id+'" title="Mute">🔇</button>'+
+    '</div>';
   container.appendChild(div);
 });
-function toggleSound(id){
-  if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
-  if(active[id]){active[id].source.stop();active[id].gain.disconnect();delete active[id];document.getElementById("card_"+id).style.borderColor="transparent";return}
-  var def=soundDefs.find(function(s){return s.id===id});
-  var source=def.gen(actx);var gain=actx.createGain();
-  gain.gain.value=0.5*(+document.getElementById("master").value/100);
-  source.connect(gain);gain.connect(actx.destination);source.start();
-  active[id]={source:source,gain:gain};
-  document.getElementById("card_"+id).style.borderColor="var(--accent)";
+
+// ---------- Audio context ----------
+function ensureCtx(){
+  if(!actx){
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    masterGain=actx.createGain();
+    masterGain.gain.value=+document.getElementById('master').value/100;
+    analyser=actx.createAnalyser();analyser.fftSize=256;
+    masterGain.connect(analyser);
+    analyser.connect(actx.destination);
+    drawViz();
+  }
+  if(actx.state==='suspended')actx.resume();
 }
-function setVol(id,v){if(active[id])active[id].gain.gain.value=(v/100)*(+document.getElementById("master").value/100)}
-function updateMaster(){var m=+document.getElementById("master").value/100;for(var id in active){var slider=document.getElementById("card_"+id).querySelector("input");active[id].gain.gain.value=(slider.value/100)*m}}
-function stopAll(){for(var id in active){active[id].source.stop();active[id].gain.disconnect();document.getElementById("card_"+id).style.borderColor="transparent"}active={}}
-var sleepInt;
-function setTimer(){clearInterval(sleepInt);var mins=+document.getElementById("sleepTimer").value;if(!mins){document.getElementById("timerDisplay").textContent="";return}var left=mins*60;sleepInt=setInterval(function(){left--;var m=Math.floor(left/60),s=left%60;document.getElementById("timerDisplay").textContent=m+":"+(s<10?"0":"")+s;if(left<=0){clearInterval(sleepInt);stopAll();document.getElementById("timerDisplay").textContent="Stopped"}},1000)}
+function startAudio(){
+  ensureCtx();
+  started=true;
+  document.getElementById('startBtn').textContent='✔ Audio Enabled';
+  if(actx.state==='suspended')actx.resume();
+}
+
+// ---------- Sound control ----------
+function toggleSound(id){
+  ensureCtx();started=true;
+  document.getElementById('startBtn').textContent='✔ Audio Enabled';
+  if(active[id]){stopSound(id);return}
+  var def=soundDefs.find(function(s){return s.id===id});
+  var source=def.gen(actx);
+  var gain=actx.createGain();
+  var out=source._chainOut||source;
+  out.connect(gain);
+  gain.connect(masterGain);
+  var vol=+document.getElementById('vol_'+id).value/100;
+  gain.gain.setValueAtTime(0.0001,actx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0001,vol),actx.currentTime+FADE);
+  try{source.start()}catch(e){}
+  active[id]={source:source,gain:gain,targetVol:vol,muted:false};
+  document.getElementById('card_'+id).style.borderColor='var(--accent)';
+  document.getElementById('btn_'+id).textContent='Stop';
+  updateTitle();
+}
+function stopSound(id){
+  var a=active[id];if(!a)return;
+  var g=a.gain.gain;
+  g.cancelScheduledValues(actx.currentTime);
+  g.setValueAtTime(Math.max(0.0001,g.value),actx.currentTime);
+  g.exponentialRampToValueAtTime(0.0001,actx.currentTime+FADE);
+  var src=a.source;
+  setTimeout(function(){try{src.stop()}catch(e){}try{a.gain.disconnect()}catch(e){}if(src._extra)src._extra.forEach(function(o){try{o.stop()}catch(e){}})},FADE*1000+50);
+  delete active[id];
+  document.getElementById('card_'+id).style.borderColor='transparent';
+  document.getElementById('btn_'+id).textContent='Play';
+  updateTitle();
+}
+function setVol(id,v){
+  document.getElementById('vol_'+id).value=v;
+  var a=active[id];if(!a)return;
+  a.targetVol=v/100;a.muted=false;
+  document.getElementById('mute_'+id).textContent='🔇';
+  a.gain.gain.setTargetAtTime(Math.max(0.0001,a.targetVol),actx.currentTime,0.05);
+}
+function muteSound(id){
+  var a=active[id];if(!a)return;
+  a.muted=!a.muted;
+  var target=a.muted?0.0001:Math.max(0.0001,a.targetVol);
+  a.gain.gain.setTargetAtTime(target,actx.currentTime,0.05);
+  document.getElementById('mute_'+id).textContent=a.muted?'🔊':'🔇';
+}
+function updateMaster(){
+  document.getElementById('masterVal').textContent=document.getElementById('master').value;
+  if(masterGain)masterGain.gain.setTargetAtTime(+document.getElementById('master').value/100,actx.currentTime,0.05);
+}
+function stopAll(){
+  for(var id in active)stopSound(id);
+}
+
+// ---------- Presets ----------
+var PRESETS={
+  focus:{brown:45,white:20,fan:30},
+  rainy:{rain:60,brown:25,fire:15},
+  library:{white:20,fan:25,cafe:10},
+  sleep:{brown:40,rain:35,ocean:25},
+  cafe:{cafe:55,pink:15,rain:15}
+};
+function applyPreset(name){
+  ensureCtx();started=true;
+  document.getElementById('startBtn').textContent='✔ Audio Enabled';
+  stopAll();
+  var mix=PRESETS[name];if(!mix)return;
+  // slight delay so previous fades don't fight
+  setTimeout(function(){
+    for(var id in mix){document.getElementById('vol_'+id).value=mix[id]}
+    for(var id2 in mix){if(!active[id2])toggleSound(id2)}
+    for(var id3 in mix){if(active[id3])setVol(id3,mix[id3])}
+  },FADE*1000+80);
+}
+
+// ---------- Custom mixes ----------
+function getMixes(){return JSON.parse(localStorage.getItem('amb_mixes')||'{}')}
+function saveMix(){
+  var name=(document.getElementById('mixName').value||'').trim();
+  if(!name)return alert('Give your mix a name first');
+  var mix={};
+  for(var id in active)mix[id]=Math.round(active[id].targetVol*100);
+  if(!Object.keys(mix).length)return alert('Play at least one sound to save a mix');
+  var mixes=getMixes();mixes[name]=mix;
+  localStorage.setItem('amb_mixes',JSON.stringify(mixes));
+  document.getElementById('mixName').value='';
+  renderMixes();
+}
+function loadMix(name){
+  var mixes=getMixes();var mix=mixes[name];if(!mix)return;
+  ensureCtx();started=true;
+  stopAll();
+  setTimeout(function(){
+    for(var id in mix){document.getElementById('vol_'+id).value=mix[id]}
+    for(var id2 in mix){if(!active[id2])toggleSound(id2)}
+    for(var id3 in mix){if(active[id3])setVol(id3,mix[id3])}
+  },FADE*1000+80);
+}
+function deleteMix(name){
+  var mixes=getMixes();delete mixes[name];
+  localStorage.setItem('amb_mixes',JSON.stringify(mixes));
+  renderMixes();
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function renderMixes(){
+  var mixes=getMixes();var el=document.getElementById('customMixes');
+  var names=Object.keys(mixes);
+  if(!names.length){el.innerHTML='<span class="info" style="font-size:.8rem">No saved mixes yet.</span>';return}
+  el.innerHTML=names.map(function(n){
+    return '<div style="display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--border);border-radius:6px;padding:.3rem .6rem;font-size:.8rem"><span style="cursor:pointer" onclick="loadMix(\''+esc(n).replace(/'/g,"\\'")+'\')">🎵 '+esc(n)+'</span><span style="cursor:pointer;opacity:.6" onclick="deleteMix(\''+esc(n).replace(/'/g,"\\'")+'\')">✕</span></div>';
+  }).join('');
+}
+
+// ---------- Sleep timer ----------
+var sleepInt=null,sleepLeft=0;
+function setSleepTimer(){
+  clearInterval(sleepInt);sleepInt=null;
+  var val=document.getElementById('sleepTimer').value;
+  var custom=document.getElementById('customMins');
+  custom.style.display=val==='custom'?'inline-block':'none';
+  var mins=val==='custom'?(+custom.value||0):(+val);
+  if(!mins){document.getElementById('sleepDisplay').textContent='';return}
+  sleepLeft=mins*60;
+  sleepInt=setInterval(function(){
+    sleepLeft--;
+    var m=Math.floor(sleepLeft/60),s=sleepLeft%60;
+    document.getElementById('sleepDisplay').textContent='⏳ '+m+':'+(s<10?'0':'')+s;
+    if(sleepLeft<=0){
+      clearInterval(sleepInt);sleepInt=null;
+      stopAll();
+      document.getElementById('sleepDisplay').textContent='😴 Stopped';
+      document.getElementById('sleepTimer').value='0';
+    }
+  },1000);
+}
+
+// ---------- Pomodoro ----------
+var pomoInt=null,pomoLeft=0,pomoPhase='focus',pomoPrevMix=null;
+function chime(){
+  ensureCtx();
+  var o=actx.createOscillator();var g=actx.createGain();
+  o.type='sine';o.frequency.setValueAtTime(660,actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(990,actx.currentTime+0.15);
+  g.gain.setValueAtTime(0.0001,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.25,actx.currentTime+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.8);
+  o.connect(g);g.connect(actx.destination);
+  o.start();o.stop(actx.currentTime+0.85);
+}
+function togglePomodoro(){
+  if(pomoInt){stopPomodoro();return}
+  ensureCtx();started=true;
+  pomoPhase='focus';
+  pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;
+  document.getElementById('pomoBtn').textContent='⏹ Stop Pomodoro';
+  // remember current mix to resume after breaks
+  pomoPrevMix={};for(var id in active)pomoPrevMix[id]=Math.round(active[id].targetVol*100);
+  runPomoTick();
+  pomoInt=setInterval(runPomoTick,1000);
+}
+function runPomoTick(){
+  var m=Math.floor(pomoLeft/60),s=pomoLeft%60;
+  document.getElementById('pomoDisplay').textContent=(pomoPhase==='focus'?'🎯 Focus — ':'☕ Break — ')+m+':'+(s<10?'0':'')+s;
+  if(pomoLeft<=0){
+    chime();
+    if(pomoPhase==='focus'){
+      pomoPhase='break';
+      pomoLeft=(+document.getElementById('pomoBreak').value||5)*60;
+      // pause sounds during break (fade out but keep mix memory)
+      pomoPrevMix={};for(var id in active)pomoPrevMix[id]=Math.round(active[id].targetVol*100);
+      stopAll();
+    }else{
+      pomoPhase='focus';
+      pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;
+      // resume the remembered mix
+      if(pomoPrevMix){
+        var mix=pomoPrevMix;
+        setTimeout(function(){
+          for(var id in mix){document.getElementById('vol_'+id).value=mix[id]}
+          for(var id2 in mix){if(!active[id2])toggleSound(id2)}
+          for(var id3 in mix){if(active[id3])setVol(id3,mix[id3])}
+        },FADE*1000+80);
+      }
+    }
+    return;
+  }
+  pomoLeft--;
+}
+function stopPomodoro(){
+  clearInterval(pomoInt);pomoInt=null;
+  document.getElementById('pomoBtn').textContent='▶ Start Pomodoro';
+  document.getElementById('pomoDisplay').textContent='';
+}
+
+// ---------- Visualiser ----------
+function drawViz(){
+  var canvas=document.getElementById('viz');
+  var cx=canvas.getContext('2d');
+  var data=new Uint8Array(analyser.frequencyBinCount);
+  (function loop(){
+    requestAnimationFrame(loop);
+    analyser.getByteFrequencyData(data);
+    cx.clearRect(0,0,canvas.width,canvas.height);
+    var bars=48,step=Math.floor(data.length/bars),w=canvas.width/bars;
+    for(var i=0;i<bars;i++){
+      var v=data[i*step]/255;
+      var h=v*canvas.height;
+      var grad=cx.createLinearGradient(0,canvas.height,0,0);
+      grad.addColorStop(0,'#6366f1');grad.addColorStop(1,'#8b5cf6');
+      cx.fillStyle=grad;
+      cx.fillRect(i*w+1,canvas.height-h,w-2,h);
+    }
+  })();
+}
+
+// ---------- Tab title ----------
+function updateTitle(){
+  var n=Object.keys(active).length;
+  document.title=(n>0?'▶ ('+n+') ':'')+origTitle;
+}
+
+// resume context when tab becomes visible (autoplay policy)
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&actx&&actx.state==='suspended')actx.resume()});
+
+renderMixes();
   </script>
 </body>
 </html>

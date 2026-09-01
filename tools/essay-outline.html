@@ -15,11 +15,38 @@
   <div class="container"><div class="breadcrumb"><a href="../">Home</a> → 📝 Essay Outline</div><div class="tool-section">
       <h1>📝 Essay / Answer Outline Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
-      <p class="info">Enter a topic and get a structured outline for UPSC mains, essays, and answers.</p>
+      <p class="info">Enter a topic and get a structured, editable outline with word budgets, hooks, transitions and conclusion strategies — for essays, UPSC answers and exams.</p>
       <input type="text" id="topic" placeholder="Enter essay/answer topic... (e.g. Digital India, Women Empowerment)" style="font-size:1.1rem">
-      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem"><label>Type:</label><select id="type"><option value="essay">Essay (1000+ words)</option><option value="argumentative">Argumentative Essay</option><option value="narrative">Narrative Essay</option><option value="descriptive">Descriptive Essay</option><option value="expository">Expository Essay</option><option value="long">Long Answer (250 words)</option><option value="short">Short Answer (150 words)</option></select>
-      <button class="btn" onclick="gen()" style="flex:1">📝 Generate Outline</button></div>
+      <input type="text" id="thesis" placeholder="Thesis / central argument (optional)">
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem">
+        <label>Type:</label>
+        <select id="type"><option value="argumentative">Argumentative</option><option value="expository">Expository</option><option value="narrative">Narrative</option><option value="descriptive">Descriptive</option><option value="compare">Compare &amp; Contrast</option><option value="cause">Cause &amp; Effect</option><option value="problem">Problem-Solution</option><option value="upsc">UPSC Analytical Essay</option><option value="exam">School Exam Essay</option></select>
+      </div>
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem">
+        <label>Word count:</label>
+        <input type="number" id="words" placeholder="e.g. 1000" value="1000">
+        <label>Body paras:</label>
+        <input type="number" id="bodyCount" placeholder="e.g. 3" value="3" min="1" max="8">
+      </div>
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.5rem">
+        <input type="text" id="audience" placeholder="Audience / exam (e.g. UPSC Mains, Class 12)">
+        <button class="btn" onclick="gen()" style="flex:1">📝 Generate Outline</button>
+      </div>
       <div id="result" style="display:none;margin-top:1rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🧰 Insert Bank — Hooks, Transitions &amp; Conclusions</h2>
+      <p class="info">Click any phrase to copy it, then paste into your notes.</p>
+      <div class="row" style="flex-wrap:wrap;gap:.5rem"><label>Bank:</label>
+        <select id="bankSel" onchange="renderBank()"><option value="hooks">Hook types</option><option value="transitions">Transition phrases</option><option value="conclusions">Conclusion techniques</option></select>
+      </div>
+      <div id="bankBox" style="margin-top:.6rem"></div>
+    </div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Helpful Tools</h2>
+      <div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.7rem;margin-top:.6rem">
+        <a href="/tools/word-counter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Word Counter</a>
+        <a href="/tools/paraphraser" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Paraphraser</a>
+        <a href="/tools/citation-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Citation Generator</a>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Essay likhna hai but structure nahi pata? Outline generate karo. Topic daalo, type choose karo — introduction, body, conclusion ka skeleton ready. Baaki tum fill karo.</p>
@@ -79,37 +106,215 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function gen(){
-  var topic=document.getElementById("topic").value.trim();
-  if(!topic)return alert("Enter a topic");
-  var type=document.getElementById("type").value;
-  var outline="";
-  var s='<div style="background:var(--card);padding:1.2rem;border-radius:10px;line-height:2">';
-  if(type==="essay"){
-    outline='<h3>Essay Outline: '+topic+'</h3>'+s+'<h4>1. Introduction <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Start with a relevant quote, statistic, or anecdote about <strong>'+topic+'</strong></li><li>Define the key terms and scope</li><li>State your thesis/main argument</li><li>Brief roadmap of what you will discuss</li></ul><h4>2. Historical Background <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Evolution of '+topic+' over time</li><li>Key milestones and turning points</li><li>How it has changed in the Indian context</li></ul><h4>3. Current Scenario <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Present situation of '+topic+' in India</li><li>Key statistics and data points</li><li>Government initiatives and policies</li><li>Compare with global scenario</li></ul><h4>4. Positive Aspects / Arguments For <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Benefits and advantages</li><li>Success stories and case studies</li><li>Economic/social/political impact</li></ul><h4>5. Challenges / Arguments Against <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Problems and obstacles</li><li>Criticisms and counter-arguments</li><li>Implementation gaps</li></ul><h4>6. Way Forward <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Suggested reforms and solutions</li><li>Role of government, civil society, individuals</li><li>Short-term and long-term measures</li></ul><h4>7. Conclusion <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Summarize key points</li><li>Restate thesis with evidence</li><li>End with a forward-looking statement or quote</li></ul></div>';
-  } else if(type==="argumentative"){
-    outline='<h3>Argumentative Essay Outline: '+topic+'</h3>'+s+'<h4>1. Introduction <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Hook: provocative question or bold statement about <strong>'+topic+'</strong></li><li>Background context</li><li>Clear thesis statement (your position)</li></ul><h4>2. Body Paragraph 1 — Strongest Argument <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Topic sentence supporting your thesis</li><li>Evidence: data, research, examples</li><li>Analysis: explain how evidence supports your claim</li></ul><h4>3. Body Paragraph 2 — Supporting Argument <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Second reason supporting your position</li><li>Evidence and examples</li><li>Connect back to thesis</li></ul><h4>4. Body Paragraph 3 — Additional Support <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Third supporting point</li><li>Real-world application or case study</li><li>Logical reasoning</li></ul><h4>5. Counter-Arguments & Rebuttal <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Acknowledge the strongest opposing viewpoint</li><li>Present the counter-argument fairly</li><li>Refute with evidence or logic</li><li>Explain why your position is still stronger</li><li>Address potential weaknesses in your own argument</li></ul><h4>6. Conclusion <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Restate thesis in light of evidence presented</li><li>Summarize key arguments</li><li>Call to action or broader implication</li></ul></div>';
-  } else if(type==="narrative"){
-    outline='<h3>Narrative Essay Outline: '+topic+'</h3>'+s+'<h4>1. Introduction / Setting <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Set the scene: time, place, atmosphere</li><li>Introduce the narrator/main character</li><li>Hook the reader with an intriguing opening about <strong>'+topic+'</strong></li></ul><h4>2. Rising Action <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Build tension through events</li><li>Introduce conflict or challenge</li><li>Use sensory details and dialogue</li></ul><h4>3. Climax <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>The turning point or peak moment</li><li>Highest emotional intensity</li><li>Key decision or revelation</li></ul><h4>4. Falling Action <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Consequences of the climax</li><li>Begin resolving the conflict</li><li>Show character growth or change</li></ul><h4>5. Conclusion / Reflection <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Resolution of the story</li><li>Lesson learned or insight gained</li><li>Connect personal experience to broader theme</li></ul></div>';
-  } else if(type==="descriptive"){
-    outline='<h3>Descriptive Essay Outline: '+topic+'</h3>'+s+'<h4>1. Introduction <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Introduce the subject: <strong>'+topic+'</strong></li><li>Create a dominant impression</li><li>Thesis: what feeling or image you want to convey</li></ul><h4>2. Sensory Details — Sight & Sound <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Visual descriptions: colors, shapes, sizes</li><li>Auditory details: sounds, silence, rhythm</li><li>Use metaphors and similes</li></ul><h4>3. Sensory Details — Touch, Smell, Taste <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Tactile descriptions: textures, temperature</li><li>Olfactory details: scents, aromas</li><li>Gustatory details if applicable</li></ul><h4>4. Emotional Connection <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Personal feelings evoked by the subject</li><li>Memories or associations</li><li>Why this subject matters to you</li></ul><h4>5. Conclusion <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Reinforce the dominant impression</li><li>Final vivid image or reflection</li><li>Leave the reader with a lasting sensory memory</li></ul></div>';
-  } else if(type==="expository"){
-    outline='<h3>Expository Essay Outline: '+topic+'</h3>'+s+'<h4>1. Introduction <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Introduce <strong>'+topic+'</strong> with context</li><li>Provide background information</li><li>Thesis: what you will explain or inform about</li></ul><h4>2. Explanation / Definition <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Define key concepts clearly</li><li>Break down complex ideas into simple parts</li><li>Use examples for clarity</li></ul><h4>3. Analysis / Process <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>How does it work? Step-by-step if applicable</li><li>Cause and effect relationships</li><li>Compare and contrast with related concepts</li></ul><h4>4. Evidence & Examples <span style="color:var(--muted);font-weight:400">[200-300 words]</span></h4><ul style="margin-left:1.5rem"><li>Facts, statistics, research findings</li><li>Real-world examples and case studies</li><li>Expert opinions or quotes</li></ul><h4>5. Conclusion <span style="color:var(--muted);font-weight:400">[100-150 words]</span></h4><ul style="margin-left:1.5rem"><li>Summarize key points explained</li><li>Restate the significance of the topic</li><li>Suggest further reading or exploration</li></ul></div>';
-  } else if(type==="long"){
-    outline='<h3>Long Answer Outline: '+topic+'</h3>'+s+'<h4>Introduction (50 words)</h4><ul style="margin-left:1.5rem"><li>Define '+topic+'</li><li>State its significance</li></ul><h4>Main Body (150 words)</h4><ul style="margin-left:1.5rem"><li>Point 1: Key aspect with example</li><li>Point 2: Another dimension with data</li><li>Point 3: Current relevance</li><li>Point 4: Challenges/criticism</li></ul><h4>Conclusion (50 words)</h4><ul style="margin-left:1.5rem"><li>Summarize and give way forward</li></ul></div>';
-  } else {
-    outline='<h3>Short Answer Outline: '+topic+'</h3>'+s+'<h4>Structure (150 words)</h4><ul style="margin-left:1.5rem"><li><strong>Define:</strong> What is '+topic+'? (1-2 lines)</li><li><strong>Explain:</strong> Key features/aspects (3-4 points)</li><li><strong>Significance:</strong> Why it matters (2-3 lines)</li><li><strong>Conclude:</strong> One-line summary</li></ul></div>';
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// ---------- Insert banks ----------
+var BANKS={
+  hooks:["Rhetorical question — pose a thought-provoking question","Startling statistic — open with a surprising number","Relevant quotation — a line from a thinker or leader","Vivid anecdote — a short real or hypothetical story","Bold statement — a strong, debatable claim","Historical reference — a moment that frames the topic","Definition twist — redefine a familiar term","Scenario — 'Imagine a world where…'"],
+  transitions:["Furthermore,","In addition,","Moreover,","However,","On the other hand,","Nevertheless,","Consequently,","As a result,","For instance,","In contrast,","Similarly,","Building on this,","Turning to,","Having established this,","In light of the above,","To illustrate,","More importantly,","In conclusion,"],
+  conclusions:["Restate thesis with fresh wording","Synthesise the key arguments (don't just summarise)","End with a call to action","Pose a forward-looking question","Return to the opening hook (full-circle)","Broaden to the wider significance","Offer a balanced 'way forward'","End with a memorable quotation"]
+};
+function renderBank(){
+  var sel=document.getElementById('bankSel').value;
+  var items=BANKS[sel]||[];
+  document.getElementById('bankBox').innerHTML=items.map(function(t){
+    return '<button class="btn btn-outline" style="margin:.2rem;font-size:.8rem;padding:.35rem .7rem" onclick="copyPhrase('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>';
+  }).join('');
+}
+function copyPhrase(t){navigator.clipboard.writeText(t);}
+// ---------- Word budget ----------
+function allocate(total,parts){
+  // parts: array of weights; returns integer words summing to total
+  var sum=parts.reduce(function(a,b){return a+b;},0);
+  var raw=parts.map(function(p){return total*p/sum;});
+  var out=raw.map(Math.round);
+  // fix rounding drift
+  var diff=total-out.reduce(function(a,b){return a+b;},0);
+  out[0]+=diff;
+  return out;
+}
+// ---------- Outline structures ----------
+// Each returns array of sections: {title, weight, points:[]}
+function structure(type,topic,thesis,bodyN,audience){
+  var T='<strong>'+esc(topic)+'</strong>';
+  var the=thesis?esc(thesis):'your thesis/central argument';
+  var body=[];
+  for(var i=1;i<=bodyN;i++)body.push(i);
+  function bodyParas(labelFn){
+    return body.map(function(n,idx){
+      return {title:'Body Paragraph '+n+(labelFn?' — '+labelFn(idx,bodyN):''),weight:2,points:[
+        'Topic sentence: state the single idea of this paragraph and link it to '+the+'.',
+        'Evidence / example slot: [add data, quotation, case study or observation here]',
+        'Analysis: explain how the evidence supports your point.',
+        'Transition: link to the next paragraph.'
+      ]};
+    });
   }
-  outline+='<div class="row" style="margin-top:.5rem;gap:.5rem"><button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById(\'result\').innerText)">📋 Copy</button><button class="btn btn-outline" onclick="exportDoc()">📄 Export as Document</button></div>';
-  document.getElementById("result").innerHTML=outline;document.getElementById("result").style.display="block";
+  if(type==='argumentative'){
+    return [{title:'Introduction',weight:1.2,points:['Hook: provocative question or bold claim about '+T+'.','Background/context in 1-2 lines.','Thesis (your position): '+the+'.','Roadmap of your main arguments.']}]
+      .concat(bodyParas(function(i,n){return i===0?'Strongest argument':(i===n-1?'Additional support':'Supporting argument');}))
+      .concat([{title:'Counter-argument & Rebuttal',weight:1.5,points:['Fairly present the strongest opposing view.','Refute it with evidence or logic.','Explain why your position still holds.']},
+        {title:'Conclusion',weight:1.2,points:['Restate thesis in light of the evidence.','Synthesise the key arguments.','Call to action or broader implication.']}]);
+  }
+  if(type==='expository'){
+    return [{title:'Introduction',weight:1.2,points:['Hook: interesting fact or context about '+T+'.','Background information.','Thesis: what you will explain/inform about.']}]
+      .concat(bodyParas(function(i){return ['Definition/concept','Process/mechanism','Evidence & examples','Comparison'][i]||'Aspect '+(i+1);}))
+      .concat([{title:'Conclusion',weight:1.2,points:['Summarise the key points explained.','Restate the significance of '+T+'.','Suggest further reading or a takeaway.']}]);
+  }
+  if(type==='narrative'){
+    return [{title:'Introduction / Setting',weight:1.2,points:['Set the scene: time, place, atmosphere.','Introduce narrator/main character.','Intriguing opening tied to '+T+'.']},
+      {title:'Rising Action',weight:2,points:['Build tension through events.','Introduce the conflict or challenge.','Use sensory detail and dialogue.']},
+      {title:'Climax',weight:2,points:['The turning point / peak moment.','Highest emotional intensity.','Key decision or revelation.']},
+      {title:'Falling Action',weight:1.5,points:['Consequences of the climax.','Begin resolving the conflict.','Show character growth.']},
+      {title:'Conclusion / Reflection',weight:1.2,points:['Resolution of the story.','Lesson learned or insight.','Connect to a broader theme.']}];
+  }
+  if(type==='descriptive'){
+    return [{title:'Introduction',weight:1.2,points:['Introduce the subject: '+T+'.','Create a dominant impression.','Thesis: the feeling/image you want to convey.']},
+      {title:'Sight & Sound',weight:2,points:['Visual details: colours, shapes, scale.','Auditory details: sounds, silence, rhythm.','Metaphors and similes.']},
+      {title:'Touch, Smell & Taste',weight:2,points:['Tactile: textures, temperature.','Olfactory: scents.','Gustatory details if relevant.']},
+      {title:'Emotional Connection',weight:1.5,points:['Feelings evoked by the subject.','Memories/associations.','Why it matters to you.']},
+      {title:'Conclusion',weight:1.2,points:['Reinforce the dominant impression.','Final vivid image.','A lasting sensory memory.']}];
+  }
+  if(type==='compare'){
+    return [{title:'Introduction',weight:1.2,points:['Introduce the two subjects being compared under '+T+'.','State the basis of comparison.','Thesis: '+the+'.']},
+      {title:'Similarities',weight:2,points:['Point-by-point shared features.','Evidence for each similarity.','Analysis of why they matter.']},
+      {title:'Differences',weight:2,points:['Point-by-point contrasts.','Evidence for each difference.','Analysis of significance.']},
+      {title:'Evaluation',weight:1.5,points:['Which is stronger/better and why (if applicable).','Balanced judgement.']},
+      {title:'Conclusion',weight:1.2,points:['Restate the key comparison.','Overall takeaway.']}];
+  }
+  if(type==='cause'){
+    return [{title:'Introduction',weight:1.2,points:['Introduce the phenomenon: '+T+'.','Context/why it matters.','Thesis: the main causes and/or effects.']},
+      {title:'Causes',weight:2,points:['Primary cause with evidence.','Secondary/contributing causes.','Root vs immediate causes.']},
+      {title:'Effects',weight:2,points:['Short-term effects.','Long-term effects.','Evidence and examples.']},
+      {title:'Interconnections',weight:1.5,points:['How causes and effects link in a chain.','Feedback loops if any.']},
+      {title:'Conclusion',weight:1.2,points:['Summarise the causal relationship.','Implications or way forward.']}];
+  }
+  if(type==='problem'){
+    return [{title:'Introduction',weight:1.2,points:['Define the problem: '+T+'.','Scale/evidence of the problem.','Thesis: a viable solution exists.']},
+      {title:'The Problem in Depth',weight:2,points:['Causes and stakeholders.','Data on impact.','Why existing approaches fall short.']},
+      {title:'Proposed Solution(s)',weight:2,points:['Main solution and how it works.','Feasibility and cost.','Evidence it can succeed (case study).']},
+      {title:'Addressing Objections',weight:1.5,points:['Anticipate criticisms.','Respond with reasoning/evidence.']},
+      {title:'Conclusion',weight:1.2,points:['Restate the problem and solution.','Call to action / roles of stakeholders.']}];
+  }
+  if(type==='upsc'){
+    return [{title:'Introduction (quote / anecdote)',weight:1.2,points:['Open with a relevant quotation, anecdote or definition on '+T+'.','Frame the scope and your central argument.','Do NOT reveal everything — set up the debate.']},
+      {title:'Dimensional Analysis — Multiple Perspectives',weight:2.2,points:['Cover social, political, economic, ethical, environmental, technological angles (as relevant).','Use the multi-dimensional framing UPSC rewards.','Substantiate with examples, committees, schemes, data.']},
+      {title:'Balanced Argumentation — For',weight:1.8,points:['Present the case in favour with evidence.','Link to constitutional values / thinkers where apt.']},
+      {title:'Balanced Argumentation — Against / Limitations',weight:1.8,points:['Present counterpoints fairly.','Show nuance — avoid one-sidedness.']},
+      {title:'Way Forward',weight:1.5,points:['Solutions: government, civil society, individual.','Short-term and long-term measures.','Quote a visionary/constitutional ideal.']},
+      {title:'Conclusion (forward-looking, optimistic)',weight:1.2,points:['Tie back to the introduction.','End on a balanced, hopeful, quote-anchored note.']}];
+  }
+  // exam
+  return [{title:'Introduction',weight:1.2,points:['Define/introduce '+T+' in 2-3 lines.','State what the essay will cover.']}]
+    .concat(bodyParas(function(i){return 'Main point '+(i+1);}))
+    .concat([{title:'Conclusion',weight:1.2,points:['Summarise the main points.','A neat closing line.']}]);
 }
-function exportDoc(){
-  var text=document.getElementById("result").innerText;
-  var blob=new Blob([text],{type:"text/plain"});
-  var a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="essay-outline.txt";
-  a.click();URL.revokeObjectURL(a.href);
+var currentSections=[];
+function gen(){
+  var topic=document.getElementById('topic').value.trim();
+  if(!topic)return alert('Enter a topic.');
+  var thesis=document.getElementById('thesis').value.trim();
+  var type=document.getElementById('type').value;
+  var words=parseInt(document.getElementById('words').value,10)||1000;
+  var bodyN=Math.max(1,Math.min(8,parseInt(document.getElementById('bodyCount').value,10)||3));
+  var audience=document.getElementById('audience').value.trim();
+  var secs=structure(type,topic,thesis,bodyN,audience);
+  var weights=secs.map(function(s){return s.weight;});
+  var alloc=allocate(words,weights);
+  secs.forEach(function(s,i){s.words=alloc[i];s.notes='';});
+  currentSections=secs;
+  renderOutline(topic,type,words,audience);
 }
+function renderOutline(topic,type,words,audience){
+  var typeLabel={argumentative:'Argumentative',expository:'Expository',narrative:'Narrative',descriptive:'Descriptive',compare:'Compare & Contrast',cause:'Cause & Effect',problem:'Problem-Solution',upsc:'UPSC Analytical Essay',exam:'School Exam Essay'}[type]||type;
+  var html='<div style="background:var(--card);padding:1.2rem;border-radius:10px;line-height:1.8">';
+  html+='<h3>'+esc(typeLabel)+' Outline: '+esc(topic)+'</h3>';
+  html+='<p class="info">Target: '+words+' words'+(audience?' · Audience: '+esc(audience):'')+'</p>';
+  currentSections.forEach(function(s,i){
+    html+='<div style="border-left:3px solid var(--accent);padding-left:.8rem;margin:.9rem 0">';
+    html+='<h4 style="margin:.2rem 0">'+(i+1)+'. '+esc(s.title)+' <span style="color:var(--text2);font-weight:400">['+s.words+' words]</span> '+
+      '<button class="btn btn-outline" style="padding:.1rem .45rem;font-size:.7rem" onclick="moveSec('+i+',-1)">↑</button>'+
+      '<button class="btn btn-outline" style="padding:.1rem .45rem;font-size:.7rem" onclick="moveSec('+i+',1)">↓</button>'+
+      '<button class="btn btn-outline" style="padding:.1rem .45rem;font-size:.7rem" onclick="renameSec('+i+')">✏️</button>'+
+      '<button class="btn btn-outline" style="padding:.1rem .45rem;font-size:.7rem;border-color:#f44336;color:#f44336" onclick="delSec('+i+')">✕</button></h4>';
+    html+='<ul style="margin-left:1.3rem">'+s.points.map(function(p){return '<li>'+esc(p)+'</li>';}).join('')+'</ul>';
+    html+='<textarea id="note_'+i+'" placeholder="Your notes for this section…" oninput="saveNote('+i+')" style="width:100%;min-height:50px;margin-top:.3rem">'+esc(s.notes)+'</textarea>';
+    html+='</div>';
+  });
+  html+='<button class="btn btn-outline" onclick="addSec()" style="margin-top:.5rem">+ Add Section</button>';
+  if(type==='upsc'){
+    html+='<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-top:1rem"><h4>🎯 UPSC Essay Guidance</h4><ul style="margin-left:1.3rem;line-height:1.9">'+
+      '<li><strong>Structure:</strong> Intro (anchored by a quote/anecdote) → multi-dimensional body → way forward → optimistic conclusion.</li>'+
+      '<li><strong>Quoting:</strong> Use 1-2 apt quotations (thinkers, Constitution, leaders) — do not overload.</li>'+
+      '<li><strong>Balance:</strong> Argue both sides fairly; UPSC rewards nuance over one-sidedness.</li>'+
+      '<li><strong>Time management:</strong> ~1000-1200 words in 60-75 min per essay. Spend ~10 min planning this outline, ~50 min writing, ~5 min reviewing.</li>'+
+      '<li><strong>Language:</strong> Simple, precise, connected paragraphs with clear transitions.</li></ul></div>';
+  }
+  html+='</div>';
+  html+='<div class="row" style="margin-top:.6rem;gap:.5rem;flex-wrap:wrap">'+
+    '<button class="btn btn-outline" onclick="copyOutline()">📋 Copy</button>'+
+    '<button class="btn btn-outline" onclick="exportDoc()">💾 .txt</button>'+
+    '<button class="btn btn-outline" onclick="printOutline()">🖨️ Print / PDF</button></div>';
+  var r=document.getElementById('result');r.innerHTML=html;r.style.display='block';
+  saveState();
+}
+function saveNote(i){var el=document.getElementById('note_'+i);if(el&&currentSections[i]){currentSections[i].notes=el.value;saveState();}}
+function moveSec(i,d){var j=i+d;if(j<0||j>=currentSections.length)return;var t=currentSections[i];currentSections[i]=currentSections[j];currentSections[j]=t;reRender();}
+function renameSec(i){var v=prompt('Rename section:',currentSections[i].title);if(v!==null){currentSections[i].title=v.trim();reRender();}}
+function delSec(i){if(currentSections.length<=1)return alert('Keep at least one section.');currentSections.splice(i,1);reRender();}
+function addSec(){var v=prompt('New section title:','New Section');if(v===null)return;currentSections.push({title:v.trim()||'New Section',weight:1,words:100,points:['[Add your points here]'],notes:''});reRender();}
+function reRender(){
+  var topic=document.getElementById('topic').value.trim();
+  var type=document.getElementById('type').value;
+  var words=parseInt(document.getElementById('words').value,10)||1000;
+  var audience=document.getElementById('audience').value.trim();
+  renderOutline(topic,type,words,audience);
+}
+function outlineToText(){
+  var topic=document.getElementById('topic').value.trim();
+  var words=parseInt(document.getElementById('words').value,10)||1000;
+  var lines=['Essay Outline: '+topic,'Target: '+words+' words',''];
+  currentSections.forEach(function(s,i){
+    lines.push((i+1)+'. '+s.title+' ['+s.words+' words]');
+    s.points.forEach(function(p){lines.push('   - '+p);});
+    if(s.notes)lines.push('   Notes: '+s.notes);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+function copyOutline(){navigator.clipboard.writeText(outlineToText());}
+function exportDoc(){download(new Blob([outlineToText()],{type:'text/plain'}),'essay-outline.txt');}
+function printOutline(){
+  var w=window.open('','_blank');
+  if(!w)return alert('Please allow pop-ups to print.');
+  var body=outlineToText().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  w.document.write('<html><head><title>Essay Outline</title><style>body{font-family:Georgia,serif;line-height:1.7;max-width:720px;margin:2rem auto;padding:0 1rem;color:#111}</style></head><body>'+body+'</body></html>');
+  w.document.close();w.focus();w.print();
+}
+// ---------- persistence ----------
+function saveState(){
+  try{localStorage.setItem('essayOutline',JSON.stringify({
+    topic:document.getElementById('topic').value,
+    thesis:document.getElementById('thesis').value,
+    type:document.getElementById('type').value,
+    words:document.getElementById('words').value,
+    bodyCount:document.getElementById('bodyCount').value,
+    audience:document.getElementById('audience').value,
+    sections:currentSections
+  }));}catch(e){}
+}
+function loadState(){
+  try{var s=JSON.parse(localStorage.getItem('essayOutline'));
+    if(!s)return;
+    document.getElementById('topic').value=s.topic||'';
+    document.getElementById('thesis').value=s.thesis||'';
+    if(s.type)document.getElementById('type').value=s.type;
+    document.getElementById('words').value=s.words||1000;
+    document.getElementById('bodyCount').value=s.bodyCount||3;
+    document.getElementById('audience').value=s.audience||'';
+    if(s.sections&&s.sections.length){currentSections=s.sections;reRender();}
+  }catch(e){}
+}
+renderBank();
+loadState();
 </script>
 </body></html>

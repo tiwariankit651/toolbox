@@ -92,73 +92,171 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var cats={AM:"Alkali Metal",AEM:"Alkaline Earth",TM:"Transition Metal",PTM:"Post-Transition",ML:"Metalloid",NM:"Nonmetal",HL:"Halogen",NG:"Noble Gas",LN:"Lanthanide",AN:"Actinide"};
-var colors={AM:"#ff6b6b",AEM:"#ffa94d",TM:"#6366f1",PTM:"#69db7c",ML:"#da77f2",NM:"#38d9a9",HL:"#ffd43b",NG:"#a78bfa",LN:"#f783ac",AN:"#e599f7"};
+var cats={AM:"Alkali Metal",AEM:"Alkaline Earth",TM:"Transition Metal",PTM:"Post-Transition",ML:"Metalloid",NM:"Nonmetal",HL:"Halogen",NG:"Noble Gas",LA:"Lanthanide",AC:"Actinide",LN:"Lanthanide",AN:"Actinide",UN:"Unknown / Predicted"};
+var colors={AM:"#ff6b6b",AEM:"#ffa94d",TM:"#6366f1",PTM:"#69db7c",ML:"#da77f2",NM:"#38d9a9",HL:"#ffd43b",NG:"#a78bfa",LA:"#f783ac",AC:"#e599f7",LN:"#f783ac",AN:"#e599f7",UN:"#94a3b8"};
 // [num, sym, name, mass, cat, period, group, density(g/cm³), melt(°C), boil(°C), electronegativity, state, block, electronConfig]
 var E=[
-[1,"H","Hydrogen",1.008,"NM",1,1,0.00009,-259,-253,2.20,"Gas","s","1s¹"],
+[1,"H","Hydrogen",1.008,"NM",1,1,0.00009,-259,-253,2.2,"Gas","s","1s¹"],
 [2,"He","Helium",4.003,"NG",1,18,0.000179,-272,-269,null,"Gas","s","1s²"],
 [3,"Li","Lithium",6.941,"AM",2,1,0.534,181,1342,0.98,"Solid","s","[He] 2s¹"],
 [4,"Be","Beryllium",9.012,"AEM",2,2,1.85,1287,2470,1.57,"Solid","s","[He] 2s²"],
 [5,"B","Boron",10.81,"ML",2,13,2.34,2076,3927,2.04,"Solid","p","[He] 2s² 2p¹"],
 [6,"C","Carbon",12.01,"NM",2,14,2.27,3550,4027,2.55,"Solid","p","[He] 2s² 2p²"],
 [7,"N","Nitrogen",14.01,"NM",2,15,0.00125,-210,-196,3.04,"Gas","p","[He] 2s² 2p³"],
-[8,"O","Oxygen",16.00,"NM",2,16,0.00143,-218,-183,3.44,"Gas","p","[He] 2s² 2p⁴"],
-[9,"F","Fluorine",19.00,"HL",2,17,0.0017,-220,-188,3.98,"Gas","p","[He] 2s² 2p⁵"],
+[8,"O","Oxygen",16,"NM",2,16,0.00143,-218,-183,3.44,"Gas","p","[He] 2s² 2p⁴"],
+[9,"F","Fluorine",19,"HL",2,17,0.0017,-220,-188,3.98,"Gas","p","[He] 2s² 2p⁵"],
 [10,"Ne","Neon",20.18,"NG",2,18,0.0009,-249,-246,null,"Gas","p","[He] 2s² 2p⁶"],
 [11,"Na","Sodium",22.99,"AM",3,1,0.97,98,883,0.93,"Solid","s","[Ne] 3s¹"],
 [12,"Mg","Magnesium",24.31,"AEM",3,2,1.74,650,1090,1.31,"Solid","s","[Ne] 3s²"],
-[13,"Al","Aluminium",26.98,"PTM",3,13,2.70,660,2519,1.61,"Solid","p","[Ne] 3s² 3p¹"],
-[14,"Si","Silicon",28.09,"ML",3,14,2.33,1414,3265,1.90,"Solid","p","[Ne] 3s² 3p²"],
+[13,"Al","Aluminium",26.98,"PTM",3,13,2.7,660,2519,1.61,"Solid","p","[Ne] 3s² 3p¹"],
+[14,"Si","Silicon",28.09,"ML",3,14,2.33,1414,3265,1.9,"Solid","p","[Ne] 3s² 3p²"],
 [15,"P","Phosphorus",30.97,"NM",3,15,1.82,44,281,2.19,"Solid","p","[Ne] 3s² 3p³"],
 [16,"S","Sulfur",32.07,"NM",3,16,2.07,115,445,2.58,"Solid","p","[Ne] 3s² 3p⁴"],
 [17,"Cl","Chlorine",35.45,"HL",3,17,0.0032,-101,-34,3.16,"Gas","p","[Ne] 3s² 3p⁵"],
 [18,"Ar","Argon",39.95,"NG",3,18,0.0018,-189,-186,null,"Gas","p","[Ne] 3s² 3p⁶"],
-[19,"K","Potassium",39.10,"AM",4,1,0.86,64,759,0.82,"Solid","s","[Ar] 4s¹"],
-[20,"Ca","Calcium",40.08,"AEM",4,2,1.55,842,1484,1.00,"Solid","s","[Ar] 4s²"],
+[19,"K","Potassium",39.1,"AM",4,1,0.86,64,759,0.82,"Solid","s","[Ar] 4s¹"],
+[20,"Ca","Calcium",40.08,"AEM",4,2,1.55,842,1484,1,"Solid","s","[Ar] 4s²"],
 [21,"Sc","Scandium",44.96,"TM",4,3,2.99,1541,2836,1.36,"Solid","d","[Ar] 3d¹ 4s²"],
 [22,"Ti","Titanium",47.87,"TM",4,4,4.51,1668,3287,1.54,"Solid","d","[Ar] 3d² 4s²"],
 [23,"V","Vanadium",50.94,"TM",4,5,6.11,1910,3407,1.63,"Solid","d","[Ar] 3d³ 4s²"],
-[24,"Cr","Chromium",52.00,"TM",4,6,7.15,1907,2671,1.66,"Solid","d","[Ar] 3d⁵ 4s¹"],
+[24,"Cr","Chromium",52,"TM",4,6,7.15,1907,2671,1.66,"Solid","d","[Ar] 3d⁵ 4s¹"],
 [25,"Mn","Manganese",54.94,"TM",4,7,7.44,1246,2061,1.55,"Solid","d","[Ar] 3d⁵ 4s²"],
 [26,"Fe","Iron",55.85,"TM",4,8,7.87,1538,2862,1.83,"Solid","d","[Ar] 3d⁶ 4s²"],
-[27,"Co","Cobalt",58.93,"TM",4,9,8.90,1495,2927,1.88,"Solid","d","[Ar] 3d⁷ 4s²"],
+[27,"Co","Cobalt",58.93,"TM",4,9,8.9,1495,2927,1.88,"Solid","d","[Ar] 3d⁷ 4s²"],
 [28,"Ni","Nickel",58.69,"TM",4,10,8.91,1455,2913,1.91,"Solid","d","[Ar] 3d⁸ 4s²"],
-[29,"Cu","Copper",63.55,"TM",4,11,8.96,1085,2562,1.90,"Solid","d","[Ar] 3d¹⁰ 4s¹"],
+[29,"Cu","Copper",63.55,"TM",4,11,8.96,1085,2562,1.9,"Solid","d","[Ar] 3d¹⁰ 4s¹"],
 [30,"Zn","Zinc",65.38,"TM",4,12,7.13,420,907,1.65,"Solid","d","[Ar] 3d¹⁰ 4s²"],
 [31,"Ga","Gallium",69.72,"PTM",4,13,5.91,30,2204,1.81,"Solid","p","[Ar] 3d¹⁰ 4s² 4p¹"],
 [32,"Ge","Germanium",72.63,"ML",4,14,5.32,938,2833,2.01,"Solid","p","[Ar] 3d¹⁰ 4s² 4p²"],
 [33,"As","Arsenic",74.92,"ML",4,15,5.73,817,614,2.18,"Solid","p","[Ar] 3d¹⁰ 4s² 4p³"],
 [34,"Se","Selenium",78.97,"NM",4,16,4.81,221,685,2.55,"Solid","p","[Ar] 3d¹⁰ 4s² 4p⁴"],
-[35,"Br","Bromine",79.90,"HL",4,17,3.12,-7,59,2.96,"Liquid","p","[Ar] 3d¹⁰ 4s² 4p⁵"],
-[36,"Kr","Krypton",83.80,"NG",4,18,0.0037,-157,-153,3.00,"Gas","p","[Ar] 3d¹⁰ 4s² 4p⁶"],
+[35,"Br","Bromine",79.9,"HL",4,17,3.12,-7,59,2.96,"Liquid","p","[Ar] 3d¹⁰ 4s² 4p⁵"],
+[36,"Kr","Krypton",83.8,"NG",4,18,0.0037,-157,-153,3,"Gas","p","[Ar] 3d¹⁰ 4s² 4p⁶"],
 [37,"Rb","Rubidium",85.47,"AM",5,1,1.53,39,688,0.82,"Solid","s","[Kr] 5s¹"],
 [38,"Sr","Strontium",87.62,"AEM",5,2,2.64,777,1382,0.95,"Solid","s","[Kr] 5s²"],
 [39,"Y","Yttrium",88.91,"TM",5,3,4.47,1526,3345,1.22,"Solid","d","[Kr] 4d¹ 5s²"],
 [40,"Zr","Zirconium",91.22,"TM",5,4,6.51,1855,4409,1.33,"Solid","d","[Kr] 4d² 5s²"],
-[41,"Nb","Niobium",92.91,"TM",5,5,8.57,2477,4744,1.60,"Solid","d","[Kr] 4d⁴ 5s¹"],
+[41,"Nb","Niobium",92.91,"TM",5,5,8.57,2477,4744,1.6,"Solid","d","[Kr] 4d⁴ 5s¹"],
 [42,"Mo","Molybdenum",95.95,"TM",5,6,10.22,2623,4639,2.16,"Solid","d","[Kr] 4d⁵ 5s¹"],
-[43,"Tc","Technetium",98,"TM",5,7,11.5,2157,4265,1.90,"Solid","d","[Kr] 4d⁵ 5s²"],
-[44,"Ru","Ruthenium",101.1,"TM",5,8,12.37,2334,4150,2.20,"Solid","d","[Kr] 4d⁷ 5s¹"],
+[43,"Tc","Technetium",98,"TM",5,7,11.5,2157,4265,1.9,"Solid","d","[Kr] 4d⁵ 5s²"],
+[44,"Ru","Ruthenium",101.1,"TM",5,8,12.37,2334,4150,2.2,"Solid","d","[Kr] 4d⁷ 5s¹"],
 [45,"Rh","Rhodium",102.9,"TM",5,9,12.41,1964,3695,2.28,"Solid","d","[Kr] 4d⁸ 5s¹"],
-[46,"Pd","Palladium",106.4,"TM",5,10,12.02,1555,2963,2.20,"Solid","d","[Kr] 4d¹⁰"],
-[47,"Ag","Silver",107.9,"TM",5,11,10.50,962,2162,1.93,"Solid","d","[Kr] 4d¹⁰ 5s¹"],
+[46,"Pd","Palladium",106.4,"TM",5,10,12.02,1555,2963,2.2,"Solid","d","[Kr] 4d¹⁰"],
+[47,"Ag","Silver",107.9,"TM",5,11,10.5,962,2162,1.93,"Solid","d","[Kr] 4d¹⁰ 5s¹"],
 [48,"Cd","Cadmium",112.4,"TM",5,12,8.65,321,767,1.69,"Solid","d","[Kr] 4d¹⁰ 5s²"],
 [49,"In","Indium",114.8,"PTM",5,13,7.31,157,2072,1.78,"Solid","p","[Kr] 4d¹⁰ 5s² 5p¹"],
 [50,"Sn","Tin",118.7,"PTM",5,14,7.29,232,2602,1.96,"Solid","p","[Kr] 4d¹⁰ 5s² 5p²"],
 [51,"Sb","Antimony",121.8,"ML",5,15,6.69,631,1587,2.05,"Solid","p","[Kr] 4d¹⁰ 5s² 5p³"],
-[52,"Te","Tellurium",127.6,"ML",5,16,6.24,450,988,2.10,"Solid","p","[Kr] 4d¹⁰ 5s² 5p⁴"],
+[52,"Te","Tellurium",127.6,"ML",5,16,6.24,450,988,2.1,"Solid","p","[Kr] 4d¹⁰ 5s² 5p⁴"],
 [53,"I","Iodine",126.9,"HL",5,17,4.93,114,184,2.66,"Solid","p","[Kr] 4d¹⁰ 5s² 5p⁵"],
-[54,"Xe","Xenon",131.3,"NG",5,18,0.0059,-112,-108,2.60,"Gas","p","[Kr] 4d¹⁰ 5s² 5p⁶"]
+[54,"Xe","Xenon",131.3,"NG",5,18,0.0059,-112,-108,2.6,"Gas","p","[Kr] 4d¹⁰ 5s² 5p⁶"],
+[55,"Cs","Caesium",132.9,"AM",6,1,1.93,28,671,0.79,"Solid","s","[Xe] 6s¹"],
+[56,"Ba","Barium",137.3,"AEM",6,2,3.51,727,1870,0.89,"Solid","s","[Xe] 6s²"],
+[57,"La","Lanthanum",138.9,"LA",6,3,6.15,920,3464,1.1,"Solid","d","[Xe] 5d¹ 6s²"],
+[58,"Ce","Cerium",140.1,"LA",6,3,6.77,795,3443,1.12,"Solid","f","[Xe] 4f¹ 5d¹ 6s²"],
+[59,"Pr","Praseodymium",140.9,"LA",6,3,6.77,935,3520,1.13,"Solid","f","[Xe] 4f³ 6s²"],
+[60,"Nd","Neodymium",144.2,"LA",6,3,7.01,1024,3074,1.14,"Solid","f","[Xe] 4f⁴ 6s²"],
+[61,"Pm","Promethium",145,"LA",6,3,7.26,1042,3000,1.13,"Solid","f","[Xe] 4f⁵ 6s²"],
+[62,"Sm","Samarium",150.4,"LA",6,3,7.52,1072,1794,1.17,"Solid","f","[Xe] 4f⁶ 6s²"],
+[63,"Eu","Europium",152,"LA",6,3,5.24,826,1529,1.2,"Solid","f","[Xe] 4f⁷ 6s²"],
+[64,"Gd","Gadolinium",157.3,"LA",6,3,7.9,1312,3273,1.2,"Solid","f","[Xe] 4f⁷ 5d¹ 6s²"],
+[65,"Tb","Terbium",158.9,"LA",6,3,8.23,1356,3230,1.2,"Solid","f","[Xe] 4f⁹ 6s²"],
+[66,"Dy","Dysprosium",162.5,"LA",6,3,8.55,1407,2567,1.22,"Solid","f","[Xe] 4f¹⁰ 6s²"],
+[67,"Ho","Holmium",164.9,"LA",6,3,8.8,1461,2720,1.23,"Solid","f","[Xe] 4f¹¹ 6s²"],
+[68,"Er","Erbium",167.3,"LA",6,3,9.07,1529,2868,1.24,"Solid","f","[Xe] 4f¹² 6s²"],
+[69,"Tm","Thulium",168.9,"LA",6,3,9.32,1545,1950,1.25,"Solid","f","[Xe] 4f¹³ 6s²"],
+[70,"Yb","Ytterbium",173,"LA",6,3,6.9,824,1196,1.1,"Solid","f","[Xe] 4f¹⁴ 6s²"],
+[71,"Lu","Lutetium",175,"LA",6,3,9.84,1652,3402,1.27,"Solid","d","[Xe] 4f¹⁴ 5d¹ 6s²"],
+[72,"Hf","Hafnium",178.5,"TM",6,4,13.31,2233,4603,1.3,"Solid","d","[Xe] 4f¹⁴ 5d² 6s²"],
+[73,"Ta","Tantalum",180.9,"TM",6,5,16.65,3017,5458,1.5,"Solid","d","[Xe] 4f¹⁴ 5d³ 6s²"],
+[74,"W","Tungsten",183.8,"TM",6,6,19.25,3422,5555,2.36,"Solid","d","[Xe] 4f¹⁴ 5d⁴ 6s²"],
+[75,"Re","Rhenium",186.2,"TM",6,7,21.02,3186,5596,1.9,"Solid","d","[Xe] 4f¹⁴ 5d⁵ 6s²"],
+[76,"Os","Osmium",190.2,"TM",6,8,22.59,3033,5012,2.2,"Solid","d","[Xe] 4f¹⁴ 5d⁶ 6s²"],
+[77,"Ir","Iridium",192.2,"TM",6,9,22.56,2466,4428,2.2,"Solid","d","[Xe] 4f¹⁴ 5d⁷ 6s²"],
+[78,"Pt","Platinum",195.1,"TM",6,10,21.45,1768,3825,2.28,"Solid","d","[Xe] 4f¹⁴ 5d⁹ 6s¹"],
+[79,"Au","Gold",197,"TM",6,11,19.32,1064,2856,2.54,"Solid","d","[Xe] 4f¹⁴ 5d¹⁰ 6s¹"],
+[80,"Hg","Mercury",200.6,"TM",6,12,13.53,-39,357,2,"Liquid","d","[Xe] 4f¹⁴ 5d¹⁰ 6s²"],
+[81,"Tl","Thallium",204.4,"PTM",6,13,11.85,304,1473,1.62,"Solid","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹"],
+[82,"Pb","Lead",207.2,"PTM",6,14,11.34,327,1749,2.33,"Solid","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²"],
+[83,"Bi","Bismuth",209,"PTM",6,15,9.78,271,1564,2.02,"Solid","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³"],
+[84,"Po","Polonium",209,"PTM",6,16,9.2,254,962,2,"Solid","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴"],
+[85,"At","Astatine",210,"HL",6,17,null,302,337,2.2,"Solid","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵"],
+[86,"Rn","Radon",222,"NG",6,18,0.00973,-71,-62,2.2,"Gas","p","[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶"],
+[87,"Fr","Francium",223,"AM",7,1,null,27,677,0.7,"Solid","s","[Rn] 7s¹"],
+[88,"Ra","Radium",226,"AEM",7,2,5.5,700,1737,0.9,"Solid","s","[Rn] 7s²"],
+[89,"Ac","Actinium",227,"AC",7,3,10.07,1050,3200,1.1,"Solid","d","[Rn] 6d¹ 7s²"],
+[90,"Th","Thorium",232,"AC",7,3,11.72,1750,4788,1.3,"Solid","f","[Rn] 6d² 7s²"],
+[91,"Pa","Protactinium",231,"AC",7,3,15.37,1572,4000,1.5,"Solid","f","[Rn] 5f² 6d¹ 7s²"],
+[92,"U","Uranium",238,"AC",7,3,18.95,1135,4131,1.38,"Solid","f","[Rn] 5f³ 6d¹ 7s²"],
+[93,"Np","Neptunium",237,"AC",7,3,20.45,644,4000,1.36,"Solid","f","[Rn] 5f⁴ 6d¹ 7s²"],
+[94,"Pu","Plutonium",244,"AC",7,3,19.84,640,3228,1.28,"Solid","f","[Rn] 5f⁶ 7s²"],
+[95,"Am","Americium",243,"AC",7,3,13.69,1176,2011,1.3,"Solid","f","[Rn] 5f⁷ 7s²"],
+[96,"Cm","Curium",247,"AC",7,3,13.51,1345,3110,1.3,"Solid","f","[Rn] 5f⁷ 6d¹ 7s²"],
+[97,"Bk","Berkelium",247,"AC",7,3,14.79,1050,2627,1.3,"Solid","f","[Rn] 5f⁹ 7s²"],
+[98,"Cf","Californium",251,"AC",7,3,15.1,900,1470,1.3,"Solid","f","[Rn] 5f¹⁰ 7s²"],
+[99,"Es","Einsteinium",252,"AC",7,3,8.84,860,996,1.3,"Solid","f","[Rn] 5f¹¹ 7s²"],
+[100,"Fm","Fermium",257,"AC",7,3,null,1527,null,1.3,"Solid","f","[Rn] 5f¹² 7s²"],
+[101,"Md","Mendelevium",258,"AC",7,3,null,827,null,1.3,"Solid","f","[Rn] 5f¹³ 7s²"],
+[102,"No","Nobelium",259,"AC",7,3,null,827,null,1.3,"Solid","f","[Rn] 5f¹⁴ 7s²"],
+[103,"Lr","Lawrencium",266,"AC",7,3,null,1627,null,1.3,"Solid","d","[Rn] 5f¹⁴ 7s² 7p¹"],
+[104,"Rf","Rutherfordium",267,"TM",7,4,null,2100,5500,null,"Solid","d","[Rn] 5f¹⁴ 6d² 7s²"],
+[105,"Db","Dubnium",268,"TM",7,5,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d³ 7s²"],
+[106,"Sg","Seaborgium",269,"TM",7,6,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁴ 7s²"],
+[107,"Bh","Bohrium",270,"TM",7,7,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁵ 7s²"],
+[108,"Hs","Hassium",269,"TM",7,8,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁶ 7s²"],
+[109,"Mt","Meitnerium",278,"UN",7,9,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁷ 7s²"],
+[110,"Ds","Darmstadtium",281,"UN",7,10,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁸ 7s²"],
+[111,"Rg","Roentgenium",282,"UN",7,11,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d⁹ 7s²"],
+[112,"Cn","Copernicium",285,"UN",7,12,null,null,null,null,"Solid","d","[Rn] 5f¹⁴ 6d¹⁰ 7s²"],
+[113,"Nh","Nihonium",286,"UN",7,13,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹"],
+[114,"Fl","Flerovium",289,"UN",7,14,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²"],
+[115,"Mc","Moscovium",290,"UN",7,15,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³"],
+[116,"Lv","Livermorium",293,"UN",7,16,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴"],
+[117,"Ts","Tennessine",294,"UN",7,17,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵"],
+[118,"Og","Oganesson",294,"UN",7,18,null,null,null,null,"Solid","p","[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶"]
 ];
 // Metal/nonmetal/metalloid classification
-var metalTypes={AM:"metal",AEM:"metal",TM:"metal",PTM:"metal",LN:"metal",AN:"metal",ML:"metalloid",NM:"nonmetal",HL:"nonmetal",NG:"nonmetal"};
+var metalTypes={AM:"metal",AEM:"metal",TM:"metal",PTM:"metal",LA:"metal",AC:"metal",LN:"metal",AN:"metal",ML:"metalloid",NM:"nonmetal",HL:"nonmetal",NG:"nonmetal",UN:"metal"};
 
 var grid=document.getElementById("table");
 var elDoms=[];
+// f-block elements are shown in their own rows below the main table
+function isF(z){return (z>=57&&z<=71)||(z>=89&&z<=103)}
+function makeCell(el){
+  var d=document.createElement("div");
+  if(!el){grid.appendChild(d);elDoms.push(null);return}
+  d.className="el";d.style.background=colors[el[4]]||"#94a3b8";d.style.color="#fff";
+  d.innerHTML='<span class="num">'+el[0]+'</span><span class="sym">'+el[1]+'</span>';
+  d.dataset.idx=E.indexOf(el);
+  d.onclick=function(ev){handleClick(ev,E[this.dataset.idx])};
+  grid.appendChild(d);elDoms.push({dom:d,el:el});
+}
+// main table rows 1-7 (f-block skipped, placeholder shown in group 3 of periods 6 and 7)
 var cells={};
-E.forEach(function(e){cells[e[5]+"-"+e[6]]=e});
-for(var r=1;r<=7;r++){for(var c=1;c<=18;c++){var el=cells[r+"-"+c];if(el){var d=document.createElement("div");d.className="el";d.style.background=colors[el[4]];d.style.color="#fff";d.innerHTML='<span class="num">'+el[0]+'</span><span class="sym">'+el[1]+'</span>';d.dataset.idx=E.indexOf(el);d.onclick=function(ev){handleClick(ev,E[this.dataset.idx])};grid.appendChild(d);elDoms.push({dom:d,el:el})}else{var d=document.createElement("div");grid.appendChild(d);elDoms.push(null)}}}
+E.forEach(function(e){if(!isF(e[0]))cells[e[5]+"-"+e[6]]=e});
+for(var r=1;r<=7;r++){
+  for(var c=1;c<=18;c++){
+    if(c===3&&(r===6||r===7)){
+      var ph=document.createElement("div");
+      ph.className="el";ph.style.background="var(--card)";ph.style.color="var(--text2)";
+      ph.style.fontSize=".55rem";ph.style.display="flex";ph.style.alignItems="center";
+      ph.style.justifyContent="center";ph.style.textAlign="center";
+      ph.textContent=(r===6?"57-71":"89-103");
+      ph.title=(r===6?"Lanthanides — see row below":"Actinides — see row below");
+      grid.appendChild(ph);elDoms.push(null);
+      continue;
+    }
+    makeCell(cells[r+"-"+c]);
+  }
+}
+// lanthanide row: 2 blank spacers then 57-71 (15 elements) then 1 blank
+for(var k=0;k<2;k++)makeCell(null);
+E.filter(function(e){return e[0]>=57&&e[0]<=71}).forEach(makeCell);
+makeCell(null);
+// actinide row: 2 blank spacers then 89-103 then 1 blank
+for(var k=0;k<2;k++)makeCell(null);
+E.filter(function(e){return e[0]>=89&&e[0]<=103}).forEach(makeCell);
+makeCell(null);
 
 // Compare mode
 var compareList=[];

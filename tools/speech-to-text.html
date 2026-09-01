@@ -37,43 +37,91 @@
     <div class="tool-section">
       <h1>🎙️ Speech to Text</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
-      <p class="info">Click the microphone button and start speaking. Your speech will be converted to text in real-time.</p>
-      <div class="row" style="margin-bottom:.8rem">
-        <label>Language:</label>
-        <select id="lang">
-          <option value="en-US">English (US)</option>
-          <option value="en-GB">English (UK)</option>
-          <option value="hi-IN">Hindi</option>
-          <option value="es-ES">Spanish</option>
-          <option value="fr-FR">French</option>
-          <option value="de-DE">German</option>
-          <option value="ja-JP">Japanese</option>
-          <option value="ko-KR">Korean</option>
-          <option value="zh-CN">Chinese</option>
-          <option value="ar-SA">Arabic</option>
-          <option value="pt-BR">Portuguese</option>
-          <option value="ru-RU">Russian</option>
-          <option value="it-IT">Italian</option>
-          <option value="bn-IN">Bengali</option>
-          <option value="ta-IN">Tamil</option>
-          <option value="te-IN">Telugu</option>
-          <option value="mr-IN">Marathi</option>
-          <option value="gu-IN">Gujarati</option>
-          <option value="ur-PK">Urdu</option>
-        </select>
+      <p class="info">Click the microphone button and start speaking. Your speech will be converted to text in real-time. Works best in Chrome and Edge.</p>
+      <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap">
+        <div style="flex:2;min-width:180px">
+          <label>Language:</label>
+          <select id="lang" style="width:100%">
+            <optgroup label="English">
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="en-IN">English (India)</option>
+              <option value="en-AU">English (Australia)</option>
+            </optgroup>
+            <optgroup label="Indian Languages">
+              <option value="hi-IN">Hindi</option>
+              <option value="bn-IN">Bengali</option>
+              <option value="ta-IN">Tamil</option>
+              <option value="te-IN">Telugu</option>
+              <option value="mr-IN">Marathi</option>
+              <option value="gu-IN">Gujarati</option>
+              <option value="kn-IN">Kannada</option>
+              <option value="ml-IN">Malayalam</option>
+              <option value="pa-IN">Punjabi</option>
+              <option value="ur-PK">Urdu</option>
+            </optgroup>
+            <optgroup label="World Languages">
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="pt-BR">Portuguese</option>
+              <option value="it-IT">Italian</option>
+              <option value="ru-RU">Russian</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="ko-KR">Korean</option>
+              <option value="zh-CN">Chinese (Mandarin)</option>
+              <option value="ar-SA">Arabic</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:.35rem;justify-content:flex-end">
+          <label style="display:flex;align-items:center;gap:.4rem;font-size:.83rem"><input type="checkbox" id="continuousMode" checked> Continuous dictation</label>
+          <label style="display:flex;align-items:center;gap:.4rem;font-size:.83rem"><input type="checkbox" id="autoCap" checked> Auto-capitalise</label>
+          <label style="display:flex;align-items:center;gap:.4rem;font-size:.83rem"><input type="checkbox" id="voiceCmds" checked> Voice commands</label>
+        </div>
       </div>
       <div style="text-align:center;margin:1rem 0">
         <button class="btn" onclick="toggleRec()" id="recBtn" style="font-size:1.3rem;padding:.8rem 2rem">🎙️ Start Recording</button>
       </div>
-      <div id="status" class="info" style="text-align:center;margin-bottom:.5rem"></div>
-      <textarea id="output" rows="8" placeholder="Your speech will appear here..." style="width:100%"></textarea>
-      <div class="row" style="margin-top:.5rem">
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('output').value)">📋 Copy</button>
-        <button class="btn btn-outline" onclick="document.getElementById('output').value=''">🗑️ Clear</button>
-        <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('output').value],{type:'text/plain'}),'speech.txt')">💾 Download</button>
+      <div class="row" style="justify-content:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:.5rem;font-size:.85rem">
+        <span id="timerDisplay" class="info">⏱ 00:00</span>
+        <span id="wordCount" class="info">0 words</span>
+        <span id="charCountS" class="info">0 chars</span>
       </div>
+      <div id="status" class="info" style="text-align:center;margin-bottom:.5rem"></div>
+      <div id="interimDisplay" style="display:none;min-height:1.4rem;padding:.5rem .7rem;border:1px dashed var(--border);border-radius:8px;margin-bottom:.5rem;color:var(--text2);font-style:italic;opacity:.75"></div>
+      <textarea id="output" rows="8" placeholder="Your speech will appear here... (you can edit this text too)" style="width:100%" oninput="onOutputEdit()"></textarea>
+      <div class="row" style="margin-top:.5rem;flex-wrap:wrap;gap:.4rem">
+        <button class="btn btn-outline" onclick="undoOutput()" style="flex:1;font-size:.85rem">↶ Undo</button>
+        <button class="btn btn-outline" onclick="copyOutput()" style="flex:1;font-size:.85rem">📋 Copy</button>
+        <button class="btn btn-outline" onclick="clearOutput()" style="flex:1;font-size:.85rem">🗑️ Clear</button>
+        <button class="btn btn-outline" onclick="downloadOutput()" style="flex:1;font-size:.85rem">💾 Download</button>
+      </div>
+
+      <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="margin:0 0 .5rem">🗣️ Voice Commands for Punctuation</h3>
+        <p class="info" style="font-size:.83rem;margin:0 0 .5rem">While dictating, just say these words and the right character is inserted:</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.4rem;font-size:.82rem">
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“comma” → ,</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“full stop” / “period” → .</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“question mark” → ?</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“exclamation mark” → !</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“new line” → ↵</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“new paragraph” → ↵↵</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="margin:0 0 .5rem">🕘 Session History</h3>
+        <div id="history" style="margin-top:.3rem;display:flex;flex-direction:column;gap:.4rem"></div>
+      </div>
+
       <div id="noSupport" style="display:none;padding:1rem;background:#f443361a;border-radius:8px;margin-top:1rem;text-align:center">
-        <p>⚠️ Speech recognition is not supported in this browser. Please use <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>.</p>
+        <p>⚠️ Speech recognition is not supported in this browser. It mainly works in <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong> on desktop and Android. Please switch browsers to use this tool.</p>
+      </div>
+
+      <div class="info" style="margin-top:1rem;font-size:.82rem;border-top:1px solid var(--border);padding-top:.8rem">
+        <strong>🔒 Privacy note:</strong> Browser speech recognition is <strong>not fully offline</strong>. When you dictate, your browser sends the recorded audio to its vendor's servers (Google for Chrome, Microsoft for Edge) for processing, then returns the text. We never see or store your audio — but the browser vendor does process it. If that matters for sensitive content, avoid dictating confidential information.
       </div>
     </div>
     <div style="min-height:90px"></div>
@@ -97,9 +145,9 @@
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert your voice to text in real-time using browser-based speech recognition. Supports 19 languages including English (US/UK), Hindi, Spanish, French, German, Japanese, Korean, Chinese, Arabic, Portuguese, Russian, Italian, Bengali, Tamil, Telugu, Marathi, Gujarati, and Urdu. Features continuous recording mode, real-time transcription display, copy to clipboard, clear, and download as text file. Works best in Chrome and Edge browsers. Perfect for voice typing, taking notes, transcribing meetings, and accessibility.</p>
 <h2>Frequently Asked Questions</h2>
 <details><summary>Is this tool really free?</summary><p>Yes, completely free with no hidden charges, no signup required, and no usage limits. Use it as many times as you want.</p></details>
-<details><summary>Is my data safe?</summary><p>Absolutely. All processing happens in your browser using JavaScript. Your files and data are never uploaded to any server. We physically cannot access your data.</p></details>
+<details><summary>Is my data safe?</summary><p>The text and history stay in your browser and are never uploaded to our servers. However, be aware that browser speech recognition sends your recorded audio to your browser vendor's servers (Google or Microsoft) for processing. We cannot access it, but the vendor does process the audio. Avoid dictating confidential information.</p></details>
 <details><summary>Does it work on mobile?</summary><p>Yes, this tool works on all devices — desktop, laptop, tablet, and mobile phone. No app installation needed.</p></details>
-<details><summary>Does it work offline?</summary><p>Yes! After your first visit, this tool works without internet connection. It is a Progressive Web App (PWA) that caches locally.</p></details>
+<details><summary>Does it work offline?</summary><p>No — unlike most of our tools, speech recognition needs an internet connection. Your browser (Chrome or Edge) sends the recorded audio to its vendor's servers for processing and returns the text. The page itself loads instantly, but dictation will not work without internet.</p></details>
 <details><summary>Can I use this for commercial purposes?</summary><p>Yes, all output from this tool is yours to use for any purpose — personal, educational, or commercial.</p></details>
 </div>
   </div>
@@ -126,28 +174,199 @@
   <script src="../js/common.js"></script>
   <script>
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SR){document.getElementById('noSupport').style.display='block';document.getElementById('recBtn').disabled=true}
-let rec,recording=false;
+let rec,recording=false,manualStop=false;
+let baseText='';        // finalised text committed before current session segment
+let undoStack=[];
+let timerInt=null,startTime=0;
+
+if(!SR){
+  document.getElementById('noSupport').style.display='block';
+  document.getElementById('recBtn').disabled=true;
+  document.getElementById('status').textContent='';
+}
+
+// ---------- Punctuation voice commands ----------
+const CMDS=[
+  {re:/\bnew paragraph\b/gi,rep:'\n\n'},
+  {re:/\bnew line\b/gi,rep:'\n'},
+  {re:/\bfull stop\b/gi,rep:'. '},
+  {re:/\bperiod\b/gi,rep:'. '},
+  {re:/\bquestion mark\b/gi,rep:'? '},
+  {re:/\bexclamation mark\b/gi,rep:'! '},
+  {re:/\bexclamation point\b/gi,rep:'! '},
+  {re:/\bcomma\b/gi,rep:', '},
+  {re:/\bsemicolon\b/gi,rep:'; '},
+  {re:/\bcolon\b/gi,rep:': '}
+];
+function applyCommands(str){
+  if(!document.getElementById('voiceCmds').checked)return str;
+  let s=str;
+  CMDS.forEach(c=>{s=s.replace(c.re,c.rep)});
+  // tidy spaces before punctuation
+  s=s.replace(/\s+([,.!?;:])/g,'$1');
+  return s;
+}
+function autoCapitalise(str){
+  if(!document.getElementById('autoCap').checked)return str;
+  // capitalise first letter overall and after . ! ? and newlines
+  return str.replace(/(^\s*[a-z])|([.!?]\s+[a-z])|(\n\s*[a-z])/g,function(m){return m.toUpperCase()});
+}
+function processText(str){return autoCapitalise(applyCommands(str))}
+
+// ---------- Timer / counts ----------
+function fmtTime(sec){var m=Math.floor(sec/60),s=sec%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s}
+function startTimer(){startTime=Date.now();timerInt=setInterval(()=>{const sec=Math.floor((Date.now()-startTime)/1000);document.getElementById('timerDisplay').textContent='⏱ '+fmtTime(sec)},500)}
+function stopTimer(){if(timerInt){clearInterval(timerInt);timerInt=null}}
+function updateCounts(){
+  const t=document.getElementById('output').value;
+  const words=t.trim()?t.trim().split(/\s+/).length:0;
+  document.getElementById('wordCount').textContent=words+' words';
+  document.getElementById('charCountS').textContent=t.length+' chars';
+}
+
+// ---------- Undo / edit ----------
+function pushUndo(){
+  undoStack.push(document.getElementById('output').value);
+  if(undoStack.length>50)undoStack.shift();
+}
+function onOutputEdit(){
+  baseText=document.getElementById('output').value;
+  updateCounts();
+  autosave();
+}
+function undoOutput(){
+  if(!undoStack.length)return;
+  const prev=undoStack.pop();
+  document.getElementById('output').value=prev;
+  baseText=prev;
+  updateCounts();autosave();
+}
+
+// ---------- Recording ----------
 function toggleRec(){
-  if(recording){rec.stop();return}
+  if(!SR)return;
+  if(recording){manualStop=true;rec.stop();return}
+  startRec();
+}
+function startRec(){
+  manualStop=false;
   rec=new SR();
   rec.lang=document.getElementById('lang').value;
-  rec.continuous=true;
+  rec.continuous=document.getElementById('continuousMode').checked;
   rec.interimResults=true;
-  let final='';
-  rec.onstart=()=>{recording=true;document.getElementById('recBtn').textContent='⏹ Stop Recording';document.getElementById('recBtn').style.background='#f44336';document.getElementById('status').textContent='🔴 Listening...'};
+  baseText=document.getElementById('output').value;
+  if(baseText&&!/\s$/.test(baseText))baseText+=' ';
+  rec.onstart=()=>{
+    recording=true;
+    document.getElementById('recBtn').textContent='⏹ Stop Recording';
+    document.getElementById('recBtn').style.background='#f44336';
+    document.getElementById('status').textContent='🔴 Listening...';
+    document.getElementById('interimDisplay').style.display='block';
+    if(!timerInt)startTimer();
+  };
   rec.onresult=(e)=>{
-    let interim='';
+    let interim='',finalPiece='';
     for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal)final+=e.results[i][0].transcript+' ';
+      if(e.results[i].isFinal)finalPiece+=e.results[i][0].transcript+' ';
       else interim+=e.results[i][0].transcript;
     }
-    document.getElementById('output').value=final+interim;
+    if(finalPiece){
+      pushUndo();
+      baseText=processText(baseText+finalPiece);
+      document.getElementById('output').value=baseText;
+      autosave();
+    }
+    document.getElementById('interimDisplay').textContent=interim;
+    document.getElementById('output').value=baseText+(interim?processText(interim):'');
+    updateCounts();
   };
-  rec.onend=()=>{recording=false;document.getElementById('recBtn').textContent='🎙️ Start Recording';document.getElementById('recBtn').style.background='';document.getElementById('status').textContent='✅ Recording stopped'};
-  rec.onerror=(e)=>{document.getElementById('status').textContent='❌ Error: '+e.error;recording=false;document.getElementById('recBtn').textContent='🎙️ Start Recording';document.getElementById('recBtn').style.background=''};
-  rec.start();
+  rec.onend=()=>{
+    // auto-restart if service stopped early during continuous mode
+    if(recording&&!manualStop&&document.getElementById('continuousMode').checked){
+      document.getElementById('status').textContent='🔄 Reconnecting...';
+      try{rec.start()}catch(err){setTimeout(()=>{try{rec.start()}catch(e2){finishRec()}},400)}
+      return;
+    }
+    finishRec();
+  };
+  rec.onerror=(e)=>{
+    if(e.error==='no-speech'||e.error==='aborted')return; // let onend handle restart
+    document.getElementById('status').textContent='❌ Error: '+e.error;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){manualStop=true}
+  };
+  try{rec.start()}catch(err){document.getElementById('status').textContent='❌ '+err.message}
 }
+function finishRec(){
+  recording=false;
+  stopTimer();
+  document.getElementById('recBtn').textContent='🎙️ Start Recording';
+  document.getElementById('recBtn').style.background='';
+  document.getElementById('status').textContent='✅ Recording stopped';
+  document.getElementById('interimDisplay').style.display='none';
+  document.getElementById('interimDisplay').textContent='';
+  // commit clean final text
+  document.getElementById('output').value=baseText;
+  updateCounts();
+  if(baseText.trim())addHistory(baseText.trim());
+}
+
+// ---------- Actions ----------
+function copyOutput(){
+  const t=document.getElementById('output').value;
+  navigator.clipboard.writeText(t).then(()=>{document.getElementById('status').textContent='📋 Copied to clipboard'});
+}
+function clearOutput(){
+  pushUndo();
+  document.getElementById('output').value='';
+  baseText='';
+  updateCounts();autosave();
+}
+function downloadOutput(){
+  const t=document.getElementById('output').value;
+  const blob=new Blob([t],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='speech.txt';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- Autosave + history ----------
+function autosave(){localStorage.setItem('stt_autosave',document.getElementById('output').value)}
+function getHistory(){return JSON.parse(localStorage.getItem('stt_history')||'[]')}
+function addHistory(text){
+  let h=getHistory();
+  h=h.filter(x=>x!==text);
+  h.unshift(text);
+  h=h.slice(0,8);
+  localStorage.setItem('stt_history',JSON.stringify(h));
+  renderHistory();
+}
+function loadHistory(i){
+  const h=getHistory();if(h[i]===undefined)return;
+  pushUndo();
+  document.getElementById('output').value=h[i];
+  baseText=h[i];
+  updateCounts();autosave();
+}
+function clearHistory(){localStorage.removeItem('stt_history');renderHistory()}
+function esc(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderHistory(){
+  const h=getHistory();
+  const el=document.getElementById('history');
+  if(!h.length){el.innerHTML='<span class="info" style="font-size:.8rem">No saved sessions yet.</span>';return}
+  el.innerHTML=h.map((t,i)=>{
+    const label=t.length>60?t.substring(0,60)+'…':t;
+    return '<div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;border:1px solid var(--border);border-radius:6px;padding:.35rem .5rem"><span style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="loadHistory('+i+')">🕘 '+esc(label)+'</span></div>';
+  }).join('')+'<div style="margin-top:.3rem"><button class="btn btn-outline" onclick="clearHistory()" style="font-size:.75rem">Clear history</button></div>';
+}
+
+// init
+(function(){
+  const saved=localStorage.getItem('stt_autosave');
+  if(saved){document.getElementById('output').value=saved;baseText=saved}
+  updateCounts();
+  renderHistory();
+})();
   </script>
 </body>
 </html>

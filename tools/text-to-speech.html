@@ -37,25 +37,58 @@
     <div class="tool-section">
       <h1>🗣️ Text to Speech</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
-      <p class="info">Enter text below and click Speak. Uses your browser's built-in speech engine.</p>
-      <div id="textDisplay" style="display:none;padding:.8rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;line-height:1.8;min-height:80px;max-height:200px;overflow-y:auto;font-size:1rem"></div>
-      <textarea id="text" rows="6" placeholder="Type or paste text here..."></textarea>
-      <div class="row" style="flex-wrap:wrap">
-        <div style="flex:2;min-width:200px"><label>Voice:</label><select id="voice" style="width:100%"></select></div>
-        <div style="flex:1;min-width:120px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=this.value;updateEstimate()"></div>
-        <div style="flex:1;min-width:120px"><label>Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=this.value"></div>
+      <p class="info">Enter text below and click Speak. Uses your browser's built-in Web Speech engine. Available voices depend on your operating system and browser.</p>
+      <div id="textDisplay" style="display:none;padding:.8rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;line-height:1.8;min-height:80px;max-height:220px;overflow-y:auto;font-size:1rem"></div>
+      <textarea id="text" rows="6" placeholder="Type or paste text here..." oninput="onTextInput()"></textarea>
+      <div class="row" style="margin-top:.5rem;flex-wrap:wrap;gap:.5rem">
+        <label class="btn btn-outline" style="flex:1;text-align:center;cursor:pointer;font-size:.85rem">📄 Upload .txt<input type="file" id="txtFile" accept=".txt,text/plain" onchange="loadTxtFile(event)" style="display:none"></label>
+        <button class="btn btn-outline" onclick="clearText()" style="flex:1;font-size:.85rem">🧹 Clear</button>
+        <span id="charCount" class="info" style="flex:1;text-align:center;font-size:.8rem"></span>
       </div>
+
+      <div class="row" style="flex-wrap:wrap;margin-top:.8rem">
+        <div style="flex:2;min-width:220px">
+          <label>Voice:</label>
+          <input type="text" id="voiceSearch" placeholder="Search voices by name or language..." oninput="renderVoiceOptions()" style="width:100%;margin-bottom:.3rem">
+          <select id="voice" style="width:100%" onchange="onVoiceChange()"></select>
+        </div>
+      </div>
+
+      <div class="row" style="flex-wrap:wrap;margin-top:.5rem">
+        <div style="flex:1;min-width:110px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=(+this.value).toFixed(1);updateEstimate()"></div>
+        <div style="flex:1;min-width:110px"><label>Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=(+this.value).toFixed(1)"></div>
+        <div style="flex:1;min-width:110px"><label>Volume: <span id="volVal">1.0</span></label><input type="range" id="volume" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('volVal').textContent=(+this.value).toFixed(2)"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn btn-outline" onclick="resetControls()" style="font-size:.8rem">↺ Reset</button></div>
+      </div>
+
+      <div class="row" style="margin-top:.6rem;flex-wrap:wrap;gap:.4rem;align-items:center">
+        <label style="font-size:.85rem">Preset:</label>
+        <button class="btn btn-outline" onclick="applyPreset('slow')" style="font-size:.8rem">🐢 Slow (dictation)</button>
+        <button class="btn btn-outline" onclick="applyPreset('normal')" style="font-size:.8rem">🚶 Normal</button>
+        <button class="btn btn-outline" onclick="applyPreset('fast')" style="font-size:.8rem">🏃 Fast (revision)</button>
+      </div>
+
       <div id="estimate" class="info" style="margin-top:.5rem;font-size:.85rem"></div>
+
       <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
         <button class="btn" onclick="speak()" id="speakBtn" style="flex:1">🔊 Speak</button>
         <button class="btn btn-outline" onclick="pauseResume()" id="pauseBtn" style="flex:1">⏸ Pause</button>
         <button class="btn btn-outline" onclick="stopSpeak()" style="flex:1">⏹ Stop</button>
       </div>
-      <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem"><input type="checkbox" id="batchMode"> Batch mode (pause between paragraphs)</label>
-        <button class="btn btn-outline" onclick="downloadAudio()" style="flex:1">💾 Download Audio</button>
+
+      <div style="margin-top:.6rem;height:8px;background:var(--card);border-radius:4px;overflow:hidden;border:1px solid var(--border)"><div id="progressBar" style="height:100%;width:0;background:var(--gradient,linear-gradient(90deg,#6366f1,#8b5cf6));transition:width .15s"></div></div>
+      <div id="chunkInfo" class="info" style="margin-top:.3rem;font-size:.8rem"></div>
+      <div id="status" class="info" style="margin-top:.3rem"></div>
+
+      <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="margin:0 0 .5rem">📝 Dictation Mode (for students)</h3>
+        <p class="info" style="font-size:.83rem;margin:0 0 .5rem">Reads each sentence twice with a pause in between, so you can write along.</p>
+        <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
+          <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem"><input type="checkbox" id="dictationMode"> Enable dictation mode</label>
+          <div style="flex:1;min-width:140px"><label style="font-size:.82rem">Repeats: <span id="repeatVal">2</span></label><input type="range" id="repeatCount" min="1" max="3" step="1" value="2" oninput="document.getElementById('repeatVal').textContent=this.value"></div>
+          <div style="flex:1;min-width:140px"><label style="font-size:.82rem">Pause: <span id="pauseVal">4</span>s</label><input type="range" id="dictPause" min="1" max="15" step="1" value="4" oninput="document.getElementById('pauseVal').textContent=this.value"></div>
+        </div>
       </div>
-      <div id="status" class="info" style="margin-top:.5rem"></div>
 
       <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
         <h3 style="margin:0 0 .5rem">📌 Pronunciation Bookmarks</h3>
@@ -63,6 +96,15 @@
           <button class="btn btn-outline" onclick="saveBookmark()" style="font-size:.85rem">+ Save Current</button>
         </div>
         <div id="bookmarks" style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem"></div>
+      </div>
+
+      <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+        <h3 style="margin:0 0 .5rem">🕘 Recent Texts</h3>
+        <div id="history" style="margin-top:.3rem;display:flex;flex-direction:column;gap:.4rem"></div>
+      </div>
+
+      <div class="info" style="margin-top:1rem;font-size:.82rem;border-top:1px solid var(--border);padding-top:.8rem">
+        <strong>ℹ️ Good to know:</strong> The available voices depend entirely on your operating system and browser — you may see more or fewer voices on different devices. The Web Speech API <strong>cannot save an audio file</strong>; there is no way to download the spoken audio directly. If you need to capture the audio, use our <a href="/tools/screen-recorder">Screen Recorder</a> tool while this reads aloud.
       </div>
     </div>
     <div style="min-height:90px"></div>
@@ -72,7 +114,7 @@
 <li><strong>Step 2:</strong> Pick a voice — there are different accents and male/female options</li>
 <li><strong>Step 3:</strong> Adjust the speed — slow it down for learning, speed it up for quick listening</li>
 <li><strong>Step 4:</strong> Hit Play and sit back while the computer reads it to you</li>
-<li><strong>Step 5:</strong> Download the audio if you want to listen later — like on your commute</li>
+<li><strong>Step 5:</strong> Use Dictation mode for study — it repeats each sentence twice so you can write along</li>
 </ol>
 <h2>Common Use Cases</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -83,7 +125,7 @@
 <li>Generating voiceovers for presentations or videos</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert any text to speech using your browser's built-in speech synthesis engine. Supports multiple voices and languages (depends on your operating system). Adjust speaking speed (0.5x to 2x) and pitch. Features play, pause, resume, and stop controls. Perfect for proofreading (hear your text read aloud to catch errors), language learning (hear correct pronunciation), accessibility (for visually impaired users), and listening to articles or study notes while doing other tasks. No external API — works offline.</p>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Convert any text to speech using your browser's built-in speech synthesis engine. Supports multiple voices and languages (depends on your operating system). Adjust speaking speed (0.5x to 2x), pitch and volume with live preview. Features play, pause, resume, and stop controls with a progress bar and word highlighting, long-text auto-chunking, reading presets, .txt upload, and a special Dictation mode for students. Note: the Web Speech API cannot export an audio file — to capture the audio use our Screen Recorder tool. Perfect for proofreading (hear your text read aloud to catch errors), language learning (hear correct pronunciation), accessibility (for visually impaired users), and listening to articles or study notes while doing other tasks. No external API — works offline.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
@@ -126,14 +168,95 @@
   <script>
 const synth=window.speechSynthesis;
 let voices=[];
-let batchTimeout=null;
+// speaking state
+let chunks=[];        // array of chunk strings for current job
+let chunkOffsets=[];  // char offset of each chunk within full text
+let fullText='';      // full text being read
+let curChunk=0;
+let isSpeaking=false;
+let dictQueue=[];     // queue of {text, offset} items for dictation mode
+let dictTimer=null;
 
-function loadVoices(){voices=synth.getVoices();const sel=document.getElementById('voice');sel.innerHTML='';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)})}
+// ---------- Voices ----------
+function loadVoices(){
+  voices=synth.getVoices();
+  renderVoiceOptions();
+}
+function renderVoiceOptions(){
+  const sel=document.getElementById('voice');
+  const q=(document.getElementById('voiceSearch').value||'').toLowerCase().trim();
+  const saved=localStorage.getItem('tts_voice');
+  // group by language
+  const groups={};
+  voices.forEach((v,i)=>{
+    const hay=(v.name+' '+v.lang).toLowerCase();
+    if(q&&hay.indexOf(q)===-1)return;
+    (groups[v.lang]=groups[v.lang]||[]).push({v:v,i:i});
+  });
+  const langs=Object.keys(groups).sort();
+  sel.innerHTML='';
+  if(!langs.length){const o=document.createElement('option');o.textContent='No voices match your search';o.disabled=true;sel.appendChild(o);return}
+  langs.forEach(lang=>{
+    const og=document.createElement('optgroup');
+    og.label=lang;
+    groups[lang].forEach(item=>{
+      const o=document.createElement('option');
+      o.value=item.i;
+      o.textContent=item.v.name+(item.v.default?' (default)':'');
+      if(saved!==null&&item.v.name===saved)o.selected=true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+function onVoiceChange(){
+  const v=voices[+document.getElementById('voice').value];
+  if(v)localStorage.setItem('tts_voice',v.name);
+}
 loadVoices();
-synth.onvoiceschanged=loadVoices;
+if(synth.onvoiceschanged!==undefined)synth.onvoiceschanged=loadVoices;
 
-function getSettings(){return{voiceIdx:document.getElementById('voice').value,rate:+document.getElementById('speed').value,pitch:+document.getElementById('pitch').value}}
+// ---------- Controls ----------
+function getSettings(){
+  return{
+    voiceIdx:+document.getElementById('voice').value,
+    rate:+document.getElementById('speed').value,
+    pitch:+document.getElementById('pitch').value,
+    volume:+document.getElementById('volume').value
+  };
+}
+function resetControls(){
+  document.getElementById('speed').value=1;document.getElementById('speedVal').textContent='1.0';
+  document.getElementById('pitch').value=1;document.getElementById('pitchVal').textContent='1.0';
+  document.getElementById('volume').value=1;document.getElementById('volVal').textContent='1.00';
+  updateEstimate();
+}
+function applyPreset(kind){
+  const rates={slow:0.7,normal:1,fast:1.5};
+  const r=rates[kind]||1;
+  document.getElementById('speed').value=r;
+  document.getElementById('speedVal').textContent=r.toFixed(1);
+  updateEstimate();
+}
 
+// ---------- Text input / file / history ----------
+function onTextInput(){updateEstimate();updateCharCount()}
+function updateCharCount(){
+  const t=document.getElementById('text').value;
+  const words=t.trim()?t.trim().split(/\s+/).length:0;
+  document.getElementById('charCount').textContent=t.length+' chars · '+words+' words';
+}
+function clearText(){
+  document.getElementById('text').value='';
+  updateEstimate();updateCharCount();
+}
+function loadTxtFile(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('text').value=e.target.result;updateEstimate();updateCharCount()};
+  reader.readAsText(f);
+  ev.target.value='';
+}
 function updateEstimate(){
   const text=document.getElementById('text').value.trim();
   if(!text){document.getElementById('estimate').textContent='';return}
@@ -144,124 +267,205 @@ function updateEstimate(){
   const m=Math.floor(secs/60),s=secs%60;
   document.getElementById('estimate').textContent='⏱ Estimated duration: '+(m?m+'m ':'')+(s+'s')+' (~'+words+' words at '+rate+'x)';
 }
-document.getElementById('text').addEventListener('input',updateEstimate);
+
+// ---------- Chunking ----------
+// split into <=200 char chunks on sentence/word boundaries, keeping char offsets
+function buildChunks(text){
+  const MAX=200;
+  const out=[];const offs=[];
+  // split into sentences first
+  const re=/[^.!?\n]+[.!?]*\s*|\n+/g;
+  let m,pieces=[];
+  while((m=re.exec(text))!==null){pieces.push({s:m[0],off:m.index})}
+  if(!pieces.length)pieces=[{s:text,off:0}];
+  pieces.forEach(p=>{
+    if(p.s.length<=MAX){out.push(p.s);offs.push(p.off);return}
+    // break long piece on word boundaries
+    let start=0;
+    while(start<p.s.length){
+      let end=Math.min(start+MAX,p.s.length);
+      if(end<p.s.length){
+        const sp=p.s.lastIndexOf(' ',end);
+        if(sp>start)end=sp;
+      }
+      out.push(p.s.substring(start,end));
+      offs.push(p.off+start);
+      start=end;
+    }
+  });
+  // drop empty
+  const fo=[],fof=[];
+  out.forEach((c,i)=>{if(c.trim()){fo.push(c);fof.push(offs[i])}});
+  return{chunks:fo.length?fo:[text],offsets:fof.length?fof:[0]};
+}
 
 function makeUtterance(text){
   const u=new SpeechSynthesisUtterance(text);
   const s=getSettings();
   if(voices[s.voiceIdx])u.voice=voices[s.voiceIdx];
-  u.rate=s.rate;u.pitch=s.pitch;
+  u.rate=s.rate;u.pitch=s.pitch;u.volume=s.volume;
   return u;
 }
 
+// ---------- Highlighting ----------
+function esc(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function setupHighlight(text){
   const display=document.getElementById('textDisplay');
   display.style.display='block';
-  display.innerHTML=text.replace(/\n/g,'<br>');
+  display.innerHTML=esc(text).replace(/\n/g,'<br>');
 }
-
-function highlightWord(charIndex,charLen,text){
+function highlightRange(startIdx,len){
   const display=document.getElementById('textDisplay');
-  const before=text.substring(0,charIndex);
-  const word=text.substring(charIndex,charIndex+charLen);
-  const after=text.substring(charIndex+charLen);
+  const before=esc(fullText.substring(0,startIdx));
+  const word=esc(fullText.substring(startIdx,startIdx+len));
+  const after=esc(fullText.substring(startIdx+len));
   display.innerHTML=before.replace(/\n/g,'<br>')+'<span style="background:#6366f1;color:#fff;border-radius:3px;padding:0 2px">'+word+'</span>'+after.replace(/\n/g,'<br>');
 }
+function highlightChunk(idx){
+  // fallback highlight of the whole current chunk
+  highlightRange(chunkOffsets[idx],chunks[idx].length);
+}
 
+// ---------- Progress ----------
+function setProgress(frac){document.getElementById('progressBar').style.width=Math.max(0,Math.min(1,frac))*100+'%'}
+
+// ---------- Speak ----------
 function speak(){
   const text=document.getElementById('text').value.trim();
   if(!text)return alert('Enter some text first');
   synth.cancel();
-  if(batchTimeout){clearTimeout(batchTimeout);batchTimeout=null}
-  if(document.getElementById('batchMode').checked){
-    speakBatch(text);
+  if(dictTimer){clearTimeout(dictTimer);dictTimer=null}
+  addHistory(text);
+  fullText=text;
+  document.getElementById('pauseBtn').textContent='⏸ Pause';
+  if(document.getElementById('dictationMode').checked){
+    startDictation(text);
   }else{
-    speakSingle(text);
+    startNormal(text);
   }
 }
 
-function speakSingle(text){
+function startNormal(text){
+  const built=buildChunks(text);
+  chunks=built.chunks;chunkOffsets=built.offsets;
+  curChunk=0;isSpeaking=true;
   setupHighlight(text);
-  const u=makeUtterance(text);
-  u.onboundary=e=>{if(e.name==='word')highlightWord(e.charIndex,e.charLength||1,text)};
-  u.onstart=()=>document.getElementById('status').textContent='🔊 Speaking...';
-  u.onend=()=>{document.getElementById('status').textContent='✅ Done';document.getElementById('textDisplay').style.display='none'};
-  u.onerror=()=>{document.getElementById('status').textContent='❌ Error occurred';document.getElementById('textDisplay').style.display='none'};
+  speakChunk();
+}
+
+function speakChunk(){
+  if(curChunk>=chunks.length){finishSpeak('✅ Done');return}
+  document.getElementById('chunkInfo').textContent='Reading chunk '+(curChunk+1)+' of '+chunks.length;
+  const chunkStart=chunkOffsets[curChunk];
+  const u=makeUtterance(chunks[curChunk]);
+  let boundarySeen=false;
+  u.onboundary=e=>{
+    if(e.name==='word'||e.charIndex!==undefined){
+      boundarySeen=true;
+      const idx=chunkStart+(e.charIndex||0);
+      highlightRange(idx,e.charLength||chunks[curChunk].substring(e.charIndex||0).split(/\s/)[0].length||1);
+    }
+  };
+  u.onstart=()=>{document.getElementById('status').textContent='🔊 Speaking...';if(!boundarySeen)highlightChunk(curChunk)};
+  u.onend=()=>{
+    curChunk++;
+    setProgress(curChunk/chunks.length);
+    if(isSpeaking)speakChunk();
+  };
+  u.onerror=e=>{if(e.error==='interrupted'||e.error==='canceled')return;finishSpeak('❌ Error: '+e.error)};
+  // fallback: if no boundary events, at least highlight the chunk
   synth.speak(u);
 }
 
-function speakBatch(text){
-  const paragraphs=text.split(/\n\s*\n/).filter(p=>p.trim());
-  let idx=0;
+function finishSpeak(msg){
+  isSpeaking=false;
+  document.getElementById('status').textContent=msg;
+  document.getElementById('chunkInfo').textContent='';
+  setProgress(1);
+  setTimeout(()=>{document.getElementById('textDisplay').style.display='none';setProgress(0)},1200);
+}
+
+// ---------- Dictation ----------
+function startDictation(text){
+  // split into sentences
+  const built=buildChunks(text);
+  // group so each queue item is a full sentence (buildChunks already sentence-based-ish)
+  const repeats=+document.getElementById('repeatCount').value;
+  dictQueue=[];
+  built.chunks.forEach((c,i)=>{
+    for(let r=0;r<repeats;r++)dictQueue.push({text:c,offset:built.offsets[i],rep:r+1,totalRep:repeats,sent:i+1,totalSent:built.chunks.length});
+  });
+  chunks=built.chunks;chunkOffsets=built.offsets;
+  isSpeaking=true;
   setupHighlight(text);
-  function next(){
-    if(idx>=paragraphs.length){
-      document.getElementById('status').textContent='✅ Done (all paragraphs)';
-      document.getElementById('textDisplay').style.display='none';
-      return;
-    }
-    const p=paragraphs[idx];
-    const offset=text.indexOf(p);
-    const u=makeUtterance(p);
-    u.onboundary=e=>{if(e.name==='word')highlightWord(offset+e.charIndex,e.charLength||1,text)};
-    u.onstart=()=>document.getElementById('status').textContent='🔊 Paragraph '+(idx+1)+'/'+paragraphs.length;
-    u.onend=()=>{idx++;batchTimeout=setTimeout(next,800)};
-    u.onerror=()=>{document.getElementById('status').textContent='❌ Error';document.getElementById('textDisplay').style.display='none'};
+  let qi=0;
+  const pauseMs=(+document.getElementById('dictPause').value)*1000;
+  function nextItem(){
+    if(!isSpeaking)return;
+    if(qi>=dictQueue.length){finishSpeak('✅ Dictation complete');return}
+    const item=dictQueue[qi];
+    document.getElementById('chunkInfo').textContent='Dictation: sentence '+item.sent+' of '+item.totalSent+' (reading '+item.rep+' of '+item.totalRep+')';
+    highlightRange(item.offset,item.text.length);
+    const u=makeUtterance(item.text);
+    u.onstart=()=>document.getElementById('status').textContent='📝 Dictating...';
+    u.onend=()=>{
+      qi++;
+      setProgress(qi/dictQueue.length);
+      if(!isSpeaking)return;
+      document.getElementById('status').textContent='✍️ Write now... (pause '+(pauseMs/1000)+'s)';
+      dictTimer=setTimeout(nextItem,pauseMs);
+    };
+    u.onerror=e=>{if(e.error==='interrupted'||e.error==='canceled')return;finishSpeak('❌ Error: '+e.error)};
     synth.speak(u);
   }
-  next();
+  nextItem();
 }
 
+// ---------- Transport ----------
 function pauseResume(){
-  if(synth.paused){synth.resume();document.getElementById('pauseBtn').textContent='⏸ Pause'}
-  else if(synth.speaking){synth.pause();document.getElementById('pauseBtn').textContent='▶ Resume'}
+  if(synth.paused){synth.resume();document.getElementById('pauseBtn').textContent='⏸ Pause';document.getElementById('status').textContent='🔊 Resumed'}
+  else if(synth.speaking){synth.pause();document.getElementById('pauseBtn').textContent='▶ Resume';document.getElementById('status').textContent='⏸ Paused'}
 }
-
 function stopSpeak(){
+  isSpeaking=false;
   synth.cancel();
-  if(batchTimeout){clearTimeout(batchTimeout);batchTimeout=null}
+  if(dictTimer){clearTimeout(dictTimer);dictTimer=null}
   document.getElementById('status').textContent='⏹ Stopped';
+  document.getElementById('chunkInfo').textContent='';
+  document.getElementById('pauseBtn').textContent='⏸ Pause';
+  setProgress(0);
   document.getElementById('textDisplay').style.display='none';
 }
 
-// Download audio using MediaRecorder + AudioContext + SpeechSynthesis
-function downloadAudio(){
-  const text=document.getElementById('text').value.trim();
-  if(!text)return alert('Enter some text first');
-  document.getElementById('status').textContent='🎙 Recording audio...';
-  const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const dest=audioCtx.createMediaStreamDestination();
-  const mediaRecorder=new MediaRecorder(dest.stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/ogg'});
-  const chunks=[];
-  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
-  mediaRecorder.onstop=()=>{
-    const blob=new Blob(chunks,{type:mediaRecorder.mimeType});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download='speech.'+( mediaRecorder.mimeType.includes('webm')?'webm':'ogg');
-    a.click();URL.revokeObjectURL(url);
-    document.getElementById('status').textContent='✅ Audio downloaded';
-    audioCtx.close();
-  };
-  // Create oscillator as carrier, modulate with speech via analyser
-  // Alternative: use the destination directly with a silent source to keep stream alive
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
-  gain.gain.value=0;
-  osc.connect(gain);gain.connect(dest);
-  osc.start();
-
-  const u=makeUtterance(text);
-  mediaRecorder.start();
-  u.onend=()=>{osc.stop();mediaRecorder.stop()};
-  u.onerror=()=>{osc.stop();mediaRecorder.stop();document.getElementById('status').textContent='❌ Recording failed'};
-  synth.speak(u);
+// ---------- History ----------
+function getHistory(){return JSON.parse(localStorage.getItem('tts_history')||'[]')}
+function addHistory(text){
+  let h=getHistory();
+  h=h.filter(x=>x!==text);
+  h.unshift(text);
+  h=h.slice(0,8);
+  localStorage.setItem('tts_history',JSON.stringify(h));
+  renderHistory();
+}
+function loadHistory(i){
+  const h=getHistory();if(h[i]===undefined)return;
+  document.getElementById('text').value=h[i];
+  updateEstimate();updateCharCount();
+}
+function clearHistory(){localStorage.removeItem('tts_history');renderHistory()}
+function renderHistory(){
+  const h=getHistory();
+  const el=document.getElementById('history');
+  if(!h.length){el.innerHTML='<span class="info" style="font-size:.8rem">No recent texts yet.</span>';return}
+  el.innerHTML=h.map((t,i)=>{
+    const label=t.length>60?t.substring(0,60)+'…':t;
+    return '<div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;border:1px solid var(--border);border-radius:6px;padding:.35rem .5rem"><span style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="loadHistory('+i+')">🕘 '+esc(label)+'</span></div>';
+  }).join('')+'<div style="margin-top:.3rem"><button class="btn btn-outline" onclick="clearHistory()" style="font-size:.75rem">Clear history</button></div>';
 }
 
-// Bookmarks
+// ---------- Bookmarks ----------
 function getBookmarks(){return JSON.parse(localStorage.getItem('tts_bookmarks')||'[]')}
 function saveBookmarks(bm){localStorage.setItem('tts_bookmarks',JSON.stringify(bm))}
-
 function saveBookmark(){
   const text=document.getElementById('text').value.trim();
   if(!text)return alert('Enter text to bookmark');
@@ -271,27 +475,28 @@ function saveBookmark(){
   saveBookmarks(bm);
   renderBookmarks();
 }
-
 function loadBookmark(i){
   const bm=getBookmarks();
   const b=bm[i];if(!b)return;
   document.getElementById('text').value=b.phrase;
-  document.getElementById('voice').value=b.voiceIdx;
-  document.getElementById('speed').value=b.rate;document.getElementById('speedVal').textContent=b.rate;
-  document.getElementById('pitch').value=b.pitch;document.getElementById('pitchVal').textContent=b.pitch;
-  updateEstimate();
+  if(b.voiceIdx!==undefined)document.getElementById('voice').value=b.voiceIdx;
+  document.getElementById('speed').value=b.rate;document.getElementById('speedVal').textContent=(+b.rate).toFixed(1);
+  document.getElementById('pitch').value=b.pitch;document.getElementById('pitchVal').textContent=(+b.pitch).toFixed(1);
+  updateEstimate();updateCharCount();
 }
-
 function deleteBookmark(i){
   const bm=getBookmarks();bm.splice(i,1);saveBookmarks(bm);renderBookmarks();
 }
-
 function renderBookmarks(){
   const bm=getBookmarks();
   const el=document.getElementById('bookmarks');
-  el.innerHTML=bm.map((b,i)=>'<div style="display:inline-flex;align-items:center;gap:.3rem;background:var(--bg2,#f0f0f0);border-radius:6px;padding:.3rem .6rem;font-size:.8rem"><span style="cursor:pointer" onclick="loadBookmark('+i+')" title="'+b.phrase.replace(/"/g,'&quot;')+'">📌 '+b.label+'</span><span style="cursor:pointer;opacity:.6" onclick="deleteBookmark('+i+')">✕</span></div>').join('');
+  el.innerHTML=bm.map((b,i)=>'<div style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.3rem .6rem;font-size:.8rem"><span style="cursor:pointer" onclick="loadBookmark('+i+')" title="'+b.phrase.replace(/"/g,'&quot;')+'">📌 '+esc(b.label)+'</span><span style="cursor:pointer;opacity:.6" onclick="deleteBookmark('+i+')">✕</span></div>').join('');
 }
+
+// init
 renderBookmarks();
+renderHistory();
+updateCharCount();
   </script>
 </body>
 </html>

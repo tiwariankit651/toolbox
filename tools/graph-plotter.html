@@ -18,53 +18,74 @@
     <div class="tool-section">
       <h1>📈 Graph Plotter</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Enter equations using x (or t for polar/parametric). Examples: x*x, Math.sin(x), 2*x+3</p>
+      <p class="info">Enter expressions using <strong>x</strong> (Cartesian), <strong>t</strong> (polar angle / parameter). Supports + - * / ^, parentheses and functions: sin cos tan asin acos atan sinh cosh tanh log ln log10 exp sqrt abs floor ceil round sign min max pow, and constants pi, e. Example: <code>sin(x) + x^2/4</code></p>
       <!-- Mode selector -->
       <div class="row" style="gap:8px;margin-bottom:.5rem">
         <label><input type="radio" name="mode" value="cartesian" checked onchange="switchMode()"> Cartesian y=f(x)</label>
         <label><input type="radio" name="mode" value="polar" onchange="switchMode()"> Polar r=f(θ)</label>
         <label><input type="radio" name="mode" value="parametric" onchange="switchMode()"> Parametric</label>
       </div>
-      <!-- Cartesian inputs -->
+      <!-- Cartesian inputs: multiple functions -->
       <div id="cartesianInputs">
-        <div class="row"><input type="text" id="eq1" value="x*x" placeholder="y = ..." oninput="plot()" style="flex:2"><input type="color" id="col1" value="#6366f1" oninput="plot()" style="width:40px;height:35px;border:none"></div>
-        <div class="row"><input type="text" id="eq2" value="2*x+1" placeholder="y = ... (optional)" oninput="plot()" style="flex:2"><input type="color" id="col2" value="#f44336" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+        <div id="funcList"></div>
+        <button class="btn btn-outline" onclick="addFunc()" style="font-size:.85rem">+ Add Function</button>
       </div>
       <!-- Polar input -->
       <div id="polarInputs" style="display:none">
-        <div class="row"><label>r(θ) =</label><input type="text" id="polarEq" value="Math.sin(3*t)" placeholder="r = f(t) where t=θ" oninput="plot()" style="flex:2"><input type="color" id="colPolar" value="#6366f1" oninput="plot()" style="width:40px;height:35px;border:none"></div>
+        <div class="row"><label style="flex:0;min-width:50px">r(θ) =</label><input type="text" id="polarEq" value="sin(3*t)" placeholder="r = f(t) where t=θ" oninput="plot()" style="flex:2"><input type="color" id="colPolar" value="#6366f1" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
+        <div class="row"><label style="flex:0;min-width:50px">θ range:</label><input type="number" id="thetaTurns" value="4" step="1" min="1" max="20" style="width:70px;flex:0" oninput="plot()"> full turns (× 2π)</div>
       </div>
       <!-- Parametric inputs -->
       <div id="parametricInputs" style="display:none">
-        <div class="row"><label>x(t) =</label><input type="text" id="paramX" value="Math.cos(t)*t" placeholder="x(t)" oninput="plot()" style="flex:2"></div>
-        <div class="row"><label>y(t) =</label><input type="text" id="paramY" value="Math.sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" value="#9c27b0" oninput="plot()" style="width:40px;height:35px;border:none"></div>
-        <div class="row"><label>t range:</label><input type="number" id="tmin" value="0" style="width:60px" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:60px" oninput="plot()"></div>
+        <div class="row"><label style="flex:0;min-width:50px">x(t) =</label><input type="text" id="paramX" value="cos(t)*t" placeholder="x(t)" oninput="plot()" style="flex:2"></div>
+        <div class="row"><label style="flex:0;min-width:50px">y(t) =</label><input type="text" id="paramY" value="sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" value="#8b5cf6" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
+        <div class="row"><label style="flex:0;min-width:50px">t range:</label><input type="number" id="tmin" value="0" style="width:70px;flex:0" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:70px;flex:0" oninput="plot()"></div>
       </div>
-      <!-- Range and controls -->
-      <div class="row"><label>X range:</label><input type="number" id="xmin" value="-10" style="width:60px" oninput="plot()"> to <input type="number" id="xmax" value="10" style="width:60px" oninput="plot()"></div>
-      <div class="row"><label>Y range:</label><input type="number" id="ymin" value="-10" style="width:60px" oninput="plot()"> to <input type="number" id="ymax" value="10" style="width:60px" oninput="plot()"></div>
+      <div id="parseError" class="info" style="color:#ec4899;min-height:1.1em"></div>
+      <!-- Range and view controls -->
+      <div class="row"><label style="flex:0;min-width:70px">X range:</label><input type="number" id="xmin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="xmax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
+      <div class="row"><label style="flex:0;min-width:70px">Y range:</label><input type="number" id="ymin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="ymax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
       <div class="row" style="gap:6px">
         <button class="btn btn-outline" onclick="zoom(0.5)">🔍+ Zoom In</button>
         <button class="btn btn-outline" onclick="zoom(2)">🔍− Zoom Out</button>
-        <button class="btn btn-outline" onclick="pan(-2,0)">⬅ Pan</button>
-        <button class="btn btn-outline" onclick="pan(2,0)">➡ Pan</button>
-        <button class="btn btn-outline" onclick="pan(0,2)">⬆ Pan</button>
-        <button class="btn btn-outline" onclick="pan(0,-2)">⬇ Pan</button>
-        <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="gridToggle" checked onchange="plot()"> Grid</label>
+        <button class="btn btn-outline" onclick="resetView()">↺ Reset View</button>
+        <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="gridToggle" checked onchange="plot()"> Grid</label>
+        <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="aspectToggle" onchange="plot()"> Equal aspect</label>
+        <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="traceToggle" onchange="plot()"> Trace mode</label>
       </div>
       <div style="position:relative">
-        <canvas id="graph" width="700" height="450" style="width:100%;background:#fff;border-radius:8px;border:1px solid var(--border);margin-top:.5rem"></canvas>
-        <div id="coordDisplay" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.9);padding:2px 8px;border-radius:4px;font-size:12px;font-family:monospace;pointer-events:none;display:none"></div>
+        <canvas id="graph" width="700" height="450" style="width:100%;background:#fff;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-top:.5rem;touch-action:none;cursor:crosshair"></canvas>
+        <div id="coordDisplay" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.92);color:#141428;padding:2px 8px;border-radius:4px;font-size:12px;font-family:monospace;pointer-events:none;display:none"></div>
       </div>
+      <p class="info">Drag to pan · mouse wheel / pinch to zoom · toggle Trace to read points and see roots, intercept and extrema.</p>
+      <!-- Presets -->
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:.8rem">
-        <button class="btn btn-outline" onclick="setEq('Math.sin(x)','Math.cos(x)')">sin & cos</button>
-        <button class="btn btn-outline" onclick="setEq('x*x','x*x*x')">x² & x³</button>
-        <button class="btn btn-outline" onclick="setEq('Math.sqrt(Math.abs(x))','')">√x</button>
-        <button class="btn btn-outline" onclick="setEq('1/x','')">1/x</button>
-        <button class="btn btn-outline" onclick="setEq('Math.log(Math.abs(x)+0.01)','')">ln(x)</button>
-        <button class="btn btn-outline" onclick="setEq('Math.abs(x)','')">|x|</button>
+        <button class="btn btn-outline" onclick="loadPreset('quadratic')">Quadratic</button>
+        <button class="btn btn-outline" onclick="loadPreset('cubic')">Cubic</button>
+        <button class="btn btn-outline" onclick="loadPreset('sine')">Sine</button>
+        <button class="btn btn-outline" onclick="loadPreset('exp')">Exponential</button>
+        <button class="btn btn-outline" onclick="loadPreset('log')">Logarithm</button>
+        <button class="btn btn-outline" onclick="loadPreset('hyperbola')">Hyperbola</button>
+        <button class="btn btn-outline" onclick="loadPreset('circle')">Circle (parametric)</button>
+        <button class="btn btn-outline" onclick="loadPreset('rose')">Rose (polar)</button>
       </div>
-      <div class="row" style="margin-top:.5rem"><button class="btn" onclick="var c=document.getElementById('graph');c.toBlob(function(b){download(b,'graph.png')})">💾 Download Graph</button></div>
+      <!-- Calculus / analysis extras -->
+      <div style="background:var(--card);padding:1rem;border-radius:12px;margin-top:1rem">
+        <h3 style="margin:0 0 .5rem">🧮 Analysis Tools (Cartesian)</h3>
+        <div class="row"><label style="flex:0;min-width:110px">Function #:</label><input type="number" id="analysisIdx" value="1" min="1" step="1" style="width:70px;flex:0"> <span class="info" style="margin:0">(which function to analyse)</span></div>
+        <div class="row" style="gap:6px">
+          <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="derivToggle" onchange="plot()"> Plot derivative</label>
+          <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="integToggle" onchange="plot()"> Shade integral</label>
+          <label style="flex:0;min-width:40px">from</label><input type="number" id="intA" value="-2" style="width:70px;flex:0" oninput="plot()">
+          <label style="flex:0;min-width:20px">to</label><input type="number" id="intB" value="2" style="width:70px;flex:0" oninput="plot()">
+        </div>
+        <div id="integResult" class="info"></div>
+        <div class="row" style="gap:6px;margin-top:.5rem">
+          <label style="flex:0;min-width:110px">Table x-range:</label><input type="number" id="tblMin" value="-5" style="width:70px;flex:0"> to <input type="number" id="tblMax" value="5" style="width:70px;flex:0"> step <input type="number" id="tblStep" value="1" step="0.1" style="width:70px;flex:0"><button class="btn btn-outline" onclick="buildTable()" style="font-size:.85rem">Table of Values</button>
+        </div>
+        <div id="valueTable" style="overflow-x:auto;margin-top:.5rem"></div>
+      </div>
+      <div class="row" style="margin-top:.8rem"><button class="btn" onclick="exportPNG()">💾 Export as PNG</button></div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Math equation ka graph dekhna hai? y = x², sin(x), kuch bhi — type karo, plot ho jayega. Homework aur assignments ke liye perfect.</p>
@@ -124,89 +145,475 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function getMode(){return document.querySelector('input[name="mode"]:checked').value}
+/* ===== Safe expression parser (tokeniser + recursive-descent) ===== */
+var MATH_FUNCS={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,
+sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,log:Math.log,ln:Math.log,log10:Math.log10||function(x){return Math.log(x)/Math.LN10},
+exp:Math.exp,sqrt:Math.sqrt,abs:Math.abs,floor:Math.floor,ceil:Math.ceil,round:Math.round,
+sign:Math.sign||function(x){return x>0?1:x<0?-1:0},min:Math.min,max:Math.max,pow:Math.pow};
+var MATH_CONSTS={pi:Math.PI,e:Math.E};
+
+function tokenize(s){
+  var toks=[],i=0;
+  while(i<s.length){
+    var c=s[i];
+    if(c===' '||c==='\t'){i++;continue;}
+    if((c>='0'&&c<='9')||c==='.'){
+      var num='';
+      while(i<s.length&&((s[i]>='0'&&s[i]<='9')||s[i]==='.')){num+=s[i++];}
+      if(s[i]==='e'||s[i]==='E'){ // scientific notation
+        var save=i;var sci=s[i++];
+        if(s[i]==='+'||s[i]==='-')sci+=s[i++];
+        if(i<s.length&&s[i]>='0'&&s[i]<='9'){while(i<s.length&&s[i]>='0'&&s[i]<='9')sci+=s[i++];num+=sci;}else{i=save;}
+      }
+      toks.push({t:'num',v:parseFloat(num)});continue;
+    }
+    if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||c==='_'){
+      var id='';
+      while(i<s.length&&((s[i]>='a'&&s[i]<='z')||(s[i]>='A'&&s[i]<='Z')||(s[i]>='0'&&s[i]<='9')||s[i]==='_')){id+=s[i++];}
+      toks.push({t:'id',v:id});continue;
+    }
+    if('+-*/^(),'.indexOf(c)>=0){toks.push({t:'op',v:c});i++;continue;}
+    throw new Error("Unexpected character '"+c+"'");
+  }
+  return toks;
+}
+// Recursive-descent parser producing an AST
+function parseExpr(toks){
+  var pos=0;
+  function peek(){return toks[pos];}
+  function next(){return toks[pos++];}
+  function expect(v){var tk=next();if(!tk||tk.v!==v)throw new Error("Expected '"+v+"'");}
+  function parseExpression(){return parseAddSub();}
+  function parseAddSub(){
+    var node=parseMulDiv();
+    while(peek()&&peek().t==='op'&&(peek().v==='+'||peek().v==='-')){var op=next().v;var rhs=parseMulDiv();node={type:'bin',op:op,l:node,r:rhs};}
+    return node;
+  }
+  function parseMulDiv(){
+    var node=parseUnary();
+    while(peek()&&peek().t==='op'&&(peek().v==='*'||peek().v==='/')){var op=next().v;var rhs=parseUnary();node={type:'bin',op:op,l:node,r:rhs};}
+    return node;
+  }
+  function parseUnary(){
+    if(peek()&&peek().t==='op'&&(peek().v==='-'||peek().v==='+')){var op=next().v;return {type:'unary',op:op,x:parseUnary()};}
+    return parsePow();
+  }
+  function parsePow(){
+    var base=parseAtom();
+    if(peek()&&peek().t==='op'&&peek().v==='^'){next();var exp=parseUnary();return {type:'bin',op:'^',l:base,r:exp};}
+    return base;
+  }
+  function parseAtom(){
+    var tk=peek();
+    if(!tk)throw new Error("Unexpected end of expression");
+    if(tk.t==='num'){next();return {type:'num',v:tk.v};}
+    if(tk.t==='op'&&tk.v==='('){next();var e=parseExpression();expect(')');return e;}
+    if(tk.t==='id'){
+      next();
+      if(peek()&&peek().t==='op'&&peek().v==='('){
+        next();var args=[];
+        if(!(peek()&&peek().t==='op'&&peek().v===')')){
+          args.push(parseExpression());
+          while(peek()&&peek().t==='op'&&peek().v===','){next();args.push(parseExpression());}
+        }
+        expect(')');
+        if(!MATH_FUNCS.hasOwnProperty(tk.v))throw new Error("Unknown function '"+tk.v+"'");
+        return {type:'call',name:tk.v,args:args};
+      }
+      return {type:'var',name:tk.v};
+    }
+    throw new Error("Unexpected token '"+tk.v+"'");
+  }
+  var ast=parseExpression();
+  if(pos<toks.length)throw new Error("Unexpected token '"+toks[pos].v+"'");
+  return ast;
+}
+function evalAst(node,vars){
+  switch(node.type){
+    case 'num':return node.v;
+    case 'var':
+      if(vars.hasOwnProperty(node.name))return vars[node.name];
+      if(MATH_CONSTS.hasOwnProperty(node.name))return MATH_CONSTS[node.name];
+      throw new Error("Unknown variable '"+node.name+"'");
+    case 'unary':{var v=evalAst(node.x,vars);return node.op==='-'?-v:v;}
+    case 'bin':{
+      var l=evalAst(node.l,vars),r=evalAst(node.r,vars);
+      switch(node.op){case '+':return l+r;case '-':return l-r;case '*':return l*r;case '/':return l/r;case '^':return Math.pow(l,r);}
+      break;
+    }
+    case 'call':{
+      var a=node.args.map(function(x){return evalAst(x,vars);});
+      return MATH_FUNCS[node.name].apply(null,a);
+    }
+  }
+  throw new Error("Bad node");
+}
+// Compile an expression string into a function of a named variable. Returns {fn, error}
+function compileExpr(str,varName){
+  try{
+    var ast=parseExpr(tokenize(str));
+    return {fn:function(val){var vars={};vars[varName]=val;return evalAst(ast,vars);}};
+  }catch(e){return {error:e.message};}
+}
+
+/* ===== Multiple Cartesian functions ===== */
+var funcs=[]; // {id, expr, color, visible}
+var funcSeq=0;
+var PALETTE=['#6366f1','#8b5cf6','#ec4899','#06b6d4','#22c55e','#f59e0b'];
+function addFunc(expr,color){
+  funcSeq++;
+  var f={id:funcSeq,expr:expr!==undefined?expr:'',color:color||PALETTE[(funcs.length)%PALETTE.length],visible:true};
+  funcs.push(f);
+  renderFuncList();
+  plot();
+}
+function renderFuncList(){
+  var host=document.getElementById('funcList');host.innerHTML='';
+  funcs.forEach(function(f,idx){
+    var row=document.createElement('div');row.className='row';row.style.gap='6px';
+    row.innerHTML=
+      '<span class="info" style="flex:0;min-width:34px;margin:0">f'+(idx+1)+'</span>'+
+      '<input type="text" value="'+f.expr.replace(/"/g,'&quot;')+'" placeholder="y = f(x)" oninput="updateFunc('+f.id+',this.value)" style="flex:2">'+
+      '<input type="color" value="'+f.color+'" oninput="updateFuncColor('+f.id+',this.value)" style="width:40px;height:35px;border:none;flex:0;min-width:40px">'+
+      '<button class="btn btn-outline" onclick="toggleFunc('+f.id+')" style="flex:0;padding:.4rem .6rem" title="show/hide">'+(f.visible?'👁':'🚫')+'</button>'+
+      '<button class="btn btn-outline" onclick="removeFunc('+f.id+')" style="flex:0;padding:.4rem .6rem" title="delete">✕</button>';
+    host.appendChild(row);
+  });
+}
+function findFunc(id){for(var i=0;i<funcs.length;i++)if(funcs[i].id===id)return funcs[i];return null;}
+function updateFunc(id,v){var f=findFunc(id);if(f){f.expr=v;plot();}}
+function updateFuncColor(id,v){var f=findFunc(id);if(f){f.color=v;plot();}}
+function toggleFunc(id){var f=findFunc(id);if(f){f.visible=!f.visible;renderFuncList();plot();}}
+function removeFunc(id){funcs=funcs.filter(function(f){return f.id!==id;});renderFuncList();plot();}
+
+/* ===== View state ===== */
+function getMode(){return document.querySelector('input[name="mode"]:checked').value;}
+function getRange(){
+  return {
+    xmin:+document.getElementById('xmin').value,
+    xmax:+document.getElementById('xmax').value,
+    ymin:+document.getElementById('ymin').value,
+    ymax:+document.getElementById('ymax').value
+  };
+}
+function setRange(r){
+  document.getElementById('xmin').value=+r.xmin.toFixed(4);
+  document.getElementById('xmax').value=+r.xmax.toFixed(4);
+  document.getElementById('ymin').value=+r.ymin.toFixed(4);
+  document.getElementById('ymax').value=+r.ymax.toFixed(4);
+}
+function syncRange(){plot();}
+function resetView(){setRange({xmin:-10,xmax:10,ymin:-10,ymax:10});plot();}
+function zoom(factor){
+  var r=getRange();
+  var cx=(r.xmin+r.xmax)/2,cy=(r.ymin+r.ymax)/2;
+  var hw=(r.xmax-r.xmin)/2*factor,hh=(r.ymax-r.ymin)/2*factor;
+  setRange({xmin:cx-hw,xmax:cx+hw,ymin:cy-hh,ymax:cy+hh});
+  plot();
+}
 function switchMode(){
   var m=getMode();
-  document.getElementById("cartesianInputs").style.display=m==="cartesian"?"":"none";
-  document.getElementById("polarInputs").style.display=m==="polar"?"":"none";
-  document.getElementById("parametricInputs").style.display=m==="parametric"?"":"none";
+  document.getElementById('cartesianInputs').style.display=m==='cartesian'?'':'none';
+  document.getElementById('polarInputs').style.display=m==='polar'?'':'none';
+  document.getElementById('parametricInputs').style.display=m==='parametric'?'':'none';
   plot();
 }
-function setEq(a,b){document.getElementById("eq1").value=a;document.getElementById("eq2").value=b;document.querySelector('input[name="mode"][value="cartesian"]').checked=true;switchMode()}
-function zoom(factor){
-  var fields=["xmin","xmax","ymin","ymax"];
-  fields.forEach(function(id){document.getElementById(id).value=Math.round(+document.getElementById(id).value*factor)});
-  plot();
+
+/* ===== Presets ===== */
+function loadPreset(name){
+  var setCartesian=function(list){funcs=[];funcSeq=0;list.forEach(function(f){funcSeq++;funcs.push({id:funcSeq,expr:f[0],color:f[1],visible:true});});document.querySelector('input[name="mode"][value="cartesian"]').checked=true;renderFuncList();switchMode();};
+  if(name==='quadratic')return setCartesian([['x^2',PALETTE[0]]]);
+  if(name==='cubic')return setCartesian([['x^3 - 3*x',PALETTE[1]]]);
+  if(name==='sine')return setCartesian([['sin(x)',PALETTE[0]],['cos(x)',PALETTE[2]]]);
+  if(name==='exp')return setCartesian([['exp(x)',PALETTE[3]]]);
+  if(name==='log')return setCartesian([['ln(abs(x)+0.001)',PALETTE[4]]]);
+  if(name==='hyperbola')return setCartesian([['1/x',PALETTE[2]]]);
+  if(name==='circle'){
+    document.querySelector('input[name="mode"][value="parametric"]').checked=true;
+    document.getElementById('paramX').value='4*cos(t)';
+    document.getElementById('paramY').value='4*sin(t)';
+    document.getElementById('tmin').value=0;document.getElementById('tmax').value=6.2832;
+    switchMode();return;
+  }
+  if(name==='rose'){
+    document.querySelector('input[name="mode"][value="polar"]').checked=true;
+    document.getElementById('polarEq').value='4*cos(2*t)';
+    document.getElementById('thetaTurns').value=1;
+    switchMode();return;
+  }
 }
-function pan(dx,dy){
-  document.getElementById("xmin").value=+document.getElementById("xmin").value+dx;
-  document.getElementById("xmax").value=+document.getElementById("xmax").value+dx;
-  document.getElementById("ymin").value=+document.getElementById("ymin").value+dy;
-  document.getElementById("ymax").value=+document.getElementById("ymax").value+dy;
-  plot();
+
+/* ===== Coordinate transforms ===== */
+var _view=null; // computed each plot: {r, W, H, sx, sy, x2px, y2py, px2x, py2y}
+function computeView(){
+  var c=document.getElementById('graph'),W=c.width,H=c.height;
+  var r=getRange();
+  if(!(r.xmax>r.xmin))r.xmax=r.xmin+1;
+  if(!(r.ymax>r.ymin))r.ymax=r.ymin+1;
+  if(document.getElementById('aspectToggle').checked){
+    // keep equal units per pixel; expand y range to match x scale
+    var xUnitPerPx=(r.xmax-r.xmin)/W;
+    var yspan=xUnitPerPx*H;var cy=(r.ymin+r.ymax)/2;
+    r.ymin=cy-yspan/2;r.ymax=cy+yspan/2;
+  }
+  var sx=W/(r.xmax-r.xmin),sy=H/(r.ymax-r.ymin);
+  var ox=-r.xmin*sx,oy=H+r.ymin*sy;
+  _view={r:r,W:W,H:H,sx:sx,sy:sy,ox:ox,oy:oy,
+    x2px:function(x){return ox+x*sx;},
+    y2py:function(y){return oy-y*sy;},
+    px2x:function(px){return r.xmin+px/sx;},
+    py2y:function(py){return r.ymax-py/sy;}};
+  return _view;
 }
+function niceStep(span,targetTicks){
+  var raw=span/targetTicks;
+  var pow=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10));
+  var norm=raw/pow;
+  var step;
+  if(norm<1.5)step=1;else if(norm<3)step=2;else if(norm<7)step=5;else step=10;
+  return step*pow;
+}
+
+/* ===== Plot ===== */
 function plot(){
-  var c=document.getElementById("graph"),ctx=c.getContext("2d"),W=c.width,H=c.height;
-  var xmin=+document.getElementById("xmin").value||(-10),xmax=+document.getElementById("xmax").value||10;
-  var ymin=+document.getElementById("ymin").value||(-10),ymax=+document.getElementById("ymax").value||10;
-  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
-  var sx=W/(xmax-xmin),sy=H/(ymax-ymin);
-  var ox=-xmin*sx,oy=H+ymin*sy;
-  var showGrid=document.getElementById("gridToggle").checked;
-  // Grid
+  var c=document.getElementById('graph'),ctx=c.getContext('2d'),W=c.width,H=c.height;
+  var v=computeView(),r=v.r;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  var showGrid=document.getElementById('gridToggle').checked;
+  var errEl=document.getElementById('parseError');errEl.textContent='';
+  // Gridlines with adaptive tick labels
   if(showGrid){
-    ctx.strokeStyle="#e0e0e0";ctx.lineWidth=0.5;ctx.font="11px Arial";ctx.fillStyle="#999";
-    for(var gx=Math.ceil(xmin);gx<=xmax;gx++){var px=ox+gx*sx;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.fillText(gx,px+2,oy+14)}
-    for(var gy=Math.ceil(ymin);gy<=ymax;gy++){var py=oy-gy*sy;if(py>0&&py<H){ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();if(gy!==0){ctx.fillStyle="#999";ctx.fillText(gy,ox+4,py-2)}}}
+    var stepX=niceStep(r.xmax-r.xmin,10),stepY=niceStep(r.ymax-r.ymin,8);
+    ctx.strokeStyle='#e6e6ee';ctx.lineWidth=0.5;ctx.font='11px Arial';
+    var gx0=Math.ceil(r.xmin/stepX)*stepX;
+    for(var gx=gx0;gx<=r.xmax;gx+=stepX){var px=v.x2px(gx);ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.fillStyle='#888';ctx.fillText(fmtTick(gx),px+2,v.y2py(0)+14);}
+    var gy0=Math.ceil(r.ymin/stepY)*stepY;
+    for(var gy=gy0;gy<=r.ymax;gy+=stepY){var py=v.y2py(gy);ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();if(Math.abs(gy)>1e-9){ctx.fillStyle='#888';ctx.fillText(fmtTick(gy),v.x2px(0)+4,py-2);}}
   }
   // Axes
-  ctx.strokeStyle="#333";ctx.lineWidth=1.5;
-  if(oy>=0&&oy<=H){ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke()}
-  if(ox>=0&&ox<=W){ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke()}
-  var mode=getMode();
-  if(mode==="cartesian"){
-    [["eq1","col1"],["eq2","col2"]].forEach(function(pair){
-      var expr=document.getElementById(pair[0]).value.trim();if(!expr)return;
-      ctx.strokeStyle=document.getElementById(pair[1]).value;ctx.lineWidth=2;ctx.beginPath();var started=false;
-      for(var px=0;px<W;px++){
-        var x=xmin+px/sx;
-        try{var y=eval(expr);if(isFinite(y)){var py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else if(py>-100&&py<H+100){ctx.lineTo(px,py)}else{started=false}}}catch(e){}
+  ctx.strokeStyle='#333';ctx.lineWidth=1.5;
+  var oy=v.y2py(0),ox=v.x2px(0);
+  if(oy>=0&&oy<=H){ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();}
+  if(ox>=0&&ox<=W){ctx.beginPath();ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();}
+  var mode=getMode();var errs=[];
+  if(mode==='cartesian'){
+    plotCartesian(ctx,v,errs);
+  }else if(mode==='polar'){
+    plotPolar(ctx,v,errs);
+  }else if(mode==='parametric'){
+    plotParametric(ctx,v,errs);
+  }
+  errEl.textContent=errs.length?('⚠ '+errs.join(' · ')):'';
+  if(_traceState.active)drawTrace(ctx,v);
+}
+function fmtTick(v){var a=Math.abs(v);if(a!==0&&(a<0.001||a>=100000))return v.toExponential(1);return (+v.toFixed(4)).toString();}
+
+function plotCartesian(ctx,v,errs){
+  var W=v.W;
+  funcs.forEach(function(f,idx){
+    if(!f.visible||!f.expr.trim())return;
+    var comp=compileExpr(f.expr,'x');
+    if(comp.error){errs.push('f'+(idx+1)+': '+comp.error);return;}
+    ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.beginPath();var started=false,prevY=null;
+    for(var px=0;px<=W;px++){
+      var x=v.px2x(px);var y;
+      try{y=comp.fn(x);}catch(e){started=false;prevY=null;continue;}
+      if(isFinite(y)){
+        var py=v.y2py(y);
+        // avoid drawing across large jumps (asymptotes)
+        if(started&&prevY!==null&&Math.abs(py-prevY)>v.H*2){ctx.moveTo(px,py);}else if(!started){ctx.moveTo(px,py);started=true;}else{ctx.lineTo(px,py);}
+        prevY=py;
+      }else{started=false;prevY=null;}
+    }
+    ctx.stroke();
+  });
+  // Derivative plot
+  if(document.getElementById('derivToggle').checked){
+    var f=funcs[Math.max(0,(+document.getElementById('analysisIdx').value||1)-1)];
+    if(f&&f.expr.trim()){
+      var comp=compileExpr(f.expr,'x');
+      if(!comp.error){
+        ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.beginPath();var started=false;
+        for(var px=0;px<=W;px++){
+          var x=v.px2x(px);var h=(v.r.xmax-v.r.xmin)/W;
+          try{var d=(comp.fn(x+h)-comp.fn(x-h))/(2*h);}catch(e){started=false;continue;}
+          if(isFinite(d)){var py=v.y2py(d);if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);}else started=false;
+        }
+        ctx.stroke();ctx.setLineDash([]);
       }
-      ctx.stroke();
-    });
-  }else if(mode==="polar"){
-    var expr=document.getElementById("polarEq").value.trim();if(!expr)return;
-    ctx.strokeStyle=document.getElementById("colPolar").value;ctx.lineWidth=2;ctx.beginPath();var started=false;
-    for(var i=0;i<=1000;i++){
-      var t=i/1000*2*Math.PI*4;
-      try{var r=eval(expr);if(isFinite(r)){var x=r*Math.cos(t),y=r*Math.sin(t);var px=ox+x*sx,py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else{ctx.lineTo(px,py)}}}catch(e){}
     }
-    ctx.stroke();
-  }else if(mode==="parametric"){
-    var exprX=document.getElementById("paramX").value.trim(),exprY=document.getElementById("paramY").value.trim();
-    if(!exprX||!exprY)return;
-    var tmin=+document.getElementById("tmin").value||0,tmax=+document.getElementById("tmax").value||20;
-    ctx.strokeStyle=document.getElementById("colParam").value;ctx.lineWidth=2;ctx.beginPath();var started=false;
-    for(var i=0;i<=1000;i++){
-      var t=tmin+(tmax-tmin)*i/1000;
-      try{var x=eval(exprX),y=eval(exprY);if(isFinite(x)&&isFinite(y)){var px=ox+x*sx,py=oy-y*sy;if(!started){ctx.moveTo(px,py);started=true}else{ctx.lineTo(px,py)}}}catch(e){}
+  }
+  // Integral shading
+  if(document.getElementById('integToggle').checked){
+    var fi=funcs[Math.max(0,(+document.getElementById('analysisIdx').value||1)-1)];
+    var a=+document.getElementById('intA').value,b=+document.getElementById('intB').value;
+    var resEl=document.getElementById('integResult');
+    if(fi&&fi.expr.trim()&&isFinite(a)&&isFinite(b)&&b!==a){
+      var compi=compileExpr(fi.expr,'x');
+      if(!compi.error){
+        var lo=Math.min(a,b),hi=Math.max(a,b),N=1000,dx=(hi-lo)/N,area=0;
+        ctx.fillStyle=fi.color;ctx.globalAlpha=0.22;ctx.beginPath();
+        var y0=0;try{y0=compi.fn(lo);}catch(e){}
+        ctx.moveTo(v.x2px(lo),v.y2py(0));
+        for(var i=0;i<=N;i++){var x=lo+i*dx;var y;try{y=compi.fn(x);}catch(e){y=0;}if(!isFinite(y))y=0;ctx.lineTo(v.x2px(x),v.y2py(y));
+          if(i>0){var xp=lo+(i-0.5)*dx;var ym;try{ym=compi.fn(xp);}catch(e){ym=0;}if(isFinite(ym))area+=ym*dx;}}
+        ctx.lineTo(v.x2px(hi),v.y2py(0));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+        if(b<a)area=-area;
+        resEl.textContent='∫ from '+a+' to '+b+' ≈ '+area.toFixed(4)+' (numeric, midpoint rule)';
+      }else resEl.textContent='';
+    }else if(resEl){resEl.textContent='';}
+  }else{document.getElementById('integResult').textContent='';}
+}
+function plotPolar(ctx,v,errs){
+  var expr=document.getElementById('polarEq').value.trim();if(!expr)return;
+  var comp=compileExpr(expr,'t');
+  if(comp.error){errs.push('polar: '+comp.error);return;}
+  var turns=+document.getElementById('thetaTurns').value||1;
+  ctx.strokeStyle=document.getElementById('colPolar').value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+  var N=2000;
+  for(var i=0;i<=N;i++){
+    var t=i/N*2*Math.PI*turns;var rr;
+    try{rr=comp.fn(t);}catch(e){started=false;continue;}
+    if(isFinite(rr)){var x=rr*Math.cos(t),y=rr*Math.sin(t);var px=v.x2px(x),py=v.y2py(y);if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);}else started=false;
+  }
+  ctx.stroke();
+}
+function plotParametric(ctx,v,errs){
+  var exprX=document.getElementById('paramX').value.trim(),exprY=document.getElementById('paramY').value.trim();
+  if(!exprX||!exprY)return;
+  var cx=compileExpr(exprX,'t'),cy=compileExpr(exprY,'t');
+  if(cx.error){errs.push('x(t): '+cx.error);return;}
+  if(cy.error){errs.push('y(t): '+cy.error);return;}
+  var tmin=+document.getElementById('tmin').value||0,tmax=+document.getElementById('tmax').value||20;
+  ctx.strokeStyle=document.getElementById('colParam').value;ctx.lineWidth=2;ctx.beginPath();var started=false;
+  var N=2000;
+  for(var i=0;i<=N;i++){
+    var t=tmin+(tmax-tmin)*i/N;var x,y;
+    try{x=cx.fn(t);y=cy.fn(t);}catch(e){started=false;continue;}
+    if(isFinite(x)&&isFinite(y)){var px=v.x2px(x),py=v.y2py(y);if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);}else started=false;
+  }
+  ctx.stroke();
+}
+
+/* ===== Trace mode (Cartesian): read coords, mark roots, y-intercept, extrema ===== */
+var _traceState={active:false,px:null};
+function currentAnalysisFunc(){
+  var idx=Math.max(0,(+document.getElementById('analysisIdx').value||1)-1);
+  return funcs[idx]&&funcs[idx].visible&&funcs[idx].expr.trim()?funcs[idx]:null;
+}
+function drawTrace(ctx,v){
+  if(getMode()!=='cartesian')return;
+  var f=currentAnalysisFunc();if(!f)return;
+  var comp=compileExpr(f.expr,'x');if(comp.error)return;
+  var W=v.W;
+  // Sample function to find features
+  var samples=[];var step=(v.r.xmax-v.r.xmin)/1000;
+  for(var x=v.r.xmin;x<=v.r.xmax;x+=step){var y;try{y=comp.fn(x);}catch(e){y=NaN;}samples.push({x:x,y:y});}
+  // Roots (sign changes)
+  ctx.fillStyle='#ec4899';
+  for(var i=1;i<samples.length;i++){
+    var a=samples[i-1],b=samples[i];
+    if(isFinite(a.y)&&isFinite(b.y)&&a.y*b.y<0){
+      var rx=a.x-a.y*(b.x-a.x)/(b.y-a.y);
+      var px=v.x2px(rx),py=v.y2py(0);
+      ctx.beginPath();ctx.arc(px,py,4,0,2*Math.PI);ctx.fill();
+      label(ctx,'root '+rx.toFixed(2),px,py-8);
     }
-    ctx.stroke();
+  }
+  // y-intercept
+  if(0>=v.r.xmin&&0<=v.r.xmax){var y0;try{y0=comp.fn(0);}catch(e){y0=NaN;}if(isFinite(y0)){var px=v.x2px(0),py=v.y2py(y0);ctx.fillStyle='#06b6d4';ctx.beginPath();ctx.arc(px,py,4,0,2*Math.PI);ctx.fill();label(ctx,'y-int '+y0.toFixed(2),px+6,py);}}
+  // Local extrema (derivative sign change)
+  ctx.fillStyle='#22c55e';
+  for(var j=2;j<samples.length;j++){
+    var p0=samples[j-2],p1=samples[j-1],p2=samples[j];
+    if(isFinite(p0.y)&&isFinite(p1.y)&&isFinite(p2.y)){
+      var d1=p1.y-p0.y,d2=p2.y-p1.y;
+      if(d1*d2<0){var px=v.x2px(p1.x),py=v.y2py(p1.y);ctx.beginPath();ctx.arc(px,py,4,0,2*Math.PI);ctx.fill();label(ctx,(d1>0?'max':'min')+' ('+p1.x.toFixed(2)+','+p1.y.toFixed(2)+')',px+6,py);}
+    }
+  }
+  // Cursor readout dot
+  if(_traceState.px!==null){
+    var x=v.px2x(_traceState.px);var y;try{y=comp.fn(x);}catch(e){y=NaN;}
+    if(isFinite(y)){var px=v.x2px(x),py=v.y2py(y);ctx.strokeStyle=f.color;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,v.H);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=f.color;ctx.beginPath();ctx.arc(px,py,5,0,2*Math.PI);ctx.fill();
+      var disp=document.getElementById('coordDisplay');disp.style.display='block';disp.textContent='x: '+x.toFixed(3)+'  y: '+y.toFixed(3);}
   }
 }
-// Hover coordinates
+function label(ctx,text,x,y){ctx.save();ctx.font='10px Arial';ctx.fillStyle='#333';ctx.fillText(text,x,y);ctx.restore();}
+
+/* ===== Table of values ===== */
+function buildTable(){
+  var f=currentAnalysisFunc()||funcs.find(function(f){return f.visible&&f.expr.trim();});
+  var host=document.getElementById('valueTable');
+  if(!f){host.innerHTML='<p class="info">No visible Cartesian function to tabulate.</p>';return;}
+  var comp=compileExpr(f.expr,'x');
+  if(comp.error){host.innerHTML='<p class="info" style="color:#ec4899">Error: '+comp.error+'</p>';return;}
+  var lo=+document.getElementById('tblMin').value,hi=+document.getElementById('tblMax').value,st=+document.getElementById('tblStep').value;
+  if(!(st>0)||!(hi>lo)){host.innerHTML='<p class="info">Enter a valid range and positive step.</p>';return;}
+  var rows='<table style="width:100%;border-collapse:collapse;font-size:.85rem"><tr><th style="text-align:left;padding:.3rem">x</th><th style="text-align:left;padding:.3rem">f(x)</th></tr>';
+  var count=0;
+  for(var x=lo;x<=hi+1e-9&&count<500;x+=st){var y;try{y=comp.fn(x);}catch(e){y=NaN;}rows+='<tr><td style="padding:.3rem;border-top:1px solid rgba(128,128,128,.2)">'+(+x.toFixed(4))+'</td><td style="padding:.3rem;border-top:1px solid rgba(128,128,128,.2)">'+(isFinite(y)?(+y.toFixed(4)):'undefined')+'</td></tr>';count++;}
+  rows+='</table>';host.innerHTML=rows;
+}
+
+/* ===== Export PNG ===== */
+function exportPNG(){
+  var c=document.getElementById('graph');
+  c.toBlob(function(b){download(b,'graph.png');});
+}
+
+/* ===== Canvas interaction: pan / wheel zoom / pinch / trace ===== */
 (function(){
-  var c=document.getElementById("graph"),disp=document.getElementById("coordDisplay");
-  c.addEventListener("mousemove",function(e){
-    var rect=c.getBoundingClientRect();
-    var mx=(e.clientX-rect.left)*(c.width/rect.width),my=(e.clientY-rect.top)*(c.height/rect.height);
-    var xmin=+document.getElementById("xmin").value||(-10),xmax=+document.getElementById("xmax").value||10;
-    var ymin=+document.getElementById("ymin").value||(-10),ymax=+document.getElementById("ymax").value||10;
-    var x=xmin+mx/(c.width/(xmax-xmin)),y=ymax-my/(c.height/(ymax-ymin));
-    disp.style.display="block";disp.textContent="x: "+x.toFixed(2)+"  y: "+y.toFixed(2);
+  var c=document.getElementById('graph'),disp=document.getElementById('coordDisplay');
+  function toCanvasXY(e){var rect=c.getBoundingClientRect();return {x:(e.clientX-rect.left)*(c.width/rect.width),y:(e.clientY-rect.top)*(c.height/rect.height)};}
+  var dragging=false,lastX=0,lastY=0;
+  c.addEventListener('mousedown',function(e){if(document.getElementById('traceToggle').checked)return;dragging=true;var p=toCanvasXY(e);lastX=p.x;lastY=p.y;});
+  window.addEventListener('mouseup',function(){dragging=false;});
+  c.addEventListener('mousemove',function(e){
+    var p=toCanvasXY(e);var v=_view||computeView();
+    if(dragging){
+      var dx=(p.x-lastX)/v.sx,dy=(p.y-lastY)/v.sy;lastX=p.x;lastY=p.y;
+      var r=getRange();setRange({xmin:r.xmin-dx,xmax:r.xmax-dx,ymin:r.ymin+dy,ymax:r.ymax+dy});plot();return;
+    }
+    if(document.getElementById('traceToggle').checked&&getMode()==='cartesian'){
+      _traceState.active=true;_traceState.px=p.x;plot();
+    }else{
+      var x=v.px2x(p.x),y=v.py2y(p.y);disp.style.display='block';disp.textContent='x: '+x.toFixed(2)+'  y: '+y.toFixed(2);
+    }
   });
-  c.addEventListener("mouseleave",function(){disp.style.display="none"});
+  c.addEventListener('mouseleave',function(){disp.style.display='none';_traceState.px=null;if(document.getElementById('traceToggle').checked)plot();});
+  c.addEventListener('wheel',function(e){
+    e.preventDefault();var v=_view||computeView();var p=toCanvasXY(e);
+    var mx=v.px2x(p.x),my=v.py2y(p.y);
+    var factor=e.deltaY>0?1.1:1/1.1;var r=getRange();
+    setRange({xmin:mx-(mx-r.xmin)*factor,xmax:mx+(r.xmax-mx)*factor,ymin:my-(my-r.ymin)*factor,ymax:my+(r.ymax-my)*factor});plot();
+  },{passive:false});
+  // Touch: pan (1 finger) + pinch zoom (2 fingers)
+  var touchState=null;
+  c.addEventListener('touchstart',function(e){
+    if(e.touches.length===1){var t=e.touches[0];touchState={mode:'pan',x:t.clientX,y:t.clientY};}
+    else if(e.touches.length===2){var d=touchDist(e);touchState={mode:'pinch',dist:d,cx:(e.touches[0].clientX+e.touches[1].clientX)/2,cy:(e.touches[0].clientY+e.touches[1].clientY)/2};}
+  },{passive:false});
+  c.addEventListener('touchmove',function(e){
+    if(!touchState)return;e.preventDefault();var v=_view||computeView();var rect=c.getBoundingClientRect();
+    if(touchState.mode==='pan'&&e.touches.length===1){
+      var t=e.touches[0];var dx=(t.clientX-touchState.x)*(c.width/rect.width)/v.sx;var dy=(t.clientY-touchState.y)*(c.height/rect.height)/v.sy;
+      touchState.x=t.clientX;touchState.y=t.clientY;var r=getRange();setRange({xmin:r.xmin-dx,xmax:r.xmax-dx,ymin:r.ymin+dy,ymax:r.ymax+dy});plot();
+    }else if(touchState.mode==='pinch'&&e.touches.length===2){
+      var d=touchDist(e);var factor=touchState.dist/d;touchState.dist=d;
+      var px=(touchState.cx-rect.left)*(c.width/rect.width),py=(touchState.cy-rect.top)*(c.height/rect.height);
+      var mx=v.px2x(px),my=v.py2y(py);var r=getRange();
+      setRange({xmin:mx-(mx-r.xmin)*factor,xmax:mx+(r.xmax-mx)*factor,ymin:my-(my-r.ymin)*factor,ymax:my+(r.ymax-my)*factor});plot();
+    }
+  },{passive:false});
+  c.addEventListener('touchend',function(e){if(e.touches.length===0)touchState=null;});
+  function touchDist(e){var dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
 })();
+// track trace toggle to clear state
+document.getElementById('traceToggle').addEventListener('change',function(){_traceState.active=this.checked;if(!this.checked){_traceState.px=null;document.getElementById('coordDisplay').style.display='none';}plot();});
+
+// Init default functions
+addFunc('x^2','#6366f1');
+addFunc('2*x+1','#ec4899');
 plot();
   </script>
 </body>

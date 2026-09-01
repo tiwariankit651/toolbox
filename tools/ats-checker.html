@@ -18,18 +18,65 @@
     <div class="tool-section">
       <h1>📄 Resume ATS Checker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#8b5cf6" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#6366f1" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Paste your resume and job description to get an ATS compatibility score with detailed improvement suggestions.</p>
+      <p class="info">Paste your resume (or upload a .txt / .pdf) and a job description to get an ATS compatibility score with detailed, category-by-category feedback.</p>
+      <p class="info" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);padding:.6rem .8rem;border-radius:10px"><strong>⚠️ Honest note:</strong> This is a heuristic checker that mimics common ATS behaviour. It is <strong>not</strong> a real Applicant Tracking System and cannot guarantee how any specific employer's software will parse your resume. Use it as a guide, not a verdict.</p>
+
       <label for="resume"><strong>Resume Text</strong></label>
-      <textarea id="resume" rows="10" placeholder="Paste your full resume text here..." style="margin-bottom:1rem"></textarea>
-      <label for="jobdesc"><strong>Job Description / Keywords</strong></label>
-      <textarea id="jobdesc" rows="5" placeholder="Paste the job description or target keywords here..."></textarea>
-      <button class="btn" onclick="checkATS()" style="width:100%;margin-top:.5rem">📄 Check ATS Score</button>
-      <div id="scoreCard" style="display:none;margin-top:1.5rem;text-align:center">
-        <div id="overallScore" style="font-size:3rem;font-weight:bold;margin-bottom:.5rem"></div>
-        <p id="scoreLabel" style="font-size:1.1rem;margin-bottom:1rem"></p>
+      <div class="drop-zone" id="resumeDrop" onclick="document.getElementById('resumeFile').click()">
+        <strong>Upload resume</strong> (.txt or .pdf) — or drag &amp; drop here
+        <div class="info">We extract the text in your browser. Nothing is uploaded.</div>
+        <input type="file" id="resumeFile" accept=".txt,.pdf,text/plain,application/pdf" onchange="handleResumeFile(this.files)">
       </div>
+      <div id="pdfStatus" class="info" style="display:none"></div>
+      <textarea id="resume" rows="10" placeholder="Paste your full resume text here — or upload a file above..." style="margin-bottom:1rem" oninput="updateWordCount()"></textarea>
+
+      <label for="jobdesc"><strong>Job Description</strong></label>
+      <textarea id="jobdesc" rows="5" placeholder="Paste the target job description here for keyword matching..."></textarea>
+
+      <div class="row" style="margin-top:.5rem">
+        <label for="expLevel" style="flex:0 0 auto"><strong>Experience level:</strong></label>
+        <select id="expLevel" style="flex:1">
+          <option value="entry">Entry / Fresher (0-2 yrs)</option>
+          <option value="mid" selected>Mid-level (2-7 yrs)</option>
+          <option value="senior">Senior (7+ yrs)</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="checkATS()" style="width:100%;margin-top:.5rem">📄 Check ATS Score</button>
+
+      <div id="scoreCard" style="display:none;margin-top:1.5rem;text-align:center">
+        <canvas id="gauge" width="220" height="130" style="max-width:100%"></canvas>
+        <div id="overallScore" style="font-size:2.4rem;font-weight:bold;margin-top:-.3rem"></div>
+        <p id="scoreLabel" style="font-size:1.1rem;margin-bottom:.4rem"></p>
+        <p id="wordCountLine" class="info"></p>
+      </div>
+      <div id="topFixes" style="display:none;margin-top:1rem"></div>
+      <div id="matchCard" style="display:none;margin-top:1rem"></div>
       <div id="breakdown" style="display:none;margin-top:1rem"></div>
       <div id="suggestions" style="display:none;margin-top:1rem"></div>
+      <div id="reportBar" style="display:none;margin-top:1rem" class="row">
+        <button class="btn btn-outline" onclick="downloadReport()" style="flex:1">💾 Download Report (.txt)</button>
+      </div>
+
+      <div style="margin-top:1.5rem">
+        <p class="info">Live word count: <strong id="liveWords">0</strong></p>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>✅ How ATS Parsers Actually Work (and What to Avoid)</h2>
+      <p class="info">An ATS reads your resume as plain text. Anything that confuses the text extraction can hurt you. Keep this checklist in mind:</p>
+      <ul style="margin-left:1.5rem;line-height:2">
+        <li><strong>Use a single-column layout.</strong> Multi-column and table-based layouts often get read out of order or dropped entirely.</li>
+        <li><strong>Avoid text inside images.</strong> ATS cannot read text baked into a graphic, logo, or icon.</li>
+        <li><strong>Keep info out of headers/footers.</strong> Some parsers ignore the header/footer region — put your contact details in the body.</li>
+        <li><strong>Use standard section headings</strong> like Summary, Experience, Education, and Skills so sections are recognised.</li>
+        <li><strong>Use simple bullet characters</strong> (• or -). Fancy symbols (◆, ➤, ●●) can turn into gibberish.</li>
+        <li><strong>Stick to common fonts</strong> and standard date formats (e.g. Jan 2022 – Mar 2024).</li>
+        <li><strong>Save as .docx or a text-based PDF</strong> — never a scanned image PDF.</li>
+        <li><strong>Mirror the job's keywords</strong> naturally; don't keyword-stuff white text.</li>
+      </ul>
+      <p class="info">Need to build or fix a resume? Try the <a href="/tools/resume-builder">Resume Builder</a> and the <a href="/tools/cover-letter">Cover Letter</a> tools.</p>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Resume bhej rahe ho but call nahi aa raha? ATS score check karo. Companies software use karti hain resume filter karne ke liye. Agar ATS pass nahi hua — HR dekhega hi nahi.</p>
@@ -93,84 +140,310 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-var actionVerbs=['managed','developed','led','created','implemented','designed','built','achieved','improved','increased','decreased','reduced','launched','delivered','coordinated','organized','analyzed','resolved','streamlined','optimized','negotiated','mentored','trained','supervised','directed','established','generated','transformed','spearheaded','executed','facilitated','pioneered','revamped','orchestrated','cultivated'];
+var actionVerbs=['managed','developed','led','created','implemented','designed','built','achieved','improved','increased','decreased','reduced','launched','delivered','coordinated','organized','analyzed','resolved','streamlined','optimized','negotiated','mentored','trained','supervised','directed','established','generated','transformed','spearheaded','executed','facilitated','pioneered','revamped','orchestrated','cultivated','automated','engineered','architected','deployed','scaled','drove','owned','shipped'];
 
+// Weak verbs -> stronger suggestions
+var weakVerbs={
+  'responsible for':'managed / owned / led',
+  'worked on':'developed / built / delivered',
+  'helped':'supported / drove / enabled',
+  'helped with':'contributed to / drove',
+  'assisted':'supported / coordinated',
+  'handled':'managed / resolved',
+  'did':'executed / delivered',
+  'made':'created / built / produced',
+  'used':'leveraged / applied',
+  'was involved in':'led / drove / delivered',
+  'participated in':'contributed to / drove',
+  'tasked with':'owned / led',
+  'dealt with':'resolved / managed'
+};
+
+var STOPWORDS={'the':1,'and':1,'for':1,'with':1,'you':1,'your':1,'our':1,'are':1,'will':1,'that':1,'this':1,'have':1,'has':1,'from':1,'they':1,'their':1,'about':1,'into':1,'over':1,'than':1,'then':1,'them':1,'were':1,'been':1,'being':1,'able':1,'must':1,'should':1,'would':1,'could':1,'who':1,'what':1,'when':1,'where':1,'which':1,'while':1,'role':1,'work':1,'team':1,'company':1,'candidate':1,'job':1,'position':1,'looking':1,'strong':1,'good':1,'great':1,'plus':1,'etc':1,'per':1,'via':1};
+
+var lastReport='';
+
+// ---------- File handling ----------
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
+setupDrop('resumeDrop','resumeFile',handleResumeFile);
+
+function handleResumeFile(files){
+  if(!files||!files.length)return;
+  var file=files[0];
+  var name=(file.name||'').toLowerCase();
+  var status=document.getElementById('pdfStatus');
+  status.style.display='block';
+  if(name.endsWith('.pdf')||file.type==='application/pdf'){
+    status.textContent='⏳ Extracting text from PDF...';
+    extractPdf(file);
+  }else if(name.endsWith('.txt')||file.type==='text/plain'){
+    var reader=new FileReader();
+    reader.onload=function(){document.getElementById('resume').value=reader.result;updateWordCount();status.textContent='✅ Loaded '+file.name;};
+    reader.readAsText(file);
+  }else{
+    status.textContent='⚠️ Unsupported file. Please upload a .txt or .pdf file.';
+  }
+}
+
+function extractPdf(file){
+  var status=document.getElementById('pdfStatus');
+  if(!window.pdfjsLib){status.textContent='⚠️ PDF library failed to load. Please paste your text instead.';return}
+  var reader=new FileReader();
+  reader.onload=function(){
+    var data=new Uint8Array(reader.result);
+    pdfjsLib.getDocument({data:data}).promise.then(function(pdf){
+      var pages=[];
+      var chain=Promise.resolve();
+      for(var p=1;p<=pdf.numPages;p++){
+        (function(pageNum){
+          chain=chain.then(function(){return pdf.getPage(pageNum)}).then(function(page){return page.getTextContent()}).then(function(tc){
+            pages.push(tc.items.map(function(it){return it.str}).join(' '));
+          });
+        })(p);
+      }
+      return chain.then(function(){return pages.join('\n')});
+    }).then(function(text){
+      document.getElementById('resume').value=text.replace(/\s+\n/g,'\n').trim();
+      updateWordCount();
+      status.textContent='✅ Extracted '+file.name+' ('+pdf_pageword(text)+' words). Review the text below before checking.';
+    }).catch(function(err){
+      status.textContent='⚠️ Could not read that PDF (it may be a scanned image). Please paste the text instead.';
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+function pdf_pageword(t){return t.trim()?t.trim().split(/\s+/).length:0}
+
+function wordCount(t){t=(t||'').trim();return t?t.split(/\s+/).length:0}
+function updateWordCount(){document.getElementById('liveWords').textContent=wordCount(document.getElementById('resume').value)}
+
+// ---------- Main analysis ----------
 function checkATS(){
   var resume=document.getElementById('resume').value.trim();
   var job=document.getElementById('jobdesc').value.trim();
-  if(!resume){alert('Please paste your resume text.');return}
-  if(!job){alert('Please paste the job description or keywords.');return}
+  if(!resume){alert('Please paste or upload your resume text.');return}
+  if(!job){alert('Please paste the job description.');return}
 
   var resumeLower=resume.toLowerCase();
-  var words=resume.split(/\s+/).length;
+  var words=wordCount(resume);
+  var expLevel=document.getElementById('expLevel').value;
 
-  // 1. Keyword match
-  var jobWords=job.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(function(w){return w.length>3});
-  var unique=[...new Set(jobWords)];
-  var matched=unique.filter(function(w){return resumeLower.includes(w)});
-  var keywordScore=unique.length?Math.round((matched.length/unique.length)*100):0;
-  var missingKeywords=unique.filter(function(w){return!resumeLower.includes(w)}).slice(0,15);
+  var cats=[];  // {name, score, weight, feedback:[]}
 
-  // 2. Format score - check sections
-  var sections=['experience','education','skills','contact'];
-  var foundSections=sections.filter(function(s){return resumeLower.includes(s)});
-  var formatScore=Math.round((foundSections.length/sections.length)*100);
-  var missingSections=sections.filter(function(s){return!resumeLower.includes(s)});
+  // 1. Contact information completeness
+  var hasEmail=/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(resume);
+  var hasPhone=/(\+?\d[\d\s().-]{7,}\d)/.test(resume);
+  var hasLinkedIn=/linkedin\.com|github\.com|portfolio|behance|gitlab/i.test(resume);
+  var hasLocation=/\b(city|state|india|remote|bangalore|mumbai|delhi|pune|hyderabad|chennai|kolkata|noida|gurgaon)\b/i.test(resume);
+  var contactPts=(hasEmail?40:0)+(hasPhone?30:0)+(hasLinkedIn?20:0)+(hasLocation?10:0);
+  var contactFb=[];
+  if(!hasEmail)contactFb.push('No email address detected — add a professional email.');
+  if(!hasPhone)contactFb.push('No phone number detected.');
+  if(!hasLinkedIn)contactFb.push('Add a LinkedIn / GitHub / portfolio link.');
+  if(contactFb.length===0)contactFb.push('Contact details look complete.');
+  cats.push({name:'Contact Information',score:contactPts,weight:10,feedback:contactFb});
 
-  // 3. Length check
-  var lengthScore=100;
-  if(words<300)lengthScore=Math.round((words/300)*70);
-  else if(words>800)lengthScore=Math.max(50,100-Math.round((words-800)/20));
+  // 2. Standard section headings
+  var sectionDefs={'Summary/Objective':/\b(summary|objective|profile|about me)\b/i,'Experience':/\b(experience|employment|work history|professional experience)\b/i,'Education':/\b(education|academic|qualification|degree|university|college|b\.?tech|bachelor|master)\b/i,'Skills':/\b(skills|technologies|technical skills|competenc)/i};
+  var foundSecs=[],missingSecs=[];
+  Object.keys(sectionDefs).forEach(function(s){if(sectionDefs[s].test(resume))foundSecs.push(s);else missingSecs.push(s)});
+  var sectionScore=Math.round((foundSecs.length/4)*100);
+  var sectionFb=[];
+  if(foundSecs.length)sectionFb.push('Found: '+foundSecs.join(', ')+'.');
+  if(missingSecs.length)sectionFb.push('Missing standard headings: '+missingSecs.join(', ')+'.');
+  cats.push({name:'Section Headings',score:sectionScore,weight:12,feedback:sectionFb});
 
-  // 4. Action verbs
-  var foundVerbs=actionVerbs.filter(function(v){return resumeLower.includes(v)});
+  // 3. Action verb usage + weak verbs
+  var foundVerbs=actionVerbs.filter(function(v){return new RegExp('\\b'+v+'\\b','i').test(resume)});
+  var weakFound=[];
+  Object.keys(weakVerbs).forEach(function(w){if(new RegExp('\\b'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(resume))weakFound.push(w)});
   var verbScore=Math.min(100,Math.round((foundVerbs.length/8)*100));
+  if(weakFound.length)verbScore=Math.max(0,verbScore-weakFound.length*8);
+  var verbFb=[];
+  verbFb.push('Strong action verbs found: '+(foundVerbs.length?foundVerbs.slice(0,10).join(', '):'none — start bullets with verbs like managed, built, delivered.'));
+  if(weakFound.length){verbFb.push('Weak phrases to replace: '+weakFound.map(function(w){return '"'+w+'" → '+weakVerbs[w]}).join('; ')+'.');}
+  cats.push({name:'Action Verbs',score:verbScore,weight:12,feedback:verbFb});
 
-  // 5. Quantification
-  var numbers=resume.match(/\d+%?/g)||[];
-  var quantScore=Math.min(100,Math.round((numbers.length/5)*100));
+  // 4. Quantified achievements
+  var lines=resume.split(/\n/).map(function(l){return l.trim()}).filter(function(l){return l.length>0});
+  var bulletLines=lines.filter(function(l){return /^[•\-*▪◦‣·➤◆●]/.test(l)||/^\d+[.)]/.test(l)});
+  var checkLines=bulletLines.length?bulletLines:lines.filter(function(l){return l.length>25});
+  var numRe=/(\d+(\.\d+)?\s?%|\$\s?\d|\d[\d,]{2,}|\b\d+\+?\b)/;
+  var quantLines=checkLines.filter(function(l){return numRe.test(l)});
+  var unquantLines=checkLines.filter(function(l){return !numRe.test(l)});
+  var quantScore=checkLines.length?Math.round((quantLines.length/checkLines.length)*100):0;
+  var quantFb=[];
+  quantFb.push(quantLines.length+' of '+checkLines.length+' key lines include numbers/metrics.');
+  if(unquantLines.length){quantFb.push('Add measurable impact to lines like: "'+unquantLines[0].slice(0,80)+(unquantLines[0].length>80?'…':'')+'"');}
+  cats.push({name:'Quantified Achievements',score:quantScore,weight:12,feedback:quantFb});
 
-  // Overall
-  var overall=Math.round(keywordScore*0.35+formatScore*0.2+lengthScore*0.15+verbScore*0.15+quantScore*0.15);
+  // 5. Keyword density & relevance (vs job description) — weighted by frequency in JD
+  var jdFreq={};
+  job.toLowerCase().replace(/[^a-z0-9+#.\s]/g,' ').split(/\s+/).forEach(function(w){
+    w=w.replace(/^\.+|\.+$/g,'');
+    if(w.length>3&&!STOPWORDS[w]){jdFreq[w]=(jdFreq[w]||0)+1}
+  });
+  var jdKeys=Object.keys(jdFreq).sort(function(a,b){return jdFreq[b]-jdFreq[a]});
+  var totalWeight=0,matchedWeight=0,matchedList=[],missingList=[];
+  jdKeys.forEach(function(w){
+    totalWeight+=jdFreq[w];
+    if(resumeLower.indexOf(w)>-1){matchedWeight+=jdFreq[w];matchedList.push(w)}
+    else missingList.push({w:w,f:jdFreq[w]})
+  });
+  var keywordScore=totalWeight?Math.round((matchedWeight/totalWeight)*100):0;
+  missingList.sort(function(a,b){return b.f-a.f});
+  var topMissing=missingList.slice(0,15);
+  var kwFb=[];
+  kwFb.push('Weighted keyword match: '+keywordScore+'% ('+matchedList.length+'/'+jdKeys.length+' distinct JD keywords).');
+  if(topMissing.length)kwFb.push('Most important missing keywords (by frequency in the JD): '+topMissing.map(function(m){return m.w+(m.f>1?' ('+m.f+'×)':'')}).join(', ')+'.');
+  cats.push({name:'Keyword Relevance',score:keywordScore,weight:22,feedback:kwFb});
 
-  // Display score
+  // 6. Formatting red flags for ATS
+  var flags=[];
+  if(/\t/.test(resume)||/\|/.test(resume))flags.push('Possible tables/columns detected (tabs or | pipes) — use a single-column layout.');
+  if(/[◆➤●▪‣]/.test(resume))flags.push('Unusual bullet characters found — use • or -.');
+  if(/\bpage \d+ of \d+\b/i.test(resume))flags.push('Header/footer text ("Page X of Y") detected — keep content out of headers/footers.');
+  if(/[│─┌┐└┘├┤]/.test(resume))flags.push('Box-drawing characters found — these break ATS parsing.');
+  var emojiCount=(resume.match(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu)||[]).length;
+  if(emojiCount>0)flags.push(emojiCount+' emoji/symbol(s) found — most ATS strip these.');
+  var formatScore=Math.max(0,100-flags.length*20);
+  var formatFb=flags.length?flags.slice():['No obvious ATS formatting red flags in the pasted text.'];
+  formatFb.push('Note: this checks the extracted text only — it cannot see multi-column layouts or images in your original file.');
+  cats.push({name:'ATS Formatting',score:formatScore,weight:10,feedback:formatFb});
+
+  // 7. Length appropriateness by experience level
+  var ranges={entry:[300,650],mid:[450,900],senior:[600,1100]};
+  var rg=ranges[expLevel];
+  var lengthScore=100,lengthFb=[];
+  if(words<rg[0]){lengthScore=Math.round((words/rg[0])*80);lengthFb.push('Resume is short ('+words+' words). For a '+expLevel+' profile aim for '+rg[0]+'–'+rg[1]+' words.')}
+  else if(words>rg[1]){lengthScore=Math.max(50,100-Math.round((words-rg[1])/25));lengthFb.push('Resume is long ('+words+' words). Trim toward '+rg[0]+'–'+rg[1]+' words for a '+expLevel+' profile.')}
+  else lengthFb.push('Length ('+words+' words) is appropriate for a '+expLevel+' profile.');
+  cats.push({name:'Length',score:lengthScore,weight:5,feedback:lengthFb});
+
+  // 8. Date-format consistency
+  var dateFormats=[];
+  if(/\b(0?[1-9]|1[0-2])\/(19|20)\d{2}\b/.test(resume))dateFormats.push('MM/YYYY');
+  if(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(19|20)\d{2}\b/i.test(resume))dateFormats.push('Mon YYYY');
+  if(/\b(19|20)\d{2}\s?[-–]\s?((19|20)\d{2}|present|current)\b/i.test(resume))dateFormats.push('YYYY-YYYY');
+  if(/\b(0?[1-9]|[12]\d|3[01])[-.](0?[1-9]|1[0-2])[-.](19|20)?\d{2}\b/.test(resume))dateFormats.push('DD-MM-YY');
+  var dateScore=100,dateFb=[];
+  if(dateFormats.length===0){dateScore=70;dateFb.push('No clear dates detected — add month/year ranges to each role.')}
+  else if(dateFormats.length===1){dateFb.push('Consistent date format detected ('+dateFormats[0]+').')}
+  else{dateScore=60;dateFb.push('Mixed date formats detected ('+dateFormats.join(', ')+'). Pick one style and use it everywhere.')}
+  cats.push({name:'Date Consistency',score:dateScore,weight:5,feedback:dateFb});
+
+  // ---- Overall (weighted) ----
+  var wSum=0,acc=0;
+  cats.forEach(function(c){acc+=c.score*c.weight;wSum+=c.weight});
+  var overall=Math.round(acc/wSum);
+
+  // ---- Render gauge ----
   var scoreCard=document.getElementById('scoreCard');
+  scoreCard.style.display='block';
+  drawGauge(overall);
   var overallEl=document.getElementById('overallScore');
   var labelEl=document.getElementById('scoreLabel');
-  scoreCard.style.display='block';
+  var col=overall>70?'#22c55e':overall>=50?'#f59e0b':'#ef4444';
   overallEl.textContent=overall+'/100';
-  overallEl.style.color=overall>70?'#22c55e':overall>=50?'#f59e0b':'#ef4444';
+  overallEl.style.color=col;
   labelEl.textContent=overall>70?'✅ Good ATS Compatibility':overall>=50?'⚠️ Needs Improvement':'❌ Low ATS Compatibility';
+  document.getElementById('wordCountLine').textContent='Resume length: '+words+' words';
 
-  // Breakdown
+  // ---- Match card ----
+  var mc=document.getElementById('matchCard');
+  mc.style.display='block';
+  var matchHtml='<h3>🎯 Job Description Match: '+keywordScore+'%</h3>';
+  matchHtml+='<p class="info"><strong>Matched keywords ('+matchedList.length+'):</strong> '+(matchedList.length?matchedList.slice(0,25).map(esc).join(', '):'none yet')+'</p>';
+  if(topMissing.length){matchHtml+='<p class="info"><strong>Add these (weighted by JD frequency):</strong></p><div style="display:flex;flex-wrap:wrap;gap:6px">'+topMissing.map(function(m){return '<span class="badge badge-blue">'+esc(m.w)+(m.f>1?' ×'+m.f:'')+'</span>'}).join('')+'</div>';}
+  mc.innerHTML=matchHtml;
+
+  // ---- Category breakdown ----
   var bd=document.getElementById('breakdown');
   bd.style.display='block';
-  bd.innerHTML='<h3>Score Breakdown</h3>'+
-    bar('Keyword Match',keywordScore,35)+
-    bar('Format & Sections',formatScore,20)+
-    bar('Resume Length',lengthScore,15)+
-    bar('Action Verbs',verbScore,15)+
-    bar('Quantification',quantScore,15);
+  var bh='<h3>Detailed Scoring by Category</h3>';
+  cats.forEach(function(c){
+    bh+=bar(c.name,c.score,c.weight);
+    bh+='<ul class="info" style="margin:.2rem 0 .9rem 1.3rem;line-height:1.7">'+c.feedback.map(function(f){return '<li>'+esc(f)+'</li>'}).join('')+'</ul>';
+  });
+  bd.innerHTML=bh;
 
-  // Suggestions
+  // ---- Prioritised top 5 fixes ----
+  var sorted=cats.slice().sort(function(a,b){return (a.score*a.weight)-(b.score*b.weight)});
+  var fixes=[];
+  sorted.forEach(function(c){if(c.score<85&&fixes.length<5)fixes.push({name:c.name,score:c.score,tip:c.feedback[c.feedback.length>1?1:0]})});
+  var tf=document.getElementById('topFixes');
+  if(fixes.length){
+    tf.style.display='block';
+    tf.innerHTML='<h3>🔧 Top '+fixes.length+' Fixes (highest impact first)</h3><ol style="margin-left:1.5rem;line-height:1.9">'+fixes.map(function(f){return '<li><strong>'+esc(f.name)+' ('+f.score+'%):</strong> '+esc(f.tip)+'</li>'}).join('')+'</ol>';
+  }else{tf.style.display='block';tf.innerHTML='<h3>🔧 Top Fixes</h3><p>No major issues found — your resume scores well across categories. Still review it manually before applying.</p>'}
+
+  // ---- General suggestions ----
   var sg=document.getElementById('suggestions');
   sg.style.display='block';
   var tips=[];
-  if(missingKeywords.length)tips.push('<strong>Add missing keywords:</strong> '+missingKeywords.join(', '));
-  if(missingSections.length)tips.push('<strong>Add missing sections:</strong> '+missingSections.map(function(s){return s.charAt(0).toUpperCase()+s.slice(1)}).join(', '));
-  if(words<300)tips.push('<strong>Resume too short:</strong> Add more detail. Aim for 300-800 words.');
-  if(words>800)tips.push('<strong>Resume too long:</strong> Consider trimming to 600-800 words for better readability.');
-  if(foundVerbs.length<5)tips.push('<strong>Use more action verbs:</strong> Try: managed, developed, led, created, implemented, designed, achieved, improved');
-  if(numbers.length<3)tips.push('<strong>Add numbers:</strong> Quantify achievements with percentages, dollar amounts, or metrics (e.g., "increased sales by 25%")');
-  sg.innerHTML='<h3>💡 Suggestions for Improvement</h3><ul style="margin-left:1.5rem;line-height:2">'+tips.map(function(t){return'<li>'+t+'</li>'}).join('')+'</ul>';
-  if(!tips.length)sg.innerHTML='<h3>💡 Great job!</h3><p>Your resume looks well-optimized for this job description.</p>';
+  if(topMissing.length)tips.push('<strong>Add missing keywords:</strong> '+topMissing.map(function(m){return esc(m.w)}).join(', '));
+  if(missingSecs.length)tips.push('<strong>Add missing sections:</strong> '+missingSecs.join(', '));
+  if(weakFound.length)tips.push('<strong>Replace weak phrases:</strong> '+weakFound.map(esc).join(', '));
+  if(unquantLines.length)tips.push('<strong>Quantify more bullets:</strong> add numbers, %, or ₹/$ amounts to show impact.');
+  sg.innerHTML=tips.length?'<h3>💡 Suggested Additions</h3><ul style="margin-left:1.5rem;line-height:2">'+tips.map(function(t){return '<li>'+t+'</li>'}).join('')+'</ul>':'<h3>💡 Great job!</h3><p>Your resume looks well-optimized for this job description. This is still a heuristic estimate.</p>';
+
+  // ---- Build downloadable report ----
+  buildReport(overall,words,cats,matchedList,topMissing,fixes,expLevel);
+  document.getElementById('reportBar').style.display='flex';
 }
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 function bar(label,score,weight){
   var color=score>70?'#22c55e':score>=50?'#f59e0b':'#ef4444';
-  return'<div style="margin-bottom:.8rem"><div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>'+label+' (weight: '+weight+'%)</span><span style="color:'+color+';font-weight:bold">'+score+'%</span></div><div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden"><div style="width:'+score+'%;height:100%;background:'+color+';border-radius:4px"></div></div></div>';
+  return'<div style="margin-bottom:.4rem"><div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>'+esc(label)+' (weight: '+weight+'%)</span><span style="color:'+color+';font-weight:bold">'+score+'%</span></div><div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden"><div style="width:'+score+'%;height:100%;background:'+color+';border-radius:4px"></div></div></div>';
+}
+
+function drawGauge(score){
+  var c=document.getElementById('gauge');if(!c)return;var ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  var cx=110,cy=115,r=90;
+  ctx.lineWidth=16;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.strokeStyle='rgba(148,148,184,.25)';ctx.stroke();
+  var col=score>70?'#22c55e':score>=50?'#f59e0b':'#ef4444';
+  var end=Math.PI+(score/100)*Math.PI;
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,end);ctx.strokeStyle=col;ctx.stroke();
+}
+
+// ---------- Report download ----------
+function buildReport(overall,words,cats,matched,missing,fixes,expLevel){
+  var L=[];
+  L.push('RESUME ATS CHECK REPORT (heuristic — not a real ATS)');
+  L.push('Generated by FreeToolHubs · '+new Date().toLocaleString());
+  L.push('Experience level assumed: '+expLevel);
+  L.push('======================================================');
+  L.push('OVERALL SCORE: '+overall+'/100');
+  L.push('Resume length: '+words+' words');
+  L.push('');
+  L.push('CATEGORY SCORES');
+  cats.forEach(function(c){
+    L.push('- '+c.name+': '+c.score+'% (weight '+c.weight+'%)');
+    c.feedback.forEach(function(f){L.push('    * '+f)});
+  });
+  L.push('');
+  L.push('JOB DESCRIPTION MATCH');
+  L.push('Matched keywords: '+(matched.join(', ')||'none'));
+  L.push('Top missing keywords: '+(missing.map(function(m){return m.w+(m.f>1?' ('+m.f+'x)':'')}).join(', ')||'none'));
+  L.push('');
+  L.push('TOP FIXES');
+  if(fixes.length)fixes.forEach(function(f,i){L.push((i+1)+'. '+f.name+' ('+f.score+'%): '+f.tip)});
+  else L.push('No major issues found.');
+  L.push('');
+  L.push('Reminder: This is a heuristic checker. Real employer ATS behaviour varies.');
+  lastReport=L.join('\n');
+}
+
+function downloadReport(){
+  if(!lastReport){alert('Run a check first.');return}
+  download(new Blob([lastReport],{type:'text/plain'}),'ats-report.txt');
 }
   </script>
 </body>

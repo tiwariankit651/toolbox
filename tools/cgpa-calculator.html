@@ -37,29 +37,75 @@
     <div class="tool-section">
       <h1>🎓 CGPA / SGPA Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Add your subjects with grade points and credits to calculate SGPA/CGPA.</p>
-      <div class="row" style="flex-wrap:wrap">
-        <div><label>Grading System:</label><select id="scale" onchange="updateGradeOpts()"><option value="10">10-Point (India)</option><option value="4">4-Point (US)</option><option value="pct">Percentage-Based</option></select></div>
+      <p class="info">Add subjects with credits and a grade to compute SGPA, track semesters for CGPA, convert to percentage, plan targets and save multiple profiles — all in your browser.</p>
+
+      <!-- Profile + scale controls -->
+      <div class="row" style="flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1"><label>Grading System:</label><select id="scale" onchange="onScaleChange()"><option value="10">10-Point (India)</option><option value="4">4-Point (US)</option><option value="pct">Percentage-Based</option></select></div>
+        <div style="flex:1"><label>Profile:</label><select id="profileSelect" onchange="loadProfile()"></select></div>
+        <div style="flex:0"><button class="btn btn-outline" onclick="newProfile()" style="white-space:nowrap">+ New</button></div>
       </div>
+      <div class="row" style="flex-wrap:wrap">
+        <input type="text" id="profileName" placeholder="Profile name (e.g. B.Tech CSE)" style="flex:2">
+        <button class="btn btn-outline" onclick="saveProfile()">💾 Save Profile</button>
+        <button class="btn btn-outline" onclick="deleteProfile()">🗑 Delete</button>
+      </div>
+
+      <!-- Editable grade mapping -->
+      <details style="margin-top:1rem;background:var(--card);border-radius:10px;padding:.8rem">
+        <summary style="cursor:pointer;font-weight:600">⚙️ Edit grade → point mapping (match your university)</summary>
+        <p class="info">Map each letter grade to a grade point on the selected scale. Saved automatically in your browser.</p>
+        <div id="gradeMapEditor"></div>
+        <div class="row" style="margin-top:.5rem"><button class="btn btn-outline" onclick="addGradeMapRow()" style="font-size:.85rem">+ Add Grade</button><button class="btn btn-outline" onclick="resetGradeMap()" style="font-size:.85rem">Reset to default</button></div>
+      </details>
+
       <h3 style="margin-top:1rem">Semesters</h3>
+      <p class="info">For each subject enter a grade letter (uses the mapping above) or a numeric grade point directly.</p>
       <div id="semesters"></div>
       <div class="row" style="margin-top:.5rem">
         <button class="btn btn-outline" onclick="addSemester()">+ Add Semester</button>
         <button class="btn" onclick="calcAll()">Calculate CGPA</button>
       </div>
+
       <div id="result" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0"></div>
+      <div id="workingBox" class="info" style="white-space:pre-wrap;font-family:monospace;background:var(--card);border-radius:10px;padding:.8rem;display:none"></div>
       <div id="semResults"></div>
+      <canvas id="trendChart" height="200" style="width:100%;max-height:240px;margin-top:1rem;display:none"></canvas>
+
+      <!-- CGPA to percentage -->
+      <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
+        <h3>📊 CGPA → Percentage</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <input type="number" id="pctCgpa" placeholder="Enter CGPA" step="0.01" style="flex:1">
+          <input type="number" id="pctCustom" placeholder="Custom multiplier" step="0.1" style="flex:1">
+          <button class="btn btn-outline" onclick="convertPercentage()">Convert</button>
+        </div>
+        <div id="pctResult" style="margin-top:.5rem"></div>
+        <p class="info">⚠ Formulas vary by university. Confirm your institution's official conversion formula before using these figures.</p>
+      </div>
+
+      <!-- Target -->
       <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
         <h3>🎯 Target CGPA Calculator</h3>
-        <div class="row" style="flex-wrap:wrap"><input type="number" id="targetCgpa" placeholder="Target CGPA" step="0.1" style="width:100px"><input type="number" id="targetCredits" placeholder="Next sem credits" style="width:120px"><button class="btn btn-outline" onclick="calcTarget()">Calculate</button></div>
-        <div id="targetResult" class="info" style="margin-top:.3rem"></div>
+        <p class="info">Compute the SGPA needed in your remaining semester(s) to reach a target CGPA.</p>
+        <div class="row" style="flex-wrap:wrap">
+          <input type="number" id="curCgpa" placeholder="Current CGPA" step="0.01" style="width:120px">
+          <input type="number" id="curCredits" placeholder="Completed credits" style="width:140px">
+          <input type="number" id="targetCgpa" placeholder="Target CGPA" step="0.01" style="width:120px">
+          <input type="number" id="targetCredits" placeholder="Remaining credits" style="width:150px">
+          <button class="btn btn-outline" onclick="calcTarget()">Calculate</button>
+        </div>
+        <div id="targetResult" style="margin-top:.5rem"></div>
       </div>
-      <div style="background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem">
-        <h3>Quick GPA ↔ Percentage Converter</h3>
-        <div class="row"><input type="number" id="qGpa" placeholder="Enter CGPA" step="0.1" style="flex:1"><select id="qScale"><option value="10">10-point</option><option value="4">4-point</option></select><button class="btn btn-outline" onclick="quickConvert()">Convert</button></div>
-        <div id="qResult" class="info" style="margin-top:.3rem"></div>
+
+      <!-- Import/Export/Print -->
+      <div class="row" style="margin-top:1rem;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="exportJSON()">⬇ Export JSON</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
+        <button class="btn btn-outline" onclick="printSheet()">🖨 Print / PDF Grade Sheet</button>
+        <button class="btn btn-outline" onclick="exportTranscript()">📄 Export TXT Transcript</button>
       </div>
-      <div style="margin-top:1rem"><button class="btn btn-outline" onclick="exportTranscript()">📄 Export as Transcript</button></div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -104,75 +150,296 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-let semCount=0;
-function getMaxGrade(){var s=document.getElementById("scale").value;return s==="10"?10:s==="4"?4:100}
-function updateGradeOpts(){document.querySelectorAll(".gp-input").forEach(function(el){el.max=getMaxGrade();el.placeholder="Grade (max "+getMaxGrade()+")"})}
-function addRow(container){
+/* ===== Grading scales & editable mappings ===== */
+var DEFAULT_MAPS={
+  "10":[["O",10],["A+",9],["A",8],["B+",7],["B",6],["C",5],["P",4],["F",0]],
+  "4":[["A",4],["A-",3.7],["B+",3.3],["B",3],["B-",2.7],["C+",2.3],["C",2],["D",1],["F",0]],
+  "pct":[["A+",95],["A",85],["B+",75],["B",65],["C",55],["D",45],["F",30]]
+};
+var MAP_KEY="cgpa_grademaps_v1";
+var PROFILES_KEY="cgpa_profiles_v1";
+var gradeMaps=loadGradeMaps();
+var semCount=0;
+
+function loadGradeMaps(){
+  try{var s=localStorage.getItem(MAP_KEY);if(s){var o=JSON.parse(s);if(o&&o["10"]&&o["4"]&&o["pct"])return o;}}catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_MAPS));
+}
+function saveGradeMaps(){try{localStorage.setItem(MAP_KEY,JSON.stringify(gradeMaps));}catch(e){}}
+function getScale(){return document.getElementById("scale").value;}
+function getMaxGrade(){var s=getScale();return s==="10"?10:s==="4"?4:100;}
+function currentMap(){return gradeMaps[getScale()];}
+
+function onScaleChange(){renderGradeMapEditor();updateGradeHints();}
+function updateGradeHints(){
+  document.querySelectorAll(".grade-input").forEach(function(el){el.placeholder="Grade letter or point (max "+getMaxGrade()+")";});
+}
+
+/* Convert a user-entered grade token to a numeric grade point using the current map */
+function gradeToPoint(token){
+  if(token===null||token===undefined)return NaN;
+  var t=(""+token).trim();
+  if(t==="")return NaN;
+  // Numeric direct entry
+  if(/^-?\d*\.?\d+$/.test(t))return parseFloat(t);
+  // Letter lookup (case-insensitive)
+  var map=currentMap();var up=t.toUpperCase();
+  for(var i=0;i<map.length;i++){if((""+map[i][0]).toUpperCase()===up)return map[i][1];}
+  return NaN;
+}
+
+/* ===== Grade map editor ===== */
+function renderGradeMapEditor(){
+  var host=document.getElementById("gradeMapEditor");host.innerHTML="";
+  var map=currentMap();
+  map.forEach(function(pair,idx){
+    var row=document.createElement("div");row.className="row";row.style.gap="6px";
+    row.innerHTML='<input type="text" value="'+String(pair[0]).replace(/"/g,'&quot;')+'" placeholder="Grade" oninput="editGradeMap('+idx+',0,this.value)" style="flex:1">'+
+      '<input type="number" value="'+pair[1]+'" step="0.1" placeholder="Point" oninput="editGradeMap('+idx+',1,this.value)" style="flex:1">'+
+      '<button class="btn btn-outline" onclick="removeGradeMapRow('+idx+')" style="flex:0;padding:.4rem .6rem">✕</button>';
+    host.appendChild(row);
+  });
+}
+function editGradeMap(idx,col,val){var map=currentMap();if(!map[idx])return;map[idx][col]=col===1?parseFloat(val)||0:val;saveGradeMaps();}
+function addGradeMapRow(){currentMap().push(["",0]);renderGradeMapEditor();saveGradeMaps();}
+function removeGradeMapRow(idx){currentMap().splice(idx,1);renderGradeMapEditor();saveGradeMaps();}
+function resetGradeMap(){gradeMaps[getScale()]=JSON.parse(JSON.stringify(DEFAULT_MAPS[getScale()]));renderGradeMapEditor();saveGradeMaps();}
+
+/* ===== Subjects / semesters ===== */
+function addRow(container,name,grade,credits){
   var d=document.createElement("div");d.className="row";
-  d.innerHTML='<input type="text" placeholder="Subject" style="flex:2"><input type="number" class="gp-input" placeholder="Grade (max '+getMaxGrade()+')" min="0" max="'+getMaxGrade()+'" step="0.1"><input type="number" placeholder="Credits" min="1" max="10" value="3"><button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.5rem .8rem">✕</button>';
+  d.innerHTML='<input type="text" class="subj-name" placeholder="Subject" value="'+(name?String(name).replace(/"/g,'&quot;'):'')+'" style="flex:2">'+
+    '<input type="text" class="grade-input" placeholder="Grade letter or point (max '+getMaxGrade()+')" value="'+(grade!==undefined&&grade!==null?String(grade).replace(/"/g,'&quot;'):'')+'" style="flex:1">'+
+    '<input type="number" class="cred-input" placeholder="Credits" min="0" max="30" step="0.5" value="'+(credits!==undefined&&credits!==null?credits:3)+'" style="flex:1">'+
+    '<button class="btn btn-outline" onclick="this.parentElement.remove()" style="flex:0;padding:.5rem .8rem">✕</button>';
   container.appendChild(d);
 }
-function addSemester(){
+function addSemester(subjects){
   semCount++;
   var div=document.createElement("div");div.className="semester-block";div.id="sem"+semCount;
   div.style.cssText="background:var(--card);padding:.8rem;border-radius:10px;margin:.5rem 0";
   div.innerHTML='<div class="row"><strong>Semester '+semCount+'</strong><button class="btn btn-outline" onclick="this.closest(\'.semester-block\').remove()" style="flex:0;padding:.3rem .6rem;font-size:.75rem">Remove</button></div><div class="sem-subjects"></div><button class="btn btn-outline" onclick="addRow(this.previousElementSibling)" style="margin-top:.3rem;font-size:.8rem">+ Add Subject</button>';
   document.getElementById("semesters").appendChild(div);
-  for(var i=0;i<4;i++)addRow(div.querySelector(".sem-subjects"));
+  var host=div.querySelector(".sem-subjects");
+  if(subjects&&subjects.length){subjects.forEach(function(s){addRow(host,s.name,s.grade,s.credits);});}
+  else{for(var i=0;i<4;i++)addRow(host);}
 }
-addSemester();
 
+/* ===== Calculation (credit-weighted average) ===== */
 function calcSemester(block){
   var rows=block.querySelectorAll(".sem-subjects .row");
-  var tc=0,tp=0,cnt=0;
-  rows.forEach(function(r){var inp=r.querySelectorAll("input[type=number]");var gp=parseFloat(inp[0].value),cr=parseFloat(inp[1].value);if(!isNaN(gp)&&!isNaN(cr)){tp+=gp*cr;tc+=cr;cnt++}});
-  return{points:tp,credits:tc,subjects:cnt,sgpa:tc?tp/tc:0};
+  var tc=0,tp=0,cnt=0,details=[];
+  rows.forEach(function(r){
+    var name=r.querySelector(".subj-name").value||"Subject";
+    var gp=gradeToPoint(r.querySelector(".grade-input").value);
+    var cr=parseFloat(r.querySelector(".cred-input").value);
+    if(!isNaN(gp)&&!isNaN(cr)&&cr>0){tp+=gp*cr;tc+=cr;cnt++;details.push({name:name,gp:gp,cr:cr});}
+  });
+  return {points:tp,credits:tc,subjects:cnt,sgpa:tc?tp/tc:0,details:details};
 }
 function calcAll(){
   var blocks=document.querySelectorAll(".semester-block");
   var totalP=0,totalC=0,totalS=0;var semResults=[];
-  blocks.forEach(function(b,i){var r=calcSemester(b);totalP+=r.points;totalC+=r.credits;totalS+=r.subjects;semResults.push(r)});
-  if(!totalC)return alert("Enter at least one subject");
-  var cgpa=(totalP/totalC).toFixed(2);
-  var scale=document.getElementById("scale").value;
-  var pct=scale==="10"?(cgpa*9.5).toFixed(1):scale==="4"?(cgpa/4*100).toFixed(1):(totalP/totalC).toFixed(1);
-  var card=function(l,v){return"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>"};
-  var maxG=scale==="10"?"10":scale==="4"?"4":"100";
-  document.getElementById("result").innerHTML=card("CGPA",cgpa+"/"+maxG)+card("Percentage",pct+"%")+card("Subjects",totalS)+card("Total Credits",totalC);
-  var html="";semResults.forEach(function(r,i){if(r.credits)html+="<p class='info'>Semester "+(i+1)+": SGPA "+r.sgpa.toFixed(2)+" | "+r.credits+" credits</p>"});
+  blocks.forEach(function(b){var r=calcSemester(b);totalP+=r.points;totalC+=r.credits;totalS+=r.subjects;semResults.push(r);});
+  if(!totalC){alert("Enter at least one subject with a valid grade and credits");return;}
+  var cgpa=(totalP/totalC);
+  var scale=getScale();var maxG=getMaxGrade();
+  var pct=scale==="10"?(cgpa*9.5):scale==="4"?(cgpa/4*100):cgpa;
+  var card=function(l,v){return "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"+v+"</div><div class='info'>"+l+"</div></div>";};
+  document.getElementById("result").innerHTML=card("CGPA",cgpa.toFixed(2)+"/"+maxG)+card("Percentage",pct.toFixed(1)+"%")+card("Subjects",totalS)+card("Total Credits",totalC);
+  // semester table
+  var html="<h3 style='margin-top:1rem'>Semester-wise Results</h3><div style='overflow-x:auto'><table style='width:100%;border-collapse:collapse;font-size:.9rem'><tr><th style='text-align:left;padding:.4rem'>Semester</th><th style='text-align:left;padding:.4rem'>Credits</th><th style='text-align:left;padding:.4rem'>SGPA</th></tr>";
+  var trend=[];
+  semResults.forEach(function(r,i){if(r.credits){html+="<tr><td style='padding:.4rem;border-top:1px solid rgba(128,128,128,.2)'>Semester "+(i+1)+"</td><td style='padding:.4rem;border-top:1px solid rgba(128,128,128,.2)'>"+r.credits+"</td><td style='padding:.4rem;border-top:1px solid rgba(128,128,128,.2)'>"+r.sgpa.toFixed(2)+"</td></tr>";trend.push(r.sgpa);}});
+  html+="</table></div>";
   document.getElementById("semResults").innerHTML=html;
-  window._calcData={semesters:semResults,cgpa:cgpa,pct:pct,totalC:totalC,totalP:totalP,scale:scale};
+  // working
+  var work="CGPA = Σ(SGPA_credits) / Σ(credits) = credit-weighted average of grade points\n";
+  work+="Total grade points (Σ gp×credits) = "+totalP.toFixed(2)+"\n";
+  work+="Total credits = "+totalC+"\n";
+  work+="CGPA = "+totalP.toFixed(2)+" / "+totalC+" = "+cgpa.toFixed(4)+"\n";
+  if(scale==="10")work+="Percentage (CGPA × 9.5) = "+pct.toFixed(2)+"%";
+  else if(scale==="4")work+="Percentage (CGPA / 4 × 100) = "+pct.toFixed(2)+"%";
+  else work+="Percentage-scale CGPA used directly = "+pct.toFixed(2)+"%";
+  var wb=document.getElementById("workingBox");wb.style.display="block";wb.textContent=work;
+  drawTrend(trend);
+  window._calcData={semesters:semResults,cgpa:cgpa.toFixed(2),pct:pct.toFixed(1),totalC:totalC,totalP:totalP,scale:scale};
+  // Prefill target inputs
+  document.getElementById("curCgpa").value=cgpa.toFixed(2);
+  document.getElementById("curCredits").value=totalC;
 }
+
+function drawTrend(trend){
+  var c=document.getElementById("trendChart");
+  if(!trend.length){c.style.display="none";return;}
+  c.style.display="";c.width=c.offsetWidth;var ctx=c.getContext("2d"),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  var pad=30,maxV=getMaxGrade();
+  var n=trend.length;var bw=(W-pad*2)/n;
+  // baseline
+  ctx.strokeStyle="rgba(128,128,128,.4)";ctx.beginPath();ctx.moveTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();
+  // bars
+  trend.forEach(function(v,i){
+    var bh=(v/maxV)*(H-pad*2);
+    var x=pad+i*bw+bw*0.2,y=H-pad-bh,w=bw*0.6;
+    ctx.fillStyle="#6366f1";ctx.fillRect(x,y,w,bh);
+    ctx.fillStyle="#8b8ba8";ctx.font="11px sans-serif";ctx.textAlign="center";
+    ctx.fillText("S"+(i+1),x+w/2,H-pad+14);
+    ctx.fillStyle="#6366f1";ctx.fillText(v.toFixed(1),x+w/2,y-4);
+  });
+  // trend line
+  if(n>1){ctx.strokeStyle="#8b5cf6";ctx.lineWidth=2;ctx.beginPath();trend.forEach(function(v,i){var x=pad+i*bw+bw*0.5,y=H-pad-(v/maxV)*(H-pad*2);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();}
+}
+
+/* ===== CGPA to percentage (multiple formulas) ===== */
+function convertPercentage(){
+  var cgpa=+document.getElementById("pctCgpa").value;
+  if(!cgpa&&cgpa!==0){document.getElementById("pctResult").innerHTML="<p class='info'>Enter a CGPA value.</p>";return;}
+  var custom=parseFloat(document.getElementById("pctCustom").value);
+  var rows=[
+    ["CBSE (CGPA × 9.5)",cgpa*9.5],
+    ["CGPA × 10",cgpa*10],
+    ["(CGPA − 0.75) × 10",(cgpa-0.75)*10]
+  ];
+  if(!isNaN(custom))rows.push(["Custom (CGPA × "+custom+")",cgpa*custom]);
+  var html="<div style='overflow-x:auto'><table style='width:100%;border-collapse:collapse;font-size:.9rem'><tr><th style='text-align:left;padding:.4rem'>Formula</th><th style='text-align:left;padding:.4rem'>Percentage</th></tr>";
+  rows.forEach(function(r){html+="<tr><td style='padding:.4rem;border-top:1px solid rgba(128,128,128,.2)'>"+r[0]+"</td><td style='padding:.4rem;border-top:1px solid rgba(128,128,128,.2)'>"+r[1].toFixed(2)+"%</td></tr>";});
+  html+="</table></div>";
+  document.getElementById("pctResult").innerHTML=html;
+}
+
+/* ===== Target calculator ===== */
 function calcTarget(){
-  if(!window._calcData)return alert("Calculate CGPA first");
+  var cur=+document.getElementById("curCgpa").value;
+  var curCr=+document.getElementById("curCredits").value;
   var target=+document.getElementById("targetCgpa").value;
-  var nextCr=+document.getElementById("targetCredits").value;
-  if(!target||!nextCr)return alert("Enter target CGPA and next semester credits");
-  var d=window._calcData;
-  var needed=((target*(d.totalC+nextCr))-d.totalP)/nextCr;
-  var max=getMaxGrade();
+  var remCr=+document.getElementById("targetCredits").value;
   var el=document.getElementById("targetResult");
-  if(needed>max)el.textContent="❌ Not achievable. You'd need "+needed.toFixed(2)+"/"+max+" per credit.";
-  else if(needed<0)el.textContent="✅ You've already exceeded your target!";
-  else el.textContent="📌 You need an average grade of "+needed.toFixed(2)+"/"+max+" in next semester.";
+  if(!target||!remCr){el.innerHTML="<p class='info'>Enter target CGPA and remaining credits (and current CGPA + completed credits).</p>";return;}
+  var needed=(target*(curCr+remCr)-cur*curCr)/remCr;
+  var max=getMaxGrade();
+  var work="Required SGPA = (target×(completed+remaining) − currentCGPA×completed) / remaining\n";
+  work+="= ("+target+"×"+(curCr+remCr)+" − "+cur+"×"+curCr+") / "+remCr+" = "+needed.toFixed(2);
+  var msg;
+  if(needed>max)msg="<p style='color:#ec4899'>❌ Not achievable — you'd need an SGPA of "+needed.toFixed(2)+"/"+max+" in the remaining semester(s).</p>";
+  else if(needed<0)msg="<p style='color:#22c55e'>✅ Already achieved — your current CGPA exceeds the target.</p>";
+  else msg="<p>📌 You need an SGPA of <strong>"+needed.toFixed(2)+"/"+max+"</strong> in the remaining semester(s).</p>";
+  el.innerHTML=msg+"<div class='info' style='white-space:pre-wrap;font-family:monospace'>"+work+"</div>";
+}
+
+/* ===== Profiles (localStorage) ===== */
+function readProfiles(){try{var s=localStorage.getItem(PROFILES_KEY);return s?JSON.parse(s):{};}catch(e){return {};}}
+function writeProfiles(p){try{localStorage.setItem(PROFILES_KEY,JSON.stringify(p));}catch(e){}}
+function currentState(){
+  var sems=[];
+  document.querySelectorAll(".semester-block").forEach(function(b){
+    var subs=[];
+    b.querySelectorAll(".sem-subjects .row").forEach(function(r){
+      subs.push({name:r.querySelector(".subj-name").value,grade:r.querySelector(".grade-input").value,credits:r.querySelector(".cred-input").value});
+    });
+    sems.push(subs);
+  });
+  return {scale:getScale(),semesters:sems};
+}
+function applyState(st){
+  document.getElementById("semesters").innerHTML="";semCount=0;
+  if(st.scale){document.getElementById("scale").value=st.scale;}
+  onScaleChange();
+  if(st.semesters&&st.semesters.length){st.semesters.forEach(function(subs){addSemester(subs);});}
+  else addSemester();
+}
+function refreshProfileSelect(sel){
+  var profiles=readProfiles();var sl=document.getElementById("profileSelect");
+  sl.innerHTML="<option value=''>— unsaved —</option>";
+  Object.keys(profiles).forEach(function(name){var o=document.createElement("option");o.value=name;o.textContent=name;sl.appendChild(o);});
+  if(sel!==undefined)sl.value=sel;
+}
+function saveProfile(){
+  var name=document.getElementById("profileName").value.trim();
+  if(!name){alert("Enter a profile name to save");return;}
+  var profiles=readProfiles();profiles[name]=currentState();writeProfiles(profiles);
+  refreshProfileSelect(name);alert("Saved profile: "+name);
+}
+function loadProfile(){
+  var name=document.getElementById("profileSelect").value;
+  if(!name)return;
+  var profiles=readProfiles();if(!profiles[name])return;
+  document.getElementById("profileName").value=name;
+  applyState(profiles[name]);
+}
+function newProfile(){
+  document.getElementById("profileName").value="";
+  document.getElementById("profileSelect").value="";
+  applyState({scale:getScale(),semesters:null});
+}
+function deleteProfile(){
+  var name=document.getElementById("profileSelect").value;
+  if(!name){alert("Select a saved profile to delete");return;}
+  var profiles=readProfiles();delete profiles[name];writeProfiles(profiles);
+  refreshProfileSelect("");document.getElementById("profileName").value="";
+  alert("Deleted profile: "+name);
+}
+
+/* ===== Import / Export JSON ===== */
+function exportJSON(){
+  var data={version:1,gradeMaps:gradeMaps,profiles:readProfiles(),current:currentState()};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  download(blob,"cgpa-data.json");
+}
+function importJSON(ev){
+  var file=ev.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var data=JSON.parse(reader.result);
+      if(data.gradeMaps&&data.gradeMaps["10"]){gradeMaps=data.gradeMaps;saveGradeMaps();}
+      if(data.profiles){writeProfiles(data.profiles);}
+      refreshProfileSelect("");
+      if(data.current){applyState(data.current);}
+      renderGradeMapEditor();
+      alert("Imported successfully.");
+    }catch(e){alert("Invalid JSON file: "+e.message);}
+    ev.target.value="";
+  };
+  reader.readAsText(file);
+}
+
+/* ===== Grade sheet: print & text transcript ===== */
+function buildSheetLines(){
+  if(!window._calcData){calcAll();if(!window._calcData)return null;}
+  var d=window._calcData;var lines=[];
+  lines.push("=== ACADEMIC GRADE SHEET ===");
+  lines.push("Profile: "+(document.getElementById("profileName").value||"(unsaved)"));
+  lines.push("Grading System: "+getScale()+(getScale()==="pct"?"":"-point"));
+  lines.push("");
+  document.querySelectorAll(".semester-block").forEach(function(b,i){
+    var r=d.semesters[i];if(!r||!r.credits)return;
+    lines.push("--- Semester "+(i+1)+" (SGPA "+r.sgpa.toFixed(2)+") ---");
+    r.details.forEach(function(s){lines.push("  "+s.name+": GP "+s.gp+" | Credits "+s.cr);});
+    lines.push("");
+  });
+  lines.push("=== CUMULATIVE ===");
+  lines.push("CGPA: "+d.cgpa+"/"+getMaxGrade());
+  lines.push("Percentage: "+d.pct+"%");
+  lines.push("Total Credits: "+d.totalC);
+  return lines;
 }
 function exportTranscript(){
-  if(!window._calcData)return alert("Calculate CGPA first");
-  var d=window._calcData;var lines=["=== ACADEMIC TRANSCRIPT ===","Grading System: "+document.getElementById("scale").value+"-point",""];
-  document.querySelectorAll(".semester-block").forEach(function(b,i){
-    lines.push("--- Semester "+(i+1)+" ---");
-    b.querySelectorAll(".sem-subjects .row").forEach(function(r){
-      var name=r.querySelector("input[type=text]").value||"Subject";
-      var inp=r.querySelectorAll("input[type=number]");
-      var gp=inp[0].value,cr=inp[1].value;
-      if(gp&&cr)lines.push("  "+name+": Grade "+gp+" | Credits "+cr);
-    });
-    var sr=d.semesters[i];if(sr&&sr.credits)lines.push("  SGPA: "+sr.sgpa.toFixed(2));lines.push("");
-  });
-  lines.push("=== CUMULATIVE ===","CGPA: "+d.cgpa,"Percentage: "+d.pct+"%","Total Credits: "+d.totalC);
-  var blob=new Blob([lines.join("\n")],{type:"text/plain"});download(blob,"transcript.txt");
+  var lines=buildSheetLines();if(!lines)return;
+  var blob=new Blob([lines.join("\n")],{type:"text/plain"});download(blob,"grade-sheet.txt");
 }
-function quickConvert(){var gpa=+document.getElementById("qGpa").value;var scale=+document.getElementById("qScale").value;if(!gpa)return;var pct=scale===10?(gpa*9.5).toFixed(1):(gpa*25).toFixed(1);document.getElementById("qResult").textContent="CGPA "+gpa+" ("+scale+"-point) = "+pct+"% | Grade: "+(pct>=90?"A+":pct>=80?"A":pct>=70?"B+":pct>=60?"B":pct>=50?"C":"D")}
+function printSheet(){
+  var lines=buildSheetLines();if(!lines){alert("Calculate CGPA first");return;}
+  var w=window.open("","_blank");
+  if(!w){alert("Please allow pop-ups to print.");return;}
+  var html="<html><head><title>Grade Sheet</title><style>body{font-family:system-ui,Arial,sans-serif;padding:2rem;color:#141428}pre{font-size:14px;line-height:1.6}h1{font-size:1.4rem}</style></head><body><h1>Grade Sheet</h1><pre>"+lines.join("\n").replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</pre><p style='font-size:12px;color:#666'>Generated by FreeToolHubs CGPA Calculator. Confirm your university's official formula.</p></body></html>";
+  w.document.write(html);w.document.close();w.focus();w.print();
+}
+
+/* ===== Init ===== */
+renderGradeMapEditor();
+refreshProfileSelect("");
+addSemester();
   </script>
 </body>
 </html>
