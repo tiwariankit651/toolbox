@@ -36,13 +36,45 @@
     <div class="breadcrumb"><a href="../">Home</a> → { } JSON Formatter & Validator</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>{ } JSON Formatter & Validator</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div><textarea id="j" placeholder="Paste JSON here..." style="font-family:monospace;min-height:250px"></textarea>
-      <div class="row" style="flex-wrap:wrap"><button class="btn" onclick="fmt()">Format / Beautify</button><button class="btn btn-outline" onclick="mini()">Minify</button><button class="btn btn-outline" onclick="treeView()">🌳 Tree View</button><button class="btn btn-outline" onclick="findPath()">🔍 Find Path</button><button class="btn btn-outline" onclick="toYaml()">📄 Convert to YAML</button><button class="btn btn-outline" onclick="validateSchema()">🔒 Schema Validate</button></div>
-      <div id="treeContainer" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0;max-height:400px;overflow:auto;font-family:monospace;font-size:.85rem"></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <div class="row" style="flex-wrap:wrap;gap:.6rem">
+        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0">Indent:
+          <select id="indent" style="width:auto;margin:0">
+            <option value="2" selected>2 spaces</option>
+            <option value="4">4 spaces</option>
+            <option value="tab">Tab</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><input type="checkbox" id="sortKeys" style="width:auto;margin:0"> Sort keys A→Z</label>
+        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><input type="file" id="jsonFile" accept=".json,application/json" style="width:auto;margin:0;padding:.3rem"></label>
+      </div>
+      <textarea id="j" placeholder="Paste JSON here..." style="font-family:monospace;min-height:250px" oninput="autosave()"></textarea>
+      <div class="row" style="flex-wrap:wrap"><button class="btn" onclick="fmt()">Format / Beautify</button><button class="btn btn-outline" onclick="mini()">Minify</button><button class="btn btn-outline" onclick="validateOnly()">✔ Validate</button><button class="btn btn-outline" onclick="treeView()">🌳 Tree View</button><button class="btn btn-outline" onclick="copyOut()">📋 Copy</button><button class="btn btn-outline" onclick="downloadJson()">⬇ Download</button></div>
       <div id="result"></div>
+      <div class="row" style="flex-wrap:wrap;align-items:center;gap:.5rem">
+        <input type="text" id="searchBox" placeholder="🔍 Search keys/values (filters tree)" oninput="applySearch()" style="flex:1;min-width:180px">
+        <button class="btn btn-outline" onclick="expandAll(true)" style="flex:0 0 auto">Expand all</button>
+        <button class="btn btn-outline" onclick="expandAll(false)" style="flex:0 0 auto">Collapse all</button>
+      </div>
+      <div id="treeContainer" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0;max-height:450px;overflow:auto;font-family:monospace;font-size:.85rem;line-height:1.7"></div>
+      <div id="highlight" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0;max-height:400px;overflow:auto;font-family:monospace;font-size:.85rem;white-space:pre;line-height:1.6"></div>
+
+      <h3 style="margin-top:1.5rem">📊 Stats</h3>
+      <div id="stats" class="info">Format or validate JSON to see stats.</div>
+
+      <h3 style="margin-top:1.5rem">🔄 Convert</h3>
+      <div class="row" style="flex-wrap:wrap"><button class="btn btn-outline" onclick="conv('csv')">→ CSV</button><button class="btn btn-outline" onclick="conv('yaml')">→ YAML</button><button class="btn btn-outline" onclick="conv('query')">→ Query String</button><button class="btn btn-outline" onclick="conv('ts')">→ TypeScript</button></div>
+      <div id="convResult" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0;max-height:400px;overflow:auto;font-family:monospace;font-size:.85rem;white-space:pre-wrap;position:relative"></div>
+
+      <h3 style="margin-top:1.5rem">🔧 Escape / Unescape JSON String</h3>
+      <p class="info">Escape turns text into a safe JSON string literal. Unescape parses a quoted/escaped string back to raw text.</p>
+      <div class="row"><button class="btn btn-outline" onclick="escapeStr()">Escape →</button><button class="btn btn-outline" onclick="unescapeStr()">← Unescape</button></div>
+      <div id="escResult" style="display:none;background:var(--card);padding:1rem;border-radius:8px;margin:.5rem 0;max-height:300px;overflow:auto;font-family:monospace;font-size:.85rem;white-space:pre-wrap;position:relative"></div>
+
       <h3 style="margin-top:1.5rem">Schema Validation</h3>
       <p class="info">Define expected types for keys. Format: <code>key: type</code> (one per line). Types: string, number, boolean, array, object</p>
       <textarea id="schema" placeholder="name: string&#10;age: number&#10;active: boolean&#10;tags: array&#10;address: object" style="font-family:monospace;min-height:100px"></textarea>
+      <div class="row"><button class="btn btn-outline" onclick="validateSchema()">🔒 Schema Validate</button></div>
       <h3 style="margin-top:1.5rem">JSON Diff</h3>
       <p class="info">Paste a second JSON below and compare with the first.</p>
       <textarea id="j2" placeholder="Paste second JSON here for comparison..." style="font-family:monospace;min-height:150px"></textarea>
@@ -108,17 +140,93 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function fmt(){try{document.getElementById("j").value=JSON.stringify(JSON.parse(document.getElementById("j").value),null,2);document.getElementById("result").innerHTML="<p class=\"info\" style=\"color:#2ecc71\">✅ Valid JSON — formatted!</p>"}catch(e){document.getElementById("result").innerHTML="<p class=\"info\" style=\"color:#e74c3c\">❌ "+e.message+"</p>"}}
-function mini(){try{document.getElementById("j").value=JSON.stringify(JSON.parse(document.getElementById("j").value));document.getElementById("result").innerHTML="<p class='info' style='color:#2ecc71'>✅ Minified!</p>"}catch(e){document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>❌ "+e.message+"</p>"}}
-function treeView(){try{var obj=JSON.parse(document.getElementById("j").value);document.getElementById("treeContainer").style.display="block";document.getElementById("treeContainer").innerHTML=buildTree(obj,"")}catch(e){document.getElementById("treeContainer").style.display="block";document.getElementById("treeContainer").innerHTML="<span style='color:#e74c3c'>Invalid JSON</span>"}}
-function buildTree(obj,path){var html="";for(var k in obj){var v=obj[k];var curPath=Array.isArray(obj)?(path+"["+k+"]"):(path?path+"."+k:k);if(typeof v==="object"&&v!==null){html+="<div style='margin-left:1rem'><strong style='color:var(--accent);cursor:pointer' onclick='copyPath(this,\""+curPath.replace(/"/g,"&quot;")+"\")'>▸ "+k+"</strong> "+(Array.isArray(v)?"["+v.length+"]":"{...}")+" <span style='color:var(--muted);font-size:.7rem'>"+curPath+"</span><div style='cursor:pointer' onclick='this.style.display=\"none\";this.previousElementSibling.previousElementSibling.textContent=\"▸ "+k+"\"'>"+buildTree(v,curPath)+"</div></div>"}else{html+="<div style='margin-left:1rem;cursor:pointer' onclick='copyPath(this,\""+curPath.replace(/"/g,"&quot;")+"\")'><span style='color:var(--muted)'>"+k+":</span> <span style='color:"+(typeof v==="string"?"#4caf50":"#ff9800")+"'>"+JSON.stringify(v)+"</span> <span style='color:var(--muted);font-size:.7rem'>📋 "+curPath+"</span></div>"}}return html}
-function copyPath(el,path){navigator.clipboard.writeText(path);document.getElementById("result").innerHTML="<p class='info' style='color:#2ecc71'>📋 Copied path: <code>"+path+"</code></p>"}
-function findPath(){var key=prompt("Enter key name to find:");if(!key)return;try{var obj=JSON.parse(document.getElementById("j").value);var paths=[];function search(o,p){for(var k in o){var cp=Array.isArray(o)?(p+"["+k+"]"):(p?p+"."+k:k);if(k===key)paths.push(cp);if(typeof o[k]==="object"&&o[k]!==null)search(o[k],cp)}}search(obj,"");document.getElementById("result").innerHTML=paths.length?"<p class='info'>Found "+paths.length+" match(es):</p>"+paths.map(function(p){return "<div style='background:var(--card);padding:.3rem .6rem;border-radius:4px;margin:.2rem 0;font-family:monospace'>"+p+"</div>"}).join(""):"<p class='info'>Key '"+key+"' not found</p>"}catch(e){document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>Invalid JSON</p>"}}
-function toYaml(){try{var obj=JSON.parse(document.getElementById("j").value);var yaml=jsonToYaml(obj,0);document.getElementById("result").innerHTML="<p class='info' style='color:#2ecc71'>✅ Converted to YAML:</p><pre style='background:var(--card);padding:1rem;border-radius:8px;overflow:auto;white-space:pre-wrap'>"+yaml+"</pre>"}catch(e){document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>❌ "+e.message+"</p>"}}
-function jsonToYaml(obj,indent){var sp="  ".repeat(indent),out="";for(var k in obj){var v=obj[k];if(Array.isArray(v)){out+=sp+k+":\n";for(var i=0;i<v.length;i++){if(typeof v[i]==="object"&&v[i]!==null){out+=sp+"  - \n"+jsonToYaml(v[i],indent+2)}else{out+=sp+"  - "+yamlVal(v[i])+"\n"}}}else if(typeof v==="object"&&v!==null){out+=sp+k+":\n"+jsonToYaml(v,indent+1)}else{out+=sp+k+": "+yamlVal(v)+"\n"}}return out}
-function yamlVal(v){if(typeof v==="string")return'"'+v.replace(/"/g,'\\"')+'"';if(v===null)return"null";return String(v)}
-function validateSchema(){try{var obj=JSON.parse(document.getElementById("j").value);var schemaText=document.getElementById("schema").value.trim();if(!schemaText){document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>Please define a schema above.</p>";return}var rules=schemaText.split("\n").map(function(l){var parts=l.split(":");return{key:parts[0].trim(),type:parts.slice(1).join(":").trim().toLowerCase()}});var errors=[];rules.forEach(function(r){checkType(obj,r.key,r.type,"",errors)});if(errors.length===0){document.getElementById("result").innerHTML="<p class='info' style='color:#2ecc71'>✅ Schema validation passed!</p>"}else{document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>❌ Schema errors:</p>"+errors.map(function(e){return"<div style='background:var(--card);padding:.3rem .6rem;border-radius:4px;margin:.2rem 0;color:#e74c3c'>"+e+"</div>"}).join("")}}catch(e){document.getElementById("result").innerHTML="<p class='info' style='color:#e74c3c'>❌ "+e.message+"</p>"}}
-function checkType(obj,key,expectedType,path,errors){for(var k in obj){var curPath=path?path+"."+k:k;if(k===key){var v=obj[k];var actual=v===null?"null":Array.isArray(v)?"array":typeof v;if(actual!==expectedType){errors.push(curPath+": expected <b>"+expectedType+"</b>, got <b>"+actual+"</b>")}}if(typeof obj[k]==="object"&&obj[k]!==null)checkType(obj[k],key,expectedType,curPath,errors)}}
-function diffJson(){try{var a=JSON.parse(document.getElementById("j").value);var b=JSON.parse(document.getElementById("j2").value);var diffs=[];compareObj(a,b,"",diffs);document.getElementById("diffResult").style.display="block";if(diffs.length===0){document.getElementById("diffResult").innerHTML="<span style='color:#2ecc71'>✅ No differences found.</span>"}else{document.getElementById("diffResult").innerHTML="<strong>Found "+diffs.length+" difference(s):</strong><br><br>"+diffs.join("<br>")}}catch(e){document.getElementById("diffResult").style.display="block";document.getElementById("diffResult").innerHTML="<span style='color:#e74c3c'>❌ "+e.message+"</span>"}}
-function compareObj(a,b,path,diffs){var allKeys=new Set(Object.keys(a||{}).concat(Object.keys(b||{})));allKeys.forEach(function(k){var p=path?path+"."+k:k;var va=a?a[k]:undefined;var vb=b?b[k]:undefined;if(va===undefined){diffs.push("<span style='color:#2ecc71'>+ "+p+": "+JSON.stringify(vb)+"</span>")}else if(vb===undefined){diffs.push("<span style='color:#e74c3c'>- "+p+": "+JSON.stringify(va)+"</span>")}else if(typeof va==="object"&&va!==null&&typeof vb==="object"&&vb!==null){compareObj(va,vb,p,diffs)}else if(va!==vb){diffs.push("<span style='color:#ff9800'>~ "+p+": "+JSON.stringify(va)+" → "+JSON.stringify(vb)+"</span>")}})}</script>
+  <script>
+var G="#2ecc71",R="#e74c3c",O="#ff9800",Bl="#6366f1",Pu="#8b5cf6";
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function getIndent(){var v=document.getElementById("indent").value;return v==="tab"?"\t":parseInt(v,10)}
+function maybeSort(obj){if(!document.getElementById("sortKeys").checked)return obj;return sortDeep(obj)}
+function sortDeep(o){if(Array.isArray(o))return o.map(sortDeep);if(o&&typeof o==="object"){var out={};Object.keys(o).sort().forEach(function(k){out[k]=sortDeep(o[k])});return out}return o}
+function showResult(msg,color){document.getElementById("result").innerHTML="<p class='info' style='color:"+color+"'>"+msg+"</p>"}
+// Parse with precise line/column error info
+function parseJSON(text){try{return{ok:true,value:JSON.parse(text)}}catch(e){var pos=-1,m=e.message.match(/position (\d+)/);if(m)pos=parseInt(m[1],10);var line=1,col=1;if(pos>=0){for(var i=0;i<pos&&i<text.length;i++){if(text[i]==="\n"){line++;col=1}else col++}}return{ok:false,error:e.message,line:pos>=0?line:null,col:pos>=0?col:null,pos:pos}}}
+function errMsg(res){var loc=res.line?(" (line "+res.line+", column "+res.col+")"):"";var hint=hintFor(res.error);return "❌ Invalid JSON: "+esc(res.error)+loc+(hint?" — "+hint:"")}
+function hintFor(msg){if(/Unexpected end/i.test(msg))return "input ended early — check for a missing closing } or ]";if(/Unexpected token/i.test(msg))return "check for trailing commas, single quotes, or unquoted keys";if(/property name/i.test(msg))return "object keys must be double-quoted";return ""}
+
+function fmt(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}var val=maybeSort(r.value);document.getElementById("j").value=JSON.stringify(val,null,getIndent());autosave();showResult("✅ Valid JSON — formatted!",G);buildStats(val);renderHighlight(val)}
+function mini(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}var before=new Blob([document.getElementById("j").value]).size;var val=maybeSort(r.value);var out=JSON.stringify(val);document.getElementById("j").value=out;autosave();var after=new Blob([out]).size;showResult("✅ Minified! "+before+" B → "+after+" B ("+(before-after)+" B saved)",G);buildStats(val)}
+function validateOnly(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}showResult("✅ Valid JSON — no errors found.",G);buildStats(r.value)}
+function copyOut(){copyText(document.getElementById("j").value);showResult("📋 Copied to clipboard.",G)}
+function downloadJson(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}download(new Blob([document.getElementById("j").value],{type:"application/json"}),"data.json")}
+
+// Autosave
+function autosave(){try{localStorage.setItem("jsonFmtSave",document.getElementById("j").value)}catch(e){}}
+window.addEventListener("load",function(){var s=localStorage.getItem("jsonFmtSave");if(s&&!document.getElementById("j").value){document.getElementById("j").value=s}});
+// File upload
+document.getElementById("jsonFile").addEventListener("change",function(){var f=this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){document.getElementById("j").value=rd.result;autosave();validateOnly()};rd.readAsText(f)});
+
+// Type helpers
+function typeOf(v){if(v===null)return "null";if(Array.isArray(v))return "array";return typeof v}
+function typeColor(t){return {string:"#4caf50",number:O,boolean:Pu,"null":"#9494b8",object:Bl,array:Bl}[t]||"var(--text2)"}
+function badge(t,extra){return "<span style='background:rgba(99,102,241,.15);color:"+typeColor(t)+";font-size:.65rem;padding:.05rem .4rem;border-radius:4px;margin-left:.3rem'>"+t+(extra!==undefined?" "+extra:"")+"</span>"}
+
+// Collapsible tree
+var treeSeq=0;
+function treeView(){var r=parseJSON(document.getElementById("j").value);document.getElementById("treeContainer").style.display="block";if(!r.ok){document.getElementById("treeContainer").innerHTML="<span style='color:"+R+"'>"+errMsg(r)+"</span>";return}treeSeq=0;document.getElementById("treeContainer").innerHTML=buildTree(r.value,"$","root");buildStats(r.value);applySearch()}
+function buildTree(obj,path,label){var t=typeOf(obj);if(t!=="object"&&t!=="array"){return "<div class='tnode' data-text='"+esc((label+" "+JSON.stringify(obj)).toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--text2)'>"+esc(label)+":</span> <span style='color:"+typeColor(t)+"'>"+esc(JSON.stringify(obj))+"</span>"+badge(t)+" <span style='color:var(--text2);font-size:.65rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span></div>"}
+  var id="tn"+(treeSeq++);var count=Array.isArray(obj)?obj.length:Object.keys(obj).length;var summary=Array.isArray(obj)?("["+count+"]"):("{"+count+" key"+(count===1?"":"s")+"}");
+  var head="<div class='tnode' data-text='"+esc(label.toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--accent);cursor:pointer;user-select:none' onclick='toggleNode(\""+id+"\")'><span id='"+id+"_ar'>▾</span> "+esc(label)+"</span> <span style='color:var(--text2)'>"+summary+"</span>"+badge(t,count)+" <span style='color:var(--text2);font-size:.65rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span>";
+  var children="<div id='"+id+"' class='tchildren'>";
+  if(Array.isArray(obj)){for(var i=0;i<obj.length;i++){children+=buildTree(obj[i],path+"["+i+"]","["+i+"]")}}
+  else{for(var k in obj){children+=buildTree(obj[k],path+"."+k,k)}}
+  children+="</div>";return head+children+"</div>"}
+function toggleNode(id){var el=document.getElementById(id);var ar=document.getElementById(id+"_ar");if(!el)return;if(el.style.display==="none"){el.style.display="";if(ar)ar.textContent="▾"}else{el.style.display="none";if(ar)ar.textContent="▸"}}
+function expandAll(open){document.querySelectorAll("#treeContainer .tchildren").forEach(function(el){el.style.display=open?"":"none";var ar=document.getElementById(el.id+"_ar");if(ar)ar.textContent=open?"▾":"▸"})}
+function copyPath(p){copyText(p);showResult("📋 Copied path: <code>"+esc(p)+"</code>",G)}
+function applySearch(){var q=document.getElementById("searchBox").value.trim().toLowerCase();var nodes=document.querySelectorAll("#treeContainer .tnode");if(!q){nodes.forEach(function(n){n.style.background="";n.style.display=""});return}nodes.forEach(function(n){var txt=n.getAttribute("data-text")||"";var hit=txt.indexOf(q)>-1;n.style.background=hit?"rgba(139,92,246,.25)":"";})}
+
+// Syntax highlighting
+function renderHighlight(val){var json=JSON.stringify(val,null,getIndent());var html=esc(json).replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g,function(m){var color=O;if(/^"/.test(m)){color=/:$/.test(m)?Bl:"#4caf50"}else if(/true|false/.test(m)){color=Pu}else if(/null/.test(m)){color="#9494b8"}return "<span style='color:"+color+"'>"+m+"</span>"});var h=document.getElementById("highlight");h.style.display="block";h.innerHTML=html}
+
+// Stats
+function buildStats(val){var counts={string:0,number:0,boolean:0,"null":0,object:0,array:0};var totalKeys=0,maxDepth=0;function walk(o,d){if(d>maxDepth)maxDepth=d;var t=typeOf(o);counts[t]=(counts[t]||0)+1;if(t==="object"){var ks=Object.keys(o);totalKeys+=ks.length;ks.forEach(function(k){walk(o[k],d+1)})}else if(t==="array"){o.forEach(function(x){walk(x,d+1)})}}walk(val,1);
+  var pretty=JSON.stringify(val,null,2),mini=JSON.stringify(val);var pB=new Blob([pretty]).size,mB=new Blob([mini]).size;
+  var html="<div style='display:flex;flex-wrap:wrap;gap:.5rem'>";
+  html+="<span class='badge badge-blue'>Total keys: "+totalKeys+"</span>";
+  html+="<span class='badge badge-blue'>Max depth: "+maxDepth+"</span>";
+  ["string","number","boolean","null","object","array"].forEach(function(t){html+="<span class='badge' style='background:rgba(99,102,241,.12);color:"+typeColor(t)+"'>"+t+": "+(counts[t]||0)+"</span>"});
+  html+="<span class='badge badge-green'>Pretty: "+pB+" B</span>";
+  html+="<span class='badge badge-green'>Minified: "+mB+" B</span>";
+  html+="</div>";document.getElementById("stats").innerHTML=html}
+
+// Convert
+function conv(type){var r=parseJSON(document.getElementById("j").value);var box=document.getElementById("convResult");box.style.display="block";if(!r.ok){box.innerHTML="<span style='color:"+R+"'>"+errMsg(r)+"</span>";return}
+  var out="";try{
+  if(type==="csv")out=toCSV(r.value);
+  else if(type==="yaml")out=jsonToYaml(r.value,0);
+  else if(type==="query")out=toQuery(r.value);
+  else if(type==="ts")out=toTS(r.value);
+  }catch(e){box.innerHTML="<span style='color:"+R+"'>❌ "+esc(e.message)+"</span>";return}
+  box.innerHTML="<button class='copy-btn' onclick='copyText(this.nextElementSibling.textContent,this)'>Copy</button><span>"+esc(out)+"</span>"}
+function toCSV(val){var rows=Array.isArray(val)?val:[val];if(!rows.length)return "";var cols=[];rows.forEach(function(row){if(row&&typeof row==="object"&&!Array.isArray(row)){Object.keys(row).forEach(function(k){if(cols.indexOf(k)<0)cols.push(k)})}});if(!cols.length){return rows.map(function(v){return csvCell(v)}).join("\n")}var cell=function(v){return csvCell(v)};var lines=[cols.map(cell).join(",")];rows.forEach(function(row){lines.push(cols.map(function(c){return csvCell(row?row[c]:"")}).join(","))});return lines.join("\n")}
+function csvCell(v){if(v===undefined||v===null)return "";if(typeof v==="object")v=JSON.stringify(v);v=String(v);if(/[",\n]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v}
+function jsonToYaml(obj,indent){var t=typeOf(obj);var sp="  ".repeat(indent),out="";if(t==="array"){if(!obj.length)return sp+"[]\n";for(var i=0;i<obj.length;i++){var it=obj[i];if(typeOf(it)==="object"||typeOf(it)==="array"){out+=sp+"-\n"+jsonToYaml(it,indent+1)}else{out+=sp+"- "+yamlVal(it)+"\n"}}return out}
+  if(t==="object"){var ks=Object.keys(obj);if(!ks.length)return sp+"{}\n";ks.forEach(function(k){var v=obj[k];if(typeOf(v)==="object"||typeOf(v)==="array"){out+=sp+k+":\n"+jsonToYaml(v,indent+1)}else{out+=sp+k+": "+yamlVal(v)+"\n"}});return out}
+  return sp+yamlVal(obj)+"\n"}
+function yamlVal(v){if(typeof v==="string")return /[:#\-{}\[\]&*!|>%@`"']|^\s|\s$/.test(v)?'"'+v.replace(/"/g,'\\"')+'"':v;if(v===null)return "null";return String(v)}
+function toQuery(val){var pairs=[];function add(prefix,v){var t=typeOf(v);if(t==="object"){Object.keys(v).forEach(function(k){add(prefix?prefix+"["+k+"]":k,v[k])})}else if(t==="array"){v.forEach(function(x,i){add(prefix+"["+i+"]",x)})}else{pairs.push(encodeURIComponent(prefix)+"="+encodeURIComponent(v===null?"":v))}}add("",val);return pairs.join("&")}
+function toTS(val){var lines=[];var seq=0;function typeStr(v,name){var t=typeOf(v);if(t==="object")return buildIface(v,name);if(t==="array"){if(!v.length)return "any[]";var inner=typeStr(v[0],name);return (inner.indexOf("|")>-1||inner.indexOf("{")>-1)?"("+inner+")[]":inner+"[]"}if(t==="null")return "null";return t}
+  function buildIface(o,name){var body="{\n";Object.keys(o).forEach(function(k){var key=/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(k)?k:JSON.stringify(k);body+="  "+key+": "+typeStr(o[k],k)+";\n"});body+="}";return body}
+  var t=typeOf(val);if(t==="object"){return "interface RootObject "+buildIface(val,"Root")}if(t==="array"){return "type Root = "+typeStr(val,"Root")}return "type Root = "+typeStr(val,"Root")}
+
+// Escape / Unescape
+function escapeStr(){var box=document.getElementById("escResult");box.style.display="block";var out=JSON.stringify(document.getElementById("j").value);box.innerHTML="<button class='copy-btn' onclick='copyText(this.nextElementSibling.textContent,this)'>Copy</button><span>"+esc(out)+"</span>"}
+function unescapeStr(){var box=document.getElementById("escResult");box.style.display="block";var raw=document.getElementById("j").value.trim();try{var s=(raw[0]==='"')?JSON.parse(raw):JSON.parse('"'+raw.replace(/"/g,'\\"')+'"');box.innerHTML="<button class='copy-btn' onclick='copyText(this.nextElementSibling.textContent,this)'>Copy</button><span>"+esc(s)+"</span>"}catch(e){box.innerHTML="<span style='color:"+R+"'>❌ Not a valid escaped string: "+esc(e.message)+"</span>"}}
+
+// Schema (kept)
+function validateSchema(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}var obj=r.value;var schemaText=document.getElementById("schema").value.trim();if(!schemaText){showResult("Please define a schema above.",R);return}var rules=schemaText.split("\n").filter(function(l){return l.trim()}).map(function(l){var parts=l.split(":");return{key:parts[0].trim(),type:parts.slice(1).join(":").trim().toLowerCase()}});var errors=[];rules.forEach(function(ru){checkType(obj,ru.key,ru.type,"",errors)});if(errors.length===0){showResult("✅ Schema validation passed!",G)}else{document.getElementById("result").innerHTML="<p class='info' style='color:"+R+"'>❌ Schema errors:</p>"+errors.map(function(e){return"<div style='background:var(--card);padding:.3rem .6rem;border-radius:4px;margin:.2rem 0;color:"+R+"'>"+e+"</div>"}).join("")}}
+function checkType(obj,key,expectedType,path,errors){for(var k in obj){var curPath=path?path+"."+k:k;if(k===key){var v=obj[k];var actual=typeOf(v);if(actual!==expectedType){errors.push(curPath+": expected <b>"+esc(expectedType)+"</b>, got <b>"+actual+"</b>")}}if(obj[k]&&typeof obj[k]==="object")checkType(obj[k],key,expectedType,curPath,errors)}}
+// Diff (kept)
+function diffJson(){var ra=parseJSON(document.getElementById("j").value);var rb=parseJSON(document.getElementById("j2").value);var box=document.getElementById("diffResult");box.style.display="block";if(!ra.ok){box.innerHTML="<span style='color:"+R+"'>First JSON: "+errMsg(ra)+"</span>";return}if(!rb.ok){box.innerHTML="<span style='color:"+R+"'>Second JSON: "+errMsg(rb)+"</span>";return}var diffs=[];compareObj(ra.value,rb.value,"",diffs);if(diffs.length===0){box.innerHTML="<span style='color:"+G+"'>✅ No differences found.</span>"}else{box.innerHTML="<strong>Found "+diffs.length+" difference(s):</strong><br><br>"+diffs.join("<br>")}}
+function compareObj(a,b,path,diffs){var allKeys=new Set(Object.keys(a||{}).concat(Object.keys(b||{})));allKeys.forEach(function(k){var p=path?path+"."+k:k;var va=a?a[k]:undefined;var vb=b?b[k]:undefined;if(va===undefined){diffs.push("<span style='color:"+G+"'>+ "+esc(p)+": "+esc(JSON.stringify(vb))+"</span>")}else if(vb===undefined){diffs.push("<span style='color:"+R+"'>- "+esc(p)+": "+esc(JSON.stringify(va))+"</span>")}else if(typeof va==="object"&&va!==null&&typeof vb==="object"&&vb!==null){compareObj(va,vb,p,diffs)}else if(JSON.stringify(va)!==JSON.stringify(vb)){diffs.push("<span style='color:"+O+"'>~ "+esc(p)+": "+esc(JSON.stringify(va))+" → "+esc(JSON.stringify(vb))+"</span>")}})}
+</script>
 </body></html>

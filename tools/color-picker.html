@@ -36,15 +36,67 @@
     <div class="breadcrumb"><a href="../">Home</a> → 🎨 Color Picker & Converter</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>🎨 Color Picker & Converter</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div><input type="color" id="ci" value="#6c5ce7" style="width:100%;height:60px;border:none;cursor:pointer;border-radius:10px" oninput="upd()">
-      <div id="cd" style="width:100%;height:60px;border-radius:10px;margin:1rem 0;background:#6c5ce7"></div>
-      <div class="result-box" id="cv"></div>
-      <h3 style="margin:1rem 0 .5rem">Enter any color value:</h3>
-      <input type="text" id="ct" placeholder="#6c5ce7 or rgb(108,92,231)" oninput="parse()">
-      <h3 style="margin:1rem 0 .5rem">Palette Generator</h3>
-      <div class="row" style="margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem"><button class="btn btn-outline" onclick="genPalette('complementary')" style="font-size:.8rem">Complementary</button><button class="btn btn-outline" onclick="genPalette('analogous')" style="font-size:.8rem">Analogous</button><button class="btn btn-outline" onclick="genPalette('triadic')" style="font-size:.8rem">Triadic</button><button class="btn btn-outline" onclick="genPalette('split')" style="font-size:.8rem">Split-Complementary</button></div>
-      <div id="palette" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem"></div>
-      <h3 style="margin:1rem 0 .5rem">Shades</h3><div id="pal" class="row"></div></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
+      <p class="info">Pick a colour visually, convert between every format, build tint/shade scales, generate harmonies, and check contrast — all in your browser.</p>
+
+      <div class="row" style="align-items:flex-start;gap:1.2rem">
+        <div style="min-width:220px">
+          <canvas id="svCanvas" width="240" height="200" style="width:100%;max-width:260px;border-radius:12px;cursor:crosshair;touch-action:none;display:block"></canvas>
+          <canvas id="hueCanvas" width="240" height="18" style="width:100%;max-width:260px;border-radius:8px;cursor:pointer;touch-action:none;margin-top:.6rem;display:block"></canvas>
+          <canvas id="alphaCanvas" width="240" height="18" style="width:100%;max-width:260px;border-radius:8px;cursor:pointer;touch-action:none;margin-top:.6rem;display:block"></canvas>
+        </div>
+        <div style="min-width:180px">
+          <div id="cd" style="width:100%;height:70px;border-radius:12px;margin-bottom:.6rem;border:1px solid rgba(255,255,255,.1)"></div>
+          <div class="row" style="gap:.5rem;margin:.3rem 0">
+            <div style="min-width:80px"><label style="font-size:.75rem;color:var(--text2)">Native</label><input type="color" id="ci" value="#6c5ce7" style="width:100%;height:40px;border:none;cursor:pointer;border-radius:8px" oninput="fromNative()"></div>
+            <div style="min-width:80px"><label style="font-size:.75rem;color:var(--text2)">Alpha</label><input type="number" id="alphaNum" min="0" max="100" value="100" style="margin:.2rem 0" oninput="fromAlphaNum()"></div>
+          </div>
+          <button class="btn btn-outline" id="eyeBtn" onclick="pickEyedropper()" style="font-size:.8rem;width:100%">🎯 Eyedropper</button>
+          <div id="eyeMsg" class="info" style="margin-top:.2rem"></div>
+        </div>
+      </div>
+
+      <h3 style="margin:1rem 0 .5rem">Enter any colour value:</h3>
+      <input type="text" id="ct" placeholder="#6c5ce7, rgb(108,92,231), hsl(248,73%,63%), hsv, cmyk or a name" oninput="parseInput()">
+      <div id="parseMsg" class="info"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">All Formats</h3>
+      <div id="formats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Tint & Shade Scale</h3>
+      <div id="scale" style="display:flex;flex-wrap:wrap;gap:.4rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Harmonies</h3>
+      <div class="row" style="margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem">
+        <button class="btn btn-outline" onclick="genHarmony('complementary')" style="font-size:.8rem">Complementary</button>
+        <button class="btn btn-outline" onclick="genHarmony('analogous')" style="font-size:.8rem">Analogous</button>
+        <button class="btn btn-outline" onclick="genHarmony('triadic')" style="font-size:.8rem">Triadic</button>
+        <button class="btn btn-outline" onclick="genHarmony('tetradic')" style="font-size:.8rem">Tetradic</button>
+        <button class="btn btn-outline" onclick="genHarmony('split')" style="font-size:.8rem">Split-Complementary</button>
+        <button class="btn btn-outline" onclick="genHarmony('monochromatic')" style="font-size:.8rem">Monochromatic</button>
+      </div>
+      <div id="harmony" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Contrast Checker</h3>
+      <div class="row" style="gap:.5rem;flex-wrap:wrap">
+        <label style="flex:0 0 auto;min-width:0">Custom bg: <input type="color" id="contrastCustom" value="#808080" style="width:44px;height:32px;border:none;cursor:pointer;border-radius:6px;vertical-align:middle" oninput="renderContrast()"></label>
+      </div>
+      <div id="contrast" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.6rem;margin-top:.5rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Saved & Recent Colours</h3>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="saveColor()" style="font-size:.8rem">➕ Save current</button><button class="btn btn-outline" onclick="clearSaved()" style="font-size:.8rem">🗑 Clear saved</button></div>
+      <div style="margin-top:.5rem"><strong style="font-size:.85rem">Saved</strong><div id="savedColors" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem"></div></div>
+      <div style="margin-top:.6rem"><strong style="font-size:.85rem">Recent</strong><div id="recentColors" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem"></div></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Export Palette</h3>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="showExport('css')" style="font-size:.8rem">CSS Variables</button>
+        <button class="btn btn-outline" onclick="showExport('scss')" style="font-size:.8rem">SCSS</button>
+        <button class="btn btn-outline" onclick="showExport('tailwind')" style="font-size:.8rem">Tailwind</button>
+        <button class="btn btn-outline" onclick="showExport('json')" style="font-size:.8rem">JSON</button>
+      </div>
+      <div class="result-box" style="margin-top:.5rem"><button class="copy-btn" onclick="copyExport(this)">Copy</button><pre id="exportOut" style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:inherit">Choose an export format above.</pre></div>
+    </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -104,13 +156,157 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>function rgbToHex(r,g,b){return"#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("")}
-function hslToRgb(h,s,l){h/=360;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h*12)%12;return Math.round((l-a*Math.max(Math.min(k-3,9-k,1),-1))*255)};return[f(0),f(8),f(4)]}
-function getHSL(){const hex=document.getElementById("ci").value;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const mx=Math.max(r,g,b)/255,mn=Math.min(r,g,b)/255,l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===r/255)h=((g/255-b/255)/d+(g<b?6:0))*60;else if(mx===g/255)h=((b/255-r/255)/d+2)*60;else h=((r/255-g/255)/d+4)*60}return{h,s,l}}
-function upd(){const hex=document.getElementById("ci").value;document.getElementById("cd").style.background=hex;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const{h,s,l}=getHSL();document.getElementById("cv").innerHTML="HEX: "+hex+" | RGB: rgb("+r+","+g+","+b+") | HSL: hsl("+Math.round(h)+","+Math.round(s*100)+"%,"+Math.round(l*100)+"%)<button class=\"copy-btn\" onclick=\"copyText('"+hex+"')\">Copy</button>";const p=document.getElementById("pal");p.innerHTML="";for(let i=-2;i<=2;i++){const lA=Math.min(100,Math.max(0,Math.round(l*100)+i*15))/100;const rgb=hslToRgb(h,s,lA);const hx=rgbToHex(...rgb);p.innerHTML+='<div onclick="copyText(\''+hx+'\')" style="background:'+hx+';height:50px;border-radius:8px;flex:1;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:4px"><span style="font-size:.65rem;background:rgba(0,0,0,.5);color:#fff;padding:1px 4px;border-radius:3px">'+hx+'</span></div>'}}
-function parse(){const v=document.getElementById("ct").value.trim();const d=document.createElement("div");d.style.color=v;document.body.appendChild(d);const c=getComputedStyle(d).color;document.body.removeChild(d);const m=c.match(/\d+/g);if(m){document.getElementById("ci").value="#"+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,"0")).join("");upd()}}
-function genPalette(type){const{h,s,l}=getHSL();let hues=[];if(type==="complementary")hues=[h,(h+180)%360];else if(type==="analogous")hues=[(h-30+360)%360,h,(h+30)%360];else if(type==="triadic")hues=[h,(h+120)%360,(h+240)%360];else hues=[h,(h+150)%360,(h+210)%360];
-const el=document.getElementById("palette");el.innerHTML=hues.map(hue=>{const rgb=hslToRgb(hue,s,l);const hx=rgbToHex(...rgb);return'<div onclick="copyText(\''+hx+'\');this.querySelector(\'span\').textContent=\'Copied!\';setTimeout(()=>this.querySelector(\'span\').textContent=\''+hx+'\',800)" style="background:'+hx+';min-width:80px;flex:1;height:70px;border-radius:8px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:6px"><span style="font-size:.7rem;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;border-radius:4px">'+hx+'</span></div>'}).join("")}
-upd()
+  <script>
+/* ===== State: HSV (0-360, 0-1, 0-1) + alpha (0-1) is the source of truth ===== */
+var state={h:248,s:0.6,v:0.9,a:1};
+
+var CSS_NAMES={aliceblue:[240,248,255],antiquewhite:[250,235,215],aqua:[0,255,255],aquamarine:[127,255,212],azure:[240,255,255],beige:[245,245,220],bisque:[255,228,196],black:[0,0,0],blanchedalmond:[255,235,205],blue:[0,0,255],blueviolet:[138,43,226],brown:[165,42,42],burlywood:[222,184,135],cadetblue:[95,158,160],chartreuse:[127,255,0],chocolate:[210,105,30],coral:[255,127,80],cornflowerblue:[100,149,237],cornsilk:[255,248,220],crimson:[220,20,60],cyan:[0,255,255],darkblue:[0,0,139],darkcyan:[0,139,139],darkgoldenrod:[184,134,11],darkgray:[169,169,169],darkgreen:[0,100,0],darkkhaki:[189,183,107],darkmagenta:[139,0,139],darkolivegreen:[85,107,47],darkorange:[255,140,0],darkorchid:[153,50,204],darkred:[139,0,0],darksalmon:[233,150,122],darkseagreen:[143,188,143],darkslateblue:[72,61,139],darkslategray:[47,79,79],darkturquoise:[0,206,209],darkviolet:[148,0,211],deeppink:[255,20,147],deepskyblue:[0,191,255],dimgray:[105,105,105],dodgerblue:[30,144,255],firebrick:[178,34,34],floralwhite:[255,250,240],forestgreen:[34,139,34],fuchsia:[255,0,255],gainsboro:[220,220,220],ghostwhite:[248,248,255],gold:[255,215,0],goldenrod:[218,165,32],gray:[128,128,128],green:[0,128,0],greenyellow:[173,255,47],honeydew:[240,255,240],hotpink:[255,105,180],indianred:[205,92,92],indigo:[75,0,130],ivory:[255,255,240],khaki:[240,230,140],lavender:[230,230,250],lawngreen:[124,252,0],lightblue:[173,216,230],lightcoral:[240,128,128],lightcyan:[224,255,255],lightgray:[211,211,211],lightgreen:[144,238,144],lightpink:[255,182,193],lightsalmon:[255,160,122],lightseagreen:[32,178,170],lightskyblue:[135,206,250],lightsteelblue:[176,196,222],lightyellow:[255,255,224],lime:[0,255,0],limegreen:[50,205,50],linen:[250,240,230],magenta:[255,0,255],maroon:[128,0,0],mediumaquamarine:[102,205,170],mediumblue:[0,0,205],mediumorchid:[186,85,211],mediumpurple:[147,112,219],mediumseagreen:[60,179,113],mediumslateblue:[123,104,238],mediumspringgreen:[0,250,154],mediumturquoise:[72,209,204],mediumvioletred:[199,21,133],midnightblue:[25,25,112],mintcream:[245,255,250],mistyrose:[255,228,225],moccasin:[255,228,181],navy:[0,0,128],oldlace:[253,245,230],olive:[128,128,0],olivedrab:[107,142,35],orange:[255,165,0],orangered:[255,69,0],orchid:[218,112,214],palegoldenrod:[238,232,170],palegreen:[152,251,152],paleturquoise:[175,238,238],palevioletred:[219,112,147],papayawhip:[255,239,213],peachpuff:[255,218,185],peru:[205,133,63],pink:[255,192,203],plum:[221,160,221],powderblue:[176,224,230],purple:[128,0,128],rebeccapurple:[102,51,153],red:[255,0,0],rosybrown:[188,143,143],royalblue:[65,105,225],saddlebrown:[139,69,19],salmon:[250,128,114],sandybrown:[244,164,96],seagreen:[46,139,87],seashell:[255,245,238],sienna:[160,82,45],silver:[192,192,192],skyblue:[135,206,235],slateblue:[106,90,205],slategray:[112,128,144],snow:[255,250,250],springgreen:[0,255,127],steelblue:[70,130,180],tan:[210,180,140],teal:[0,128,128],thistle:[216,191,216],tomato:[255,99,71],turquoise:[64,224,208],violet:[238,130,238],wheat:[245,222,179],white:[255,255,255],whitesmoke:[245,245,245],yellow:[255,255,0],yellowgreen:[154,205,50]};
+
+/* ===== Colour maths ===== */
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function hsvToRgb(h,s,v){h=((h%360)+360)%360;var c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c,r=0,g=0,b=0;
+  if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+  return[Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]}
+function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0,s=mx===0?0:d/mx,v=mx;
+  if(d!==0){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return{h:h,s:s,v:v}}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,h=0,s=0;
+  if(mx!==mn){var d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===r)h=((g-b)/d+(g<b?6:0));else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60}
+  return{h:h,s:s,l:l}}
+function hslToRgb(h,s,l){h=((h%360)+360)%360;var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;
+  if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+  return[Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]}
+function rgbToCmyk(r,g,b){r/=255;g/=255;b/=255;var k=1-Math.max(r,g,b);if(k>=1)return[0,0,0,100];var c=(1-r-k)/(1-k),m=(1-g-k)/(1-k),y=(1-b-k)/(1-k);return[Math.round(c*100),Math.round(m*100),Math.round(y*100),Math.round(k*100)]}
+function toHex(n){return clamp(Math.round(n),0,255).toString(16).padStart(2,"0")}
+function rgbToHex(r,g,b){return"#"+toHex(r)+toHex(g)+toHex(b)}
+function nearestName(r,g,b){var best="",bd=Infinity;for(var n in CSS_NAMES){var c=CSS_NAMES[n];var d=(r-c[0])**2+(g-c[1])**2+(b-c[2])**2;if(d<bd){bd=d;best=n}}return best}
+
+/* ===== Current colour accessors ===== */
+function curRgb(){return hsvToRgb(state.h,state.s,state.v)}
+function curHex(){var c=curRgb();return rgbToHex(c[0],c[1],c[2])}
+
+/* ===== Canvases ===== */
+var svC=document.getElementById("svCanvas"),svCtx=svC.getContext("2d");
+var hueC=document.getElementById("hueCanvas"),hueCtx=hueC.getContext("2d");
+var alphaC=document.getElementById("alphaCanvas"),alphaCtx=alphaC.getContext("2d");
+
+function drawSV(){var w=svC.width,h=svC.height;var base=hsvToRgb(state.h,1,1);
+  svCtx.fillStyle="rgb("+base[0]+","+base[1]+","+base[2]+")";svCtx.fillRect(0,0,w,h);
+  var gW=svCtx.createLinearGradient(0,0,w,0);gW.addColorStop(0,"#fff");gW.addColorStop(1,"rgba(255,255,255,0)");svCtx.fillStyle=gW;svCtx.fillRect(0,0,w,h);
+  var gB=svCtx.createLinearGradient(0,0,0,h);gB.addColorStop(0,"rgba(0,0,0,0)");gB.addColorStop(1,"#000");svCtx.fillStyle=gB;svCtx.fillRect(0,0,w,h);
+  var x=state.s*w,y=(1-state.v)*h;svCtx.beginPath();svCtx.arc(x,y,6,0,7);svCtx.strokeStyle=state.v>.5?"#000":"#fff";svCtx.lineWidth=2;svCtx.stroke()}
+function drawHue(){var w=hueC.width,h=hueC.height;var g=hueCtx.createLinearGradient(0,0,w,0);
+  for(var i=0;i<=360;i+=30){var c=hsvToRgb(i,1,1);g.addColorStop(i/360,"rgb("+c[0]+","+c[1]+","+c[2]+")")}
+  hueCtx.fillStyle=g;hueCtx.fillRect(0,0,w,h);var x=(state.h/360)*w;hueCtx.fillStyle="#fff";hueCtx.fillRect(x-2,0,4,h);hueCtx.strokeStyle="#000";hueCtx.strokeRect(x-2,0,4,h)}
+function drawAlpha(){var w=alphaC.width,h=alphaC.height;alphaCtx.clearRect(0,0,w,h);
+  for(var i=0;i<w;i+=8)for(var j=0;j<h;j+=8){alphaCtx.fillStyle=((i/8+j/8)%2===0)?"#ccc":"#fff";alphaCtx.fillRect(i,j,8,8)}
+  var c=curRgb();var g=alphaCtx.createLinearGradient(0,0,w,0);g.addColorStop(0,"rgba("+c[0]+","+c[1]+","+c[2]+",0)");g.addColorStop(1,"rgba("+c[0]+","+c[1]+","+c[2]+",1)");alphaCtx.fillStyle=g;alphaCtx.fillRect(0,0,w,h);
+  var x=state.a*w;alphaCtx.fillStyle="#fff";alphaCtx.fillRect(x-2,0,4,h);alphaCtx.strokeStyle="#000";alphaCtx.strokeRect(x-2,0,4,h)}
+
+function pointerXY(canvas,e){var r=canvas.getBoundingClientRect();var cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;var cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;return{x:clamp(cx/r.width,0,1),y:clamp(cy/r.height,0,1)}}
+function attachDrag(canvas,handler){function down(e){e.preventDefault();handler(pointerXY(canvas,e));function move(ev){ev.preventDefault();handler(pointerXY(canvas,ev))}function up(){window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up)}window.addEventListener("pointermove",move);window.addEventListener("pointerup",up)}canvas.addEventListener("pointerdown",down)}
+attachDrag(svC,function(p){state.s=p.x;state.v=1-p.y;render()});
+attachDrag(hueC,function(p){state.h=p.x*360;render()});
+attachDrag(alphaC,function(p){state.a=p.x;render()});
+
+/* ===== Input handlers ===== */
+function fromNative(){var hex=document.getElementById("ci").value;var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);var hsv=rgbToHsv(r,g,b);state.h=hsv.h;state.s=hsv.s;state.v=hsv.v;render()}
+function fromAlphaNum(){var v=parseFloat(document.getElementById("alphaNum").value);if(!isNaN(v))state.a=clamp(v/100,0,1);render()}
+
+function parseInput(){var v=document.getElementById("ct").value.trim();var msg=document.getElementById("parseMsg");var res=parseColor(v);
+  if(res){state.h=res.h;state.s=res.s;state.v=res.v;if(res.a!==undefined)state.a=res.a;msg.textContent="";render(true)}
+  else if(v)msg.textContent="Could not parse that value.";else msg.textContent=""}
+
+function parseColor(v){if(!v)return null;v=v.trim().toLowerCase();var m;
+  // named
+  if(CSS_NAMES[v]){var c=CSS_NAMES[v];var hsv=rgbToHsv(c[0],c[1],c[2]);return{h:hsv.h,s:hsv.s,v:hsv.v,a:1}}
+  // hex8 / hex
+  m=v.match(/^#?([0-9a-f]{8})$/);if(m){var r=parseInt(m[1].slice(0,2),16),g=parseInt(m[1].slice(2,4),16),b=parseInt(m[1].slice(4,6),16),a=parseInt(m[1].slice(6,8),16)/255;var h=rgbToHsv(r,g,b);return{h:h.h,s:h.s,v:h.v,a:a}}
+  m=v.match(/^#?([0-9a-f]{6})$/);if(m){var r2=parseInt(m[1].slice(0,2),16),g2=parseInt(m[1].slice(2,4),16),b2=parseInt(m[1].slice(4,6),16);var h2=rgbToHsv(r2,g2,b2);return{h:h2.h,s:h2.s,v:h2.v,a:1}}
+  m=v.match(/^#?([0-9a-f]{3})$/);if(m){var r3=parseInt(m[1][0]+m[1][0],16),g3=parseInt(m[1][1]+m[1][1],16),b3=parseInt(m[1][2]+m[1][2],16);var h3=rgbToHsv(r3,g3,b3);return{h:h3.h,s:h3.s,v:h3.v,a:1}}
+  // rgb / rgba
+  m=v.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);if(m){var h4=rgbToHsv(+m[1],+m[2],+m[3]);return{h:h4.h,s:h4.s,v:h4.v,a:m[4]!==undefined?clamp(+m[4],0,1):1}}
+  // hsl / hsla
+  m=v.match(/^hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+)\s*)?\)$/);if(m){var rgb=hslToRgb(+m[1],+m[2]/100,+m[3]/100);var h5=rgbToHsv(rgb[0],rgb[1],rgb[2]);return{h:h5.h,s:h5.s,v:h5.v,a:m[4]!==undefined?clamp(+m[4],0,1):1}}
+  // hsv
+  m=v.match(/^hsv\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*\)$/);if(m){return{h:+m[1],s:+m[2]/100,v:+m[3]/100,a:1}}
+  // cmyk
+  m=v.match(/^cmyk\(\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*\)$/);if(m){var C=+m[1]/100,M=+m[2]/100,Y=+m[3]/100,K=+m[4]/100;var rr=255*(1-C)*(1-K),gg=255*(1-M)*(1-K),bb=255*(1-Y)*(1-K);var h6=rgbToHsv(rr,gg,bb);return{h:h6.h,s:h6.s,v:h6.v,a:1}}
+  return null}
+
+/* ===== Formats display ===== */
+function fmtRow(label,val){return'<div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:var(--card);padding:.5rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,.05)"><span style="font-family:monospace;font-size:.8rem;overflow:hidden;text-overflow:ellipsis"><strong style="color:var(--text2)">'+label+'</strong> '+val+'</span><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem;margin:0;flex:0 0 auto" onclick="copyText(\''+val.replace(/'/g,"\\'")+'\',this)">Copy</button></div>'}
+function renderFormats(){var c=curRgb(),hex=curHex();var hsl=rgbToHsl(c[0],c[1],c[2]);var cmyk=rgbToCmyk(c[0],c[1],c[2]);var a=Math.round(state.a*100)/100;
+  var hex8=hex+toHex(state.a*255);
+  var vals={"HEX":hex,"HEX8":hex8,"RGB":"rgb("+c[0]+", "+c[1]+", "+c[2]+")","RGBA":"rgba("+c[0]+", "+c[1]+", "+c[2]+", "+a+")","HSL":"hsl("+Math.round(hsl.h)+", "+Math.round(hsl.s*100)+"%, "+Math.round(hsl.l*100)+"%)","HSLA":"hsla("+Math.round(hsl.h)+", "+Math.round(hsl.s*100)+"%, "+Math.round(hsl.l*100)+"%, "+a+")","HSV":"hsv("+Math.round(state.h)+", "+Math.round(state.s*100)+"%, "+Math.round(state.v*100)+"%)","CMYK":"cmyk("+cmyk[0]+"%, "+cmyk[1]+"%, "+cmyk[2]+"%, "+cmyk[3]+"%)","Name":nearestName(c[0],c[1],c[2])};
+  document.getElementById("formats").innerHTML=Object.keys(vals).map(function(k){return fmtRow(k,vals[k])}).join("")}
+
+/* ===== Tint & shade scale ===== */
+function renderScale(){var c=curRgb();var hsl=rgbToHsl(c[0],c[1],c[2]);var stops=[.95,.85,.75,.6,.5,.42,.34,.26,.18,.1];var labels=[50,100,200,300,400,500,600,700,800,900];
+  var html="";stops.forEach(function(l,i){var rgb=hslToRgb(hsl.h,hsl.s,l);var hx=rgbToHex(rgb[0],rgb[1],rgb[2]);var txt=l>.5?"#000":"#fff";
+    html+='<div onclick="copyText(\''+hx+'\')" style="flex:1;min-width:70px;height:60px;background:'+hx+';border-radius:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:3px;color:'+txt+'"><span style="font-size:.6rem;opacity:.8">'+labels[i]+'</span><span style="font-size:.62rem;background:rgba(0,0,0,.35);color:#fff;padding:0 3px;border-radius:3px">'+hx+'</span></div>'});
+  document.getElementById("scale").innerHTML=html}
+
+/* ===== Harmonies ===== */
+function swatchRow(hexes){return hexes.map(function(hx){return'<div onclick="copyText(\''+hx+'\');this.querySelector(\'span\').textContent=\'Copied!\';var s=this;setTimeout(function(){s.querySelector(\'span\').textContent=\''+hx+'\'},800)" style="background:'+hx+';min-width:80px;flex:1;height:70px;border-radius:8px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:6px"><span style="font-size:.7rem;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;border-radius:4px">'+hx+'</span></div>'}).join("")}
+function genHarmony(type){var h=state.h,s=state.s,v=state.v;var hexAt=function(hh,ss,vv){var c=hsvToRgb(hh,ss===undefined?s:ss,vv===undefined?v:vv);return rgbToHex(c[0],c[1],c[2])};var hexes=[];
+  if(type==="complementary")hexes=[hexAt(h),hexAt(h+180)];
+  else if(type==="analogous")hexes=[hexAt(h-30),hexAt(h),hexAt(h+30)];
+  else if(type==="triadic")hexes=[hexAt(h),hexAt(h+120),hexAt(h+240)];
+  else if(type==="tetradic")hexes=[hexAt(h),hexAt(h+90),hexAt(h+180),hexAt(h+270)];
+  else if(type==="split")hexes=[hexAt(h),hexAt(h+150),hexAt(h+210)];
+  else if(type==="monochromatic")hexes=[hexAt(h,s,clamp(v*0.4,0,1)),hexAt(h,s,clamp(v*0.65,0,1)),hexAt(h,s,v),hexAt(h,clamp(s*0.6,0,1),clamp(v*1.1,0,1)),hexAt(h,clamp(s*0.3,0,1),1)];
+  document.getElementById("harmony").innerHTML=swatchRow(hexes)}
+
+/* ===== Contrast ===== */
+function relLum(r,g,b){var a=[r,g,b].map(function(x){x/=255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4)});return a[0]*.2126+a[1]*.7152+a[2]*.0722}
+function ratio(rgb1,rgb2){var l1=relLum(rgb1[0],rgb1[1],rgb1[2]),l2=relLum(rgb2[0],rgb2[1],rgb2[2]);var hi=Math.max(l1,l2),lo=Math.min(l1,l2);return(hi+.05)/(lo+.05)}
+function contrastCard(label,bg){var c=curRgb();var r=ratio(c,bg);var pass=function(t){return r>=t?'<span style="color:#4caf50;font-weight:600">✓</span>':'<span style="color:#f44336;font-weight:600">✗</span>'};
+  return'<div style="background:'+rgbToHex(bg[0],bg[1],bg[2])+';padding:.7rem;border-radius:10px;border:1px solid rgba(128,128,128,.3)"><div style="color:'+curHex()+';font-weight:700;font-size:1.1rem">'+label+' — '+r.toFixed(2)+':1</div><div style="color:'+curHex()+';font-size:.78rem;margin-top:.3rem">AA normal '+pass(4.5)+' · AA large '+pass(3)+' · AAA normal '+pass(7)+' · AAA large '+pass(4.5)+'</div></div>'}
+function renderContrast(){var custom=document.getElementById("contrastCustom").value;var cr=[parseInt(custom.slice(1,3),16),parseInt(custom.slice(3,5),16),parseInt(custom.slice(5,7),16)];
+  document.getElementById("contrast").innerHTML=contrastCard("On White",[255,255,255])+contrastCard("On Black",[0,0,0])+contrastCard("On Custom",cr)}
+
+/* ===== Eyedropper ===== */
+function pickEyedropper(){var msg=document.getElementById("eyeMsg");
+  if(window.EyeDropper){var ed=new EyeDropper();ed.open().then(function(res){var v=parseColor(res.sRGBHex);if(v){state.h=v.h;state.s=v.s;state.v=v.v;render()}}).catch(function(){});}
+  else{msg.textContent="EyeDropper API not supported in this browser. Try Chrome/Edge on desktop."}}
+
+/* ===== Saved / recent ===== */
+function getSaved(){try{return JSON.parse(localStorage.getItem("cpSaved")||"[]")}catch(e){return[]}}
+function getRecent(){try{return JSON.parse(localStorage.getItem("cpRecent")||"[]")}catch(e){return[]}}
+function saveColor(){var hx=curHex();var s=getSaved();if(s.indexOf(hx)===-1){s.unshift(hx);s=s.slice(0,30);localStorage.setItem("cpSaved",JSON.stringify(s))}renderSaved()}
+function clearSaved(){localStorage.removeItem("cpSaved");renderSaved()}
+function pushRecent(hx){var r=getRecent();r=r.filter(function(x){return x!==hx});r.unshift(hx);r=r.slice(0,16);localStorage.setItem("cpRecent",JSON.stringify(r))}
+function swatchStrip(hx){return'<div onclick="applyHex(\''+hx+'\')" title="'+hx+'" style="width:34px;height:34px;border-radius:8px;background:'+hx+';cursor:pointer;border:1px solid rgba(255,255,255,.15)"></div>'}
+function applyHex(hx){var v=parseColor(hx);if(v){state.h=v.h;state.s=v.s;state.v=v.v;render()}}
+function renderSaved(){document.getElementById("savedColors").innerHTML=getSaved().map(swatchStrip).join("")||'<span class="info">None saved yet.</span>';}
+function renderRecent(){document.getElementById("recentColors").innerHTML=getRecent().map(swatchStrip).join("")||'<span class="info">No recent colours.</span>';}
+
+/* ===== Export ===== */
+function paletteData(){var c=curRgb();var hsl=rgbToHsl(c[0],c[1],c[2]);var out=[];var stops=[.95,.85,.75,.6,.5,.42,.34,.26,.18,.1];var labels=[50,100,200,300,400,500,600,700,800,900];
+  stops.forEach(function(l,i){var rgb=hslToRgb(hsl.h,hsl.s,l);out.push({name:labels[i],hex:rgbToHex(rgb[0],rgb[1],rgb[2])})});return out}
+function showExport(kind){var pal=paletteData();var base=curHex();var out="";
+  if(kind==="css"){out=":root {\n  --color: "+base+";\n"+pal.map(function(p){return "  --color-"+p.name+": "+p.hex+";"}).join("\n")+"\n}"}
+  else if(kind==="scss"){out="$color: "+base+";\n"+pal.map(function(p){return "$color-"+p.name+": "+p.hex+";"}).join("\n")}
+  else if(kind==="tailwind"){out="module.exports = {\n  theme: {\n    extend: {\n      colors: {\n        brand: {\n"+pal.map(function(p){return "          '"+p.name+"': '"+p.hex+"',"}).join("\n")+"\n        }\n      }\n    }\n  }\n}"}
+  else if(kind==="json"){var obj={base:base};pal.forEach(function(p){obj[p.name]=p.hex});out=JSON.stringify(obj,null,2)}
+  document.getElementById("exportOut").textContent=out}
+function copyExport(btn){copyText(document.getElementById("exportOut").textContent,btn)}
+
+/* ===== Master render ===== */
+var lastFromText=false;
+function render(fromText){var hex=curHex();
+  document.getElementById("cd").style.background="rgba("+curRgb().join(",")+","+state.a+")";
+  document.getElementById("ci").value=hex;
+  document.getElementById("alphaNum").value=Math.round(state.a*100);
+  if(!fromText)document.getElementById("ct").value=hex;
+  drawSV();drawHue();drawAlpha();
+  renderFormats();renderScale();renderContrast();
+  pushRecent(hex);renderRecent();}
+
+/* init */
+renderSaved();
+render();
+genHarmony('complementary');
 </script>
 </body></html>

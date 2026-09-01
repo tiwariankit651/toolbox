@@ -36,10 +36,22 @@
     <div class="breadcrumb"><a href="../">Home</a> → ⚖️ Unit Converter</div>
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>⚖️ Unit Converter</h1>
-      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div><div class="row"><select id="cat" onchange="load()"><option value="length">📏 Length</option><option value="weight">⚖️ Weight</option><option value="temp">🌡️ Temperature</option><option value="data">💾 Data</option><option value="speed">🏎️ Speed</option><option value="cooking">🍳 Cooking</option><option value="area">📐 Area</option><option value="volume">🧪 Volume</option><option value="time">⏱️ Time</option><option value="fuel">⛽ Fuel Economy</option></select></div>
-      <div class="row"><div style="flex:1"><input type="number" id="fv" oninput="conv()" placeholder="Enter value" style="width:100%"><select id="fs" onchange="conv()" style="width:100%;margin-top:.3rem"></select></div><div style="text-align:center;flex:0;display:flex;flex-direction:column;align-items:center;gap:.3rem"><span style="font-size:1.5rem">=</span><button class="btn btn-outline" onclick="swap()" style="padding:.3rem .6rem;font-size:.8rem" title="Swap">⇄</button></div><div style="flex:1"><input type="number" id="tv" readonly style="width:100%"><select id="ts" onchange="conv()" style="width:100%;margin-top:.3rem"></select></div></div>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
+      <div class="row"><input type="text" id="unitSearch" oninput="searchUnits()" placeholder="🔎 Search a unit by name (e.g. bigha, knot, joule)…" style="width:100%"></div>
+      <div id="searchResults" style="margin-bottom:.5rem"></div>
+      <div class="row"><select id="cat" onchange="load()"></select></div>
+      <div class="row"><div style="flex:1"><input type="number" id="fv" oninput="conv()" placeholder="Enter value" style="width:100%"><select id="fs" onchange="conv()" style="width:100%;margin-top:.3rem"></select></div><div style="text-align:center;flex:0;display:flex;flex-direction:column;align-items:center;gap:.3rem"><span style="font-size:1.5rem">=</span><button class="btn btn-outline" onclick="swap()" style="padding:.3rem .6rem;font-size:.8rem" title="Swap">⇄</button></div><div style="flex:1"><input type="text" id="tv" readonly style="width:100%"><select id="ts" onchange="conv()" style="width:100%;margin-top:.3rem"></select><button class="btn btn-outline" onclick="copyResult()" style="margin-top:.3rem;font-size:.8rem;width:100%">📋 Copy Result</button></div></div>
+      <div class="row" style="gap:.6rem;align-items:center;font-size:.85rem">
+        <label style="flex:1;min-width:130px">Decimals: <input type="number" id="prec" value="6" min="0" max="15" oninput="conv()" style="width:70px"></label>
+        <label style="flex:1;min-width:150px"><input type="checkbox" id="sig" onchange="conv()"> Significant figures</label>
+        <label style="flex:1;min-width:150px"><input type="checkbox" id="sci" onchange="conv()"> Scientific notation</label>
+      </div>
       <div id="formula" class="info" style="margin-top:.5rem"></div>
-      <div style="margin-top:.8rem"><h3>⭐ Favorites</h3><div id="favList" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem"></div><button class="btn btn-outline" onclick="addFav()" style="margin-top:.5rem;font-size:.8rem">+ Save Current</button></div>
+      <div id="dataNote" class="info" style="margin-top:.3rem"></div>
+      <div style="margin-top:.8rem"><h3>📊 Convert-All (every unit in this category)</h3><div id="convAll" style="margin-top:.3rem;font-family:monospace;font-size:.85rem"></div></div>
+      <div style="margin-top:.8rem"><h3>⭐ Favourites</h3><div id="favList" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem"></div><button class="btn btn-outline" onclick="addFav()" style="margin-top:.5rem;font-size:.8rem">+ Save Current</button></div>
+      <div style="margin-top:.8rem"><h3>🕘 Recent</h3><div id="recentList" style="display:flex;flex-direction:column;gap:.25rem;margin-top:.3rem"></div></div>
+      <div style="margin-top:.8rem"><h3>📑 Quick Reference</h3><div id="quickRef" style="margin-top:.3rem"></div></div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -83,20 +95,291 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>const U={length:{mm:.001,cm:.01,m:1,km:1000,inch:.0254,foot:.3048,yard:.9144,mile:1609.34},weight:{mg:.001,g:1,kg:1000,oz:28.3495,lb:453.592,ton:1e6},temp:{celsius:"C",fahrenheit:"F",kelvin:"K"},data:{B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776},speed:{"km/h":1,mph:1.60934,"m/s":3.6,knot:1.852},cooking:{ml:1,tsp:4.929,tbsp:14.787,cup:236.588,"fl oz":29.574,liter:1000},area:{"sq mm":1e-6,"sq cm":1e-4,"sq m":1,"sq km":1e6,"sq ft":.0929,"sq yard":.8361,acre:4046.86,hectare:1e4},volume:{ml:.001,liter:1,"cu m":1000,gallon:3.785,"fl oz":.02957,cup:.2366,pint:.4732,quart:.9464},time:{second:1,minute:60,hour:3600,day:86400,week:604800,month:2592000,year:31536000},fuel:{"km/l":1,"l/100km":"inv",mpg:0.425144}};
-var favs=JSON.parse(localStorage.getItem("uc_favs")||"[]");
-function load(){const c=document.getElementById("cat").value;const k=Object.keys(U[c]);const o=k.map(x=>"<option>"+x+"</option>").join("");document.getElementById("fs").innerHTML=o;document.getElementById("ts").innerHTML=o;if(k.length>1)document.getElementById("ts").selectedIndex=1;conv()}
-function conv(){const c=document.getElementById("cat").value,v=+document.getElementById("fv").value,f=document.getElementById("fs").value,t=document.getElementById("ts").value;var r;
-  if(c==="temp"){let cel;if(f==="celsius")cel=v;else if(f==="fahrenheit")cel=(v-32)*5/9;else cel=v-273.15;if(t==="celsius")r=cel;else if(t==="fahrenheit")r=cel*9/5+32;else r=cel+273.15;document.getElementById("tv").value=+r.toFixed(4);showFormula(c,f,t,v,r)}
-  else{r=v*U[c][f]/U[c][t];document.getElementById("tv").value=+r.toFixed(6);showFormula(c,f,t,v,r)}}
+  <script>
+/* ===================== Unit definitions =====================
+   Linear categories: value stored as factor to a base unit.
+   temp handled separately (offsets). fuel handled separately (some inverse).
+   Data category supports both decimal (KB) and binary (KiB) units with note. */
+const CATS={
+  length:{label:'📏 Length',base:'meter',units:{
+    'nanometer':1e-9,'micrometer':1e-6,'millimeter':0.001,'centimeter':0.01,'decimeter':0.1,'meter':1,'kilometer':1000,
+    'inch':0.0254,'foot':0.3048,'yard':0.9144,'mile':1609.344,'nautical mile':1852,'furlong':201.168,'chain':20.1168,
+    'light year':9.4607e15,'astronomical unit':1.495978707e11,'angstrom':1e-10,'mil (thou)':2.54e-5}},
+  mass:{label:'⚖️ Mass / Weight',base:'kilogram',units:{
+    'microgram':1e-9,'milligram':1e-6,'gram':0.001,'kilogram':1,'tonne (metric ton)':1000,'quintal':100,
+    'ounce':0.0283495,'pound':0.453592,'stone':6.35029,'US ton (short)':907.185,'UK ton (long)':1016.05,
+    'carat':0.0002,'tola':0.01166,'grain':6.47989e-5}},
+  area:{label:'📐 Area',base:'sq meter',units:{
+    'sq millimeter':1e-6,'sq centimeter':1e-4,'sq meter':1,'sq kilometer':1e6,'hectare':1e4,
+    'sq inch':6.4516e-4,'sq foot':0.092903,'sq yard (gaj)':0.836127,'acre':4046.86,'sq mile':2.58999e6,
+    'cent':40.4686,'guntha':101.17,'katha (approx, regional)':126.44,'bigha (approx, regional)':2529,
+    'marla':25.2929,'kanal':505.857}},
+  volume:{label:'🧪 Volume',base:'liter',units:{
+    'milliliter':0.001,'centiliter':0.01,'deciliter':0.1,'liter':1,'cubic centimeter':0.001,'cubic meter':1000,
+    'cubic inch':0.0163871,'cubic foot':28.3168,'US teaspoon':0.00492892,'US tablespoon':0.0147868,
+    'US fluid ounce':0.0295735,'US cup':0.236588,'US pint':0.473176,'US quart':0.946353,'US gallon':3.78541,
+    'imperial gallon':4.54609,'imperial pint':0.568261}},
+  temp:{label:'🌡️ Temperature',special:'temp',units:{'celsius':'C','fahrenheit':'F','kelvin':'K','rankine':'R'}},
+  time:{label:'⏱️ Time',base:'second',units:{
+    'nanosecond':1e-9,'microsecond':1e-6,'millisecond':0.001,'second':1,'minute':60,'hour':3600,
+    'day':86400,'week':604800,'month (30d)':2592000,'year (365d)':31536000,'decade':315360000,'century':3153600000}},
+  speed:{label:'🏎️ Speed',base:'m/s',units:{
+    'meter/second':1,'kilometer/hour':0.277778,'mile/hour':0.44704,'foot/second':0.3048,'knot':0.514444,'mach (sea level)':343}},
+  pressure:{label:'🎈 Pressure',base:'pascal',units:{
+    'pascal':1,'kilopascal':1000,'bar':1e5,'millibar':100,'atmosphere':101325,'torr (mmHg)':133.322,
+    'psi':6894.76,'inHg':3386.39}},
+  energy:{label:'⚡ Energy',base:'joule',units:{
+    'joule':1,'kilojoule':1000,'calorie':4.184,'kilocalorie':4184,'watt-hour':3600,'kilowatt-hour':3.6e6,
+    'electronvolt':1.60218e-19,'BTU':1055.06,'foot-pound':1.35582}},
+  power:{label:'🔌 Power',base:'watt',units:{
+    'watt':1,'kilowatt':1000,'megawatt':1e6,'horsepower (mech)':745.7,'horsepower (metric)':735.499,
+    'BTU/hour':0.293071,'foot-pound/second':1.35582}},
+  force:{label:'🏋️ Force',base:'newton',units:{
+    'newton':1,'kilonewton':1000,'dyne':1e-5,'kilogram-force':9.80665,'pound-force':4.44822,'poundal':0.138255}},
+  angle:{label:'📐 Angle',base:'radian',units:{
+    'radian':1,'degree':0.0174533,'gradian':0.015708,'arcminute':0.000290888,'arcsecond':4.84814e-6,'revolution':6.28319}},
+  data:{label:'💾 Data Storage',base:'byte',units:{
+    'bit':0.125,'byte':1,
+    'kilobyte (KB, 1000)':1000,'megabyte (MB, 1000)':1e6,'gigabyte (GB, 1000)':1e9,'terabyte (TB, 1000)':1e12,'petabyte (PB, 1000)':1e15,
+    'kibibyte (KiB, 1024)':1024,'mebibyte (MiB, 1024)':1048576,'gibibyte (GiB, 1024)':1073741824,'tebibyte (TiB, 1024)':1099511627776}},
+  datarate:{label:'📶 Data Transfer Rate',base:'bit/s',units:{
+    'bit/s':1,'kilobit/s (kbps)':1000,'megabit/s (Mbps)':1e6,'gigabit/s (Gbps)':1e9,
+    'byte/s':8,'kilobyte/s (KB/s)':8000,'megabyte/s (MB/s)':8e6,'gigabyte/s (GB/s)':8e9}},
+  frequency:{label:'📻 Frequency',base:'hertz',units:{
+    'hertz':1,'kilohertz':1000,'megahertz':1e6,'gigahertz':1e9,'RPM (rev/min)':0.0166667}},
+  fuel:{label:'⛽ Fuel Economy',special:'fuel',base:'km/l',units:{
+    'km/l':1,'l/100km':'inv100','miles/gallon (US)':0.425144,'miles/gallon (UK)':0.354006}},
+  density:{label:'🧊 Density',base:'kg/m³',units:{
+    'kg/m³':1,'g/cm³':1000,'g/ml':1000,'kg/liter':1000,'pound/cubic foot':16.0185,'pound/gallon (US)':119.826}},
+  torque:{label:'🔧 Torque',base:'N·m',units:{
+    'N·m':1,'kN·m':1000,'kgf·m':9.80665,'pound-foot':1.35582,'pound-inch':0.112985}},
+  illuminance:{label:'💡 Illuminance',base:'lux',units:{
+    'lux':1,'kilolux':1000,'foot-candle':10.7639,'phot':10000,'nox':0.001}},
+  cooking:{label:'🍳 Cooking',base:'milliliter',units:{
+    'milliliter':1,'liter':1000,'US teaspoon':4.92892,'US tablespoon':14.7868,'US cup':236.588,
+    'US fluid ounce':29.5735,'US pint':473.176,'US quart':946.353,'US gallon':3785.41,'drop':0.05,'pinch':0.30}}
+};
+
+/* Quick reference common equivalents per category */
+const QREF={
+  length:[['1 meter','100 cm / 3.281 ft'],['1 kilometer','0.621 mile'],['1 inch','2.54 cm'],['1 mile','1.609 km']],
+  mass:[['1 kilogram','2.205 lb'],['1 pound','453.6 g'],['1 tonne','1000 kg'],['1 tola','~11.66 g'],['1 quintal','100 kg']],
+  area:[['1 hectare','2.471 acre'],['1 acre','4046.86 m²'],['1 sq yard','1 gaj'],['1 bigha','varies by state (approx)']],
+  volume:[['1 liter','1000 ml'],['1 US gallon','3.785 L'],['1 US cup','236.6 ml']],
+  temp:[['0 °C','32 °F / 273.15 K'],['100 °C','212 °F'],['37 °C','98.6 °F']],
+  time:[['1 hour','3600 s'],['1 day','24 h'],['1 week','7 days']],
+  speed:[['1 m/s','3.6 km/h'],['1 mph','1.609 km/h'],['1 knot','1.852 km/h']],
+  pressure:[['1 atm','101325 Pa'],['1 bar','100 kPa'],['1 psi','6.895 kPa']],
+  energy:[['1 kcal','4184 J'],['1 kWh','3.6 MJ'],['1 BTU','1055 J']],
+  power:[['1 hp','745.7 W'],['1 kW','1.341 hp']],
+  force:[['1 kgf','9.807 N'],['1 lbf','4.448 N']],
+  angle:[['180°','π rad'],['1 rev','360°']],
+  data:[['1 KB','1000 bytes'],['1 KiB','1024 bytes'],['1 byte','8 bits']],
+  datarate:[['1 Mbps','1000 kbps'],['1 MB/s','8 Mbps']],
+  frequency:[['1 kHz','1000 Hz'],['1 GHz','1e9 Hz']],
+  fuel:[['1 US mpg','0.425 km/l'],['km/l ↔ l/100km','inverse']],
+  density:[['1 g/cm³','1000 kg/m³'],['water','~1 g/cm³']],
+  torque:[['1 lb-ft','1.356 N·m']],
+  illuminance:[['1 fc','10.76 lux']],
+  cooking:[['1 US cup','236.6 ml'],['1 tbsp','3 tsp'],['1 US tsp','~4.93 ml']]
+};
+
+var favs=JSON.parse(localStorage.getItem('uc_favs')||'[]');
+var recent=JSON.parse(localStorage.getItem('uc_recent')||'[]');
+
+/* Populate category dropdown */
+(function initCats(){
+  var sel=document.getElementById('cat');
+  sel.innerHTML=Object.keys(CATS).map(function(k){return '<option value="'+k+'">'+CATS[k].label+'</option>'}).join('');
+})();
+
+function unitKeys(c){return Object.keys(CATS[c].units)}
+
+function load(){
+  var c=document.getElementById('cat').value;
+  var keys=unitKeys(c);
+  var o=keys.map(function(x){return '<option>'+x+'</option>'}).join('');
+  document.getElementById('fs').innerHTML=o;
+  document.getElementById('ts').innerHTML=o;
+  if(keys.length>1)document.getElementById('ts').selectedIndex=1;
+  renderQuickRef();
+  conv();
+}
+
+/* ---------- Number formatting (precision / sig figs / scientific) ---------- */
+function fmtNum(x){
+  if(!isFinite(x))return String(x);
+  var prec=Math.max(0,Math.min(15,parseInt(document.getElementById('prec').value)||6));
+  var useSig=document.getElementById('sig').checked;
+  var useSci=document.getElementById('sci').checked;
+  if(x===0)return '0';
+  if(useSci)return x.toExponential(prec);
+  var out;
+  if(useSig)out=Number(x.toPrecision(Math.max(1,prec)));
+  else out=Number(x.toFixed(prec));
+  // avoid ugly floating errors, keep as number then string
+  return String(out);
+}
+
+/* ---------- Core conversion ---------- */
+function toBase(c,unit,v){
+  var cat=CATS[c];
+  if(cat.special==='temp'){ // to celsius as base
+    if(unit==='celsius')return v;
+    if(unit==='fahrenheit')return (v-32)*5/9;
+    if(unit==='kelvin')return v-273.15;
+    if(unit==='rankine')return (v-491.67)*5/9;
+  }
+  if(cat.special==='fuel'){ // base km/l
+    var f=cat.units[unit];
+    if(f==='inv100')return 100/v; // l/100km -> km/l
+    return v*f; // mpg factors already give km/l
+  }
+  return v*cat.units[unit];
+}
+function fromBase(c,unit,base){
+  var cat=CATS[c];
+  if(cat.special==='temp'){ // base is celsius
+    if(unit==='celsius')return base;
+    if(unit==='fahrenheit')return base*9/5+32;
+    if(unit==='kelvin')return base+273.15;
+    if(unit==='rankine')return (base+273.15)*9/5;
+  }
+  if(cat.special==='fuel'){
+    var f=cat.units[unit];
+    if(f==='inv100')return 100/base;
+    return base/f;
+  }
+  return base/cat.units[unit];
+}
+function convert(c,f,t,v){return fromBase(c,t,toBase(c,f,v))}
+
+function conv(){
+  var c=document.getElementById('cat').value;
+  var v=parseFloat(document.getElementById('fv').value);
+  var f=document.getElementById('fs').value,t=document.getElementById('ts').value;
+  if(isNaN(v)){document.getElementById('tv').value='';document.getElementById('formula').textContent='';document.getElementById('convAll').innerHTML='';showDataNote(c);return}
+  var r=convert(c,f,t,v);
+  document.getElementById('tv').value=fmtNum(r);
+  showFormula(c,f,t,v,r);
+  showDataNote(c);
+  renderConvertAll(c,f,v);
+  pushRecent(c,f,t,v,r);
+}
+
 function showFormula(c,f,t,v,r){
-  var el=document.getElementById("formula");if(!v){el.textContent="";return}
-  if(c==="temp"){var formulas={celsius_fahrenheit:"(°C × 9/5) + 32",fahrenheit_celsius:"(°F - 32) × 5/9",celsius_kelvin:"°C + 273.15",kelvin_celsius:"K - 273.15",fahrenheit_kelvin:"(°F - 32) × 5/9 + 273.15",kelvin_fahrenheit:"(K - 273.15) × 9/5 + 32"};el.textContent="Formula: "+(formulas[f+"_"+t]||f+" → "+t)+" = "+r.toFixed(4)}
-  else{var factor=(U[c][f]/U[c][t]);el.textContent="Formula: 1 "+f+" = "+factor.toFixed(6)+" "+t+" | "+v+" "+f+" = "+r.toFixed(6)+" "+t}}
-function swap(){var fs=document.getElementById("fs"),ts=document.getElementById("ts");var tmp=fs.value;fs.value=ts.value;ts.value=tmp;conv()}
-function addFav(){var c=document.getElementById("cat").value,f=document.getElementById("fs").value,t=document.getElementById("ts").value;var key=c+"|"+f+"|"+t;if(!favs.includes(key)){favs.push(key);localStorage.setItem("uc_favs",JSON.stringify(favs));renderFavs()}}
-function removeFav(i){favs.splice(i,1);localStorage.setItem("uc_favs",JSON.stringify(favs));renderFavs()}
-function useFav(key){var p=key.split("|");document.getElementById("cat").value=p[0];load();document.getElementById("fs").value=p[1];document.getElementById("ts").value=p[2];conv()}
-function renderFavs(){var el=document.getElementById("favList");el.innerHTML="";favs.forEach(function(key,i){var p=key.split("|");el.innerHTML+='<span style="background:var(--card);padding:.3rem .6rem;border-radius:6px;font-size:.8rem;cursor:pointer" onclick="useFav(\''+key+'\')">'+p[1]+'→'+p[2]+' <span onclick="event.stopPropagation();removeFav('+i+')" style="color:red;cursor:pointer">✕</span></span>'})}
-load();renderFavs()</script>
+  var el=document.getElementById('formula');
+  if(CATS[c].special==='temp'){
+    var fm={celsius_fahrenheit:'(°C × 9/5) + 32',fahrenheit_celsius:'(°F − 32) × 5/9',celsius_kelvin:'°C + 273.15',
+      kelvin_celsius:'K − 273.15',celsius_rankine:'(°C + 273.15) × 9/5',rankine_celsius:'(°R × 5/9) − 273.15',
+      fahrenheit_kelvin:'(°F − 32) × 5/9 + 273.15',kelvin_fahrenheit:'(K − 273.15) × 9/5 + 32'};
+    el.textContent='Formula: '+(fm[f+'_'+t]||(f+' → '+t))+'  ⇒  '+v+' '+f+' = '+fmtNum(r)+' '+t;
+    return;
+  }
+  if(CATS[c].special==='fuel'){
+    el.textContent='Fuel economy: km/l and l/100km are inverse (100 ÷ value). '+v+' '+f+' = '+fmtNum(r)+' '+t;
+    return;
+  }
+  var factor=CATS[c].units[f]/CATS[c].units[t];
+  el.textContent='Formula: 1 '+f+' = '+factor+' '+t+'  |  '+v+' '+f+' = '+fmtNum(r)+' '+t;
+}
+
+function showDataNote(c){
+  var el=document.getElementById('dataNote');
+  if(c==='data'){el.textContent='ℹ️ Decimal units (KB, MB…) use powers of 1000; binary units (KiB, MiB…) use powers of 1024. 1 KiB = 1024 bytes, 1 KB = 1000 bytes.'}
+  else if(c==='area'){el.textContent='ℹ️ Bigha and Katha vary by state — values shown are approximate regional averages.'}
+  else if(c==='temp'){el.textContent='ℹ️ Temperature conversions use offsets, not simple ratios.'}
+  else el.textContent='';
+}
+
+function renderConvertAll(c,f,v){
+  var el=document.getElementById('convAll');
+  if(isNaN(v)){el.innerHTML='';return}
+  var rows=unitKeys(c).map(function(u){
+    var r=convert(c,f,u,v);
+    var hi=(u===f);
+    return '<div style="display:flex;justify-content:space-between;padding:.25rem .5rem;border-radius:6px;'+(hi?'background:var(--card)':'')+'"><span style="color:var(--text2)">'+u+'</span><span>'+fmtNum(r)+'</span></div>';
+  }).join('');
+  el.innerHTML=rows;
+}
+
+function swap(){
+  var fs=document.getElementById('fs'),ts=document.getElementById('ts');
+  var tmp=fs.value;fs.value=ts.value;ts.value=tmp;conv();
+}
+
+function copyResult(){
+  var val=document.getElementById('tv').value;if(!val)return;
+  var f=document.getElementById('fs').value,t=document.getElementById('ts').value,v=document.getElementById('fv').value;
+  var text=v+' '+f+' = '+val+' '+t;
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text);
+  else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
+}
+
+/* ---------- Favourites ---------- */
+function addFav(){
+  var c=document.getElementById('cat').value,f=document.getElementById('fs').value,t=document.getElementById('ts').value;
+  var key=c+'|'+f+'|'+t;
+  if(!favs.includes(key)){favs.push(key);localStorage.setItem('uc_favs',JSON.stringify(favs));renderFavs()}
+}
+function removeFav(i){favs.splice(i,1);localStorage.setItem('uc_favs',JSON.stringify(favs));renderFavs()}
+function useFav(key){
+  var p=key.split('|');document.getElementById('cat').value=p[0];load();
+  document.getElementById('fs').value=p[1];document.getElementById('ts').value=p[2];conv();
+}
+function renderFavs(){
+  var el=document.getElementById('favList');el.innerHTML='';
+  favs.forEach(function(key,i){var p=key.split('|');
+    el.innerHTML+='<span style="background:var(--card);padding:.3rem .6rem;border-radius:6px;font-size:.8rem;cursor:pointer" onclick="useFav(\''+key.replace(/'/g,"\\'")+'\')">'+p[1]+' → '+p[2]+' <span onclick="event.stopPropagation();removeFav('+i+')" style="color:var(--accent2);cursor:pointer">✕</span></span>'});
+}
+
+/* ---------- Recent history ---------- */
+function pushRecent(c,f,t,v,r){
+  var entry={c:c,f:f,t:t,v:v,r:fmtNum(r),ts:Date.now()};
+  recent=recent.filter(function(x){return !(x.c===c&&x.f===f&&x.t===t&&x.v===v)});
+  recent.unshift(entry);recent=recent.slice(0,10);
+  localStorage.setItem('uc_recent',JSON.stringify(recent));renderRecent();
+}
+function useRecent(i){var x=recent[i];document.getElementById('cat').value=x.c;load();
+  document.getElementById('fs').value=x.f;document.getElementById('ts').value=x.t;document.getElementById('fv').value=x.v;conv()}
+function renderRecent(){
+  var el=document.getElementById('recentList');el.innerHTML='';
+  recent.forEach(function(x,i){
+    el.innerHTML+='<div style="background:var(--card);padding:.3rem .6rem;border-radius:6px;font-size:.8rem;cursor:pointer" onclick="useRecent('+i+')">'+x.v+' '+x.f+' = '+x.r+' '+x.t+'</div>';
+  });
+}
+
+/* ---------- Quick reference ---------- */
+function renderQuickRef(){
+  var c=document.getElementById('cat').value;var q=QREF[c]||[];var el=document.getElementById('quickRef');
+  if(!q.length){el.innerHTML='';return}
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.85rem">'+q.map(function(row){
+    return '<tr><td style="padding:.3rem .5rem;color:var(--text2)">'+row[0]+'</td><td style="padding:.3rem .5rem;text-align:right">'+row[1]+'</td></tr>';
+  }).join('')+'</table>';
+}
+
+/* ---------- Search a unit across all categories ---------- */
+function searchUnits(){
+  var q=document.getElementById('unitSearch').value.trim().toLowerCase();
+  var el=document.getElementById('searchResults');
+  if(!q){el.innerHTML='';return}
+  var hits=[];
+  Object.keys(CATS).forEach(function(c){
+    unitKeys(c).forEach(function(u){if(u.toLowerCase().indexOf(q)>-1)hits.push([c,u])});
+  });
+  hits=hits.slice(0,20);
+  if(!hits.length){el.innerHTML='<div class="info">No unit found.</div>';return}
+  el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:.3rem">'+hits.map(function(h){
+    return '<span style="background:var(--card);padding:.3rem .6rem;border-radius:6px;font-size:.8rem;cursor:pointer" onclick="pickUnit(\''+h[0]+'\',\''+h[1].replace(/'/g,"\\'")+'\')">'+h[1]+' <span style="color:var(--text2)">('+CATS[h[0]].label.replace(/^\S+\s/,'')+')</span></span>';
+  }).join('')+'</div>';
+}
+function pickUnit(c,u){
+  document.getElementById('cat').value=c;load();
+  document.getElementById('fs').value=u;conv();
+  document.getElementById('searchResults').innerHTML='';document.getElementById('unitSearch').value='';
+}
+
+/* ---------- Init ---------- */
+load();renderFavs();renderRecent();
+</script>
 </body></html>

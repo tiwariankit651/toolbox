@@ -30,25 +30,44 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
     .diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
-    .diff-grid textarea{min-height:200px;font-family:monospace;font-size:.85rem}
-    .diff-stats{display:flex;gap:1rem;flex-wrap:wrap;margin:1rem 0}
-    .diff-stats .stat{padding:.5rem 1rem;border-radius:8px;font-weight:600;font-size:.9rem}
-    .stat-added{background:#d4edda;color:#155724}
-    .stat-removed{background:#f8d7da;color:#721c24}
-    .stat-unchanged{background:#e2e3e5;color:#383d41}
-    .diff-output{font-family:monospace;font-size:.85rem;border:1px solid var(--border);border-radius:10px;overflow:auto;max-height:500px}
-    .diff-line{display:flex;padding:.2rem .5rem;border-bottom:1px solid var(--border)}
-    .diff-line .ln{min-width:35px;color:var(--text2);text-align:right;padding-right:.5rem;user-select:none;font-size:.75rem}
-    .diff-line .content{flex:1;white-space:pre-wrap;word-break:break-all}
-    .line-added{background:#d4edda}
-    .line-removed{background:#f8d7da}
-    .line-unchanged{background:var(--card)}
-    @media(max-width:600px){.diff-grid{grid-template-columns:1fr}}
-    [data-theme="dark"] .stat-added{background:#1e3a2b;color:#75d9a0}
-    [data-theme="dark"] .stat-removed{background:#3a1e1e;color:#f5a0a0}
-    [data-theme="dark"] .stat-unchanged{background:#2a2a2a;color:#aaa}
-    [data-theme="dark"] .line-added{background:#1e3a2b}
-    [data-theme="dark"] .line-removed{background:#3a1e1e}
+    .diff-grid textarea{min-height:200px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.85rem}
+    .diff-opts{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;margin:1rem 0;padding:1rem;background:var(--card);border-radius:12px;border:1px solid rgba(99,102,241,.1)}
+    .diff-opts label{display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer;margin:0}
+    .diff-opts input[type=checkbox]{width:auto;margin:0}
+    .mode-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+    .diff-stats{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
+    .diff-stats .stat{padding:.5rem 1rem;border-radius:8px;font-weight:600;font-size:.85rem}
+    .stat-added{background:rgba(76,175,80,.15);color:#4caf50}
+    .stat-removed{background:rgba(244,67,54,.15);color:#f44336}
+    .stat-changed{background:rgba(255,152,0,.15);color:#ff9800}
+    .stat-unchanged{background:rgba(148,148,184,.15);color:var(--text2)}
+    .stat-sim{background:rgba(99,102,241,.15);color:var(--accent)}
+    .diff-nav{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
+    .diff-nav .navcount{font-size:.85rem;color:var(--text2);font-weight:600}
+    .diff-output{font-family:'Cascadia Code','Fira Code',monospace;font-size:.82rem;border:1px solid rgba(99,102,241,.15);border-radius:12px;overflow:auto;max-height:560px;background:var(--card)}
+    /* side-by-side */
+    .sbs-row{display:grid;grid-template-columns:44px 1fr 44px 1fr;border-bottom:1px solid rgba(148,148,184,.12)}
+    .sbs-row .ln{color:var(--text2);text-align:right;padding:.15rem .5rem;user-select:none;font-size:.72rem;background:rgba(148,148,184,.06)}
+    .sbs-row .cell{padding:.15rem .6rem;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+    /* unified */
+    .uni-row{display:grid;grid-template-columns:44px 44px 1fr;border-bottom:1px solid rgba(148,148,184,.12)}
+    .uni-row .ln{color:var(--text2);text-align:right;padding:.15rem .5rem;user-select:none;font-size:.72rem;background:rgba(148,148,184,.06)}
+    .uni-row .cell{padding:.15rem .6rem;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+    .d-add{background:rgba(76,175,80,.14)}
+    .d-add .cell{color:#57c95d}
+    .d-del{background:rgba(244,67,54,.13)}
+    .d-del .cell{color:#f26d6d}
+    .d-empty{background:rgba(148,148,184,.05)}
+    .d-focus{outline:2px solid var(--accent);outline-offset:-2px}
+    .w-add{background:rgba(76,175,80,.4);border-radius:3px}
+    .w-del{background:rgba(244,67,54,.4);border-radius:3px;text-decoration:line-through}
+    .light .d-add .cell{color:#1c7a24}
+    .light .d-del .cell{color:#b02020}
+    @media(max-width:600px){
+      .diff-grid{grid-template-columns:1fr}
+      .sbs-row{grid-template-columns:32px 1fr 32px 1fr;font-size:.72rem}
+      .uni-row{grid-template-columns:32px 32px 1fr;font-size:.72rem}
+    }
   </style>
 </head>
 <body>
@@ -59,17 +78,40 @@
     <div class="tool-section">
       <h1>📝 Text Diff Checker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Paste two texts to compare them line by line. Additions are highlighted in green, deletions in red.</p>
+      <p class="info">Paste two texts to compare with a real LCS line diff. Word- and character-level highlighting shows exactly what changed. Switch between side-by-side and unified (git-style) views.</p>
       <div class="diff-grid">
-        <div><label style="font-weight:600;font-size:.85rem">Original Text</label><textarea id="textA" placeholder="Paste original text here..."></textarea></div>
-        <div><label style="font-weight:600;font-size:.85rem">Modified Text</label><textarea id="textB" placeholder="Paste modified text here..."></textarea></div>
+        <div><label style="font-weight:600;font-size:.85rem">Original Text</label><textarea id="textA" placeholder="Paste original text here..."></textarea>
+          <div class="row" style="margin:.3rem 0"><label class="btn btn-outline" style="cursor:pointer;flex:0;white-space:nowrap;padding:.4rem 1rem">📁 Upload A<input type="file" id="fileA" accept=".txt,text/*" style="display:none"></label></div>
+        </div>
+        <div><label style="font-weight:600;font-size:.85rem">Modified Text</label><textarea id="textB" placeholder="Paste modified text here..."></textarea>
+          <div class="row" style="margin:.3rem 0"><label class="btn btn-outline" style="cursor:pointer;flex:0;white-space:nowrap;padding:.4rem 1rem">📁 Upload B<input type="file" id="fileB" accept=".txt,text/*" style="display:none"></label></div>
+        </div>
+      </div>
+      <div class="diff-opts">
+        <label><input type="checkbox" id="optCase"> Ignore case</label>
+        <label><input type="checkbox" id="optWs"> Ignore whitespace</label>
+        <label><input type="checkbox" id="optBlank"> Ignore blank lines</label>
+        <label><input type="checkbox" id="optTrim" checked> Trim trailing whitespace</label>
+        <label><input type="checkbox" id="optHl" checked> Word/char highlight</label>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button onclick="compare()">🔍 Compare</button>
-        <button onclick="swapTexts()" style="background:var(--card);color:var(--text)">🔄 Swap</button>
-        <button onclick="clearAll()" style="background:var(--card);color:var(--text)">🗑️ Clear</button>
+        <button class="btn" onclick="compare()">🔍 Compare</button>
+        <button class="btn btn-outline" onclick="swapTexts()">🔄 Swap</button>
+        <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear</button>
+      </div>
+      <div class="mode-tabs" id="modeTabs" style="display:none">
+        <button class="cat-tab active" id="tabSbs" onclick="setMode('sbs')">Side-by-side</button>
+        <button class="cat-tab" id="tabUni" onclick="setMode('uni')">Unified (git)</button>
       </div>
       <div id="stats" class="diff-stats"></div>
+      <div class="diff-nav" id="diffNav" style="display:none">
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="gotoChange(-1)">↑ Prev</button>
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="gotoChange(1)">↓ Next</button>
+        <span class="navcount" id="navCount"></span>
+        <span style="flex:1"></span>
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="copyDiff()">📋 Copy patch</button>
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="downloadDiff()">⬇️ .diff</button>
+      </div>
       <div id="output" class="diff-output" style="display:none"></div>
     </div>
     <div style="min-height:90px">
@@ -122,47 +164,270 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function compare(){
-  const a=document.getElementById('textA').value.split('\n');
-  const b=document.getElementById('textB').value.split('\n');
-  const result=lcs(a,b);
-  let added=0,removed=0,unchanged=0;
-  let html='';
-  result.forEach(r=>{
-    if(r.type==='unchanged'){unchanged++;html+='<div class="diff-line line-unchanged"><span class="ln">'+r.lnA+'</span><span class="ln">'+r.lnB+'</span><span class="content">'+esc(r.text)+'</span></div>'}
-    else if(r.type==='removed'){removed++;html+='<div class="diff-line line-removed"><span class="ln">'+r.lnA+'</span><span class="ln"></span><span class="content">- '+esc(r.text)+'</span></div>'}
-    else{added++;html+='<div class="diff-line line-added"><span class="ln"></span><span class="ln">'+r.lnB+'</span><span class="content">+ '+esc(r.text)+'</span></div>'}
-  });
-  document.getElementById('stats').innerHTML='<div class="stat stat-added">+ '+added+' added</div><div class="stat stat-removed">- '+removed+' removed</div><div class="stat stat-unchanged">= '+unchanged+' unchanged</div>';
-  const out=document.getElementById('output');
-  out.style.display='block';
-  out.innerHTML=html||'<p style="padding:1rem;text-align:center">No differences found.</p>';
+var MAX_LINES=6000;
+var lastDiff=null, viewMode='sbs', changeGroups=[], curChange=-1;
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function getOpts(){
+  return {
+    ic:document.getElementById('optCase').checked,
+    iw:document.getElementById('optWs').checked,
+    ib:document.getElementById('optBlank').checked,
+    tr:document.getElementById('optTrim').checked,
+    hl:document.getElementById('optHl').checked
+  };
 }
-function lcs(a,b){
-  const m=a.length,n=b.length;
-  const dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
-  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
-  const result=[];
-  let i=m,j=n;
-  while(i>0||j>0){
-    if(i>0&&j>0&&a[i-1]===b[j-1]){result.unshift({type:'unchanged',text:a[i-1],lnA:i,lnB:j});i--;j--}
-    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){result.unshift({type:'added',text:b[j-1],lnB:j});j--}
-    else{result.unshift({type:'removed',text:a[i-1],lnA:i});i--}
+// normalise a line for COMPARISON only (display keeps original)
+function normLine(s,o){
+  var t=s;
+  if(o.tr)t=t.replace(/[ \t]+$/,'');
+  if(o.iw)t=t.replace(/\s+/g,'');
+  if(o.ic)t=t.toLowerCase();
+  return t;
+}
+
+// LCS over arrays of (already-normalised) keys -> returns diff ops on original arrays
+function lcsDiff(aKeys,bKeys){
+  var m=aKeys.length,n=bKeys.length;
+  // rolling DP for length; then backtrack with full matrix (bounded by MAX_LINES)
+  var dp=Array.from({length:m+1},function(){return new Int32Array(n+1);});
+  for(var i=1;i<=m;i++){
+    for(var j=1;j<=n;j++){
+      dp[i][j]=aKeys[i-1]===bKeys[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+    }
   }
-  return result;
+  var ops=[],ii=m,jj=n;
+  while(ii>0||jj>0){
+    if(ii>0&&jj>0&&aKeys[ii-1]===bKeys[jj-1]){ops.unshift({t:'eq',a:ii-1,b:jj-1});ii--;jj--;}
+    else if(jj>0&&(ii===0||dp[ii][jj-1]>=dp[ii-1][jj])){ops.unshift({t:'add',b:jj-1});jj--;}
+    else{ops.unshift({t:'del',a:ii-1});ii--;}
+  }
+  return ops;
 }
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// word/char level highlight between two original strings
+function inlineHighlight(oldStr,newStr,level){
+  var split=level==='char'?oldStr.split(''):oldStr.split(/(\s+)/);
+  var splitN=level==='char'?newStr.split(''):newStr.split(/(\s+)/);
+  var ops=lcsDiff(split,splitN);
+  var oldHtml='',newHtml='';
+  ops.forEach(function(op){
+    if(op.t==='eq'){oldHtml+=esc(split[op.a]);newHtml+=esc(splitN[op.b]);}
+    else if(op.t==='del'){oldHtml+='<span class="w-del">'+esc(split[op.a])+'</span>';}
+    else{newHtml+='<span class="w-add">'+esc(splitN[op.b])+'</span>';}
+  });
+  return {oldHtml:oldHtml,newHtml:newHtml};
+}
+
+function readLines(str,o){
+  var lines=str.split('\n');
+  if(o.ib){/* blank lines ignored: we drop them but keep original numbering via map */}
+  return lines;
+}
+
+function compare(){
+  var rawA=document.getElementById('textA').value;
+  var rawB=document.getElementById('textB').value;
+  var o=getOpts();
+  var linesA=rawA.split('\n'), linesB=rawB.split('\n');
+  if(linesA.length>MAX_LINES||linesB.length>MAX_LINES){
+    if(!confirm('Large input ('+Math.max(linesA.length,linesB.length)+' lines). Comparison may be slow and will be capped at '+MAX_LINES+' lines. Continue?')){return;}
+    linesA=linesA.slice(0,MAX_LINES);
+    linesB=linesB.slice(0,MAX_LINES);
+  }
+  // build compare keys, optionally dropping blank lines (but keep originals & real numbers)
+  var recA=[],recB=[];
+  linesA.forEach(function(l,i){var k=normLine(l,o);if(o.ib&&k.trim()==='')return;recA.push({text:l,ln:i+1,key:k});});
+  linesB.forEach(function(l,i){var k=normLine(l,o);if(o.ib&&k.trim()==='')return;recB.push({text:l,ln:i+1,key:k});});
+  var ops=lcsDiff(recA.map(function(r){return r.key;}),recB.map(function(r){return r.key;}));
+  // collapse into aligned rows; detect "changed" = del immediately followed by add cluster
+  var rows=[];
+  for(var p=0;p<ops.length;p++){
+    var op=ops[p];
+    if(op.t==='eq'){rows.push({type:'eq',a:recA[op.a],b:recB[op.b]});}
+    else if(op.t==='del'){
+      // gather consecutive dels then adds
+      var dels=[],adds=[];
+      while(p<ops.length&&ops[p].t==='del'){dels.push(recA[ops[p].a]);p++;}
+      while(p<ops.length&&ops[p].t==='add'){adds.push(recB[ops[p].b]);p++;}
+      p--;
+      var mx=Math.max(dels.length,adds.length);
+      for(var k=0;k<mx;k++){
+        var da=dels[k]||null, db=adds[k]||null;
+        if(da&&db)rows.push({type:'chg',a:da,b:db});
+        else if(da)rows.push({type:'del',a:da});
+        else rows.push({type:'add',b:db});
+      }
+    } else { // lone add
+      var adds2=[];
+      while(p<ops.length&&ops[p].t==='add'){adds2.push(recB[ops[p].b]);p++;}
+      p--;
+      adds2.forEach(function(x){rows.push({type:'add',b:x});});
+    }
+  }
+  lastDiff={rows:rows,o:o};
+  render();
+}
+
+function computeStats(rows){
+  var added=0,removed=0,changed=0,unchanged=0;
+  rows.forEach(function(r){
+    if(r.type==='eq')unchanged++;
+    else if(r.type==='add')added++;
+    else if(r.type==='del')removed++;
+    else changed++;
+  });
+  var total=added+removed+changed+unchanged;
+  var sim=total?Math.round(unchanged/total*100):100;
+  return {added:added,removed:removed,changed:changed,unchanged:unchanged,sim:sim};
+}
+
+function render(){
+  if(!lastDiff)return;
+  var rows=lastDiff.rows, o=lastDiff.o;
+  var st=computeStats(rows);
+  document.getElementById('stats').innerHTML=
+    '<div class="stat stat-added">+ '+st.added+' added</div>'+
+    '<div class="stat stat-removed">- '+st.removed+' removed</div>'+
+    '<div class="stat stat-changed">~ '+st.changed+' changed</div>'+
+    '<div class="stat stat-unchanged">= '+st.unchanged+' unchanged</div>'+
+    '<div class="stat stat-sim">'+st.sim+'% similar</div>';
+  document.getElementById('modeTabs').style.display='flex';
+  var out=document.getElementById('output');
+  out.style.display='block';
+  changeGroups=[]; curChange=-1;
+  var html=(viewMode==='sbs')?renderSbs(rows,o):renderUni(rows,o);
+  out.innerHTML=html||'<p style="padding:1rem;text-align:center">No differences found — texts are identical.</p>';
+  // collect change anchors
+  changeGroups=Array.prototype.slice.call(out.querySelectorAll('[data-chg]'));
+  var nav=document.getElementById('diffNav');
+  nav.style.display=changeGroups.length?'flex':'none';
+  updateNavCount();
+}
+
+function cellHtml(oldR,newR,o){
+  if(o.hl&&oldR&&newR){
+    var hi=inlineHighlight(oldR.text,newR.text,'word');
+    return {o:hi.oldHtml,n:hi.newHtml};
+  }
+  return {o:oldR?esc(oldR.text):'', n:newR?esc(newR.text):''};
+}
+
+function renderSbs(rows,o){
+  var h='';
+  rows.forEach(function(r,idx){
+    var chg=r.type!=='eq'?' data-chg="1"':'';
+    if(r.type==='eq'){
+      h+='<div class="sbs-row"><span class="ln">'+r.a.ln+'</span><span class="cell">'+esc(r.a.text)+'</span><span class="ln">'+r.b.ln+'</span><span class="cell">'+esc(r.b.text)+'</span></div>';
+    } else if(r.type==='chg'){
+      var c=cellHtml(r.a,r.b,o);
+      h+='<div class="sbs-row"'+chg+'><span class="ln">'+r.a.ln+'</span><span class="cell d-del">'+c.o+'</span><span class="ln">'+r.b.ln+'</span><span class="cell d-add">'+c.n+'</span></div>';
+    } else if(r.type==='del'){
+      h+='<div class="sbs-row"'+chg+'><span class="ln">'+r.a.ln+'</span><span class="cell d-del">'+esc(r.a.text)+'</span><span class="ln"></span><span class="cell d-empty"></span></div>';
+    } else {
+      h+='<div class="sbs-row"'+chg+'><span class="ln"></span><span class="cell d-empty"></span><span class="ln">'+r.b.ln+'</span><span class="cell d-add">'+esc(r.b.text)+'</span></div>';
+    }
+  });
+  return h;
+}
+
+function renderUni(rows,o){
+  var h='';
+  rows.forEach(function(r){
+    var chg=r.type!=='eq'?' data-chg="1"':'';
+    if(r.type==='eq'){
+      h+='<div class="uni-row"><span class="ln">'+r.a.ln+'</span><span class="ln">'+r.b.ln+'</span><span class="cell">  '+esc(r.a.text)+'</span></div>';
+    } else if(r.type==='chg'){
+      var c=cellHtml(r.a,r.b,o);
+      h+='<div class="uni-row d-del"'+chg+'><span class="ln">'+r.a.ln+'</span><span class="ln"></span><span class="cell">- '+c.o+'</span></div>';
+      h+='<div class="uni-row d-add"><span class="ln"></span><span class="ln">'+r.b.ln+'</span><span class="cell">+ '+c.n+'</span></div>';
+    } else if(r.type==='del'){
+      h+='<div class="uni-row d-del"'+chg+'><span class="ln">'+r.a.ln+'</span><span class="ln"></span><span class="cell">- '+esc(r.a.text)+'</span></div>';
+    } else {
+      h+='<div class="uni-row d-add"'+chg+'><span class="ln"></span><span class="ln">'+r.b.ln+'</span><span class="cell">+ '+esc(r.b.text)+'</span></div>';
+    }
+  });
+  return h;
+}
+
+function setMode(m){
+  viewMode=m;
+  document.getElementById('tabSbs').classList.toggle('active',m==='sbs');
+  document.getElementById('tabUni').classList.toggle('active',m==='uni');
+  render();
+}
+
+function updateNavCount(){
+  var c=document.getElementById('navCount');
+  if(!changeGroups.length){c.textContent='No changes';return;}
+  c.textContent='change '+(curChange<0?0:curChange+1)+' of '+changeGroups.length;
+}
+function gotoChange(dir){
+  if(!changeGroups.length)return;
+  curChange+=dir;
+  if(curChange<0)curChange=changeGroups.length-1;
+  if(curChange>=changeGroups.length)curChange=0;
+  changeGroups.forEach(function(el){el.classList.remove('d-focus');});
+  var t=changeGroups[curChange];
+  t.classList.add('d-focus');
+  t.scrollIntoView({behavior:'smooth',block:'center'});
+  updateNavCount();
+}
+
+// unified patch text for copy/download
+function buildPatch(){
+  if(!lastDiff)return '';
+  var lines=['--- Original','+++ Modified'];
+  lastDiff.rows.forEach(function(r){
+    if(r.type==='eq')lines.push(' '+r.a.text);
+    else if(r.type==='del')lines.push('-'+r.a.text);
+    else if(r.type==='add')lines.push('+'+r.b.text);
+    else {lines.push('-'+r.a.text);lines.push('+'+r.b.text);}
+  });
+  return lines.join('\n');
+}
+function copyDiff(){
+  var patch=buildPatch();
+  if(!patch)return;
+  navigator.clipboard.writeText(patch);
+  var t=document.createElement('div');t.textContent='📋 Patch copied';
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},1800);
+}
+function downloadDiff(){
+  var patch=buildPatch();
+  if(!patch)return;
+  download(new Blob([patch],{type:'text/plain'}),'diff.diff');
+}
+
 function swapTexts(){
-  const a=document.getElementById('textA');
-  const b=document.getElementById('textB');
-  const tmp=a.value;a.value=b.value;b.value=tmp;
+  var a=document.getElementById('textA'), b=document.getElementById('textB');
+  var tmp=a.value;a.value=b.value;b.value=tmp;
+  if(lastDiff)compare();
 }
 function clearAll(){
   document.getElementById('textA').value='';
   document.getElementById('textB').value='';
   document.getElementById('stats').innerHTML='';
   document.getElementById('output').style.display='none';
+  document.getElementById('modeTabs').style.display='none';
+  document.getElementById('diffNav').style.display='none';
+  lastDiff=null;changeGroups=[];curChange=-1;
 }
+
+// file upload wiring
+function wireFile(inputId,areaId){
+  var inp=document.getElementById(inputId);
+  inp.addEventListener('change',function(){
+    var f=inp.files[0];if(!f)return;
+    var rdr=new FileReader();
+    rdr.onload=function(){document.getElementById(areaId).value=rdr.result;};
+    rdr.readAsText(f);
+  });
+}
+wireFile('fileA','textA');
+wireFile('fileB','textB');
   </script>
 </body>
 </html>

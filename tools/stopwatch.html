@@ -37,33 +37,62 @@
     <div class="tool-section">
       <h1>⏱️ Stopwatch & Timer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <div class="row" style="margin-bottom:1rem">
-        <button class="btn" onclick="showTab('sw')" id="tabSw" style="flex:1">Stopwatch</button>
-        <button class="btn btn-outline" onclick="showTab('tm')" id="tabTm" style="flex:1">Timer</button>
+      <div class="row" style="margin-bottom:1rem;gap:.4rem">
+        <button class="btn" onclick="showTab('sw')" id="tabSw" style="flex:1">⏱️ Stopwatch</button>
+        <button class="btn btn-outline" onclick="showTab('tm')" id="tabTm" style="flex:1">⏳ Countdown</button>
+        <button class="btn btn-outline" onclick="showTab('iv')" id="tabIv" style="flex:1">🔁 Interval</button>
       </div>
+
+      <!-- STOPWATCH -->
       <div id="sw">
-        <div id="swDisplay" style="text-align:center;font-size:3rem;font-weight:700;font-family:monospace;padding:1.5rem 0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">00:00:00.0</div>
+        <div id="swDisplay" style="text-align:center;font-size:clamp(2.4rem,12vw,4rem);font-weight:700;font-family:monospace;padding:1.5rem 0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">00:00:00.00</div>
         <div class="row">
           <button class="btn" onclick="swStart()" id="swBtn" style="flex:1">▶ Start</button>
-          <button class="btn btn-outline" onclick="swLap()" style="flex:1">🏁 Lap</button>
+          <button class="btn btn-outline" onclick="swLap()" id="swLapBtn" style="flex:1">🏁 Lap</button>
           <button class="btn btn-outline" onclick="swReset()" style="flex:1">↺ Reset</button>
+        </div>
+        <div class="row" style="justify-content:flex-end;margin-top:.5rem">
+          <button class="btn btn-outline" onclick="exportLaps()" id="lapExportBtn" style="font-size:.8rem;display:none">⬇ Export Laps CSV</button>
         </div>
         <div id="laps" style="margin-top:1rem"></div>
       </div>
+
+      <!-- COUNTDOWN TIMER -->
       <div id="tm" style="display:none">
-        <div class="row" style="justify-content:center;margin-bottom:1rem">
-          <input type="number" id="tmH" value="0" min="0" max="23" style="width:60px;text-align:center;font-size:1.2rem" placeholder="H">
-          <span style="font-size:1.5rem;padding:0 .3rem">:</span>
-          <input type="number" id="tmM" value="5" min="0" max="59" style="width:60px;text-align:center;font-size:1.2rem" placeholder="M">
-          <span style="font-size:1.5rem;padding:0 .3rem">:</span>
-          <input type="number" id="tmS" value="0" min="0" max="59" style="width:60px;text-align:center;font-size:1.2rem" placeholder="S">
+        <div class="row" style="justify-content:center;margin-bottom:.5rem">
+          <input type="number" id="tmH" value="0" min="0" max="99" style="width:64px;text-align:center;font-size:1.2rem" placeholder="H" oninput="tmReset()">
+          <span style="font-size:1.5rem;padding:0 .2rem">:</span>
+          <input type="number" id="tmM" value="5" min="0" max="59" style="width:64px;text-align:center;font-size:1.2rem" placeholder="M" oninput="tmReset()">
+          <span style="font-size:1.5rem;padding:0 .2rem">:</span>
+          <input type="number" id="tmS" value="0" min="0" max="59" style="width:64px;text-align:center;font-size:1.2rem" placeholder="S" oninput="tmReset()">
         </div>
-        <div id="tmDisplay" style="text-align:center;font-size:3rem;font-weight:700;font-family:monospace;padding:1.5rem 0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">00:05:00</div>
+        <div class="row" style="justify-content:center;gap:.4rem;margin-bottom:.5rem" id="tmPresets"></div>
+        <div id="tmDisplay" style="text-align:center;font-size:clamp(2.4rem,12vw,4rem);font-weight:700;font-family:monospace;padding:1.5rem 0;border-radius:var(--radius);background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">00:05:00</div>
         <div class="row">
           <button class="btn" onclick="tmStart()" id="tmBtn" style="flex:1">▶ Start</button>
           <button class="btn btn-outline" onclick="tmReset()" style="flex:1">↺ Reset</button>
         </div>
       </div>
+
+      <!-- INTERVAL TIMER -->
+      <div id="iv" style="display:none">
+        <div class="row">
+          <label style="flex:1;min-width:130px">Work (sec)<input type="number" id="ivWork" value="30" min="1" oninput="ivReset()"></label>
+          <label style="flex:1;min-width:130px">Rest (sec)<input type="number" id="ivRest" value="10" min="1" oninput="ivReset()"></label>
+          <label style="flex:1;min-width:130px">Rounds<input type="number" id="ivRounds" value="8" min="1" oninput="ivReset()"></label>
+        </div>
+        <div id="ivPhase" style="text-align:center;font-size:1.1rem;font-weight:600;color:var(--text2);margin-top:.5rem">Ready</div>
+        <div id="ivDisplay" style="text-align:center;font-size:clamp(2.4rem,12vw,4rem);font-weight:700;font-family:monospace;padding:1rem 0;border-radius:var(--radius);background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">00:30</div>
+        <div id="ivRoundInfo" style="text-align:center;color:var(--text2);margin-bottom:.5rem">Round 0 / 8</div>
+        <div class="row">
+          <button class="btn" onclick="ivStart()" id="ivBtn" style="flex:1">▶ Start</button>
+          <button class="btn btn-outline" onclick="ivReset()" style="flex:1">↺ Reset</button>
+        </div>
+      </div>
+
+      <div class="info" style="margin-top:1rem"><strong>⌨️ Keyboard shortcuts (Stopwatch):</strong> <kbd>Space</kbd> Start/Pause · <kbd>L</kbd> Lap · <kbd>R</kbd> Reset</div>
+
+      <div id="sessionHistory" style="margin-top:1rem"></div>
     </div>
     <div style="min-height:90px"></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -125,17 +154,153 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-let swInt,swMs=0,swRunning=false,lapN=0;
-let tmInt,tmLeft=300,tmRunning=false;
-function showTab(t){document.getElementById('sw').style.display=t==='sw'?'':'none';document.getElementById('tm').style.display=t==='tm'?'':'none';document.getElementById('tabSw').className=t==='sw'?'btn':'btn btn-outline';document.getElementById('tabTm').className=t==='tm'?'btn':'btn btn-outline'}
-function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'.'+Math.floor((ms%1000)/100)}
-function swStart(){if(swRunning){clearInterval(swInt);swRunning=false;document.getElementById('swBtn').textContent='▶ Resume'}else{const st=Date.now()-swMs;swInt=setInterval(()=>{swMs=Date.now()-st;document.getElementById('swDisplay').textContent=fmt(swMs)},50);swRunning=true;document.getElementById('swBtn').textContent='⏸ Pause'}}
-function swLap(){if(swMs>0){lapN++;document.getElementById('laps').innerHTML='<div style="padding:.4rem .8rem;background:var(--card);border-radius:8px;margin-bottom:.3rem">Lap '+lapN+': '+fmt(swMs)+'</div>'+document.getElementById('laps').innerHTML}}
-function swReset(){clearInterval(swInt);swMs=0;swRunning=false;lapN=0;document.getElementById('swDisplay').textContent='00:00:00.0';document.getElementById('swBtn').textContent='▶ Start';document.getElementById('laps').innerHTML=''}
-function tmFmt(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-function tmStart(){if(tmRunning){clearInterval(tmInt);tmRunning=false;document.getElementById('tmBtn').textContent='▶ Resume'}else{if(tmLeft<=0)tmReset();tmInt=setInterval(()=>{tmLeft--;document.getElementById('tmDisplay').textContent=tmFmt(tmLeft);if(tmLeft<=0){clearInterval(tmInt);tmRunning=false;document.getElementById('tmBtn').textContent='▶ Start';try{new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Jk5eLfG1udX+Ij4yGfXFxeIOLj4uEe3J0e4WMj4qDenN2fIWMjomCeXR3fYaMjYmBeHR4f4eMjYiAd3R5gIiMjIh/dnV6gYmMi4d+dXZ7gomMi4Z9dXd8g4mLioV8dXh9hImLiYR7dXl+hYqKiIN6dXp/hoqKh4J5dnuAh4qJhoF4d3yBiIqIhYB3eH2CiYmIhH93eX6DiYmHg354en+EiYiGgn14e4CFiYiGgX15fIGGiIeFgHx5fYKHiIaEf3x6foOHh4WDfnt7f4SHh4WCfXt8gIWHhoSBfHx9gYaGhYOAfXx+goaGhYJ/fX1/g4aFhIF+fX6AhIaFg4B+fn+BhYWEgoB+f4CCh4WDgX9/gIOFhYOBf3+Bg4WEg4GAf4GCg4WEgoB/gIGDhISCgH+AgYOEhIKAf4CBg4SEgoB/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgX9/gIGDhIOBf3+AgYOEg4F/f4CBg4SDgQ==').play()}catch(e){}alert('⏰ Time is up!')}},1000);tmRunning=true;document.getElementById('tmBtn').textContent='⏸ Pause'}}
-function tmReset(){clearInterval(tmInt);tmRunning=false;tmLeft=(+document.getElementById('tmH').value||0)*3600+(+document.getElementById('tmM').value||0)*60+(+document.getElementById('tmS').value||0);document.getElementById('tmDisplay').textContent=tmFmt(tmLeft);document.getElementById('tmBtn').textContent='▶ Start'}
-tmReset();
+/* ---------- Web Audio helpers (no external files) ---------- */
+var _ac;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume();return _ac}
+function tone(freq,dur,type){try{var c=ac(),o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=freq;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(0.35,c.currentTime+0.01);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+dur);o.start();o.stop(c.currentTime+dur)}catch(e){}}
+function alarm(){tone(880,0.25);setTimeout(function(){tone(1100,0.25)},280);setTimeout(function(){tone(880,0.45)},560)}
+function workBeep(){tone(1046,0.18,'square');setTimeout(function(){tone(1318,0.22,'square')},190)}
+function restBeep(){tone(523,0.3,'sine')}
+function flash(){document.body.animate([{filter:'brightness(1)'},{filter:'brightness(2.2)'},{filter:'brightness(1)'}],{duration:400,iterations:3})}
+
+/* ---------- Tabs ---------- */
+function showTab(t){
+  ['sw','tm','iv'].forEach(function(x){document.getElementById(x).style.display=(x===t)?'':'none';
+    document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).className=(x===t)?'btn':'btn btn-outline'});
+  currentTab=t;
+}
+var currentTab='sw';
+
+/* ---------- Precise Stopwatch (performance.now, no drift) ---------- */
+var swRAF=null,swRunning=false,swStartTs=0,swAccum=0,laps=[];
+function swElapsed(){return swAccum+(swRunning?(performance.now()-swStartTs):0)}
+function fmt(ms){var totalCs=Math.floor(ms/10);var cs=totalCs%100;var s=Math.floor(totalCs/100)%60;var m=Math.floor(totalCs/6000)%60;var h=Math.floor(totalCs/360000);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0')}
+function swRender(){document.getElementById('swDisplay').textContent=fmt(swElapsed())}
+function swTick(){swRender();if(currentTab==='sw')document.title=fmt(swElapsed())+' \u23f1\ufe0f';swRAF=requestAnimationFrame(swTick)}
+function swStart(){
+  if(swRunning){
+    swAccum=swElapsed();swRunning=false;cancelAnimationFrame(swRAF);
+    document.getElementById('swBtn').textContent='\u25b6 Resume';document.title='Online Stopwatch & Timer - Free | FreeToolHubs';
+  }else{
+    ac();swStartTs=performance.now();swRunning=true;swTick();
+    document.getElementById('swBtn').textContent='\u23f8 Pause';
+  }
+  swSave();
+}
+function swLap(){
+  var e=swElapsed();if(e<=0)return;
+  var prev=laps.length?laps[laps.length-1].cumulative:0;
+  laps.push({n:laps.length+1,lap:e-prev,cumulative:e});
+  renderLaps();swSave();
+}
+function deleteLap(i){laps.splice(i,1);laps.forEach(function(l,idx){l.n=idx+1});
+  var run=0;laps.forEach(function(l){l.cumulative=run+l.lap;run=l.cumulative});renderLaps();swSave()}
+function renderLaps(){
+  var el=document.getElementById('laps');
+  document.getElementById('lapExportBtn').style.display=laps.length?'':'none';
+  if(!laps.length){el.innerHTML='';return}
+  var fastest=-1,slowest=-1;
+  if(laps.length>1){var mn=Infinity,mx=-Infinity;laps.forEach(function(l,i){if(l.lap<mn){mn=l.lap;fastest=i}if(l.lap>mx){mx=l.lap;slowest=i}})}
+  var h='<table style="width:100%;border-collapse:collapse;font-family:monospace"><tr style="background:var(--card)"><th style="padding:.4rem;text-align:left">Lap</th><th style="text-align:right">Lap Time</th><th style="text-align:right">Split</th><th></th></tr>';
+  for(var i=laps.length-1;i>=0;i--){var l=laps[i];var tag=i===fastest?' \ud83d\udfe2':i===slowest?' \ud83d\udd34':'';var bg=i===fastest?'background:rgba(99,102,241,.18)':i===slowest?'background:rgba(139,92,246,.18)':'';
+    h+='<tr style="'+bg+'"><td style="padding:.35rem .4rem">#'+l.n+tag+'</td><td style="text-align:right">'+fmt(l.lap)+'</td><td style="text-align:right">'+fmt(l.cumulative)+'</td><td style="text-align:right"><span onclick="deleteLap('+i+')" style="cursor:pointer;color:var(--accent2)" title="Delete">\u2715</span></td></tr>'}
+  h+='</table>';el.innerHTML=h;
+}
+function exportLaps(){
+  if(!laps.length)return;
+  var rows=[['Lap','Lap Time','Cumulative Split']];
+  laps.forEach(function(l){rows.push([l.n,fmt(l.lap),fmt(l.cumulative)])});
+  var csv=rows.map(function(r){return r.join(',')}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='laps.csv';a.click();URL.revokeObjectURL(a.href);
+}
+function swReset(){
+  if(swRunning&&swElapsed()>1000)saveSession(swElapsed());
+  cancelAnimationFrame(swRAF);swRunning=false;swAccum=0;laps=[];
+  document.getElementById('swDisplay').textContent='00:00:00.00';
+  document.getElementById('swBtn').textContent='\u25b6 Start';renderLaps();
+  document.title='Online Stopwatch & Timer - Free | FreeToolHubs';swSave();
+}
+
+/* ---------- Session persistence & history ---------- */
+function swSave(){try{localStorage.setItem('sw_state',JSON.stringify({accum:swElapsed(),running:swRunning,ts:Date.now(),laps:laps}))}catch(e){}}
+function swRestore(){
+  try{var s=JSON.parse(localStorage.getItem('sw_state')||'null');if(!s)return;
+    laps=s.laps||[];swAccum=s.accum||0;
+    if(s.running){swAccum+=Date.now()-s.ts;swStartTs=performance.now();swRunning=true;swTick();document.getElementById('swBtn').textContent='\u23f8 Pause'}
+    else swRender();
+    renderLaps();
+  }catch(e){}
+}
+function saveSession(ms){try{var h=JSON.parse(localStorage.getItem('sw_history')||'[]');h.unshift({dur:ms,date:new Date().toLocaleString()});h=h.slice(0,20);localStorage.setItem('sw_history',JSON.stringify(h));renderHistory()}catch(e){}}
+function clearHistory(){localStorage.removeItem('sw_history');renderHistory()}
+function renderHistory(){
+  var h=JSON.parse(localStorage.getItem('sw_history')||'[]');var el=document.getElementById('sessionHistory');
+  if(!h.length){el.innerHTML='';return}
+  var s='<h3>\ud83d\udcdc Past Sessions</h3><div style="display:flex;flex-direction:column;gap:.3rem">';
+  h.forEach(function(x){s+='<div style="display:flex;justify-content:space-between;background:var(--card);padding:.4rem .8rem;border-radius:8px;font-size:.85rem"><span style="font-family:monospace">'+fmt(x.dur)+'</span><span style="color:var(--text2)">'+x.date+'</span></div>'});
+  s+='</div><button class="btn btn-outline" onclick="clearHistory()" style="font-size:.8rem;margin-top:.5rem">Clear History</button>';
+  el.innerHTML=s;
+}
+
+/* ---------- Countdown Timer ---------- */
+var tmInt=null,tmLeft=300,tmRunning=false;
+var tmPresetList=[1,3,5,10,15,30,45,60];
+function renderTmPresets(){var el=document.getElementById('tmPresets');el.innerHTML=tmPresetList.map(function(m){return '<button class="btn btn-outline" style="font-size:.75rem;padding:.35rem .6rem" onclick="tmPreset('+m+')">'+m+'m</button>'}).join('')}
+function tmPreset(m){tmStop();document.getElementById('tmH').value=Math.floor(m/60);document.getElementById('tmM').value=m%60;document.getElementById('tmS').value=0;tmReset()}
+function tmFmt(s){var h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function tmStop(){clearInterval(tmInt);tmInt=null;tmRunning=false}
+function tmStart(){
+  if(tmRunning){tmStop();document.getElementById('tmBtn').textContent='\u25b6 Resume';return}
+  ac();if(tmLeft<=0)tmReset();if(tmLeft<=0)return;
+  tmRunning=true;document.getElementById('tmBtn').textContent='\u23f8 Pause';
+  var end=Date.now()+tmLeft*1000;
+  tmInt=setInterval(function(){
+    tmLeft=Math.round((end-Date.now())/1000);
+    if(tmLeft<0)tmLeft=0;
+    document.getElementById('tmDisplay').textContent=tmFmt(tmLeft);
+    if(currentTab==='tm')document.title=tmFmt(tmLeft)+' \u23f3';
+    if(tmLeft<=0){tmStop();document.getElementById('tmBtn').textContent='\u25b6 Start';document.title='Online Stopwatch & Timer - Free | FreeToolHubs';alarm();flash();}
+  },250);
+}
+function tmReset(){tmStop();tmLeft=(+document.getElementById('tmH').value||0)*3600+(+document.getElementById('tmM').value||0)*60+(+document.getElementById('tmS').value||0);document.getElementById('tmDisplay').textContent=tmFmt(tmLeft);document.getElementById('tmBtn').textContent='\u25b6 Start';document.title='Online Stopwatch & Timer - Free | FreeToolHubs'}
+
+/* ---------- Interval Timer ---------- */
+var ivInt=null,ivRunning=false,ivLeft=0,ivPhase='work',ivRound=0,ivTotal=0;
+function ivFmt(s){var m=Math.floor(s/60);return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function ivStop(){clearInterval(ivInt);ivInt=null;ivRunning=false}
+function ivReset(){ivStop();ivRound=0;ivPhase='work';ivTotal=+document.getElementById('ivRounds').value||1;ivLeft=+document.getElementById('ivWork').value||1;
+  document.getElementById('ivPhase').textContent='Ready';document.getElementById('ivDisplay').textContent=ivFmt(ivLeft);
+  document.getElementById('ivRoundInfo').textContent='Round 0 / '+ivTotal;document.getElementById('ivBtn').textContent='\u25b6 Start';
+  document.title='Online Stopwatch & Timer - Free | FreeToolHubs'}
+function ivStart(){
+  if(ivRunning){ivStop();document.getElementById('ivBtn').textContent='\u25b6 Resume';return}
+  ac();
+  if(ivRound===0){ivRound=1;ivPhase='work';ivLeft=+document.getElementById('ivWork').value||1;document.getElementById('ivPhase').textContent='\ud83d\udcaa WORK';document.getElementById('ivRoundInfo').textContent='Round 1 / '+ivTotal;workBeep()}
+  ivRunning=true;document.getElementById('ivBtn').textContent='\u23f8 Pause';
+  ivInt=setInterval(function(){
+    ivLeft--;
+    if(ivLeft<0){
+      if(ivPhase==='work'){ivPhase='rest';ivLeft=(+document.getElementById('ivRest').value||1)-1;document.getElementById('ivPhase').textContent='\ud83d\ude0c REST';restBeep()}
+      else{ivRound++;if(ivRound>ivTotal){ivStop();document.getElementById('ivPhase').textContent='\u2705 Done!';document.getElementById('ivDisplay').textContent='00:00';document.getElementById('ivBtn').textContent='\u25b6 Start';document.title='Online Stopwatch & Timer - Free | FreeToolHubs';alarm();flash();ivRound=0;return}ivPhase='work';ivLeft=(+document.getElementById('ivWork').value||1)-1;document.getElementById('ivPhase').textContent='\ud83d\udcaa WORK';document.getElementById('ivRoundInfo').textContent='Round '+ivRound+' / '+ivTotal;workBeep()}
+    }
+    document.getElementById('ivDisplay').textContent=ivFmt(Math.max(0,ivLeft));
+    if(currentTab==='iv')document.title=ivFmt(Math.max(0,ivLeft))+(ivPhase==='work'?' \ud83d\udcaa':' \ud83d\ude0c');
+  },1000);
+}
+
+/* ---------- Keyboard shortcuts (stopwatch) ---------- */
+document.addEventListener('keydown',function(e){
+  if(currentTab!=='sw')return;
+  var tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='select'||tag==='textarea')return;
+  if(e.code==='Space'){e.preventDefault();swStart()}
+  else if(e.key==='l'||e.key==='L'){swLap()}
+  else if(e.key==='r'||e.key==='R'){swReset()}
+});
+
+/* ---------- Init ---------- */
+renderTmPresets();tmReset();ivReset();renderHistory();swRestore();
+window.addEventListener('beforeunload',swSave);
   </script>
 </body>
 </html>

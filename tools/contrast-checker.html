@@ -18,24 +18,48 @@
     <div class="tool-section">
       <h1>🎨 Color Contrast Checker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Check if your text and background colors meet WCAG accessibility standards.</p>
-      <div class="row" style="flex-wrap:wrap">
-        <div><label>Text Color</label><br><input type="color" id="fg" value="#000000" oninput="check()" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="fgHex" value="#000000" oninput="document.getElementById('fg').value=this.value;check()" style="width:80px;text-align:center;font-size:.85rem;margin-top:4px"></div>
+      <p class="info">Check if your text and background colors meet WCAG accessibility standards. Accepts HEX, RGB or HSL.</p>
+      <div class="row" style="flex-wrap:wrap;align-items:flex-end">
+        <div><label>Text Color (foreground)</label><br><input type="color" id="fg" value="#000000" oninput="fromPicker('fg')" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="fgHex" value="#000000" oninput="fromText('fg')" style="width:150px;text-align:center;font-size:.85rem;margin-top:4px" placeholder="#000 / rgb / hsl"></div>
         <button class="btn btn-outline" onclick="swap()" style="align-self:center;padding:.5rem">⇄ Swap</button>
-        <div><label>Background Color</label><br><input type="color" id="bg" value="#ffffff" oninput="check()" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="bgHex" value="#ffffff" oninput="document.getElementById('bg').value=this.value;check()" style="width:80px;text-align:center;font-size:.85rem;margin-top:4px"></div>
+        <div><label>Background Color</label><br><input type="color" id="bg" value="#ffffff" oninput="fromPicker('bg')" style="width:60px;height:50px;border:none;cursor:pointer"><br><input type="text" id="bgHex" value="#ffffff" oninput="fromText('bg')" style="width:150px;text-align:center;font-size:.85rem;margin-top:4px" placeholder="#fff / rgb / hsl"></div>
       </div>
-      <div id="preview" style="padding:2rem;border-radius:12px;margin:1rem 0;text-align:center">
-        <div style="font-size:1.5rem;font-weight:700">Large Text Preview (18px+)</div>
-        <div style="font-size:1rem;margin-top:.5rem">Normal text preview — The quick brown fox jumps over the lazy dog. 0123456789</div>
+      <div id="preview" style="padding:1.5rem;border-radius:12px;margin:1rem 0">
+        <div style="font-size:2rem;font-weight:800">Aa Heading 32px Bold</div>
+        <div style="font-size:1.5rem;font-weight:700;margin-top:.3rem">Large Text 24px Bold</div>
+        <div style="font-size:1.125rem;margin-top:.3rem">Body text 18px — The quick brown fox jumps over the lazy dog.</div>
+        <div style="font-size:.875rem;margin-top:.3rem">Small text 14px — 0123456789 accessibility matters for everyone.</div>
+        <div style="margin-top:.8rem"><span id="previewBtn" style="display:inline-block;padding:.6rem 1.4rem;border-radius:10px;font-weight:600">Sample Button</span> <span id="previewBorder" style="display:inline-block;padding:.6rem 1.4rem;border-radius:10px;font-weight:600;background:transparent;border:2px solid">Outlined UI</span></div>
       </div>
       <div id="ratio" style="text-align:center;font-size:2.5rem;font-weight:700;margin:.5rem 0"></div>
-      <div id="results" style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin:1rem 0"></div>
+      <div id="results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0"></div>
+
+      <div id="apca" style="background:var(--card);padding:1rem;border-radius:10px;font-size:.85rem;line-height:1.7;margin:1rem 0"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Suggestions</h3>
+      <div id="suggestions"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Colour-Blindness Simulation</h3>
+      <div id="cvd" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Batch Mode</h3>
+      <p class="info">One pair per line as <code>foreground, background</code> (HEX/RGB/HSL). Example: <code>#333, #fff</code></p>
+      <textarea id="batchInput" placeholder="#333333, #ffffff&#10;rgb(0,0,255), #ffff00"></textarea>
+      <button class="btn" onclick="runBatch()" style="font-size:.85rem">Check Batch</button>
+      <div id="batchOut" style="overflow-x:auto;margin-top:.5rem"></div>
+
+      <h3 style="margin:1.2rem 0 .5rem">Save & Export</h3>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="savePair()" style="font-size:.8rem">💾 Save pair</button><button class="btn btn-outline" onclick="exportResults()" style="font-size:.8rem">📋 Export as text</button><button class="btn btn-outline" onclick="clearPairs()" style="font-size:.8rem">🗑 Clear saved</button></div>
+      <div id="savedPairs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem"></div>
+      <div class="result-box" style="margin-top:.5rem;display:none" id="exportBox"><button class="copy-btn" onclick="copyExportText(this)">Copy</button><pre id="exportText" style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:inherit"></pre></div>
+
       <h3 style="margin:1.5rem 0 .5rem">WCAG Standards</h3>
       <div style="background:var(--card);padding:1rem;border-radius:8px;font-size:.9rem;line-height:1.8">
         <p><strong>AA Normal Text:</strong> Minimum ratio 4.5:1</p>
         <p><strong>AA Large Text (18px+ bold or 24px+):</strong> Minimum ratio 3:1</p>
         <p><strong>AAA Normal Text:</strong> Minimum ratio 7:1</p>
         <p><strong>AAA Large Text:</strong> Minimum ratio 4.5:1</p>
+        <p><strong>Non-text UI components &amp; graphics:</strong> Minimum ratio 3:1</p>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -86,21 +110,126 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function hexToRgb(hex){hex=hex.replace("#","");return{r:parseInt(hex.substr(0,2),16),g:parseInt(hex.substr(2,2),16),b:parseInt(hex.substr(4,2),16)}}
+/* ===== Parsing (HEX/RGB/HSL) ===== */
+function clampC(x,a,b){return Math.max(a,Math.min(b,x))}
+function hslToRgb(h,s,l){h=((h%360)+360)%360;var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;
+  if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+  return{r:Math.round((r+m)*255),g:Math.round((g+m)*255),b:Math.round((b+m)*255)}}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,h=0,s=0;
+  if(mx!==mn){var d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===r)h=((g-b)/d+(g<b?6:0));else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60}
+  return{h:h,s:s,l:l}}
+function toHex2(n){return clampC(Math.round(n),0,255).toString(16).padStart(2,"0")}
+function rgbToHex(r,g,b){return"#"+toHex2(r)+toHex2(g)+toHex2(b)}
+function parseCol(v){if(!v)return null;v=v.trim().toLowerCase();var m;
+  m=v.match(/^#?([0-9a-f]{6})$/);if(m)return{r:parseInt(m[1].slice(0,2),16),g:parseInt(m[1].slice(2,4),16),b:parseInt(m[1].slice(4,6),16)};
+  m=v.match(/^#?([0-9a-f]{3})$/);if(m)return{r:parseInt(m[1][0]+m[1][0],16),g:parseInt(m[1][1]+m[1][1],16),b:parseInt(m[1][2]+m[1][2],16)};
+  m=v.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);if(m)return{r:clampC(+m[1],0,255),g:clampC(+m[2],0,255),b:clampC(+m[3],0,255)};
+  m=v.match(/^hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%/);if(m)return hslToRgb(+m[1],+m[2]/100,+m[3]/100);
+  return null}
+
+/* ===== Contrast maths ===== */
 function luminance(r,g,b){var a=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return a[0]*0.2126+a[1]*0.7152+a[2]*0.0722}
 function contrastRatio(fg,bg){var l1=luminance(fg.r,fg.g,fg.b);var l2=luminance(bg.r,bg.g,bg.b);var lighter=Math.max(l1,l2);var darker=Math.min(l1,l2);return(lighter+0.05)/(darker+0.05)}
-function swap(){var f=document.getElementById("fg").value;var b=document.getElementById("bg").value;document.getElementById("fg").value=b;document.getElementById("bg").value=f;document.getElementById("fgHex").value=b;document.getElementById("bgHex").value=f;check()}
+
+/* ===== APCA-style guidance (Lc estimate, clearly labelled draft) ===== */
+function apcaLc(fg,bg){
+  // Simplified APCA (WCAG 3 draft) estimation — not the exact reference algorithm.
+  function ys(c){var s=[c.r,c.g,c.b].map(function(v){return Math.pow(v/255,2.4)});return 0.2126729*s[0]+0.7151522*s[1]+0.0721750*s[2]}
+  var txt=ys(fg),bgY=ys(bg);var Lc;
+  if(bgY>txt){Lc=(Math.pow(bgY,0.56)-Math.pow(txt,0.57))*1.14}
+  else{Lc=(Math.pow(bgY,0.65)-Math.pow(txt,0.62))*1.14}
+  Lc=Lc*100;
+  if(Math.abs(Lc)<7.5)return 0;
+  return Lc}
+
+/* ===== Colour-blindness matrices (Machado 2009 approx) ===== */
+var CVD={
+  protanopia:[0.567,0.433,0,0.558,0.442,0,0,0.242,0.758],
+  deuteranopia:[0.625,0.375,0,0.7,0.3,0,0,0.3,0.7],
+  tritanopia:[0.95,0.05,0,0,0.433,0.567,0,0.475,0.525],
+  achromatopsia:[0.299,0.587,0.114,0.299,0.587,0.114,0.299,0.587,0.114]
+};
+function simulate(c,type){var m=CVD[type];return{r:clampC(c.r*m[0]+c.g*m[1]+c.b*m[2],0,255),g:clampC(c.r*m[3]+c.g*m[4]+c.b*m[5],0,255),b:clampC(c.r*m[6]+c.g*m[7]+c.b*m[8],0,255)}}
+
+/* ===== Input sync ===== */
+function fromPicker(id){document.getElementById(id+"Hex").value=document.getElementById(id).value;check()}
+function fromText(id){var c=parseCol(document.getElementById(id+"Hex").value);if(c)document.getElementById(id).value=rgbToHex(c.r,c.g,c.b);check()}
+function getFg(){return parseCol(document.getElementById("fgHex").value)||parseCol(document.getElementById("fg").value)}
+function getBg(){return parseCol(document.getElementById("bgHex").value)||parseCol(document.getElementById("bg").value)}
+function swap(){var f=document.getElementById("fgHex").value;var b=document.getElementById("bgHex").value;document.getElementById("fgHex").value=b;document.getElementById("bgHex").value=f;var pc=parseCol(b);if(pc)document.getElementById("fg").value=rgbToHex(pc.r,pc.g,pc.b);var pc2=parseCol(f);if(pc2)document.getElementById("bg").value=rgbToHex(pc2.r,pc2.g,pc2.b);check()}
+
 function badge(pass){return pass?'<span style="background:#4caf50;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">✅ PASS</span>':'<span style="background:#f44336;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">❌ FAIL</span>'}
+function resultCard(label,thr,ratio){return'<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>'+label+'</strong> ('+thr+':1)<br>'+badge(ratio>=thr)+'</div>'}
+
+var lastRatio=1;
 function check(){
-  var fgHex=document.getElementById("fg").value;var bgHex=document.getElementById("bg").value;
-  document.getElementById("fgHex").value=fgHex;document.getElementById("bgHex").value=bgHex;
-  var fg=hexToRgb(fgHex);var bg=hexToRgb(bgHex);
-  var ratio=contrastRatio(fg,bg);
-  document.getElementById("preview").style.background=bgHex;document.getElementById("preview").style.color=fgHex;
-  document.getElementById("ratio").textContent=ratio.toFixed(2)+":1";
-  document.getElementById("ratio").style.color=ratio>=4.5?"#4caf50":ratio>=3?"#ff9800":"#f44336";
-  document.getElementById("results").innerHTML='<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AA Normal Text</strong> (4.5:1)<br>'+badge(ratio>=4.5)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AA Large Text</strong> (3:1)<br>'+badge(ratio>=3)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AAA Normal Text</strong> (7:1)<br>'+badge(ratio>=7)+'</div><div style="background:var(--card);padding:1rem;border-radius:10px"><strong>AAA Large Text</strong> (4.5:1)<br>'+badge(ratio>=4.5)+'</div>';
+  var fg=getFg(),bg=getBg();if(!fg||!bg)return;
+  var fgHex=rgbToHex(fg.r,fg.g,fg.b),bgHex=rgbToHex(bg.r,bg.g,bg.b);
+  var r=contrastRatio(fg,bg);lastRatio=r;
+  var p=document.getElementById("preview");p.style.background=bgHex;p.style.color=fgHex;
+  var pb=document.getElementById("previewBtn");pb.style.background=fgHex;pb.style.color=bgHex;
+  var pborder=document.getElementById("previewBorder");pborder.style.color=fgHex;pborder.style.borderColor=fgHex;
+  document.getElementById("ratio").textContent=r.toFixed(2)+":1";
+  document.getElementById("ratio").style.color=r>=4.5?"#4caf50":r>=3?"#ff9800":"#f44336";
+  document.getElementById("results").innerHTML=resultCard("AA Normal",4.5,r)+resultCard("AA Large",3,r)+resultCard("AAA Normal",7,r)+resultCard("AAA Large",4.5,r)+resultCard("UI Components",3,r);
+  renderApca(fg,bg);
+  renderSuggestions(fg,bg,r);
+  renderCvd(fg,bg);
 }
+
+function renderApca(fg,bg){var lc=apcaLc(fg,bg);var abs=Math.abs(lc);var guide;
+  if(abs<15)guide="Not usable for text — barely any perceptual contrast.";
+  else if(abs<30)guide="Only for large/non-essential text or disabled elements.";
+  else if(abs<45)guide="Large headline text (≈36px+) only.";
+  else if(abs<60)guide="Larger body / sub-headline text.";
+  else if(abs<75)guide="Body text at normal weights is comfortable.";
+  else guide="Strong contrast — fine for small and thin text.";
+  document.getElementById("apca").innerHTML='<strong>APCA perceptual guidance (WCAG 3 draft — experimental):</strong> Estimated Lc ≈ <strong>'+lc.toFixed(1)+'</strong>. '+guide+' <br><span style="color:var(--text2)">This is the newer draft method and is shown as an approximation, not the exact reference algorithm. The WCAG 2 ratio above (which considers colour polarity differently) can mislead because it does not model how the human eye perceives light vs dark text, spatial frequency (font size/weight), or non-linear luminance the way APCA attempts to. Use both as guidance and always test with real users.</span>';}
+
+function adjustLightness(base,targetBg,minRatio){
+  // Search lightness of base colour to reach minRatio against targetBg
+  var hsl=rgbToHsl(base.r,base.g,base.b);var best=null;
+  for(var dir=0;dir<2;dir++){
+    for(var step=0;step<=100;step++){
+      var l=dir===0?clampC(hsl.l-step/100,0,1):clampC(hsl.l+step/100,0,1);
+      var c=hslToRgb(hsl.h,hsl.s,l);
+      if(contrastRatio(c,targetBg)>=minRatio){var hx=rgbToHex(c.r,c.g,c.b);best=best||[];best.push(hx);break}
+    }
+  }
+  return best?best.filter(function(v,i,a){return a.indexOf(v)===i}):[]}
+function renderSuggestions(fg,bg,r){var el=document.getElementById("suggestions");
+  if(r>=4.5){el.innerHTML='<p class="info">✅ This pair passes AA normal text. No adjustment needed.</p>';return}
+  var opts=[];
+  adjustLightness(fg,bg,4.5).forEach(function(hx){opts.push({label:"Adjust text",fg:hx,bg:rgbToHex(bg.r,bg.g,bg.b)})});
+  adjustLightness(bg,fg,4.5).forEach(function(hx){opts.push({label:"Adjust bg",fg:rgbToHex(fg.r,fg.g,fg.b),bg:hx})});
+  if(!opts.length){el.innerHTML='<p class="info">Could not find a passing variant by lightness alone — try different hues.</p>';return}
+  el.innerHTML='<p class="info">This pair fails AA normal. One-click apply a passing alternative:</p><div style="display:flex;flex-wrap:wrap;gap:.5rem">'+opts.map(function(o){var pr=contrastRatio(parseCol(o.fg),parseCol(o.bg));return'<div style="border:1px solid rgba(128,128,128,.3);border-radius:10px;overflow:hidden;min-width:150px"><div style="background:'+o.bg+';color:'+o.fg+';padding:.6rem;font-weight:700">'+o.label+' — '+pr.toFixed(2)+':1</div><button class="btn btn-outline" style="width:100%;font-size:.75rem;margin:0;border-radius:0" onclick="applyPair(\''+o.fg+'\',\''+o.bg+'\')">Apply</button></div>'}).join("")+'</div>'}
+function applyPair(fgHex,bgHex){document.getElementById("fgHex").value=fgHex;document.getElementById("bgHex").value=bgHex;document.getElementById("fg").value=fgHex;document.getElementById("bg").value=bgHex;check()}
+
+function renderCvd(fg,bg){var types=[["normal","Normal vision"],["protanopia","Protanopia"],["deuteranopia","Deuteranopia"],["tritanopia","Tritanopia"],["achromatopsia","Achromatopsia"]];
+  document.getElementById("cvd").innerHTML=types.map(function(t){var sf=t[0]==="normal"?fg:simulate(fg,t[0]);var sb=t[0]==="normal"?bg:simulate(bg,t[0]);var pr=contrastRatio(sf,sb);
+    return'<div style="border-radius:10px;overflow:hidden;border:1px solid rgba(128,128,128,.25)"><div style="background:'+rgbToHex(sb.r,sb.g,sb.b)+';color:'+rgbToHex(sf.r,sf.g,sf.b)+';padding:.8rem;text-align:center;font-weight:600">Sample<br><span style="font-size:.8rem">'+pr.toFixed(2)+':1</span></div><div style="font-size:.72rem;text-align:center;padding:.3rem;color:var(--text2)">'+t[1]+'</div></div>'}).join("")}
+
+/* ===== Batch ===== */
+function runBatch(){var lines=document.getElementById("batchInput").value.split(/\n/).map(function(l){return l.trim()}).filter(Boolean);
+  if(!lines.length){document.getElementById("batchOut").innerHTML='<p class="info">Paste some pairs first.</p>';return}
+  var rows=lines.map(function(l){var parts=l.split(/[,;\t]/).map(function(x){return x.trim()});var fg=parseCol(parts[0]),bg=parseCol(parts[1]);
+    if(!fg||!bg)return'<tr><td colspan="6" style="color:#f44336">Invalid: '+l.replace(/</g,"&lt;")+'</td></tr>';
+    var r=contrastRatio(fg,bg);var fh=rgbToHex(fg.r,fg.g,fg.b),bh=rgbToHex(bg.r,bg.g,bg.b);var mk=function(t){return r>=t?'✅':'❌'};
+    return'<tr><td style="padding:.4rem;background:'+bh+';color:'+fh+'">'+fh+' / '+bh+'</td><td style="padding:.4rem;text-align:center">'+r.toFixed(2)+'</td><td style="text-align:center">'+mk(4.5)+'</td><td style="text-align:center">'+mk(3)+'</td><td style="text-align:center">'+mk(7)+'</td><td style="text-align:center">'+mk(4.5)+'</td></tr>'}).join("");
+  document.getElementById("batchOut").innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.8rem;background:var(--card);border-radius:8px"><thead><tr style="text-align:left"><th style="padding:.4rem">Pair</th><th>Ratio</th><th>AA</th><th>AA Lg</th><th>AAA</th><th>AAA Lg</th></tr></thead><tbody>'+rows+'</tbody></table>'}
+
+/* ===== Save / export ===== */
+function getPairs(){try{return JSON.parse(localStorage.getItem("ccPairs")||"[]")}catch(e){return[]}}
+function savePair(){var fg=getFg(),bg=getBg();if(!fg||!bg)return;var p=getPairs();var entry={fg:rgbToHex(fg.r,fg.g,fg.b),bg:rgbToHex(bg.r,bg.g,bg.b)};if(!p.some(function(x){return x.fg===entry.fg&&x.bg===entry.bg})){p.unshift(entry);p=p.slice(0,30);localStorage.setItem("ccPairs",JSON.stringify(p))}renderPairs()}
+function clearPairs(){localStorage.removeItem("ccPairs");renderPairs()}
+function renderPairs(){document.getElementById("savedPairs").innerHTML=getPairs().map(function(p){return'<div onclick="applyPair(\''+p.fg+'\',\''+p.bg+'\')" title="'+p.fg+' on '+p.bg+'" style="cursor:pointer;background:'+p.bg+';color:'+p.fg+';padding:.4rem .7rem;border-radius:8px;font-size:.75rem;border:1px solid rgba(128,128,128,.3)">Aa</div>'}).join("")||'<span class="info">No saved pairs.</span>'}
+function exportResults(){var fg=getFg(),bg=getBg();var r=contrastRatio(fg,bg);var fh=rgbToHex(fg.r,fg.g,fg.b),bh=rgbToHex(bg.r,bg.g,bg.b);var lc=apcaLc(fg,bg);
+  var txt="Contrast Report\n================\nForeground: "+fh+"\nBackground: "+bh+"\nWCAG 2 ratio: "+r.toFixed(2)+":1\n\nAA Normal (4.5): "+(r>=4.5?"PASS":"FAIL")+"\nAA Large (3.0): "+(r>=3?"PASS":"FAIL")+"\nAAA Normal (7.0): "+(r>=7?"PASS":"FAIL")+"\nAAA Large (4.5): "+(r>=4.5?"PASS":"FAIL")+"\nUI Components (3.0): "+(r>=3?"PASS":"FAIL")+"\n\nAPCA Lc (draft): "+lc.toFixed(1);
+  document.getElementById("exportText").textContent=txt;document.getElementById("exportBox").style.display="block"}
+function copyExportText(btn){copyText(document.getElementById("exportText").textContent,btn)}
+
+renderPairs();
 check();
   </script>
 </body>

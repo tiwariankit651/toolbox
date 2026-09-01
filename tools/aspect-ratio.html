@@ -10,7 +10,26 @@
   <meta property="og:title" content="Aspect Ratio Calculator — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/aspect-ratio"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Aspect Ratio Calculator","url":"https://freetoolhubs.com/tools/aspect-ratio","description":"Calculate aspect ratio for images and videos","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/aspect-ratio"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-</head>
+  <style>
+    .ar-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+    .chip{padding:.4rem .9rem;border:1px solid var(--accent);border-radius:20px;background:rgba(99,102,241,.08);color:var(--accent);cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s}
+    .chip:hover{background:var(--accent);color:#fff;transform:translateY(-1px)}
+    .chip.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .chip-wrap{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
+    .ar-sub{font-weight:700;font-size:.85rem;color:var(--accent2);margin:.9rem 0 .3rem}
+    .ar-preview-wrap{display:flex;align-items:center;justify-content:center;min-height:230px;background:var(--card);border-radius:12px;padding:1rem;margin:1rem 0;position:relative;overflow:hidden}
+    .ar-box{border:2px solid var(--accent);border-radius:4px;background:rgba(99,102,241,.12);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--text2);position:relative}
+    .ar-box.cmp{border-style:dashed;border-color:var(--accent2);background:rgba(139,92,246,.12);position:absolute}
+    .ar-result{background:var(--card);padding:1rem;border-radius:12px;margin:1rem 0;text-align:center}
+    .ar-big{font-size:1.6rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .plat-group{margin:.5rem 0}
+    .ar-panel{display:none}
+    .ar-panel.active{display:block}
+    .crop-bar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:.5rem 0;border:1px solid rgba(148,148,184,.2)}
+    .crop-keep{background:rgba(76,175,80,.4);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text)}
+    .crop-cut{background:rgba(244,67,54,.35);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text)}
+    @media(max-width:600px){.ar-preview-wrap{min-height:180px}}
+  </style>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
@@ -18,21 +37,75 @@
     <div class="tool-section">
       <h1>📐 Aspect Ratio Calculator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Enter width or height to calculate the other dimension while maintaining aspect ratio.</p>
-      <div class="row"><label>Ratio:</label><input type="number" id="rw" value="16" style="width:60px" oninput="calc()"><span style="font-size:1.3rem;padding:0 .3rem">:</span><input type="number" id="rh" value="9" style="width:60px" oninput="calc()"></div>
-      <div class="row"><label>Width (px):</label><input type="number" id="w" value="1920" oninput="calcFromW()" style="flex:2"><label>Height (px):</label><input type="number" id="h" value="1080" oninput="calcFromH()" style="flex:2"></div>
-      <div id="result" style="background:var(--card);padding:1rem;border-radius:12px;margin:1rem 0;text-align:center"></div>
-      <div id="preview" style="margin:1rem auto;border:2px solid var(--accent);border-radius:4px;max-width:300px"></div>
-      <h3 style="margin:1.5rem 0 .5rem">Common Presets</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">
-        <button class="btn btn-outline" onclick="setRatio(16,9,1920,1080)">16:9 — YouTube/HD</button>
-        <button class="btn btn-outline" onclick="setRatio(1,1,1080,1080)">1:1 — Instagram Post</button>
-        <button class="btn btn-outline" onclick="setRatio(4,5,1080,1350)">4:5 — Instagram Portrait</button>
-        <button class="btn btn-outline" onclick="setRatio(9,16,1080,1920)">9:16 — Reels/Shorts</button>
-        <button class="btn btn-outline" onclick="setRatio(4,3,1024,768)">4:3 — Presentation</button>
-        <button class="btn btn-outline" onclick="setRatio(3,2,1500,1000)">3:2 — Photography</button>
-        <button class="btn btn-outline" onclick="setRatio(21,9,2560,1080)">21:9 — Ultrawide</button>
-        <button class="btn btn-outline" onclick="setRatio(2,3,800,1200)">2:3 — Pinterest</button>
+      <p class="info">Calculate any missing dimension, snap to platform presets, preview and compare ratios to scale, plan crops, and scale images — all in your browser.</p>
+
+      <div class="ar-tabs">
+        <button class="chip active" id="tCalc" onclick="setTab('calc')">📐 Calculator</button>
+        <button class="chip" id="tScale" onclick="setTab('scale')">🔧 Scale</button>
+        <button class="chip" id="tCrop" onclick="setTab('crop')">✂️ Crop Planner</button>
+      </div>
+
+      <!-- CALCULATOR PANEL -->
+      <div id="panelCalc" class="ar-panel active">
+        <div class="row">
+          <label style="flex:0">Ratio:</label>
+          <input type="number" id="rw" value="16" style="width:70px;flex:0" oninput="onRatio()">
+          <span style="font-size:1.3rem;padding:0 .3rem">:</span>
+          <input type="number" id="rh" value="9" style="width:70px;flex:0" oninput="onRatio()">
+          <label style="flex:0;white-space:nowrap;margin-left:.6rem"><input type="checkbox" id="lockRatio" checked style="width:auto"> 🔒 Lock ratio</label>
+        </div>
+        <div class="row">
+          <label style="flex:0">Width (px):</label><input type="number" id="w" value="1920" oninput="calcFromW()">
+          <label style="flex:0">Height (px):</label><input type="number" id="h" value="1080" oninput="calcFromH()">
+        </div>
+        <div id="result" class="ar-result"></div>
+
+        <div class="ar-preview-wrap" id="previewWrap"></div>
+        <div class="row"><label style="flex:0;white-space:nowrap"><input type="checkbox" id="cmpToggle" style="width:auto" onchange="toggleCompare()"> Compare with</label>
+          <input type="number" id="cw" value="4" style="width:70px;flex:0" oninput="calc()"><span style="padding:0 .3rem">:</span><input type="number" id="ch" value="3" style="width:70px;flex:0" oninput="calc()">
+        </div>
+
+        <div class="ar-sub">Common Ratio Presets</div>
+        <div class="chip-wrap" id="ratioChips"></div>
+
+        <div class="ar-sub">Platform Presets (exact pixels)</div>
+        <div id="platformChips"></div>
+
+        <div class="row" style="margin-top:1rem">
+          <button class="btn" onclick="copyResult()">📋 Copy Result</button>
+          <a class="btn btn-outline" href="/tools/image-resizer" style="text-decoration:none;text-align:center">🖼️ Image Resizer</a>
+          <a class="btn btn-outline" href="/tools/collage-maker" style="text-decoration:none;text-align:center">🧩 Collage Maker</a>
+        </div>
+      </div>
+
+      <!-- SCALE PANEL -->
+      <div id="panelScale" class="ar-panel">
+        <p class="info">Enter original dimensions, then scale by target width, target height, or a percentage — the ratio is preserved.</p>
+        <div class="row">
+          <label style="flex:0">Original W:</label><input type="number" id="sOrigW" value="1920" oninput="doScale()">
+          <label style="flex:0">Original H:</label><input type="number" id="sOrigH" value="1080" oninput="doScale()">
+        </div>
+        <div class="row">
+          <label style="flex:0;white-space:nowrap">Scale by:</label>
+          <select id="scaleMode" style="flex:0;min-width:150px" onchange="doScale()"><option value="pct">Percentage</option><option value="w">Target Width</option><option value="h">Target Height</option></select>
+          <input type="number" id="scaleVal" value="50" oninput="doScale()">
+        </div>
+        <div id="scaleResult" class="ar-result"></div>
+        <button class="btn" onclick="copyScale()">📋 Copy Scaled Size</button>
+      </div>
+
+      <!-- CROP PLANNER PANEL -->
+      <div id="panelCrop" class="ar-panel">
+        <p class="info">Given a source image and a target ratio, see whether you'll letterbox (fit) or crop (fill), and exactly how many pixels get added or cut.</p>
+        <div class="row">
+          <label style="flex:0">Source W:</label><input type="number" id="cropW" value="1920" oninput="doCrop()">
+          <label style="flex:0">Source H:</label><input type="number" id="cropH" value="1080" oninput="doCrop()">
+        </div>
+        <div class="row">
+          <label style="flex:0">Target ratio:</label><input type="number" id="cropRW" value="1" style="width:70px;flex:0" oninput="doCrop()"><span style="padding:0 .3rem">:</span><input type="number" id="cropRH" value="1" style="width:70px;flex:0" oninput="doCrop()">
+        </div>
+        <div class="chip-wrap" id="cropRatioChips"></div>
+        <div id="cropResult" class="ar-result"></div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -52,7 +125,7 @@
 <li>Determining crop dimensions for print photography</li>
 </ul>
 </div>
-<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Calculate and maintain correct aspect ratios for images and videos. Enter any width or height and get the matching dimension automatically. Essential for content creators making YouTube thumbnails (16:9), Instagram posts (1:1), Reels (9:16), presentations (4:3), and more. Includes 8 quick presets for popular platforms. Also calculates the simplified ratio from any dimensions. Useful for web designers, video editors, photographers, and social media managers who need pixel-perfect dimensions.</p>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Calculate and maintain correct aspect ratios for images and videos. Enter any two of width, height, or ratio and get the missing value, with a lock toggle. Includes clickable presets for every common ratio (16:9, 9:16, 4:3, 1:1, 21:9, golden ratio, A-series, cinema 1.85:1 and 2.39:1, and more) plus exact-pixel platform presets for YouTube, Instagram, Facebook, Twitter/X, LinkedIn, Pinterest, WhatsApp, and print sizes. A live preview renders the chosen ratio to scale and can overlay a second ratio for comparison. The scale calculator resizes by width, height, or percentage while preserving the ratio, and the crop planner shows exactly what gets cropped or letterboxed for a target ratio. It also simplifies any ratio to lowest terms and reports the decimal ratio and megapixels. Useful for web designers, video editors, photographers, and social media managers who need pixel-perfect dimensions.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
 <li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
@@ -93,21 +166,198 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-function gcd(a,b){return b?gcd(b,a%b):a}
-function setRatio(rw,rh,w,h){document.getElementById("rw").value=rw;document.getElementById("rh").value=rh;document.getElementById("w").value=w;document.getElementById("h").value=h;calc()}
-function calcFromW(){var rw=+document.getElementById("rw").value,rh=+document.getElementById("rh").value,w=+document.getElementById("w").value;if(rw&&rh&&w){document.getElementById("h").value=Math.round(w*rh/rw)}calc()}
-function calcFromH(){var rw=+document.getElementById("rw").value,rh=+document.getElementById("rh").value,h=+document.getElementById("h").value;if(rw&&rh&&h){document.getElementById("w").value=Math.round(h*rw/rh)}calc()}
-function calc(){
-  var w=+document.getElementById("w").value,h=+document.getElementById("h").value;
-  if(!w||!h)return;
-  var g=gcd(w,h);var rw=w/g,rh=h/g;
-  if(rw>100){var r=w/h;if(Math.abs(r-16/9)<0.02){rw=16;rh=9}else if(Math.abs(r-4/3)<0.02){rw=4;rh=3}else if(Math.abs(r-1)<0.02){rw=1;rh=1}else{rw=r.toFixed(2);rh=1}}
-  document.getElementById("result").innerHTML='<div style="font-size:1.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+rw+' : '+rh+'</div><div class="info">'+w+' × '+h+' pixels</div>';
-  var maxW=300,scale=Math.min(maxW/w,200/h,1);
-  document.getElementById("preview").style.width=Math.max(w*scale,40)+"px";
-  document.getElementById("preview").style.height=Math.max(h*scale,30)+"px";
+function gcd(a,b){a=Math.abs(Math.round(a));b=Math.abs(Math.round(b));return b?gcd(b,a%b):a;}
+function $(id){return document.getElementById(id);}
+
+/* preset data */
+var RATIO_PRESETS=[
+  {l:'16:9',rw:16,rh:9},{l:'9:16',rw:9,rh:16},{l:'4:3',rw:4,rh:3},{l:'3:4',rw:3,rh:4},
+  {l:'1:1',rw:1,rh:1},{l:'21:9',rw:21,rh:9},{l:'2:1',rw:2,rh:1},{l:'3:2',rw:3,rh:2},
+  {l:'2:3',rw:2,rh:3},{l:'5:4',rw:5,rh:4},{l:'Golden φ',rw:1.618,rh:1},
+  {l:'A4/A-series',rw:1.4142,rh:1},{l:'Cinema 1.85:1',rw:1.85,rh:1},{l:'Cinema 2.39:1',rw:2.39,rh:1}
+];
+var PLATFORMS=[
+  {g:'YouTube',items:[['Thumbnail',1280,720],['Video (HD)',1920,1080],['Video (4K)',3840,2160]]},
+  {g:'Instagram',items:[['Square',1080,1080],['Portrait',1080,1350],['Story',1080,1920],['Reel',1080,1920]]},
+  {g:'Facebook',items:[['Post',1200,630],['Cover',820,312],['Story',1080,1920]]},
+  {g:'Twitter / X',items:[['Post',1600,900],['Header',1500,500]]},
+  {g:'LinkedIn',items:[['Post',1200,627],['Banner',1584,396]]},
+  {g:'Pinterest',items:[['Pin',1000,1500]]},
+  {g:'WhatsApp',items:[['Status',1080,1920]]},
+  {g:'Print',items:[['4×6 in',1800,1200],['5×7 in',2100,1500],['8×10 in',3000,2400],['A4 300dpi',2480,3508]]}
+];
+
+function buildChips(){
+  var rc=$('ratioChips');
+  rc.innerHTML=RATIO_PRESETS.map(function(p,i){
+    return '<span class="chip" onclick="applyRatioPreset('+p.rw+','+p.rh+')">'+p.l+'</span>';
+  }).join('');
+  var pc=$('platformChips');
+  pc.innerHTML=PLATFORMS.map(function(grp){
+    return '<div class="plat-group"><div class="ar-sub" style="margin:.5rem 0 .2rem;color:var(--text2)">'+grp.g+'</div><div class="chip-wrap">'+
+      grp.items.map(function(it){return '<span class="chip" onclick="applyPlatform('+it[1]+','+it[2]+')">'+it[0]+' · '+it[1]+'×'+it[2]+'</span>';}).join('')+
+      '</div></div>';
+  }).join('');
+  var cc=$('cropRatioChips');
+  cc.innerHTML=RATIO_PRESETS.map(function(p){
+    return '<span class="chip" onclick="setCropRatio('+p.rw+','+p.rh+')">'+p.l+'</span>';
+  }).join('');
 }
+
+/* tabs */
+function setTab(t){
+  ['calc','scale','crop'].forEach(function(k){
+    $('panel'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('active',k===t);
+    $('t'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('active',k===t);
+  });
+}
+
+/* ---- calculator ---- */
+function applyRatioPreset(rw,rh){
+  $('rw').value=rw;$('rh').value=rh;
+  var w=+$('w').value;
+  if(w&&rw&&rh)$('h').value=Math.round(w*rh/rw);
+  calc();
+}
+function applyPlatform(w,h){
+  $('w').value=w;$('h').value=h;
+  var g=gcd(w,h);$('rw').value=w/g;$('rh').value=h/g;
+  calc();
+}
+function onRatio(){
+  if($('lockRatio').checked){var rw=+$('rw').value,rh=+$('rh').value,w=+$('w').value;if(rw&&rh&&w)$('h').value=Math.round(w*rh/rw);}
+  calc();
+}
+function calcFromW(){
+  if($('lockRatio').checked){var rw=+$('rw').value,rh=+$('rh').value,w=+$('w').value;if(rw&&rh&&w)$('h').value=Math.round(w*rh/rw);}
+  else updateRatioFromDims();
+  calc();
+}
+function calcFromH(){
+  if($('lockRatio').checked){var rw=+$('rw').value,rh=+$('rh').value,h=+$('h').value;if(rw&&rh&&h)$('w').value=Math.round(h*rw/rh);}
+  else updateRatioFromDims();
+  calc();
+}
+function updateRatioFromDims(){
+  var w=+$('w').value,h=+$('h').value;if(w&&h){var g=gcd(w,h);$('rw').value=w/g;$('rh').value=h/g;}
+}
+
+function simplifyRatio(w,h){
+  var g=gcd(w,h);
+  if(g>0&&w/g<=50&&h/g<=50)return (w/g)+':'+(h/g);
+  var r=w/h;
+  // try match common non-integer ratios
+  var known=[[16,9],[4,3],[3,2],[21,9],[1,1],[2.39,1],[1.85,1],[1.618,1],[1.4142,1]];
+  for(var i=0;i<known.length;i++){if(Math.abs(r-known[i][0]/known[i][1])<0.01)return known[i][0]+':'+known[i][1];}
+  return r.toFixed(3)+':1';
+}
+
+function calc(){
+  var w=+$('w').value,h=+$('h').value;
+  if(!w||!h){$('result').innerHTML='<span class="info">Enter width and height.</span>';drawPreview(0,0);return;}
+  var ratio=simplifyRatio(w,h);
+  var dec=(w/h).toFixed(4);
+  var mp=(w*h/1e6).toFixed(2);
+  $('result').innerHTML='<div class="ar-big">'+ratio+'</div>'+
+    '<div class="info">'+w+' × '+h+' px &nbsp;·&nbsp; decimal '+dec+':1 &nbsp;·&nbsp; '+mp+' MP</div>';
+  drawPreview(w,h);
+}
+
+function drawPreview(w,h){
+  var wrap=$('previewWrap');
+  if(!w||!h){wrap.innerHTML='';return;}
+  var maxW=Math.min(wrap.clientWidth-32,420)||300, maxH=200;
+  var scale=Math.min(maxW/w,maxH/h,1);
+  var bw=Math.max(w*scale,24),bh=Math.max(h*scale,18);
+  var html='<div class="ar-box" style="width:'+bw+'px;height:'+bh+'px">'+simplifyRatio(w,h)+'</div>';
+  if($('cmpToggle').checked){
+    var cw=+$('cw').value,ch=+$('ch').value;
+    if(cw&&ch){
+      // scale comparison box to same width for overlay comparison
+      var cScale=Math.min(maxW/cw,maxH/ch,1);
+      // match the larger dimension basis so overlap is meaningful: scale by same factor as main using width
+      var cbw=Math.max(cw*scale,24),cbh=Math.max(ch*scale,18);
+      // cap to preview
+      cbw=Math.min(cbw,maxW);cbh=Math.min(cbh,maxH);
+      html+='<div class="ar-box cmp" style="width:'+cbw+'px;height:'+cbh+'px">'+simplifyRatio(cw,ch)+'</div>';
+    }
+  }
+  wrap.innerHTML=html;
+}
+function toggleCompare(){calc();}
+
+function copyResult(){
+  var w=+$('w').value,h=+$('h').value;
+  if(!w||!h)return;
+  var txt=w+' × '+h+' px ('+simplifyRatio(w,h)+', '+(w*h/1e6).toFixed(2)+' MP)';
+  navigator.clipboard.writeText(txt);toast('📋 Copied: '+txt);
+}
+
+/* ---- scale ---- */
+function doScale(){
+  var ow=+$('sOrigW').value,oh=+$('sOrigH').value,mode=$('scaleMode').value,val=+$('scaleVal').value;
+  if(!ow||!oh){$('scaleResult').innerHTML='<span class="info">Enter original dimensions.</span>';return;}
+  var nw,nh,factor;
+  if(mode==='pct'){factor=val/100;nw=Math.round(ow*factor);nh=Math.round(oh*factor);}
+  else if(mode==='w'){nw=val;factor=nw/ow;nh=Math.round(oh*factor);}
+  else{nh=val;factor=nh/oh;nw=Math.round(ow*factor);}
+  var pxRatio=(nw*nh)/(ow*oh);
+  var note=pxRatio>1?'~'+(pxRatio).toFixed(2)+'× more pixels (larger file)':'~'+(pxRatio*100).toFixed(0)+'% of original pixels (smaller file)';
+  $('scaleResult').innerHTML='<div class="ar-big">'+nw+' × '+nh+' px</div>'+
+    '<div class="info">Scale factor '+factor.toFixed(3)+' &nbsp;·&nbsp; ratio preserved ('+simplifyRatio(ow,oh)+')<br>Estimated file size: '+note+'</div>';
+  window._scaleTxt=nw+' × '+nh+' px';
+}
+function copyScale(){if(window._scaleTxt){navigator.clipboard.writeText(window._scaleTxt);toast('📋 Copied: '+window._scaleTxt);}}
+
+/* ---- crop planner ---- */
+function setCropRatio(rw,rh){$('cropRW').value=rw;$('cropRH').value=rh;doCrop();}
+function doCrop(){
+  var sw=+$('cropW').value,sh=+$('cropH').value,rw=+$('cropRW').value,rh=+$('cropRH').value;
+  if(!sw||!sh||!rw||!rh){$('cropResult').innerHTML='<span class="info">Enter source size and target ratio.</span>';return;}
+  var srcR=sw/sh, tgtR=rw/rh;
+  var cropW,cropH,fitW,fitH,html;
+  // CROP (fill): keep one dim, cut the other
+  if(srcR>tgtR){ // source wider -> crop sides
+    cropH=sh;cropW=Math.round(sh*tgtR);
+    var cut=sw-cropW, keep=cropW;
+    html='<div class="ar-big">Crop to fill: '+cropW+' × '+cropH+'</div>'+
+      '<div class="info">Source is wider than target. Cropping the <strong>sides</strong>: '+cut+' px removed horizontally ('+(cut/sw*100).toFixed(1)+'% of width).</div>'+
+      cropBar(keep,cut,'width');
+  } else if(srcR<tgtR){ // source taller -> crop top/bottom
+    cropW=sw;cropH=Math.round(sw/tgtR);
+    var cutV=sh-cropH;
+    html='<div class="ar-big">Crop to fill: '+cropW+' × '+cropH+'</div>'+
+      '<div class="info">Source is taller than target. Cropping <strong>top &amp; bottom</strong>: '+cutV+' px removed vertically ('+(cutV/sh*100).toFixed(1)+'% of height).</div>'+
+      cropBar(cropH,cutV,'height');
+  } else {
+    html='<div class="ar-big">Perfect fit</div><div class="info">Source already matches the target ratio — no cropping needed.</div>';
+  }
+  // LETTERBOX (fit): add bars
+  var lbHtml;
+  if(srcR>tgtR){ // fit width, bars top/bottom
+    fitW=sw;fitH=Math.round(sw/tgtR);var barV=fitH-sh;
+    lbHtml='<div class="info" style="margin-top:.6rem">Letterbox (fit whole image): canvas '+fitW+' × '+fitH+', add '+barV+' px of bars top+bottom.</div>';
+  } else if(srcR<tgtR){
+    fitH=sh;fitW=Math.round(sh*tgtR);var barH=fitW-sw;
+    lbHtml='<div class="info" style="margin-top:.6rem">Letterbox (fit whole image): canvas '+fitW+' × '+fitH+', add '+barH+' px of bars left+right.</div>';
+  } else lbHtml='';
+  $('cropResult').innerHTML=html+lbHtml;
+}
+function cropBar(keep,cut,dim){
+  var total=keep+cut;if(!total)return '';
+  var kp=(keep/total*100).toFixed(1),cp=(cut/total*100).toFixed(1);
+  return '<div class="crop-bar"><div class="crop-keep" style="width:'+kp+'%">keep '+kp+'%</div><div class="crop-cut" style="width:'+cp+'%">cut '+cp+'%</div></div>';
+}
+
+/* toast helper */
+function toast(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999';document.body.appendChild(t);setTimeout(function(){t.remove();},1800);}
+
+/* init */
+buildChips();
 calc();
+doScale();
+doCrop();
+window.addEventListener('resize',function(){calc();});
   </script>
 </body>
 </html>

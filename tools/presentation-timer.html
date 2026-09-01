@@ -18,21 +18,54 @@
     <div class="tool-section">
       <h1>⏱️ Presentation Timer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Time your presentations with section alerts, color-coded countdown, and pace analysis.</p>
-      <div class="row"><label>Total Time (minutes):</label><input type="number" id="totalTime" value="10" min="1" style="flex:2"></div>
-      <div class="row"><label>Number of Sections/Slides:</label><input type="number" id="sections" value="5" min="1" style="flex:2"></div>
-      <div class="row"><label><input type="checkbox" id="practiceMode"> Practice Mode (click Next Slide to record timestamps)</label></div>
-      <button class="btn" onclick="startTimer()" style="width:100%;margin-top:.5rem">▶️ Start</button>
+      <p class="info">Time your presentations with section breakdown, traffic-light warnings, fullscreen presenter view, speaker notes, and overtime tracking. <strong>Note: closing or refreshing the tab will lose a running timer.</strong></p>
+
+      <div id="setup">
+        <div class="row"><label style="flex:1">Preset:</label>
+          <select id="preset" onchange="applyPreset()" style="flex:2">
+            <option value="">— Choose a format —</option>
+            <option value="pitch">3-min Pitch</option>
+            <option value="lightning">5-min Lightning Talk</option>
+            <option value="conference">10-min Conference Talk</option>
+            <option value="ted">20-min TED-style</option>
+            <option value="lecture">45-min Lecture</option>
+            <option value="viva">Viva / Defence (30 min)</option>
+            <option value="classroom">Classroom Period (50 min)</option>
+          </select>
+        </div>
+        <div class="row"><label style="flex:1">Warning threshold (min before end):</label><input type="number" id="warnMin" value="2" min="0" step="0.5" style="flex:2"></div>
+        <div class="row"><label><input type="checkbox" id="cueSound" checked> Audible cues at section changes & warning</label></div>
+
+        <h3 style="margin-top:1rem">📋 Sections</h3>
+        <div id="sectionList"></div>
+        <div class="row" style="gap:.4rem"><button class="btn btn-outline" onclick="addSection()" style="font-size:.85rem">+ Add Section</button></div>
+        <div id="totalInfo" class="info"></div>
+
+        <div class="row"><label style="flex:1">Show in presenter view:</label>
+          <select id="showMode" style="flex:2">
+            <option value="both">Elapsed + Remaining</option>
+            <option value="remaining">Remaining only</option>
+            <option value="elapsed">Elapsed only</option>
+          </select>
+        </div>
+        <button class="btn" onclick="startTimer()" style="width:100%;margin-top:.5rem">▶️ Start Presentation</button>
+      </div>
+
       <div id="timerDisplay" style="display:none;margin-top:1.5rem;text-align:center">
-        <div id="countdown" style="font-size:4rem;font-weight:700;font-family:monospace;padding:1rem;border-radius:16px;background:var(--card)">00:00</div>
-        <div id="sectionInfo" style="margin-top:.5rem;font-size:1.1rem;color:var(--text2)"></div>
+        <div id="segbar" style="display:flex;height:16px;border-radius:8px;overflow:hidden;margin-bottom:1rem;gap:2px"></div>
+        <div id="countdown" style="font-size:clamp(3rem,16vw,6rem);font-weight:700;font-family:monospace;padding:1rem;border-radius:16px;background:var(--card)">00:00</div>
+        <div id="elapsedInfo" style="margin-top:.3rem;font-size:1rem;color:var(--text2)"></div>
+        <div id="sectionInfo" style="margin-top:.5rem;font-size:1.2rem;color:var(--text2)"></div>
+        <div id="notesPanel" style="margin-top:.8rem;padding:.8rem;background:var(--card);border-radius:12px;text-align:left;min-height:2rem;white-space:pre-wrap"></div>
         <div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
           <button class="btn" onclick="pauseResume()" id="pauseBtn">⏸️ Pause</button>
-          <button class="btn btn-outline" onclick="nextSlide()" id="nextBtn">⏭️ Next Slide</button>
+          <button class="btn btn-outline" onclick="nextSection()" id="nextBtn">⏭️ Next Section</button>
+          <button class="btn btn-outline" onclick="toggleFullscreen()">⛶ Fullscreen</button>
           <button class="btn btn-outline" onclick="resetTimer()">🔄 Reset</button>
         </div>
       </div>
-      <div id="analysis" style="display:none;margin-top:1.5rem"></div>
+
+      <div class="info" style="margin-top:1rem"><strong>⌨️ Shortcuts:</strong> <kbd>Space</kbd> Pause/Resume · <kbd>N</kbd> Next section · <kbd>F</kbd> Fullscreen · <kbd>Esc</kbd> Exit fullscreen</div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Viva mein time khatam ho gaya aur slides bachi hain? Pehle practice karo yahan. Set karo total time, slides ka number — tool batayega kab next slide pe jaana hai.</p>
@@ -97,15 +130,154 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var timer,totalSec,remaining,paused=false,currentSection=0,sectionTime,numSections,practice=false,slideTimestamps=[],startTime,audioCtx;
-function beep(freq,dur){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=freq;o.type='sine';g.gain.value=0.3;o.start();o.stop(audioCtx.currentTime+dur/1000)}
-function startTimer(){numSections=+document.getElementById('sections').value;totalSec=+document.getElementById('totalTime').value*60;remaining=totalSec;sectionTime=totalSec/numSections;currentSection=1;paused=false;practice=document.getElementById('practiceMode').checked;slideTimestamps=[Date.now()];startTime=Date.now();document.getElementById('timerDisplay').style.display='block';document.getElementById('analysis').style.display='none';document.getElementById('pauseBtn').textContent='⏸️ Pause';tick();timer=setInterval(tick,1000)}
-function tick(){if(paused)return;remaining--;updateDisplay();var elapsed=totalSec-remaining;var newSection=Math.min(Math.floor(elapsed/sectionTime)+1,numSections);if(newSection>currentSection&&!practice){currentSection=newSection;beep(880,200)}if(remaining===60)beep(440,500);if(remaining<=0){clearInterval(timer);beep(660,1000);showAnalysis()}}
-function updateDisplay(){var m=Math.floor(remaining/60),s=remaining%60;var el=document.getElementById('countdown');el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;var pct=remaining/totalSec;el.style.color=pct>0.5?'#4caf50':pct>0.25?'#ff9800':'#f44336';document.getElementById('sectionInfo').textContent='Section '+currentSection+' of '+numSections}
+/* ---------- Web Audio cues ---------- */
+var audioCtx;
+function beep(freq,dur){
+  if(!document.getElementById('cueSound').checked)return;
+  try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();
+    var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.3,audioCtx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dur/1000);
+    o.start();o.stop(audioCtx.currentTime+dur/1000)}catch(e){}
+}
+
+/* ---------- Presets (name, minutes) ---------- */
+var PRESETS={
+  pitch:[['Hook',0.5],['Problem',0.75],['Solution',1],['Ask',0.75]],
+  lightning:[['Intro',1],['Main Point',3],['Wrap-up',1]],
+  conference:[['Intro',2],['Body',6],['Conclusion',2]],
+  ted:[['Opening',3],['Story / Idea',12],['Call to Action',5]],
+  lecture:[['Recap',5],['Topic 1',15],['Topic 2',15],['Summary & Q/A',10]],
+  viva:[['Introduction',5],['Methodology',10],['Results',10],['Conclusion',5]],
+  classroom:[['Warm-up',10],['Lesson',25],['Practice',10],['Wrap-up',5]]
+};
+var sections=[]; // {name, minutes, notes}
+function applyPreset(){
+  var p=document.getElementById('preset').value;if(!p||!PRESETS[p])return;
+  sections=PRESETS[p].map(function(x){return {name:x[0],minutes:x[1],notes:''}});
+  loadNotes();renderSections();
+}
+function addSection(){sections.push({name:'Section '+(sections.length+1),minutes:2,notes:''});renderSections()}
+function removeSection(i){sections.splice(i,1);renderSections()}
+function renderSections(){
+  var el=document.getElementById('sectionList');
+  el.innerHTML=sections.map(function(s,i){
+    return '<div class="row" style="gap:.4rem;align-items:flex-start">'
+      +'<input type="text" value="'+s.name.replace(/"/g,'&quot;')+'" oninput="updSec('+i+',\'name\',this.value)" placeholder="Section name" style="flex:2">'
+      +'<input type="number" value="'+s.minutes+'" min="0" step="0.5" oninput="updSec('+i+',\'minutes\',this.value)" placeholder="min" style="flex:1">'
+      +'<button class="btn btn-outline" onclick="removeSection('+i+')" style="font-size:.8rem;padding:.4rem .7rem">\u2715</button>'
+      +'<textarea oninput="updSec('+i+',\'notes\',this.value)" placeholder="Speaker notes for this section..." style="flex:1 1 100%;min-height:2.2rem">'+s.notes.replace(/</g,'&lt;')+'</textarea>'
+      +'</div>';
+  }).join('');
+  var tot=sections.reduce(function(a,s){return a+(+s.minutes||0)},0);
+  document.getElementById('totalInfo').textContent='Total talk time: '+tot+' min across '+sections.length+' section(s).';
+  saveNotes();
+}
+function updSec(i,key,val){sections[i][key]=key==='minutes'?(+val||0):val;
+  if(key!=='notes'||true){var tot=sections.reduce(function(a,s){return a+(+s.minutes||0)},0);document.getElementById('totalInfo').textContent='Total talk time: '+tot+' min across '+sections.length+' section(s).'}
+  saveNotes();
+}
+function saveNotes(){try{localStorage.setItem('pt_sections',JSON.stringify(sections))}catch(e){}}
+function loadNotes(){try{var s=JSON.parse(localStorage.getItem('pt_sections')||'null');if(s&&s.length)sections=s}catch(e){}}
+
+/* ---------- Timer state ---------- */
+var timer,totalSec,elapsedSec=0,paused=false,curSection=0,warnSec=0,showMode='both',overtime=false;
+var sectionBounds=[]; // cumulative end second for each section
+
+function startTimer(){
+  if(!sections.length){alert('Add at least one section.');return}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();else{try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+  totalSec=Math.round(sections.reduce(function(a,s){return a+(+s.minutes||0)},0)*60);
+  if(totalSec<=0){alert('Total time must be greater than 0.');return}
+  warnSec=Math.round((+document.getElementById('warnMin').value||0)*60);
+  showMode=document.getElementById('showMode').value;
+  elapsedSec=0;paused=false;curSection=0;overtime=false;
+  sectionBounds=[];var run=0;sections.forEach(function(s){run+=Math.round((+s.minutes||0)*60);sectionBounds.push(run)});
+  document.getElementById('setup').style.display='none';
+  document.getElementById('timerDisplay').style.display='block';
+  document.getElementById('pauseBtn').textContent='⏸️ Pause';
+  buildSegBar();updateDisplay();beep(880,150);
+  clearInterval(timer);timer=setInterval(tick,1000);
+}
+function currentSectionIndex(){for(var i=0;i<sectionBounds.length;i++){if(elapsedSec<sectionBounds[i])return i}return sectionBounds.length-1}
+function tick(){
+  if(paused)return;
+  elapsedSec++;
+  var idx=currentSectionIndex();
+  if(idx>curSection&&!overtime){curSection=idx;beep(880,200)}
+  var remaining=totalSec-elapsedSec;
+  if(remaining===warnSec&&warnSec>0)beep(660,400);
+  if(remaining===0){beep(440,700)}
+  if(remaining<0)overtime=true;
+  updateDisplay();
+}
+function fmt(sec){var neg=sec<0;sec=Math.abs(sec);var m=Math.floor(sec/60),s=sec%60;return (neg?'+':'')+(m<10?'0':'')+m+':'+(s<10?'0':'')+s}
+function updateDisplay(){
+  var remaining=totalSec-elapsedSec;
+  var cd=document.getElementById('countdown');
+  var mainVal=(showMode==='elapsed')?fmt(elapsedSec):fmt(remaining);
+  cd.textContent=mainVal;
+  var ei=document.getElementById('elapsedInfo');
+  if(showMode==='both')ei.textContent='Elapsed '+fmt(elapsedSec)+' · Remaining '+fmt(remaining);
+  else ei.textContent='';
+  // traffic-light
+  var state;
+  if(remaining<0){state='over'}
+  else if(warnSec>0&&remaining<=warnSec){state='amber'}
+  else if(remaining<=Math.min(warnSec,30)||remaining<=Math.max(10,totalSec*0.05)){state='red'}
+  else{state='green'}
+  var colors={green:'#22c55e',amber:'#f59e0b',red:'#ef4444',over:'#ef4444'};
+  var tints={green:'rgba(34,197,94,.12)',amber:'rgba(245,158,11,.16)',red:'rgba(239,68,68,.18)',over:'rgba(239,68,68,.28)'};
+  cd.style.color=colors[state];
+  document.body.style.transition='background-color .4s';
+  document.body.style.backgroundColor=(state==='green')?'':tints[state];
+  if(remaining<0){cd.style.color='#ef4444';cd.textContent='+'+fmt(elapsedSec-totalSec).replace('+','')+' OVER';document.getElementById('elapsedInfo').textContent='Overtime! Elapsed '+fmt(elapsedSec)}
+  var idx=currentSectionIndex();
+  document.getElementById('sectionInfo').textContent='Section '+(idx+1)+' of '+sections.length+': '+(sections[idx]?sections[idx].name:'');
+  document.getElementById('notesPanel').textContent=(sections[idx]&&sections[idx].notes)?sections[idx].notes:'(no notes for this section)';
+  updateSegBar();
+}
+function buildSegBar(){
+  var bar=document.getElementById('segbar');bar.innerHTML='';
+  sections.forEach(function(s,i){var d=document.createElement('div');d.style.flex=(+s.minutes||0.001);d.style.background='var(--card)';d.style.transition='background .3s';d.id='seg'+i;bar.appendChild(d)})
+}
+function updateSegBar(){
+  var idx=currentSectionIndex();
+  sections.forEach(function(s,i){var d=document.getElementById('seg'+i);if(!d)return;
+    if(i<idx)d.style.background='var(--accent2)';
+    else if(i===idx)d.style.background='var(--accent)';
+    else d.style.background='var(--card)';})
+}
 function pauseResume(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶️ Resume':'⏸️ Pause'}
-function nextSlide(){if(!practice)return;slideTimestamps.push(Date.now());currentSection=Math.min(currentSection+1,numSections);beep(880,150);if(currentSection>=numSections){clearInterval(timer);remaining=0;updateDisplay();showAnalysis()}}
-function resetTimer(){clearInterval(timer);document.getElementById('timerDisplay').style.display='none';document.getElementById('analysis').style.display='none'}
-function showAnalysis(){var el=document.getElementById('analysis');el.style.display='block';if(!practice||slideTimestamps.length<2){el.innerHTML='<h3>⏱️ Time\'s Up!</h3><p>Presentation complete.</p>';return}var html='<h3>📊 Pace Analysis</h3><table style="width:100%;border-collapse:collapse;margin-top:.5rem"><tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Section</th><th>Time Spent</th><th>Ideal</th><th>Verdict</th></tr>';var ideal=sectionTime;for(var i=0;i<slideTimestamps.length-1;i++){var spent=(slideTimestamps[i+1]-slideTimestamps[i])/1000;var diff=spent-ideal;var verdict=Math.abs(diff)<ideal*0.2?'✅ Good':diff<0?'⚡ Too Fast':'🐢 Too Slow';html+='<tr><td style="padding:.4rem">Section '+(i+1)+'</td><td style="text-align:center">'+Math.round(spent)+'s</td><td style="text-align:center">'+Math.round(ideal)+'s</td><td style="text-align:center">'+verdict+'</td></tr>'}html+='</table>';el.innerHTML=html}
+function nextSection(){
+  var idx=currentSectionIndex();
+  if(idx<sectionBounds.length-1){elapsedSec=sectionBounds[idx];curSection=idx+1;beep(880,180);updateDisplay()}
+}
+function resetTimer(){
+  clearInterval(timer);document.body.style.backgroundColor='';
+  document.getElementById('timerDisplay').style.display='none';
+  document.getElementById('setup').style.display='block';
+  if(document.fullscreenElement)document.exitFullscreen();
+}
+function toggleFullscreen(){
+  var el=document.getElementById('timerDisplay');
+  if(!document.fullscreenElement){if(el.requestFullscreen)el.requestFullscreen()}
+  else{if(document.exitFullscreen)document.exitFullscreen()}
+}
+
+/* ---------- Keyboard shortcuts ---------- */
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('timerDisplay').style.display==='none')return;
+  var tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select')return;
+  if(e.code==='Space'){e.preventDefault();pauseResume()}
+  else if(e.key==='n'||e.key==='N'){nextSection()}
+  else if(e.key==='f'||e.key==='F'){toggleFullscreen()}
+});
+
+/* ---------- Init ---------- */
+loadNotes();if(!sections.length){sections=[{name:'Intro',minutes:2,notes:''},{name:'Body',minutes:6,notes:''},{name:'Conclusion',minutes:2,notes:''}]}
+renderSections();
 </script>
 </body>
 </html>

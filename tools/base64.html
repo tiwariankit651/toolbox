@@ -37,20 +37,57 @@
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>🔐 Base64 Encode / Decode</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="urlSafe"> URL-safe Base64 (replace +/ with -_)</label>
-      <textarea id="inp" placeholder="Paste text or Base64 string — auto-detects input type..."></textarea>
-      <div id="autoDetect" style="font-size:.8rem;color:var(--accent);margin:.3rem 0"></div>
-      <div class="row"><button class="btn" onclick="go('e')">Encode</button><button class="btn btn-outline" onclick="go('d')">Decode</button></div>
-      <div class="result-box" id="result" style="max-height:200px;overflow:auto"></div>
+      <p class="info">🔒 Everything is processed locally in your browser — nothing is uploaded to any server.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0" id="tabBar">
+        <button class="cat-tab active" data-tab="text" onclick="switchTab('text')">📝 Text Base64</button>
+        <button class="cat-tab" data-tab="file" onclick="switchTab('file')">📁 File Base64</button>
+        <button class="cat-tab" data-tab="hex" onclick="switchTab('hex')">🔢 Hex</button>
+        <button class="cat-tab" data-tab="url" onclick="switchTab('url')">🌐 URL Encode</button>
+      </div>
 
-      <h3 style="margin:1.2rem 0 .5rem">File → Base64</h3>
-      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">Drop file here or click to browse<input type="file" id="fi"></div>
-      <div class="result-box" id="fileResult" style="max-height:200px;overflow:auto"></div>
+      <!-- TEXT TAB -->
+      <div id="tab-text" class="tabpane">
+        <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="urlSafe" style="width:auto"> URL-safe Base64 (- and _ instead of + and /)</label>
+        <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="pad" checked style="width:auto"> Include <code>=</code> padding</label>
+        <textarea id="inp" placeholder="Paste text or Base64 string — auto-detects input type..."></textarea>
+        <div id="autoDetect" style="font-size:.8rem;color:var(--accent);margin:.3rem 0"></div>
+        <div class="row"><button class="btn" onclick="go('e')">Encode (UTF-8 safe)</button><button class="btn btn-outline" onclick="go('d')">Decode</button></div>
+        <div id="textSizes" class="info"></div>
+        <div class="result-box" id="result" style="max-height:250px;overflow:auto"></div>
+      </div>
 
-      <h3 style="margin:1.2rem 0 .5rem">Base64 → File</h3>
-      <textarea id="b64Input" placeholder="Paste Base64 data URI or raw Base64 string..." rows="4"></textarea>
-      <div class="row"><button class="btn" onclick="b64ToFile()">Download as File</button></div>
-      <div id="preview"></div>
+      <!-- FILE TAB -->
+      <div id="tab-file" class="tabpane" style="display:none">
+        <h3 style="margin:.4rem 0 .5rem">File → Base64</h3>
+        <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem"><input type="checkbox" id="asDataUri" checked style="width:auto"> Output full data URI (with MIME type)</label>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">Drop file here or click to browse<input type="file" id="fi"></div>
+        <div id="fileSizes" class="info"></div>
+        <div id="cssSnippet"></div>
+        <div class="result-box" id="fileResult" style="max-height:220px;overflow:auto"></div>
+        <div id="filePreview" class="preview-area"></div>
+
+        <h3 style="margin:1.2rem 0 .5rem">Base64 → File</h3>
+        <p class="info">Paste raw Base64 or a full data URI. The MIME type & extension are auto-detected.</p>
+        <textarea id="b64Input" placeholder="Paste Base64 data URI or raw Base64 string..." rows="4"></textarea>
+        <div class="row"><input type="text" id="fileName" placeholder="Optional filename (e.g. image.png)" style="flex:1"><button class="btn" onclick="b64ToFile()">Download as File</button></div>
+        <div id="preview" class="preview-area"></div>
+      </div>
+
+      <!-- HEX TAB -->
+      <div id="tab-hex" class="tabpane" style="display:none">
+        <p class="info">Encode text to hexadecimal or decode a hex string back to text (UTF-8).</p>
+        <textarea id="hexInp" placeholder="Text or hex (e.g. 48 65 6c 6c 6f)..."></textarea>
+        <div class="row"><button class="btn" onclick="hexGo('e')">Text → Hex</button><button class="btn btn-outline" onclick="hexGo('d')">Hex → Text</button></div>
+        <div class="result-box" id="hexResult" style="max-height:220px;overflow:auto"></div>
+      </div>
+
+      <!-- URL TAB -->
+      <div id="tab-url" class="tabpane" style="display:none">
+        <p class="info">Percent-encode text for URLs or decode it back.</p>
+        <textarea id="urlInp" placeholder="Text or URL-encoded string..."></textarea>
+        <div class="row"><button class="btn" onclick="urlGo('e')">Encode</button><button class="btn btn-outline" onclick="urlGo('ec')">Encode Component</button><button class="btn btn-outline" onclick="urlGo('d')">Decode</button></div>
+        <div class="result-box" id="urlResult" style="max-height:220px;overflow:auto"></div>
+      </div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -112,80 +149,154 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
+function switchTab(name){document.querySelectorAll('.tabpane').forEach(function(p){p.style.display='none'});document.getElementById('tab-'+name).style.display='';document.querySelectorAll('#tabBar .cat-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===name)})}
 const urlSafe=()=>document.getElementById('urlSafe').checked;
-function toUrlSafe(s){return s.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-function fromUrlSafe(s){return s.replace(/-/g,'+').replace(/_/g,'/')+'=='.slice(0,(4-s.length%4)%4)}
+const wantPad=()=>document.getElementById('pad').checked;
+function toUrlSafe(s){return s.replace(/\+/g,'-').replace(/\//g,'_')}
+function stripPad(s){return s.replace(/=+$/,'')}
+function fromUrlSafe(s){s=s.replace(/-/g,'+').replace(/_/g,'/');var pad=(4-s.length%4)%4;return s+'='.repeat(pad)}
+// Proper UTF-8 aware base64
+function utf8ToB64(str){var bytes=new TextEncoder().encode(str);var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return btoa(bin)}
+function b64ToUtf8(b64){var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
 
 function go(m){
   const i=document.getElementById('inp').value;
+  const res=document.getElementById('result');
+  const sizes=document.getElementById('textSizes');
   try{
     let r;
-    if(m==='e'){r=btoa(unescape(encodeURIComponent(i)));if(urlSafe())r=toUrlSafe(r)}
-    else{let d=urlSafe()?fromUrlSafe(i):i;r=decodeURIComponent(escape(atob(d)))}
-    document.getElementById('result').innerHTML='<span>'+r+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
-  }catch(e){document.getElementById('result').textContent='❌ '+e.message}
+    if(m==='e'){
+      r=utf8ToB64(i);
+      if(urlSafe())r=toUrlSafe(r);
+      if(!wantPad())r=stripPad(r);
+      var inB=new TextEncoder().encode(i).length,outB=r.length;
+      sizes.innerHTML='Input: '+inB+' B → Output: '+outB+' B <span class="badge badge-blue">~33% overhead</span>';
+    }else{
+      let d=i.trim();
+      if(urlSafe()||/[-_]/.test(d))d=fromUrlSafe(d);
+      if(d.length%4!==0)d=d+'='.repeat((4-d.length%4)%4);
+      r=b64ToUtf8(d);
+      sizes.innerHTML='Input: '+i.trim().length+' B → Output: '+new TextEncoder().encode(r).length+' B';
+    }
+    res.innerHTML='<span>'+r.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
+  }catch(e){
+    var msg=m==='d'?'Not valid Base64 — check for invalid characters or wrong URL-safe setting.':e.message;
+    res.textContent='❌ '+msg;sizes.textContent='';
+  }
 }
 
 // Auto-detect input type
 document.getElementById('inp').addEventListener('input',function(){
   const v=this.value.trim(),el=document.getElementById('autoDetect');
   if(!v){el.textContent='';return}
-  const b64Re=/^[A-Za-z0-9+/\-_]+=*$/;
-  if(b64Re.test(v)&&v.length>3&&v.length%4<3){
-    try{atob(v.replace(/-/g,'+').replace(/_/g,'/'));el.textContent='⚡ Detected: Base64 string';return}catch(e){}
+  const b64Re=/^[A-Za-z0-9+/\-_]+={0,2}$/;
+  if(b64Re.test(v)&&v.length>3){
+    try{atob(fromUrlSafe(v));el.textContent='⚡ Detected: looks like Base64';return}catch(e){}
   }
-  el.textContent='⚡ Detected: Plain text';
+  el.textContent='⚡ Detected: plain text';
 });
 
-// File to Base64
+// ---- FILE → Base64 ----
+var _b64full='';
 setupDrop('dropZone','fi',function(files){
   const f=files[0];if(!f)return;
   const r=new FileReader();
   r.onload=()=>{
-    let b=r.result;
-    if(urlSafe()){const parts=b.split(',');b=parts[0]+','+toUrlSafe(parts[1])}
-    window._b64=b;
-    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+b.slice(0,500)+(b.length>500?'...':'')+'</span><button class="copy-btn" onclick="copyText(window._b64,this)">Copy</button>';
+    let dataUri=r.result;              // data:<mime>;base64,<data>
+    const parts=dataUri.split(',');
+    let raw=parts[1]||'';
+    if(urlSafe())raw=toUrlSafe(raw);
+    let out=document.getElementById('asDataUri').checked?(parts[0]+','+raw):raw;
+    _b64full=out;
+    var inB=f.size,outB=raw.length;
+    document.getElementById('fileSizes').innerHTML=f.name+' — Input: '+formatSize(inB)+' → Base64: '+formatSize(outB)+' <span class="badge badge-blue">~33% overhead</span>';
+    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+out.slice(0,600)+(out.length>600?'…':'')+'</span><button class="copy-btn" onclick="copyText(_b64full,this)">Copy</button>';
+    // CSS data-URI snippet
+    var css=document.getElementById('cssSnippet');
+    if(f.type.startsWith('image/')){
+      var uri=parts[0]+','+ (urlSafe()?fromUrlSafe(raw):raw);
+      var snippet="background-image: url(\""+uri+"\");";
+      css.innerHTML='<p class="info" style="margin-top:.5rem">CSS snippet (ready to copy):</p><div class="result-box" style="max-height:120px;overflow:auto"><span style="word-break:break-all">'+snippet.slice(0,300)+(snippet.length>300?'…':'')+'</span><button class="copy-btn" onclick="copyText(window._cssSnippet,this)">Copy</button></div>';
+      window._cssSnippet=snippet;
+      document.getElementById('filePreview').innerHTML='<img src="'+uri+'" alt="preview">';
+    }else{css.innerHTML='';document.getElementById('filePreview').innerHTML=''}
   };
   r.readAsDataURL(f);
 });
 
-// Base64 to File
+// ---- Base64 → File ----
+function detectMime(arr){
+  var h=Array.from(arr.slice(0,12));
+  var s=function(sig){return sig.every(function(b,i){return h[i]===b})};
+  if(s([137,80,78,71]))return 'image/png';
+  if(s([255,216,255]))return 'image/jpeg';
+  if(s([71,73,70]))return 'image/gif';
+  if(s([37,80,68,70]))return 'application/pdf';
+  if(s([80,75,3,4]))return 'application/zip';
+  if(s([82,73,70,70]))return 'audio/wav';
+  if(s([73,68,51])||s([255,251]))return 'audio/mpeg';
+  if(s([66,77]))return 'image/bmp';
+  if(h[0]===0x3c)return 'text/xml';
+  return 'application/octet-stream';
+}
+function extFor(mime){var map={'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/bmp':'bmp','application/pdf':'pdf','application/zip':'zip','audio/wav':'wav','audio/mpeg':'mp3','text/xml':'xml','application/octet-stream':'bin','text/plain':'txt'};return map[mime]||(mime.split('/')[1]||'bin')}
 function b64ToFile(){
   const raw=document.getElementById('b64Input').value.trim();
-  if(!raw)return;
-  let mime='application/octet-stream',data=raw;
-  const m=raw.match(/^data:([^;]+);base64,(.+)$/);
+  const prev=document.getElementById('preview');
+  if(!raw){prev.innerHTML='<p class="info">Paste some Base64 first.</p>';return}
+  let mime='',data=raw;
+  const m=raw.match(/^data:([^;]+);base64,(.+)$/s);
   if(m){mime=m[1];data=m[2]}
-  else{data=urlSafe()?fromUrlSafe(raw):raw}
+  data=data.replace(/\s+/g,'');
+  if(/[-_]/.test(data))data=fromUrlSafe(data);
+  if(data.length%4!==0)data=data+'='.repeat((4-data.length%4)%4);
   try{
     const bin=atob(data),arr=new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
-    // Auto-detect MIME from magic bytes if not from data URI
-    if(!m){
-      const h=arr.slice(0,4).join(' ');
-      if(h.startsWith('137 80 78 71'))mime='image/png';
-      else if(h.startsWith('255 216 255'))mime='image/jpeg';
-      else if(h.startsWith('71 73 70'))mime='image/gif';
-      else if(h.startsWith('37 80 68 70'))mime='application/pdf';
-      else if(arr[0]===80&&arr[1]===75)mime='application/zip';
-      else if(h.startsWith('82 73 70 70'))mime='audio/wav';
-    }
-    const ext=mime.split('/')[1].replace('jpeg','jpg').replace('octet-stream','bin');
-    download(new Blob([arr],{type:mime}),'file.'+ext);
-    // Image preview
-    const prev=document.getElementById('preview');
-    if(mime.startsWith('image/')){prev.innerHTML='<img src="data:'+mime+';base64,'+data+'" style="max-width:100%;max-height:300px;margin-top:.5rem;border-radius:8px">';}
-    else{prev.innerHTML=''}
-  }catch(e){document.getElementById('preview').innerHTML='<p style="color:#f44336">❌ '+e.message+'</p>'}
+    if(!mime)mime=detectMime(arr);
+    var custom=document.getElementById('fileName').value.trim();
+    var name=custom||('decoded.'+extFor(mime));
+    download(new Blob([arr],{type:mime}),name);
+    if(mime.startsWith('image/')){prev.innerHTML='<img src="data:'+mime+';base64,'+data+'" alt="decoded image">';}
+    else{prev.innerHTML='<p class="info">Detected type: <b>'+mime+'</b> — downloaded as '+name+'</p>'}
+  }catch(e){prev.innerHTML='<p style="color:#f44336">❌ Invalid Base64: '+e.message+'</p>'}
 }
-
-// Show image preview on paste in b64Input
 document.getElementById('b64Input').addEventListener('input',function(){
   const raw=this.value.trim(),prev=document.getElementById('preview');
   const m=raw.match(/^data:(image\/[^;]+);base64,/);
-  if(m)prev.innerHTML='<img src="'+raw.slice(0,raw.length)+'" style="max-width:100%;max-height:300px;margin-top:.5rem;border-radius:8px">';
+  if(m)prev.innerHTML='<img src="'+raw+'" alt="preview">';
   else prev.innerHTML='';
 });
+
+// ---- HEX ----
+function hexGo(m){
+  var i=document.getElementById('hexInp').value,box=document.getElementById('hexResult');
+  try{
+    var r;
+    if(m==='e'){
+      var bytes=new TextEncoder().encode(i);r=Array.from(bytes).map(function(b){return b.toString(16).padStart(2,'0')}).join(' ');
+    }else{
+      var clean=i.replace(/0x/gi,'').replace(/[\s,]+/g,'');
+      if(clean.length%2!==0)throw new Error('Hex string must have an even number of digits');
+      if(/[^0-9a-fA-F]/.test(clean))throw new Error('Contains non-hex characters');
+      var arr=new Uint8Array(clean.length/2);
+      for(var k=0;k<arr.length;k++)arr[k]=parseInt(clean.substr(k*2,2),16);
+      r=new TextDecoder('utf-8',{fatal:true}).decode(arr);
+    }
+    box.innerHTML='<span>'+r.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
+  }catch(e){box.textContent='❌ '+e.message}
+}
+
+// ---- URL ----
+function urlGo(m){
+  var i=document.getElementById('urlInp').value,box=document.getElementById('urlResult');
+  try{
+    var r;
+    if(m==='e')r=encodeURI(i);
+    else if(m==='ec')r=encodeURIComponent(i);
+    else r=decodeURIComponent(i.replace(/\+/g,' '));
+    box.innerHTML='<span>'+r.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
+  }catch(e){box.textContent='❌ '+e.message}
+}
 </script>
 </body></html>

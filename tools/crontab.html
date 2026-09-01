@@ -17,36 +17,67 @@
     <div class="breadcrumb"><a href="../">Home</a> → Crontab Generator</div>
     <div class="tool-section"><h1>⏰ Crontab Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Build cron expressions visually. See human-readable description.</p>
-<h3>Natural Language Input</h3>
-<div class="row"><input type="text" id="nlInput" placeholder="e.g. every 5 minutes, daily at 3pm, hourly, weekly monday" style="flex:1"><button class="btn" onclick="parseNL()">Convert to Cron</button></div>
-<h3 style="margin-top:1rem">Cron Fields</h3>
-<div class="row" style="flex-wrap:wrap">
-<div><label>Minute (0-59)</label><input type="text" id="min" value="0" style="width:80px" oninput="gen()"></div>
-<div><label>Hour (0-23)</label><input type="text" id="hr" value="12" style="width:80px" oninput="gen()"></div>
-<div><label>Day (1-31)</label><input type="text" id="dom" value="*" style="width:80px" oninput="gen()"></div>
-<div><label>Month (1-12)</label><input type="text" id="mon" value="*" style="width:80px" oninput="gen()"></div>
-<div><label>Weekday (0-6)</label><input type="text" id="dow" value="*" style="width:80px" oninput="gen()"></div>
-</div>
-<div id="expr" style="background:var(--card);padding:1rem;border-radius:10px;margin:1rem 0;font-family:monospace;font-size:1.3rem;text-align:center"></div>
+      <p class="info">Build cron expressions visually, decode existing ones to plain English, preview the next run times, and copy a ready crontab line.</p>
+<h3>Paste / Decode a Cron Expression</h3>
+<div class="row"><input type="text" id="exprInput" placeholder="e.g. */5 * * * *  or  @daily" style="flex:1"><button class="btn" onclick="decodeExpr()">Decode & Fill</button></div>
+<div id="parseError" class="info" style="color:#e74c3c"></div>
+
+<h3 style="margin-top:1rem">Visual Builder</h3>
+<div id="builder"></div>
+
+<div id="expr" style="background:var(--card);padding:1rem;border-radius:10px;margin:1rem 0;font-family:monospace;font-size:1.3rem;text-align:center;word-break:break-all"></div>
 <div id="desc" style="text-align:center;margin-bottom:1rem" class="info"></div>
-<h3>Common Presets</h3>
-<div style="display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0">
-<button class="btn btn-outline" onclick="set('*','*','*','*','*')">Every minute</button>
-<button class="btn btn-outline" onclick="set('*/5','*','*','*','*')">Every 5 min</button>
-<button class="btn btn-outline" onclick="set('0','*','*','*','*')">Hourly</button>
-<button class="btn btn-outline" onclick="set('0','0','*','*','*')">Daily midnight</button>
-<button class="btn btn-outline" onclick="set('0','9','*','*','1-5')">Weekdays 9 AM</button>
-<button class="btn btn-outline" onclick="set('0','0','*','*','1')">Weekly Monday</button>
-<button class="btn btn-outline" onclick="set('0','0','1','*','*')">Monthly 1st</button>
-<button class="btn btn-outline" onclick="set('*/15','*','*','*','*')">Every 15 min</button>
-<button class="btn btn-outline" onclick="set('0','0','*','*','0')">Every Sunday</button>
-<button class="btn btn-outline" onclick="set('0','0','1','1','*')">Yearly Jan 1</button>
+
+<div class="row" style="flex-wrap:wrap;align-items:center">
+  <button class="btn" onclick="copyExpr()">📋 Copy Expression</button>
+  <input type="text" id="cmdInput" placeholder="command (e.g. /usr/bin/backup.sh)" value="/path/to/command" style="flex:1;min-width:180px">
+  <button class="btn btn-outline" onclick="copyCrontabLine()">📋 Copy crontab line</button>
 </div>
-<h3 style="margin-top:1rem">📅 Next 5 Execution Times</h3>
+<div id="crontabLine" class="info" style="font-family:monospace"></div>
+
+<h3 style="margin-top:1.2rem">📅 Next 10 Execution Times</h3>
 <div id="schedule" style="background:var(--card);padding:1rem;border-radius:8px;font-family:monospace;font-size:.9rem"></div>
 <p class="info" style="margin-top:.5rem;font-size:.8rem">⚠️ Times shown are in your local timezone (<span id="tzName"></span>). Cron jobs on servers typically run in the server's configured timezone (often UTC).</p>
-<div class="row" style="margin-top:.5rem"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('expr').textContent)">📋 Copy Expression</button></div></div>
+
+<h3 style="margin-top:1.2rem">⚡ Presets</h3>
+<div id="presets" style="display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0"></div>
+
+<h3 style="margin-top:1.2rem">🔤 Special Strings</h3>
+<div id="specials" style="display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0"></div>
+<div id="specialDesc" class="info"></div>
+</div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>📖 Cron Syntax Cheatsheet</h2>
+<p class="info">A cron expression has five fields (plus an optional command):</p>
+<pre style="background:var(--card);padding:1rem;border-radius:8px;overflow:auto;font-family:monospace;font-size:.85rem">┌───────────── minute        (0 - 59)
+│ ┌─────────── hour          (0 - 23)
+│ │ ┌───────── day of month  (1 - 31)
+│ │ │ ┌─────── month         (1 - 12  or JAN-DEC)
+│ │ │ │ ┌───── day of week    (0 - 6   or SUN-SAT, 0 = Sunday)
+│ │ │ │ │
+* * * * *  command to run</pre>
+<h3 style="margin-top:1rem">Allowed values</h3>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">
+<tr style="text-align:left"><th style="padding:.4rem;border-bottom:1px solid rgba(255,255,255,.1)">Field</th><th style="padding:.4rem;border-bottom:1px solid rgba(255,255,255,.1)">Range</th></tr>
+<tr><td style="padding:.4rem">Minute</td><td style="padding:.4rem">0–59</td></tr>
+<tr><td style="padding:.4rem">Hour</td><td style="padding:.4rem">0–23</td></tr>
+<tr><td style="padding:.4rem">Day of month</td><td style="padding:.4rem">1–31</td></tr>
+<tr><td style="padding:.4rem">Month</td><td style="padding:.4rem">1–12 (JAN–DEC)</td></tr>
+<tr><td style="padding:.4rem">Day of week</td><td style="padding:.4rem">0–6 (SUN–SAT; 7 also = Sunday)</td></tr>
+</table></div>
+<h3 style="margin-top:1rem">Special characters</h3>
+<ul style="margin-left:1.5rem;line-height:2">
+<li><code>*</code> — every value (e.g. every minute). Example: <code>* * * * *</code></li>
+<li><code>,</code> — list of values. Example: <code>0 9,17 * * *</code> (9 AM and 5 PM)</li>
+<li><code>-</code> — range of values. Example: <code>0 9-17 * * *</code> (every hour 9 AM–5 PM)</li>
+<li><code>/</code> — step values. Example: <code>*/15 * * * *</code> (every 15 minutes)</li>
+<li><code>L</code> — "last" (last day of month/week). <span class="badge badge-purple">non-standard / Quartz</span></li>
+<li><code>#</code> — nth weekday of month, e.g. <code>FRI#3</code>. <span class="badge badge-purple">non-standard / Quartz</span></li>
+<li><code>?</code> — "no specific value" (day-of-month vs day-of-week). <span class="badge badge-purple">non-standard / Quartz</span></li>
+</ul>
+<p class="info">Note: <code>L</code>, <code>#</code> and <code>?</code> are supported by Quartz Scheduler and some cron implementations but are not part of standard Vixie/POSIX cron. This tool's builder and next-run preview use standard cron semantics.</p>
+<h3 style="margin-top:1rem">Day-of-month & Day-of-week OR rule</h3>
+<p class="info">When <b>both</b> day-of-month and day-of-week are restricted (neither is <code>*</code>), standard cron runs the job when <b>either</b> field matches — not both. This tool honors that OR behavior in the next-run preview.</p>
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Pick frequency:</strong> Cron expression confusing lagta hai? Simply select — every hour, daily, weekly, whatever you need</li>
@@ -104,12 +135,185 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
-  <script>document.getElementById("tzName").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone;
-function set(mi,hr,dom,mon,dow){document.getElementById("min").value=mi;document.getElementById("hr").value=hr;document.getElementById("dom").value=dom;document.getElementById("mon").value=mon;document.getElementById("dow").value=dow;gen()}
-function gen(){var mi=document.getElementById("min").value,hr=document.getElementById("hr").value,dom=document.getElementById("dom").value,mon=document.getElementById("mon").value,dow=document.getElementById("dow").value;var expr=mi+" "+hr+" "+dom+" "+mon+" "+dow;document.getElementById("expr").textContent=expr;var desc="Runs ";if(mi.indexOf("/")>-1)desc+="every "+mi.split("/")[1]+" minutes";else if(mi==="*")desc+="every minute";else desc+="at minute "+mi;if(hr!=="*")desc+=", at hour "+hr;if(dom!=="*")desc+=", on day "+dom;if(mon!=="*")desc+=", in month "+mon;if(dow!=="*"){var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];desc+=dow.indexOf("-")>-1?", "+dow.replace(/0/g,"Sun").replace(/1/g,"Mon").replace(/2/g,"Tue").replace(/3/g,"Wed").replace(/4/g,"Thu").replace(/5/g,"Fri").replace(/6/g,"Sat"):", on "+days[+dow]}document.getElementById("desc").textContent=desc;showNext5()}
-function showNext5(){var mi=document.getElementById("min").value,hr=document.getElementById("hr").value,dom=document.getElementById("dom").value,mon=document.getElementById("mon").value,dow=document.getElementById("dow").value;var times=[],d=new Date();d.setSeconds(0);d.setMilliseconds(0);d.setMinutes(d.getMinutes()+1);for(var i=0;i<1000&&times.length<5;i++){if(matchField(d.getMinutes(),mi)&&matchField(d.getHours(),hr)&&matchField(d.getDate(),dom)&&matchField(d.getMonth()+1,mon)&&matchField(d.getDay(),dow)){times.push(new Date(d))}d.setMinutes(d.getMinutes()+1)}document.getElementById("schedule").innerHTML=times.length?times.map(function(t){return"<div>▸ "+t.toLocaleString()+"</div>"}).join(""):"<div>Could not compute next runs</div>"}
-function matchField(val,field){if(field==="*")return true;if(field.indexOf("/")>-1){var step=parseInt(field.split("/")[1]);return val%step===0}if(field.indexOf("-")>-1){var parts=field.split("-");return val>=parseInt(parts[0])&&val<=parseInt(parts[1])}if(field.indexOf(",")>-1){return field.split(",").map(Number).indexOf(val)>-1}return parseInt(field)===val}
-function parseNL(){var input=document.getElementById("nlInput").value.toLowerCase().trim();if(!input)return;var m;if(m=input.match(/every (\d+) min/)){set("*/"+m[1],"*","*","*","*")}else if(m=input.match(/every minute/)){set("*","*","*","*","*")}else if(m=input.match(/every (\d+) hour/)){set("0","*/"+m[1],"*","*","*")}else if(m=input.match(/hourly/)){set("0","*","*","*","*")}else if(m=input.match(/daily at (\d+)(am|pm)?/)){var h=parseInt(m[1]);if(m[2]==="pm"&&h<12)h+=12;if(m[2]==="am"&&h===12)h=0;set("0",String(h),"*","*","*")}else if(m=input.match(/daily/)){set("0","0","*","*","*")}else if(m=input.match(/weekly (sun|mon|tue|wed|thu|fri|sat)/)){var dayMap={sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};set("0","0","*","*",String(dayMap[m[1]]))}else if(m=input.match(/weekly monday/)){set("0","0","*","*","1")}else if(m=input.match(/weekly/)){set("0","0","*","*","0")}else if(m=input.match(/monthly/)){set("0","0","1","*","*")}else if(m=input.match(/yearly|annually/)){set("0","0","1","1","*")}else if(m=input.match(/midnight/)){set("0","0","*","*","*")}else if(m=input.match(/noon/)){set("0","12","*","*","*")}else{document.getElementById("desc").textContent="Could not parse. Try: every 5 minutes, daily at 3pm, hourly, weekly monday"}}
-gen()</script>
+  <script>
+document.getElementById("tzName").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone;
+var DOW=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MON=["","January","February","March","April","May","June","July","August","September","October","November","December"];
+// Field ranges: [min,max]
+var FIELDS=[{id:"min",label:"Minute",lo:0,hi:59},{id:"hr",label:"Hour",lo:0,hi:23},{id:"dom",label:"Day of month",lo:1,hi:31},{id:"mon",label:"Month",lo:1,hi:12},{id:"dow",label:"Day of week",lo:0,hi:6}];
+var state={min:{mode:"specific",val:"0",r1:"0",r2:"0",step:"5"},hr:{mode:"specific",val:"12",r1:"0",r2:"0",step:"2"},dom:{mode:"every"},mon:{mode:"every"},dow:{mode:"every"}};
+
+function optRange(id,lo,hi,sel){var s="";for(var i=lo;i<=hi;i++){var lbl=i;if(id==="dow")lbl=i+" ("+DOW[i].slice(0,3)+")";if(id==="mon")lbl=i+" ("+MON[i].slice(0,3)+")";s+="<option value='"+i+"'"+(String(sel)===String(i)?" selected":"")+">"+lbl+"</option>"}return s}
+function buildBuilder(){
+  var html="<div class='row' style='flex-wrap:wrap;gap:.8rem'>";
+  FIELDS.forEach(function(f){
+    var st=state[f.id];
+    html+="<div style='background:var(--card);padding:.7rem;border-radius:10px;min-width:150px;flex:1'>";
+    html+="<label style='font-weight:600'>"+f.label+" ("+f.lo+"-"+f.hi+")</label>";
+    html+="<select onchange=\"setMode('"+f.id+"',this.value)\" style='margin:.3rem 0'>";
+    ["every","specific","range","step"].forEach(function(m){var lbl={every:"Every",specific:"Specific",range:"Range",step:"Every N (step)"}[m];html+="<option value='"+m+"'"+(st.mode===m?" selected":"")+">"+lbl+"</option>"});
+    html+="</select>";
+    html+="<div id='ctl_"+f.id+"'>"+ctlHtml(f,st)+"</div>";
+    html+="</div>";
+  });
+  html+="</div>";
+  document.getElementById("builder").innerHTML=html;
+}
+function ctlHtml(f,st){
+  if(st.mode==="every")return "<span class='info'>* (every)</span>";
+  if(st.mode==="specific")return "<select onchange=\"setVal('"+f.id+"','val',this.value)\">"+optRange(f.id,f.lo,f.hi,st.val)+"</select>";
+  if(st.mode==="range")return "from <select onchange=\"setVal('"+f.id+"','r1',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r1)+"</select> to <select onchange=\"setVal('"+f.id+"','r2',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r2)+"</select>";
+  if(st.mode==="step")return "every <input type='number' min='1' max='"+f.hi+"' value='"+(st.step||"1")+"' oninput=\"setVal('"+f.id+"','step',this.value)\" style='width:70px'> "+(f.id==="min"?"minutes":f.id==="hr"?"hours":"units");
+  return "";
+}
+function setMode(id,mode){state[id].mode=mode;document.getElementById("ctl_"+id).innerHTML=ctlHtml(FIELDS.filter(function(f){return f.id===id})[0],state[id]);gen()}
+function setVal(id,key,v){state[id][key]=v;gen()}
+function fieldExpr(id){var st=state[id];if(st.mode==="every")return "*";if(st.mode==="specific")return String(st.val);if(st.mode==="range")return st.r1+"-"+st.r2;if(st.mode==="step")return "*/"+(st.step||"1");return "*"}
+
+function gen(){
+  var mi=fieldExpr("min"),hr=fieldExpr("hr"),dom=fieldExpr("dom"),mon=fieldExpr("mon"),dow=fieldExpr("dow");
+  var expr=[mi,hr,dom,mon,dow].join(" ");
+  document.getElementById("expr").textContent=expr;
+  document.getElementById("desc").textContent=describe(mi,hr,dom,mon,dow);
+  showNext(expr);
+  updateCrontabLine(expr);
+}
+function updateCrontabLine(expr){var cmd=document.getElementById("cmdInput").value||"/path/to/command";document.getElementById("crontabLine").textContent=expr+" "+cmd}
+document.getElementById("cmdInput").addEventListener("input",function(){updateCrontabLine(document.getElementById("expr").textContent)});
+function copyExpr(){copyText(document.getElementById("expr").textContent)}
+function copyCrontabLine(){copyText(document.getElementById("crontabLine").textContent)}
+
+// ---- Human readable description ----
+function describeField(field,lo,hi,names){
+  if(field==="*")return null;
+  if(field.indexOf("/")>-1){var step=field.split("/")[1];return "every "+step}
+  if(field.indexOf(",")>-1){return field.split(",").map(function(v){return names?names(v):v}).join(", ")}
+  if(field.indexOf("-")>-1){var p=field.split("-");return (names?names(p[0]):p[0])+" through "+(names?names(p[1]):p[1])}
+  return names?names(field):field;
+}
+function describe(mi,hr,dom,mon,dow){
+  var parts=[];
+  // time
+  if(mi==="*"&&hr==="*")parts.push("every minute");
+  else if(mi.indexOf("/")>-1&&hr==="*")parts.push("every "+mi.split("/")[1]+" minutes");
+  else if(mi!=="*"&&hr==="*")parts.push("at minute "+describeField(mi))
+  else if(hr!=="*"&&(mi==="0"||mi!=="*")){
+    if(hr.indexOf("/")>-1)parts.push("at minute "+mi+" past every "+hr.split("/")[1]+" hours");
+    else if(hr.indexOf("-")>-1||hr.indexOf(",")>-1)parts.push("at minute "+mi+" past hour "+describeField(hr));
+    else parts.push("at "+pad(hr)+":"+pad(mi==="*"?"0":mi));
+  } else if(hr.indexOf("/")>-1){parts.push("every "+hr.split("/")[1]+" hours")}
+  var domD=describeField(dom),monD=describeField(mon,0,0,function(v){return MON[+v]||v}),dowD=describeField(dow,0,0,function(v){return DOW[+v%7]||v});
+  if(domD)parts.push("on day-of-month "+domD);
+  if(dowD)parts.push("on "+dowD);
+  if(monD)parts.push("in "+monD);
+  return "Runs "+(parts.length?parts.join(", "):"every minute")+".";
+}
+function pad(n){n=String(n);return n.length<2?"0"+n:n}
+
+// ---- Next run computation (standard cron semantics) ----
+function expand(field,lo,hi){
+  var set={};
+  field.split(",").forEach(function(part){
+    var step=1,range=part;
+    if(part.indexOf("/")>-1){var sp=part.split("/");range=sp[0];step=parseInt(sp[1],10)||1}
+    var start=lo,end=hi;
+    if(range==="*"){start=lo;end=hi}
+    else if(range.indexOf("-")>-1){var r=range.split("-");start=parseInt(r[0],10);end=parseInt(r[1],10)}
+    else{start=parseInt(range,10);end=(part.indexOf("/")>-1)?hi:start}
+    for(var i=start;i<=end;i+=step){if(i>=lo&&i<=hi)set[i]=true}
+  });
+  return set;
+}
+function computeNext(expr,count){
+  var f=expr.trim().split(/\s+/);if(f.length!==5)return null;
+  var mins=expand(f[0],0,59),hrs=expand(f[1],0,23),doms=expand(f[2],1,31),mons=expand(f[3],1,12);
+  // normalize dow: allow 7 as Sunday
+  var dowRaw=f[4].replace(/7/g,"0");var dows=expand(dowRaw,0,6);
+  var domRestricted=f[2]!=="*",dowRestricted=f[4]!=="*";
+  var times=[],d=new Date();d.setSeconds(0,0);d.setMinutes(d.getMinutes()+1);
+  var guard=0,limit=525600*3; // ~3 years of minutes
+  while(times.length<count&&guard++<limit){
+    if(mins[d.getMinutes()]&&hrs[d.getHours()]&&mons[d.getMonth()+1]){
+      var domOk=doms[d.getDate()],dowOk=dows[d.getDay()];
+      var dayMatch;
+      if(domRestricted&&dowRestricted)dayMatch=domOk||dowOk; // OR semantics
+      else if(domRestricted)dayMatch=domOk;
+      else if(dowRestricted)dayMatch=dowOk;
+      else dayMatch=true;
+      if(dayMatch)times.push(new Date(d));
+    }
+    d.setMinutes(d.getMinutes()+1);
+  }
+  return times;
+}
+function showNext(expr){
+  var box=document.getElementById("schedule");
+  var times=computeNext(expr,10);
+  if(!times){box.innerHTML="<div style='color:#e74c3c'>Invalid expression — need exactly 5 fields.</div>";return}
+  box.innerHTML=times.length?times.map(function(t){return "<div>▸ "+t.toLocaleString()+"</div>"}).join(""):"<div>No matching times in the next few years (check the expression).</div>";
+}
+
+// ---- Decode / validate expression ----
+function validateExpr(expr){
+  var f=expr.trim().split(/\s+/);
+  if(f.length!==5)return {ok:false,msg:"Expected 5 fields (minute hour day month weekday); got "+f.length+"."};
+  var ranges=[[0,59],[0,23],[1,31],[1,12],[0,7]];
+  var re=/^(\*|(\d+)(-\d+)?)(\/\d+)?(,(\*|(\d+)(-\d+)?)(\/\d+)?)*$/;
+  for(var i=0;i<5;i++){
+    var part=f[i];
+    if(/[L#?]/.test(part))return {ok:false,msg:"Field "+(i+1)+" ('"+part+"') uses L/#/? which are Quartz-only and not supported by this standard-cron tool."};
+    if(!re.test(part))return {ok:false,msg:"Field "+(i+1)+" ('"+part+"') has invalid syntax. Use *, numbers, ranges (a-b), lists (a,b) or steps (*/n)."};
+    var nums=part.match(/\d+/g)||[];
+    for(var n=0;n<nums.length;n++){var v=parseInt(nums[n],10);if(v<ranges[i][0]||v>ranges[i][1])return {ok:false,msg:"Field "+(i+1)+" value "+v+" is out of range ("+ranges[i][0]+"-"+ranges[i][1]+")."}}
+  }
+  return {ok:true};
+}
+var SPECIALS={"@reboot":null,"@yearly":"0 0 1 1 *","@annually":"0 0 1 1 *","@monthly":"0 0 1 * *","@weekly":"0 0 * * 0","@daily":"0 0 * * *","@midnight":"0 0 * * *","@hourly":"0 * * * *"};
+function decodeExpr(){
+  var raw=document.getElementById("exprInput").value.trim();var err=document.getElementById("parseError");err.textContent="";
+  if(!raw)return;
+  if(raw[0]==="@"){
+    var key=raw.toLowerCase();
+    if(key==="@reboot"){document.getElementById("expr").textContent="@reboot";document.getElementById("desc").textContent="Runs once at system startup (@reboot). Cannot compute clock times.";document.getElementById("schedule").innerHTML="<div>Runs at boot — no scheduled clock times.</div>";updateCrontabLine("@reboot");return}
+    if(SPECIALS[key]){raw=SPECIALS[key]}
+    else{err.textContent="Unknown special string. Supported: "+Object.keys(SPECIALS).join(", ")+", @reboot.";return}
+  }
+  var v=validateExpr(raw);
+  if(!v.ok){err.textContent="❌ "+v.msg;return}
+  fillBuilder(raw);
+  gen();
+}
+function fillBuilder(expr){
+  var f=expr.trim().split(/\s+/);
+  var ids=["min","hr","dom","mon","dow"];
+  ids.forEach(function(id,i){
+    var part=f[i],st=state[id];
+    if(part==="*"){st.mode="every"}
+    else if(/^\*\/\d+$/.test(part)){st.mode="step";st.step=part.split("/")[1]}
+    else if(/^\d+-\d+$/.test(part)){st.mode="range";var r=part.split("-");st.r1=r[0];st.r2=r[1]}
+    else if(/^\d+$/.test(part)){st.mode="specific";st.val=part}
+    else{st.mode="specific";st.val=part.split(",")[0].split("-")[0].replace("*/","")} // fallback for lists
+  });
+  buildBuilder();
+}
+
+// ---- Presets ----
+var PRESETS=[
+ ["Every minute","* * * * *"],["Every 5 min","*/5 * * * *"],["Every 15 min","*/15 * * * *"],["Every 30 min","*/30 * * * *"],
+ ["Hourly","0 * * * *"],["Daily midnight","0 0 * * *"],["Daily 9 AM","0 9 * * *"],["Twice daily (12h)","0 0,12 * * *"],
+ ["Weekly (Sun)","0 0 * * 0"],["Weekly Monday","0 0 * * 1"],["Monthly 1st","0 0 1 * *"],["Quarterly","0 0 1 1,4,7,10 *"],
+ ["Yearly (Jan 1)","0 0 1 1 *"],["Weekdays 9 AM","0 9 * * 1-5"],["Weekends","0 0 * * 0,6"],
+ ["Nightly backup 2 AM","0 2 * * *"],["Weekly backup Sun 3 AM","0 3 * * 0"],["Daily report 8 AM","0 8 * * *"]
+];
+function buildPresets(){document.getElementById("presets").innerHTML=PRESETS.map(function(p){return "<button class='btn btn-outline' onclick=\"applyPreset('"+p[1]+"')\">"+p[0]+"</button>"}).join("")}
+function applyPreset(expr){document.getElementById("exprInput").value=expr;fillBuilder(expr);gen()}
+
+// ---- Special strings ----
+var SPECIAL_DESC={"@reboot":"Run once, at startup.","@yearly":"Run once a year — 0 0 1 1 * (Jan 1, midnight).","@annually":"Same as @yearly.","@monthly":"Run once a month — 0 0 1 * * (1st, midnight).","@weekly":"Run once a week — 0 0 * * 0 (Sunday, midnight).","@daily":"Run once a day — 0 0 * * * (midnight).","@hourly":"Run once an hour — 0 * * * * (top of the hour)."};
+function buildSpecials(){var keys=["@reboot","@yearly","@annually","@monthly","@weekly","@daily","@hourly"];document.getElementById("specials").innerHTML=keys.map(function(k){return "<button class='btn btn-outline' onclick=\"showSpecial('"+k+"')\">"+k+"</button>"}).join("")}
+function showSpecial(k){document.getElementById("specialDesc").innerHTML="<b>"+k+"</b> — "+SPECIAL_DESC[k]+(SPECIALS[k]?" Equivalent: <code>"+SPECIALS[k]+"</code>":"");document.getElementById("exprInput").value=k;decodeExpr()}
+
+buildBuilder();buildPresets();buildSpecials();gen();
+</script>
 </body>
 </html>
