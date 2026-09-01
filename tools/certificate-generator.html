@@ -14,13 +14,30 @@
   <style>
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
     .form-grid label{font-size:.85rem;font-weight:600;display:block;margin-bottom:.2rem}
-    .form-grid input,.form-grid select{width:100%;padding:.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.9rem}
+    .form-grid input,.form-grid select{width:100%;padding:.5rem;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:var(--bg);color:var(--text);font-size:.9rem}
     .form-grid .full{grid-column:1/-1}
-    #cert-canvas{width:100%;max-width:800px;margin:1rem auto;display:block;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+    #cert-canvas{width:100%;max-width:820px;margin:1rem auto;display:block;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);background:#fff}
     .theme-btn{width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:transform .2s}
     .theme-btn:hover{transform:scale(1.15)}
     .theme-btn.active{border-color:var(--text)}
     .actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+    .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin:.6rem 0}
+    .tmpl-card{background:var(--card);border:2px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem;cursor:pointer;text-align:center;transition:all .2s;font-size:.78rem;font-weight:600}
+    .tmpl-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+    .tmpl-card.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+    .tmpl-card canvas{width:100%;height:auto;border-radius:6px;display:block;margin-bottom:.35rem;background:#fff}
+    .sub-panel{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem;margin:1rem 0}
+    .sub-panel h3{font-size:1rem;margin-bottom:.6rem}
+    .tab-bar{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+    .tab-bar .btn{margin:0}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem;margin:1rem 0}
+    .gallery figure{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.5rem;margin:0}
+    .gallery img{width:100%;border-radius:6px;display:block}
+    .gallery figcaption{font-size:.75rem;color:var(--text2);margin-top:.35rem;text-align:center;word-break:break-word}
+    textarea.names{width:100%;min-height:120px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem;font-family:inherit;font-size:.9rem}
+    .hint{font-size:.78rem;color:var(--text2)}
   </style>
 </head>
 <body>
@@ -30,56 +47,156 @@
     <div class="tool-section">
       <h1>🏆 Certificate Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#8b5cf6" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#6366f1" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Create professional certificates with elegant fonts, decorative borders, and color themes. Download as PNG or print directly.</p>
+      <p class="info">Create professional certificates with 8 designer templates, full styling control, bulk generation, and PNG / PDF export. Everything runs in your browser.</p>
 
-      <div class="form-grid">
-        <div>
-          <label>Template</label>
-          <select id="template" onchange="render()">
-            <option value="achievement">Certificate of Achievement</option>
-            <option value="completion">Certificate of Completion</option>
-            <option value="appreciation">Certificate of Appreciation</option>
-            <option value="participation">Certificate of Participation</option>
-          </select>
-        </div>
-        <div>
-          <label>Color Theme</label>
-          <div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem">
-            <button class="theme-btn active" style="background:linear-gradient(135deg,#b8860b,#ffd700)" onclick="setTheme('gold',this)" title="Gold"></button>
-            <button class="theme-btn" style="background:linear-gradient(135deg,#1a3a6b,#6366f1)" onclick="setTheme('blue',this)" title="Blue"></button>
-            <button class="theme-btn" style="background:linear-gradient(135deg,#1a5c3a,#10b981)" onclick="setTheme('green',this)" title="Green"></button>
+      <div class="tab-bar">
+        <button class="btn" id="tabBtnSingle" onclick="switchTab('single')">✏️ Single Certificate</button>
+        <button class="btn btn-outline" id="tabBtnBulk" onclick="switchTab('bulk')">👥 Bulk Generate</button>
+      </div>
+
+      <div class="sub-panel">
+        <h3>1. Choose a Template Design</h3>
+        <div class="tmpl-grid" id="tmpl-grid"></div>
+      </div>
+
+      <div id="tab-single" class="tab-pane active">
+        <div class="sub-panel">
+          <h3>2. Certificate Content</h3>
+          <div class="form-grid">
+            <div class="full">
+              <label>Certificate Title</label>
+              <input type="text" id="cert-title" placeholder="Certificate of Achievement" oninput="render()">
+            </div>
+            <div class="full">
+              <label>Recipient Name</label>
+              <input type="text" id="recipient" placeholder="John Doe" oninput="render()">
+            </div>
+            <div class="full">
+              <label>Description / Reason</label>
+              <input type="text" id="course" placeholder="for outstanding performance in Advanced Web Development" oninput="render()">
+            </div>
+            <div>
+              <label>Date</label>
+              <input type="date" id="cert-date" onchange="render()">
+            </div>
+            <div>
+              <label>Organisation (header line)</label>
+              <input type="text" id="org" placeholder="FreeToolHubs Academy" oninput="render()">
+            </div>
+            <div>
+              <label>Signature 1 — Name</label>
+              <input type="text" id="issuer" placeholder="Jane Smith" oninput="render()">
+            </div>
+            <div>
+              <label>Signature 1 — Designation</label>
+              <input type="text" id="issuer-title" placeholder="Program Director" oninput="render()">
+            </div>
+            <div>
+              <label>Signature 2 — Name (optional)</label>
+              <input type="text" id="issuer2" placeholder="Mark Lee" oninput="render()">
+            </div>
+            <div>
+              <label>Signature 2 — Designation</label>
+              <input type="text" id="issuer2-title" placeholder="Head Instructor" oninput="render()">
+            </div>
           </div>
-        </div>
-        <div class="full">
-          <label>Recipient Name</label>
-          <input type="text" id="recipient" placeholder="John Doe" oninput="render()">
-        </div>
-        <div class="full">
-          <label>Course / Event Name</label>
-          <input type="text" id="course" placeholder="Advanced Web Development" oninput="render()">
-        </div>
-        <div>
-          <label>Date</label>
-          <input type="date" id="cert-date" onchange="render()">
-        </div>
-        <div>
-          <label>Issuer Name</label>
-          <input type="text" id="issuer" placeholder="Jane Smith" oninput="render()">
-        </div>
-        <div>
-          <label>Issuer Title</label>
-          <input type="text" id="issuer-title" placeholder="Program Director" oninput="render()">
-        </div>
-        <div>
-          <label>Signature (optional)</label>
-          <input type="file" id="sig-upload" accept="image/*" onchange="loadSig(this)">
         </div>
       </div>
 
-      <canvas id="cert-canvas" width="1120" height="800"></canvas>
+      <div id="tab-bulk" class="tab-pane">
+        <div class="sub-panel">
+          <h3>2. Bulk Recipients</h3>
+          <p class="hint">Paste one recipient per line, or upload a CSV. CSV columns: <b>name, description, date</b> (only name is required). The other fields (title, signatures, organisation, style) come from the settings below and apply to every certificate.</p>
+          <textarea class="names" id="bulk-names" placeholder="Aisha Khan&#10;Rahul Verma&#10;Emily Carter, for completing the Python course, 2026-01-15"></textarea>
+          <div class="row" style="margin-top:.5rem">
+            <input type="file" id="csv-upload" accept=".csv,text/csv" onchange="loadCSV(this)" style="flex:2">
+            <button class="btn" onclick="generateBulk()" style="flex:1">⚡ Generate Gallery</button>
+          </div>
+          <div class="form-grid" style="margin-top:.8rem">
+            <div class="full">
+              <label>Certificate Title (shared)</label>
+              <input type="text" id="bulk-title" placeholder="Certificate of Completion" oninput="syncBulkTitle()">
+            </div>
+          </div>
+        </div>
+        <div class="gallery" id="bulk-gallery"></div>
+        <div class="actions" id="bulk-actions" style="display:none">
+          <button class="btn" onclick="downloadBulkZip()">🗜️ Download All as ZIP</button>
+        </div>
+      </div>
+
+      <div class="sub-panel">
+        <h3>3. Style &amp; Branding</h3>
+        <div class="form-grid">
+          <div>
+            <label>Colour Theme</label>
+            <div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem;flex-wrap:wrap">
+              <button class="theme-btn active" style="background:linear-gradient(135deg,#b8860b,#ffd700)" onclick="setTheme('gold',this)" title="Gold"></button>
+              <button class="theme-btn" style="background:linear-gradient(135deg,#1a3a6b,#6366f1)" onclick="setTheme('blue',this)" title="Blue"></button>
+              <button class="theme-btn" style="background:linear-gradient(135deg,#1a5c3a,#10b981)" onclick="setTheme('green',this)" title="Green"></button>
+              <button class="theme-btn" style="background:linear-gradient(135deg,#6d1a3a,#ec4899)" onclick="setTheme('rose',this)" title="Rose"></button>
+              <button class="theme-btn" style="background:linear-gradient(135deg,#333,#111)" onclick="setTheme('mono',this)" title="Monochrome"></button>
+            </div>
+          </div>
+          <div>
+            <label>Custom Accent Colour</label>
+            <input type="color" id="customAccent" value="#b8860b" oninput="setCustomAccent()" style="height:38px;padding:2px">
+          </div>
+          <div>
+            <label>Heading Font</label>
+            <select id="headFont" onchange="render()">
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="Arial, sans-serif">Arial</option>
+            </select>
+          </div>
+          <div>
+            <label>Name / Body Font</label>
+            <select id="bodyFont" onchange="render()">
+              <option value="'Great Vibes', cursive">Great Vibes (script)</option>
+              <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, sans-serif">Arial</option>
+            </select>
+          </div>
+          <div>
+            <label>Orientation</label>
+            <select id="orientation" onchange="render()">
+              <option value="landscape">Landscape</option>
+              <option value="portrait">Portrait</option>
+            </select>
+          </div>
+          <div>
+            <label>Logo (optional)</label>
+            <input type="file" id="logo-upload" accept="image/*" onchange="loadLogo(this)">
+          </div>
+          <div>
+            <label>Signature Image (optional)</label>
+            <input type="file" id="sig-upload" accept="image/*" onchange="loadSig(this)">
+          </div>
+          <div>
+            <label>Seal Image (optional)</label>
+            <input type="file" id="seal-upload" accept="image/*" onchange="loadSeal(this)">
+          </div>
+          <div class="full">
+            <label><input type="checkbox" id="drawSealChk" onchange="render()" checked style="width:auto"> Draw procedural seal with text below</label>
+            <input type="text" id="seal-text" placeholder="OFFICIAL • CERTIFIED • 2026" oninput="render()">
+          </div>
+        </div>
+        <div class="row" style="margin-top:.6rem">
+          <button class="btn btn-outline" onclick="saveDesign()">💾 Save Design</button>
+          <button class="btn btn-outline" onclick="loadDesign()">📂 Load Saved Design</button>
+        </div>
+      </div>
+
+      <canvas id="cert-canvas" width="1400" height="990"></canvas>
 
       <div class="actions">
-        <button class="btn" onclick="downloadPNG()">📥 Download PNG</button>
+        <button class="btn" onclick="downloadPNG()">📥 Download PNG (print res)</button>
+        <button class="btn" onclick="downloadPDF()">📄 Download PDF</button>
         <button class="btn btn-outline" onclick="printCert()">🖨 Print</button>
       </div>
     </div>
@@ -156,162 +273,523 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script>
 var theme="gold",sigImg=null;
+var logoImg=null,sealImg=null,customAccentUsed=false,activeTab="single",currentTemplate="classic";
+var bulkCerts=[];
+
 var themes={
   gold:{primary:"#b8860b",secondary:"#ffd700",accent:"#8b6914",border:"#daa520",bg:"#fffef5"},
   blue:{primary:"#1a3a6b",secondary:"#6366f1",accent:"#2c5aa0",border:"#3b7dd8",bg:"#f5f9ff"},
-  green:{primary:"#1a5c3a",secondary:"#10b981",accent:"#0d7a50",border:"#34d399",bg:"#f0fdf4"}
+  green:{primary:"#1a5c3a",secondary:"#10b981",accent:"#0d7a50",border:"#34d399",bg:"#f0fdf4"},
+  rose:{primary:"#9d174d",secondary:"#ec4899",accent:"#be185d",border:"#f472b6",bg:"#fff5f9"},
+  mono:{primary:"#222222",secondary:"#666666",accent:"#000000",border:"#999999",bg:"#fbfbfb"}
 };
+
+var templates=[
+  {id:"classic",name:"Classic Bordered"},
+  {id:"minimal",name:"Modern Minimal"},
+  {id:"elegant",name:"Elegant Gold"},
+  {id:"corporate",name:"Corporate"},
+  {id:"academic",name:"Academic / Diploma"},
+  {id:"sports",name:"Sports / Achievement"},
+  {id:"participation",name:"Participation"},
+  {id:"appreciation",name:"Appreciation"}
+];
+
+function currentTheme(){
+  var t=Object.assign({},themes[theme]);
+  if(customAccentUsed){
+    var c=document.getElementById("customAccent").value;
+    t.primary=c;t.accent=shade(c,-25);t.border=shade(c,25);t.secondary=shade(c,45);
+  }
+  return t;
+}
+
+function shade(hex,amt){
+  var num=parseInt(hex.slice(1),16);
+  var r=Math.max(0,Math.min(255,(num>>16)+amt));
+  var g=Math.max(0,Math.min(255,((num>>8)&0xff)+amt));
+  var b=Math.max(0,Math.min(255,(num&0xff)+amt));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
 
 document.getElementById("cert-date").value=new Date().toISOString().split("T")[0];
 
-function setTheme(t,btn){
-  theme=t;
-  document.querySelectorAll(".theme-btn").forEach(function(b){b.classList.remove("active")});
-  btn.classList.add("active");
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById("tab-single").classList.toggle("active",tab==="single");
+  document.getElementById("tab-bulk").classList.toggle("active",tab==="bulk");
+  document.getElementById("tabBtnSingle").className=tab==="single"?"btn":"btn btn-outline";
+  document.getElementById("tabBtnBulk").className=tab==="bulk"?"btn":"btn btn-outline";
   render();
 }
 
-function loadSig(input){
+function setTheme(t,btn){
+  theme=t;customAccentUsed=false;
+  document.querySelectorAll(".theme-btn").forEach(function(b){b.classList.remove("active")});
+  btn.classList.add("active");
+  document.getElementById("customAccent").value=themes[t].primary;
+  render();refreshThumbs();
+}
+
+function setCustomAccent(){
+  customAccentUsed=true;
+  document.querySelectorAll(".theme-btn").forEach(function(b){b.classList.remove("active")});
+  render();refreshThumbs();
+}
+
+function selectTemplate(id){
+  currentTemplate=id;
+  document.querySelectorAll(".tmpl-card").forEach(function(c){c.classList.toggle("active",c.dataset.id===id)});
+  render();
+}
+
+function loadImgFile(input,cb){
   if(input.files&&input.files[0]){
     var r=new FileReader();
-    r.onload=function(e){sigImg=new Image();sigImg.onload=render;sigImg.src=e.target.result};
+    r.onload=function(e){var im=new Image();im.onload=function(){cb(im);render()};im.src=e.target.result};
     r.readAsDataURL(input.files[0]);
   }
 }
+function loadSig(input){loadImgFile(input,function(im){sigImg=im})}
+function loadLogo(input){loadImgFile(input,function(im){logoImg=im})}
+function loadSeal(input){loadImgFile(input,function(im){sealImg=im})}
 
-function render(){
-  var canvas=document.getElementById("cert-canvas"),ctx=canvas.getContext("2d");
+function syncBulkTitle(){render()}
+
+// Wrap text to fit a max width, returns array of lines
+function wrapText(ctx,text,maxWidth){
+  var words=text.split(" "),lines=[],line="";
+  for(var i=0;i<words.length;i++){
+    var test=line?line+" "+words[i]:words[i];
+    if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=words[i]}
+    else line=test;
+  }
+  if(line)lines.push(line);
+  return lines;
+}
+
+// Auto-fit: shrink font until text fits in maxWidth (single line)
+function fitFont(ctx,text,maxWidth,startPx,fontStr,minPx){
+  var px=startPx;
+  do{
+    ctx.font=fontStr.replace("__PX__",px);
+    if(ctx.measureText(text).width<=maxWidth)break;
+    px-=2;
+  }while(px>minPx);
+  return px;
+}
+
+function formatDate(dstr){
+  if(!dstr)return "";
+  var d=new Date(dstr);
+  if(isNaN(d))return dstr;
+  return d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+}
+
+// Gather field data for the currently active form
+function gatherData(overrides){
+  var d={
+    title:(activeTab==="bulk"?(document.getElementById("bulk-title").value||document.getElementById("cert-title").value):document.getElementById("cert-title").value)||"Certificate of Achievement",
+    recipient:document.getElementById("recipient").value||"Recipient Name",
+    desc:document.getElementById("course").value||"in recognition of outstanding achievement",
+    date:document.getElementById("cert-date").value,
+    org:document.getElementById("org").value||"FreeToolHubs Academy",
+    issuer:document.getElementById("issuer").value,
+    issuerTitle:document.getElementById("issuer-title").value,
+    issuer2:document.getElementById("issuer2").value,
+    issuer2Title:document.getElementById("issuer2-title").value
+  };
+  if(overrides)for(var k in overrides)if(overrides[k])d[k]=overrides[k];
+  return d;
+}
+
+// Master drawing function — draws one certificate onto a given canvas
+function drawCertificate(canvas,data,tmpl,portrait){
+  var ctx=canvas.getContext("2d");
+  var t=currentTheme();
   var w=canvas.width,h=canvas.height;
-  var t=themes[theme];
-  var tmpl=document.getElementById("template").value;
-  var recipient=document.getElementById("recipient").value||"Recipient Name";
-  var course=document.getElementById("course").value||"Course / Event Name";
-  var date=document.getElementById("cert-date").value;
-  var issuer=document.getElementById("issuer").value||"Issuer Name";
-  var issuerTitle=document.getElementById("issuer-title").value||"Title";
+  var headFont=(document.getElementById("headFont")||{}).value||"'Playfair Display', serif";
+  var bodyFont=(document.getElementById("bodyFont")||{}).value||"'Great Vibes', cursive";
+  var cx=w/2;
 
-  // Background
+  ctx.clearRect(0,0,w,h);
+  ctx.textAlign="center";ctx.textBaseline="alphabetic";
+
+  // Background per template
+  if(tmpl==="mono"){}
   ctx.fillStyle=t.bg;ctx.fillRect(0,0,w,h);
 
-  // Outer border
-  ctx.strokeStyle=t.primary;ctx.lineWidth=6;ctx.strokeRect(20,20,w-40,h-40);
-  // Inner border
-  ctx.strokeStyle=t.secondary;ctx.lineWidth=2;ctx.strokeRect(35,35,w-70,h-70);
+  // Template-specific decorative frame
+  drawFrame(ctx,w,h,t,tmpl);
 
-  // Corner ornaments
-  drawCorners(ctx,w,h,t);
+  var m=w*0.09;      // horizontal margin for text
+  var maxTextW=w-m*2;
 
-  // Title line
-  var titleMap={achievement:"Certificate of Achievement",completion:"Certificate of Completion",appreciation:"Certificate of Appreciation",participation:"Certificate of Participation"};
-  
-  // "CERTIFICATE" header
-  ctx.fillStyle=t.primary;ctx.font="16px 'Cormorant Garamond', serif";ctx.textAlign="center";
-  ctx.fillText("— PRESENTED BY FREETOOLHUBS —",w/2,100);
+  // Header / organisation
+  ctx.fillStyle=t.accent;
+  ctx.font="600 "+Math.round(w*0.017)+"px "+headFont;
+  ctx.fillText(data.org.toUpperCase(),cx,h*0.135);
 
-  // Main title
-  ctx.fillStyle=t.primary;ctx.font="bold 42px 'Playfair Display', serif";ctx.textAlign="center";
-  ctx.fillText(titleMap[tmpl].toUpperCase(),w/2,160);
+  // Logo
+  if(logoImg){
+    var lw=w*0.09,lh=lw*(logoImg.height/logoImg.width);
+    ctx.drawImage(logoImg,cx-lw/2,h*0.05,lw,lh);
+  }
 
-  // Decorative line
-  ctx.beginPath();ctx.moveTo(w/2-150,180);ctx.lineTo(w/2+150,180);
-  ctx.strokeStyle=t.secondary;ctx.lineWidth=2;ctx.stroke();
+  // Title (auto-fit)
+  var titlePx=fitFont(ctx,data.title.toUpperCase(),maxTextW,Math.round(w*0.05),"bold __PX__px "+headFont,20);
+  ctx.font="bold "+titlePx+"px "+headFont;
+  ctx.fillStyle=t.primary;
+  ctx.fillText(data.title.toUpperCase(),cx,h*0.24);
 
-  // "This is presented to"
-  ctx.fillStyle="#555";ctx.font="18px 'Cormorant Garamond', serif";
-  ctx.fillText("This is proudly presented to",w/2,230);
+  // Decorative divider
+  ctx.beginPath();ctx.moveTo(cx-w*0.13,h*0.265);ctx.lineTo(cx+w*0.13,h*0.265);
+  ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.0025;ctx.stroke();
 
-  // Recipient name
-  ctx.fillStyle=t.primary;ctx.font="52px 'Great Vibes', cursive";
-  ctx.fillText(recipient,w/2,310);
+  // Presented-to line
+  ctx.fillStyle="#555";ctx.font=Math.round(w*0.018)+"px "+headFont;
+  ctx.fillText("This is proudly presented to",cx,h*0.33);
+
+  // Recipient name (auto-fit, script/body font)
+  var namePx=fitFont(ctx,data.recipient,maxTextW,Math.round(w*0.06),"__PX__px "+bodyFont,22);
+  ctx.font=namePx+"px "+bodyFont;
+  ctx.fillStyle=t.primary;
+  ctx.fillText(data.recipient,cx,h*0.44);
 
   // Underline for name
-  ctx.beginPath();ctx.moveTo(w/2-200,330);ctx.lineTo(w/2+200,330);
-  ctx.strokeStyle=t.border;ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-w*0.2,h*0.465);ctx.lineTo(cx+w*0.2,h*0.465);
+  ctx.strokeStyle=t.border;ctx.lineWidth=w*0.0013;ctx.stroke();
 
-  // Description
-  ctx.fillStyle="#444";ctx.font="17px 'Cormorant Garamond', serif";
-  var desc="";
-  if(tmpl==="achievement")desc="in recognition of outstanding achievement in";
-  else if(tmpl==="completion")desc="for successfully completing the program";
-  else if(tmpl==="appreciation")desc="in sincere appreciation for contributions to";
-  else desc="for active participation in";
-  ctx.fillText(desc,w/2,375);
-
-  // Course name
-  ctx.fillStyle=t.accent;ctx.font="bold 26px 'Playfair Display', serif";
-  ctx.fillText(course,w/2,420);
+  // Description (wrapped)
+  ctx.fillStyle="#444";ctx.font=Math.round(w*0.019)+"px "+headFont;
+  var descLines=wrapText(ctx,data.desc,maxTextW*0.85);
+  var dy=h*0.53;
+  descLines.slice(0,3).forEach(function(ln){ctx.fillText(ln,cx,dy);dy+=w*0.026});
 
   // Date
-  if(date){
-    var d=new Date(date);
-    var formatted=d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-    ctx.fillStyle="#666";ctx.font="15px 'Cormorant Garamond', serif";
-    ctx.fillText("Awarded on "+formatted,w/2,470);
+  if(data.date){
+    ctx.fillStyle="#666";ctx.font=Math.round(w*0.015)+"px "+headFont;
+    ctx.fillText("Awarded on "+formatDate(data.date),cx,h*0.66);
   }
 
-  // Signature area
-  var sigY=560;
+  // Signature image (over signature 1)
+  var sig1X=data.issuer2?w*0.28:cx;
+  var sig2X=w*0.72;
+  var baseY=h*0.82;
   if(sigImg){
-    var sw=150,sh=60;
-    ctx.drawImage(sigImg,w/2-sw/2,sigY,sw,sh);
-    sigY+=70;
-  }else{
-    sigY+=20;
+    var sw=w*0.13,sh=sw*(sigImg.height/sigImg.width);
+    ctx.drawImage(sigImg,sig1X-sw/2,baseY-sh-6,sw,sh);
   }
 
-  // Issuer line
-  ctx.beginPath();ctx.moveTo(w/2-100,sigY+30);ctx.lineTo(w/2+100,sigY+30);
-  ctx.strokeStyle=t.primary;ctx.lineWidth=1;ctx.stroke();
+  // Signature lines
+  drawSignature(ctx,sig1X,baseY,data.issuer||"Authorised Signatory",data.issuerTitle||"Signature",t,w,headFont);
+  if(data.issuer2){
+    drawSignature(ctx,sig2X,baseY,data.issuer2,data.issuer2Title||"Signature",t,w,headFont);
+  }
 
-  ctx.fillStyle=t.primary;ctx.font="bold 18px 'Cormorant Garamond', serif";
-  ctx.fillText(issuer,w/2,sigY+55);
-  ctx.fillStyle="#666";ctx.font="14px 'Cormorant Garamond', serif";
-  ctx.fillText(issuerTitle,w/2,sigY+78);
+  // Seal
+  var sealX=data.issuer2?cx:w*0.8;
+  var sealY=h*0.79;
+  drawSealArea(ctx,sealX,sealY,t,w);
+}
 
-  // Seal/emblem
-  drawSeal(ctx,w-100,h-110,t);
+function drawSignature(ctx,x,y,name,title,t,w,headFont){
+  ctx.beginPath();ctx.moveTo(x-w*0.09,y);ctx.lineTo(x+w*0.09,y);
+  ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.001;ctx.stroke();
+  ctx.fillStyle=t.primary;ctx.font="bold "+Math.round(w*0.016)+"px "+headFont;ctx.textAlign="center";
+  var np=fitFont(ctx,name,w*0.2,Math.round(w*0.016),"bold __PX__px "+headFont,10);
+  ctx.font="bold "+np+"px "+headFont;
+  ctx.fillText(name,x,y+w*0.022);
+  ctx.fillStyle="#666";ctx.font=Math.round(w*0.013)+"px "+headFont;
+  ctx.fillText(title,x,y+w*0.04);
+}
+
+function drawSealArea(ctx,x,y,t,w){
+  var useDraw=document.getElementById("drawSealChk").checked;
+  var r=w*0.055;
+  if(sealImg){
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.closePath();ctx.clip();
+    ctx.drawImage(sealImg,x-r,y-r,r*2,r*2);
+    ctx.restore();
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.002;ctx.stroke();
+  }else if(useDraw){
+    drawProceduralSeal(ctx,x,y,r,t,w);
+  }
+}
+
+function drawProceduralSeal(ctx,x,y,r,t,w){
+  ctx.save();
+  // outer ring
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=t.primary;ctx.fill();
+  ctx.beginPath();ctx.arc(x,y,r*0.82,0,Math.PI*2);ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.0022;ctx.stroke();
+  ctx.beginPath();ctx.arc(x,y,r*0.55,0,Math.PI*2);ctx.fillStyle=t.bg;ctx.fill();
+  // star in center
+  ctx.fillStyle=t.primary;ctx.font="bold "+Math.round(r*0.7)+"px serif";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText("★",x,y+r*0.05);
+  // ribbon tails
+  ctx.fillStyle=t.secondary;
+  ctx.beginPath();ctx.moveTo(x-r*0.4,y+r*0.8);ctx.lineTo(x-r*0.15,y+r*0.75);ctx.lineTo(x-r*0.25,y+r*1.5);ctx.lineTo(x-r*0.5,y+r*1.35);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+r*0.4,y+r*0.8);ctx.lineTo(x+r*0.15,y+r*0.75);ctx.lineTo(x+r*0.25,y+r*1.5);ctx.lineTo(x+r*0.5,y+r*1.35);ctx.closePath();ctx.fill();
+  // circular text
+  var txt=(document.getElementById("seal-text").value||"OFFICIAL • CERTIFIED").toUpperCase();
+  ctx.fillStyle="#fff";ctx.font="bold "+Math.round(r*0.14)+"px sans-serif";
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  var tr=r*0.68,chars=txt.split(""),ang=Math.PI*1.4/Math.max(chars.length,1),start=-Math.PI/2-(ang*(chars.length-1))/2;
+  for(var i=0;i<chars.length;i++){
+    var a=start+i*ang;
+    ctx.save();
+    ctx.translate(x+Math.cos(a)*tr,y+Math.sin(a)*tr);
+    ctx.rotate(a+Math.PI/2);
+    ctx.fillText(chars[i],0,0);
+    ctx.restore();
+  }
+  ctx.restore();
+  ctx.textBaseline="alphabetic";
+}
+
+// Frame / decorative border per template style
+function drawFrame(ctx,w,h,t,tmpl){
+  ctx.textBaseline="alphabetic";
+  if(tmpl==="classic"){
+    ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.006;ctx.strokeRect(w*0.02,h*0.02,w*0.96,h*0.96);
+    ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.002;ctx.strokeRect(w*0.03,h*0.03,w*0.94,h*0.94);
+    drawCorners(ctx,w,h,t);
+  }else if(tmpl==="minimal"){
+    ctx.fillStyle=t.primary;ctx.fillRect(0,0,w,h*0.02);
+    ctx.fillRect(0,h*0.98,w,h*0.02);
+  }else if(tmpl==="elegant"){
+    var g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,t.secondary);g.addColorStop(1,t.primary);
+    ctx.strokeStyle=g;ctx.lineWidth=w*0.01;ctx.strokeRect(w*0.025,h*0.025,w*0.95,h*0.95);
+    ctx.strokeStyle=t.border;ctx.lineWidth=w*0.0015;ctx.strokeRect(w*0.045,h*0.045,w*0.91,h*0.91);
+    drawFlourishes(ctx,w,h,t);
+  }else if(tmpl==="corporate"){
+    ctx.fillStyle=t.primary;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(w*0.4,0);ctx.lineTo(0,h*0.18);ctx.closePath();ctx.fill();
+    ctx.fillStyle=t.secondary;ctx.beginPath();ctx.moveTo(w,h);ctx.lineTo(w*0.6,h);ctx.lineTo(w,h*0.82);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=t.border;ctx.lineWidth=w*0.002;ctx.strokeRect(w*0.04,h*0.04,w*0.92,h*0.92);
+  }else if(tmpl==="academic"){
+    ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.004;
+    for(var i=0;i<3;i++)ctx.strokeRect(w*(0.02+i*0.008),h*(0.02+i*0.011),w*(0.96-i*0.016),h*(0.96-i*0.022));
+    drawCorners(ctx,w,h,t);
+  }else if(tmpl==="sports"){
+    var gr=ctx.createLinearGradient(0,0,0,h);gr.addColorStop(0,t.bg);gr.addColorStop(1,shade(t.bg,-6));
+    ctx.fillStyle=gr;ctx.fillRect(0,0,w,h);
+    ctx.fillStyle=t.primary;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(w,0);ctx.lineTo(w,h*0.06);ctx.lineTo(0,h*0.1);ctx.closePath();ctx.fill();
+    ctx.fillStyle=t.secondary;ctx.beginPath();ctx.moveTo(0,h);ctx.lineTo(w,h);ctx.lineTo(w,h*0.94);ctx.lineTo(0,h*0.9);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=t.border;ctx.lineWidth=w*0.0025;ctx.strokeRect(w*0.04,h*0.13,w*0.92,h*0.74);
+  }else if(tmpl==="participation"){
+    ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.003;
+    ctx.setLineDash([w*0.02,w*0.012]);ctx.strokeRect(w*0.03,h*0.03,w*0.94,h*0.94);ctx.setLineDash([]);
+    drawCorners(ctx,w,h,t);
+  }else if(tmpl==="appreciation"){
+    ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.005;ctx.strokeRect(w*0.025,h*0.025,w*0.95,h*0.95);
+    drawFlourishes(ctx,w,h,t);
+  }else{
+    ctx.strokeStyle=t.primary;ctx.lineWidth=w*0.005;ctx.strokeRect(w*0.025,h*0.025,w*0.95,h*0.95);
+  }
 }
 
 function drawCorners(ctx,w,h,t){
-  ctx.strokeStyle=t.secondary;ctx.lineWidth=2;
-  var s=30,m=45;
-  // Top-left
+  ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.0018;
+  var s=w*0.03,m=w*0.045;
   ctx.beginPath();ctx.moveTo(m,m+s);ctx.lineTo(m,m);ctx.lineTo(m+s,m);ctx.stroke();
-  // Top-right
   ctx.beginPath();ctx.moveTo(w-m-s,m);ctx.lineTo(w-m,m);ctx.lineTo(w-m,m+s);ctx.stroke();
-  // Bottom-left
   ctx.beginPath();ctx.moveTo(m,h-m-s);ctx.lineTo(m,h-m);ctx.lineTo(m+s,h-m);ctx.stroke();
-  // Bottom-right
   ctx.beginPath();ctx.moveTo(w-m-s,h-m);ctx.lineTo(w-m,h-m);ctx.lineTo(w-m,h-m-s);ctx.stroke();
 }
 
-function drawSeal(ctx,x,y,t){
-  ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);
-  ctx.fillStyle=t.primary;ctx.fill();
-  ctx.beginPath();ctx.arc(x,y,24,0,Math.PI*2);
-  ctx.strokeStyle=t.secondary;ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle="#fff";ctx.font="bold 11px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText("✦",x,y);
+function drawFlourishes(ctx,w,h,t){
+  ctx.strokeStyle=t.secondary;ctx.lineWidth=w*0.0016;
+  var m=w*0.06,r=w*0.03;
+  [[m,m,1,1],[w-m,m,-1,1],[m,h-m,1,-1],[w-m,h-m,-1,-1]].forEach(function(c){
+    ctx.beginPath();
+    ctx.arc(c[0]+c[2]*r,c[1]+c[3]*r,r,0,Math.PI*2);
+    ctx.stroke();
+  });
 }
 
+function render(){
+  var canvas=document.getElementById("cert-canvas");
+  var portrait=document.getElementById("orientation").value==="portrait";
+  if(portrait){canvas.width=990;canvas.height=1400}
+  else{canvas.width=1400;canvas.height=990}
+  drawCertificate(canvas,gatherData(),currentTemplate,portrait);
+}
+
+// ---- Template thumbnails ----
+function buildThumbs(){
+  var grid=document.getElementById("tmpl-grid");
+  grid.innerHTML="";
+  templates.forEach(function(tp){
+    var card=document.createElement("div");
+    card.className="tmpl-card"+(tp.id===currentTemplate?" active":"");
+    card.dataset.id=tp.id;
+    card.onclick=function(){selectTemplate(tp.id)};
+    var c=document.createElement("canvas");c.width=280;c.height=198;
+    card.appendChild(c);
+    var lbl=document.createElement("div");lbl.textContent=tp.name;
+    card.appendChild(lbl);
+    grid.appendChild(card);
+    drawCertificate(c,{title:tp.name,recipient:"Sample Name",desc:"for demonstration purposes",date:"",org:"ORGANISATION",issuer:"Signatory",issuerTitle:"Director",issuer2:"",issuer2Title:""},tp.id,false);
+  });
+}
+function refreshThumbs(){
+  document.querySelectorAll(".tmpl-card").forEach(function(card){
+    var c=card.querySelector("canvas");
+    drawCertificate(c,{title:card.querySelector("div:last-child").textContent,recipient:"Sample Name",desc:"for demonstration purposes",date:"",org:"ORGANISATION",issuer:"Signatory",issuerTitle:"Director",issuer2:"",issuer2Title:""},card.dataset.id,false);
+  });
+}
+
+// ---- Bulk generation ----
+function loadCSV(input){
+  if(!input.files||!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    document.getElementById("bulk-names").value=e.target.result.trim();
+  };
+  r.readAsText(input.files[0]);
+}
+
+function parseBulk(){
+  var raw=document.getElementById("bulk-names").value.trim();
+  if(!raw)return [];
+  return raw.split(/\r?\n/).map(function(line){
+    var parts=line.split(",").map(function(s){return s.trim()});
+    return {name:parts[0],desc:parts[1]||"",date:parts[2]||""};
+  }).filter(function(r){return r.name});
+}
+
+function generateBulk(){
+  var rows=parseBulk();
+  var gallery=document.getElementById("bulk-gallery");
+  gallery.innerHTML="";bulkCerts=[];
+  if(!rows.length){gallery.innerHTML='<p class="hint">Add at least one name above.</p>';document.getElementById("bulk-actions").style.display="none";return}
+  var portrait=document.getElementById("orientation").value==="portrait";
+  rows.forEach(function(row){
+    var c=document.createElement("canvas");
+    if(portrait){c.width=990;c.height=1400}else{c.width=1400;c.height=990}
+    var over={recipient:row.name};
+    if(row.desc)over.desc=row.desc;
+    if(row.date)over.date=row.date;
+    drawCertificate(c,gatherData(over),currentTemplate,portrait);
+    var url=c.toDataURL("image/png");
+    bulkCerts.push({name:row.name,url:url});
+    var fig=document.createElement("figure");
+    var img=document.createElement("img");img.src=url;img.alt=row.name;
+    var cap=document.createElement("figcaption");cap.textContent=row.name;
+    fig.appendChild(img);fig.appendChild(cap);
+    gallery.appendChild(fig);
+  });
+  document.getElementById("bulk-actions").style.display="flex";
+}
+
+function safeName(s){return s.replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"")||"certificate"}
+
+function downloadBulkZip(){
+  if(!bulkCerts.length){alert("Generate the gallery first.");return}
+  if(typeof JSZip==="undefined"){alert("ZIP library failed to load. Check your connection.");return}
+  var zip=new JSZip();
+  bulkCerts.forEach(function(c,i){
+    var b64=c.url.split(",")[1];
+    zip.file(safeName(c.name)+"_"+(i+1)+".png",b64,{base64:true});
+  });
+  zip.generateAsync({type:"blob"}).then(function(blob){
+    download(blob,"certificates.zip");
+  });
+}
+
+// ---- Single exports ----
 function downloadPNG(){
   var canvas=document.getElementById("cert-canvas");
-  canvas.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="certificate.png";a.click()});
+  canvas.toBlob(function(b){download(b,"certificate.png")});
+}
+
+function downloadPDF(){
+  if(typeof PDFLib==="undefined"){alert("PDF library failed to load. Check your connection.");return}
+  var canvas=document.getElementById("cert-canvas");
+  var portrait=document.getElementById("orientation").value==="portrait";
+  var dataUrl=canvas.toDataURL("image/png");
+  var pngBytes=Uint8Array.from(atob(dataUrl.split(",")[1]),function(c){return c.charCodeAt(0)});
+  PDFLib.PDFDocument.create().then(function(doc){
+    // A4 in points
+    var pw=portrait?595.28:841.89,ph=portrait?841.89:595.28;
+    var page=doc.addPage([pw,ph]);
+    return doc.embedPng(pngBytes).then(function(png){
+      var scale=Math.min(pw/png.width,ph/png.height);
+      var iw=png.width*scale,ih=png.height*scale;
+      page.drawImage(png,{x:(pw-iw)/2,y:(ph-ih)/2,width:iw,height:ih});
+      return doc.save();
+    });
+  }).then(function(bytes){
+    download(new Blob([bytes],{type:"application/pdf"}),"certificate.pdf");
+  });
 }
 
 function printCert(){
   var canvas=document.getElementById("cert-canvas");
   var win=window.open("");
-  win.document.write('<img src="'+canvas.toDataURL()+'" style="width:100%;max-width:1120px">');
+  win.document.write('<img src="'+canvas.toDataURL()+'" style="width:100%;max-width:1400px">');
   win.document.close();
   win.onload=function(){win.print();win.close()};
 }
 
+// ---- localStorage design save/load ----
+function collectDesign(){
+  return {
+    template:currentTemplate,theme:theme,customAccentUsed:customAccentUsed,
+    customAccent:document.getElementById("customAccent").value,
+    headFont:document.getElementById("headFont").value,
+    bodyFont:document.getElementById("bodyFont").value,
+    orientation:document.getElementById("orientation").value,
+    title:document.getElementById("cert-title").value,
+    desc:document.getElementById("course").value,
+    org:document.getElementById("org").value,
+    issuer:document.getElementById("issuer").value,
+    issuerTitle:document.getElementById("issuer-title").value,
+    issuer2:document.getElementById("issuer2").value,
+    issuer2Title:document.getElementById("issuer2-title").value,
+    sealText:document.getElementById("seal-text").value,
+    drawSeal:document.getElementById("drawSealChk").checked
+  };
+}
+function saveDesign(){
+  localStorage.setItem("certDesign",JSON.stringify(collectDesign()));
+  alert("Design saved! It will be available next time you open this tool.");
+}
+function loadDesign(){
+  var raw=localStorage.getItem("certDesign");
+  if(!raw){alert("No saved design found.");return}
+  applyDesign(JSON.parse(raw));
+}
+function applyDesign(d){
+  currentTemplate=d.template||"classic";
+  theme=d.theme||"gold";customAccentUsed=!!d.customAccentUsed;
+  document.getElementById("customAccent").value=d.customAccent||"#b8860b";
+  document.getElementById("headFont").value=d.headFont||"'Playfair Display', serif";
+  document.getElementById("bodyFont").value=d.bodyFont||"'Great Vibes', cursive";
+  document.getElementById("orientation").value=d.orientation||"landscape";
+  document.getElementById("cert-title").value=d.title||"";
+  document.getElementById("course").value=d.desc||"";
+  document.getElementById("org").value=d.org||"";
+  document.getElementById("issuer").value=d.issuer||"";
+  document.getElementById("issuer-title").value=d.issuerTitle||"";
+  document.getElementById("issuer2").value=d.issuer2||"";
+  document.getElementById("issuer2-title").value=d.issuer2Title||"";
+  document.getElementById("seal-text").value=d.sealText||"";
+  document.getElementById("drawSealChk").checked=d.drawSeal!==false;
+  document.querySelectorAll(".theme-btn").forEach(function(b){b.classList.remove("active")});
+  document.querySelectorAll(".tmpl-card").forEach(function(c){c.classList.toggle("active",c.dataset.id===currentTemplate)});
+  render();refreshThumbs();
+}
+
 // Initial render after fonts load
-document.fonts.ready.then(render);
-setTimeout(render,500);
+function init(){buildThumbs();render()}
+document.fonts.ready.then(init);
+setTimeout(init,600);
   </script>
 </body>
 </html>

@@ -25,20 +25,66 @@
     <div class="tool-section">
       <h1>🎯 Random Name Picker & Team Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="65" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="100" y1="65" x2="100" y2="40" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="100" y1="65" x2="120" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="20" x2="110" y2="20" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Enter names (one per line), then pick randomly or make teams.</p>
-      <textarea id="names" rows="6" placeholder="Enter names, one per line:&#10;Rahul&#10;Priya&#10;Amit&#10;Sneha&#10;Vikram"></textarea>
-      <div class="row" style="margin-top:.8rem;flex-wrap:wrap">
-        <button class="btn" onclick="pickOne()" style="flex:1">🎲 Pick Random</button>
-        <button class="btn btn-outline" onclick="pickMultiple()" style="flex:1">🎯 Pick Multiple</button>
-        <button class="btn btn-outline" onclick="makeTeams()" style="flex:1">👥 Make Teams</button>
+      <p class="info">Enter names (one per line or comma separated). Add weights like <code>Riya:3</code> for weighted picks.</p>
+      <textarea id="names" rows="6" oninput="updateCount()" placeholder="Enter names, one per line or comma separated:&#10;Rahul&#10;Priya&#10;Amit&#10;Sneha&#10;Vikram"></textarea>
+      <div class="info" id="nameCount"></div>
+
+      <div class="row" style="flex-wrap:wrap">
+        <label>Mode:</label>
+        <select id="mode" onchange="modeChanged()">
+          <option value="single">Single random winner</option>
+          <option value="multiN">Pick N (no repeat)</option>
+          <option value="multiRep">Pick N (repeats allowed)</option>
+          <option value="weighted">Weighted pick</option>
+          <option value="elimination">Elimination (removes picked)</option>
+        </select>
+        <label>N:</label><input type="number" id="pickCount" value="1" min="1" style="width:70px">
+      </div>
+
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn" onclick="doPick()" style="flex:1">🎲 Pick</button>
+        <button class="btn btn-outline" onclick="spinWheel()" style="flex:1">🎡 Spin Wheel</button>
         <button class="btn btn-outline" onclick="shuffleNames()" style="flex:1">🔀 Shuffle</button>
+        <button class="btn btn-outline" onclick="resetPool()" style="flex:1">♻️ Reset Pool</button>
       </div>
-      <div class="row" style="margin-top:.5rem">
-        <label>Pick count:</label><input type="number" id="pickCount" value="1" min="1" style="width:60px">
-        <label>Teams:</label><input type="number" id="teamCount" value="2" min="2" max="10" style="width:60px">
+
+      <div class="row" style="flex-wrap:wrap;align-items:center">
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="soundOn" style="width:auto;margin:0"> 🔊 Sound</label>
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="confettiOn" checked style="width:auto;margin:0"> 🎉 Confetti</label>
       </div>
+
+      <div style="position:relative;text-align:center;margin:1rem 0">
+        <canvas id="wheel" width="360" height="360" style="max-width:100%;width:360px;height:360px"></canvas>
+        <canvas id="confetti" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none"></canvas>
+      </div>
+
       <div id="result" style="margin-top:1rem;text-align:center;min-height:80px"></div>
-      <div id="history" style="margin-top:1rem"></div>
+      <div class="row" style="justify-content:center"><button class="btn btn-outline" onclick="shareResult()">📋 Copy / Share Result</button></div>
+
+      <div class="tool-section" style="margin-top:1.2rem;background:var(--card)">
+        <h3>👥 Team Generator</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Split by:</label>
+          <select id="teamMode"><option value="count">Number of teams</option><option value="size">Fixed team size</option></select>
+          <input type="number" id="teamCount" value="2" min="1" style="width:70px">
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="teamBalance" checked style="width:auto;margin:0"> Balance sizes</label>
+          <button class="btn" onclick="makeTeams()">Make Teams</button>
+        </div>
+        <div id="teams" style="margin-top:.8rem"></div>
+      </div>
+
+      <div class="tool-section" style="margin-top:1.2rem;background:var(--card)">
+        <h3>💾 Saved Lists & History</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <input type="text" id="listName" placeholder="List name (e.g. Class 10A)">
+          <button class="btn btn-outline" onclick="saveList()">Save List</button>
+          <button class="btn btn-outline" onclick="exportLists()">Export JSON</button>
+          <label class="btn btn-outline" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept="application/json" onchange="importLists(event)" style="display:none"></label>
+        </div>
+        <div id="savedLists" style="margin-top:.5rem"></div>
+        <div id="history" style="margin-top:1rem"></div>
+        <p class="info">🔒 Picks use <code>crypto.getRandomValues()</code> for cryptographically fair, unbiased randomness — important so no name is secretly favoured. Lists and history are stored only in your browser (localStorage).</p>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Class mein random student pick karna hai? Giveaway winner decide karna hai? Names daalo, spin karo — fair aur unbiased selection!</p>
@@ -98,46 +144,213 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var hist=[];
-function getNames(){return document.getElementById("names").value.trim().split("\n").map(function(n){return n.trim()}).filter(function(n){return n})}
-function secureRandom(max){return crypto.getRandomValues(new Uint32Array(1))[0]%max}
-function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=secureRandom(i+1);var t=a[i];a[i]=a[j];a[j]=t}return a}
-function pickOne(){
-  var names=getNames();if(!names.length)return alert("Enter some names first!");
-  var picked=names[secureRandom(names.length)];
-  document.getElementById("result").innerHTML='<div style="font-size:2rem;margin:.5rem 0">🎉</div><div style="font-size:1.8rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+picked+'</div>';
-  hist.unshift(picked);renderHistory();
+/* ---------- Randomness (crypto) ---------- */
+function secureRandom(max){if(max<=0)return 0;var u=new Uint32Array(1);var lim=Math.floor(4294967296/max)*max;var v;do{crypto.getRandomValues(u);v=u[0];}while(v>=lim);return v%max;}
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=secureRandom(i+1);var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+/* ---------- Parse names ---------- */
+function parseRaw(){
+  var raw=document.getElementById("names").value;
+  var parts=raw.split(/[\n,]+/).map(function(n){return n.trim();}).filter(function(n){return n;});
+  return parts;
 }
-function pickMultiple(){
-  var names=getNames();var count=Math.min(+document.getElementById("pickCount").value,names.length);
-  if(!names.length)return alert("Enter some names first!");
-  var shuffled=shuffle(names);var picked=shuffled.slice(0,count);
-  document.getElementById("result").innerHTML='<div style="font-size:1.5rem;margin:.5rem 0">🎯 Picked '+count+':</div>'+picked.map(function(n){return '<span style="display:inline-block;background:var(--card);padding:.4rem .8rem;border-radius:8px;margin:.2rem;font-weight:600">'+n+'</span>'}).join("");
-  hist.unshift(picked.join(", "));renderHistory();
-}
-function makeTeams(){
-  var names=getNames();var teamCount=+document.getElementById("teamCount").value;
-  if(!names.length)return alert("Enter some names first!");
-  var shuffled=shuffle(names);
-  var teams=[];for(var i=0;i<teamCount;i++)teams.push([]);
-  shuffled.forEach(function(n,i){teams[i%teamCount].push(n)});
-  var colors=["#6366f1","#8b5cf6","#4caf50","#ff9800","#f44336","#00bcd4","#e91e63","#795548","#607d8b","#9c27b0"];
-  var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.8rem">';
-  teams.forEach(function(team,i){
-    html+='<div style="background:var(--card);padding:1rem;border-radius:12px;border-top:3px solid '+colors[i%colors.length]+'"><strong>Team '+(i+1)+'</strong> ('+team.length+')<br>'+team.map(function(n){return '<div style="padding:.2rem 0">'+n+'</div>'}).join("")+'</div>';
+function getNames(){return parseRaw().map(function(n){return n.replace(/:\s*\d+\s*$/,"").trim();});}
+function getWeighted(){
+  return parseRaw().map(function(n){
+    var m=n.match(/^(.*?):\s*(\d+)\s*$/);
+    if(m)return {name:m[1].trim(),weight:Math.max(1,+m[2])};
+    return {name:n,weight:1};
   });
-  html+='</div>';
-  document.getElementById("result").innerHTML=html;
 }
-function shuffleNames(){
-  var names=getNames();if(!names.length)return;
-  document.getElementById("names").value=shuffle(names).join("\n");
-  document.getElementById("result").innerHTML='<p class="info">🔀 Names shuffled!</p>';
+function updateCount(){
+  var names=getNames();var seen={},dups=[];
+  names.forEach(function(n){var k=n.toLowerCase();if(seen[k])dups.push(n);else seen[k]=1;});
+  var msg=names.length+" name"+(names.length===1?"":"s");
+  if(dups.length)msg+=" · ⚠️ "+dups.length+" duplicate"+(dups.length===1?"":"s")+" ("+Array.from(new Set(dups)).join(", ")+")";
+  document.getElementById("nameCount").textContent=msg;
 }
+
+/* ---------- Sound (Web Audio) ---------- */
+var audioCtx=null;
+function beep(freq,dur,type){
+  if(!document.getElementById("soundOn").checked)return;
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type||"sine";o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(.15,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+    o.start();o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function tickSound(){beep(600,.05,"square");}
+function winSound(){beep(523,.15);setTimeout(function(){beep(659,.15);},130);setTimeout(function(){beep(784,.3);},280);}
+
+/* ---------- Result display ---------- */
+var lastResultText="";
+function showWinner(name){
+  lastResultText=name;
+  document.getElementById("result").innerHTML='<div style="font-size:2rem;margin:.5rem 0">🎉</div><div style="font-size:1.8rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">'+esc(name)+'</div>';
+  winSound();
+  if(document.getElementById("confettiOn").checked)launchConfetti();
+}
+function showList(label,arr){
+  lastResultText=arr.join(", ");
+  document.getElementById("result").innerHTML='<div style="font-size:1.4rem;margin:.5rem 0">'+label+'</div>'+arr.map(function(n){return '<span style="display:inline-block;background:var(--card);padding:.4rem .8rem;border-radius:8px;margin:.2rem;font-weight:600">'+esc(n)+'</span>';}).join("");
+  winSound();
+  if(document.getElementById("confettiOn").checked)launchConfetti();
+}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---------- Pick modes ---------- */
+function modeChanged(){}
+function doPick(){
+  var mode=document.getElementById("mode").value;
+  var n=Math.max(1,+document.getElementById("pickCount").value||1);
+  if(mode==="weighted"){
+    var w=getWeighted();if(!w.length)return alert("Enter some names first!");
+    var pool=[];w.forEach(function(e){for(var i=0;i<e.weight;i++)pool.push(e.name);});
+    var pick=pool[secureRandom(pool.length)];
+    addHistory(pick);showWinner(pick);return;
+  }
+  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  if(mode==="single"){var p=names[secureRandom(names.length)];addHistory(p);showWinner(p);return;}
+  if(mode==="multiN"){var c=Math.min(n,names.length);var picked=shuffle(names).slice(0,c);addHistory(picked.join(", "));showList("🎯 Picked "+c+":",picked);return;}
+  if(mode==="multiRep"){var out=[];for(var i=0;i<n;i++)out.push(names[secureRandom(names.length)]);addHistory(out.join(", "));showList("🎯 Picked "+n+" (with repeats):",out);return;}
+  if(mode==="elimination"){
+    var p2=names[secureRandom(names.length)];
+    var remaining=names.slice();var idx=remaining.indexOf(p2);if(idx>-1)remaining.splice(idx,1);
+    document.getElementById("names").value=remaining.join("\n");updateCount();
+    addHistory(p2+" (eliminated)");showWinner(p2);
+    return;
+  }
+}
+function resetPool(){document.getElementById("result").innerHTML='<p class="info">♻️ Pool ready. Edit the names above.</p>';}
+
+/* ---------- Spinner wheel ---------- */
+var wheelCanvas=document.getElementById("wheel"),wctx=wheelCanvas.getContext("2d");
+var wheelAngle=0,spinning=false;
+var PALETTE=["#6366f1","#8b5cf6","#ec4899","#06b6d4","#4caf50","#ff9800","#f44336","#00bcd4","#e91e63","#9c27b0"];
+function drawWheel(names,angle){
+  var cx=180,cy=180,r=170;wctx.clearRect(0,0,360,360);
+  if(!names.length){wctx.fillStyle="#9494b8";wctx.font="16px Arial";wctx.textAlign="center";wctx.fillText("Add names to spin",cx,cy);return;}
+  var seg=(Math.PI*2)/names.length;
+  for(var i=0;i<names.length;i++){
+    var a0=angle+i*seg,a1=a0+seg;
+    wctx.beginPath();wctx.moveTo(cx,cy);wctx.arc(cx,cy,r,a0,a1);wctx.closePath();
+    wctx.fillStyle=PALETTE[i%PALETTE.length];wctx.fill();
+    wctx.save();wctx.translate(cx,cy);wctx.rotate(a0+seg/2);
+    wctx.fillStyle="#fff";wctx.font="bold 13px Arial";wctx.textAlign="right";
+    var lbl=names[i].length>14?names[i].slice(0,13)+"…":names[i];
+    wctx.fillText(lbl,r-12,5);wctx.restore();
+  }
+  // pointer
+  wctx.beginPath();wctx.moveTo(cx+r-6,cy);wctx.lineTo(cx+r+18,cy-12);wctx.lineTo(cx+r+18,cy+12);wctx.closePath();
+  wctx.fillStyle="#f8f8ff";wctx.fill();
+  // hub
+  wctx.beginPath();wctx.arc(cx,cy,26,0,Math.PI*2);wctx.fillStyle="#15152a";wctx.fill();
+  wctx.fillStyle="#f8f8ff";wctx.font="18px Arial";wctx.textAlign="center";wctx.fillText("🎯",cx,cy+6);
+}
+function spinWheel(){
+  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  if(spinning)return;
+  if(names.length>60){shuffleAnimation(names);return;}
+  spinning=true;
+  var winIdx=secureRandom(names.length);
+  var seg=(Math.PI*2)/names.length;
+  // pointer at angle 0 (right). segment center to land under pointer.
+  var target=(Math.PI*2*6)-(winIdx*seg+seg/2);
+  var start=wheelAngle,dur=4200,t0=performance.now();
+  var lastTick=0;
+  function frame(now){
+    var t=Math.min(1,(now-t0)/dur);
+    var eased=1-Math.pow(1-t,3);
+    wheelAngle=start+(target-start)*eased;
+    drawWheel(names,wheelAngle);
+    if(now-lastTick>120){tickSound();lastTick=now;}
+    if(t<1)requestAnimationFrame(frame);
+    else{spinning=false;wheelAngle=wheelAngle%(Math.PI*2);addHistory(names[winIdx]);showWinner(names[winIdx]);}
+  }
+  requestAnimationFrame(frame);
+}
+function shuffleAnimation(names){
+  spinning=true;var count=0;var res=document.getElementById("result");
+  var iv=setInterval(function(){
+    res.innerHTML='<div style="font-size:1.6rem;font-weight:700">'+esc(names[secureRandom(names.length)])+'</div>';
+    tickSound();count++;
+    if(count>25){clearInterval(iv);spinning=false;var w=names[secureRandom(names.length)];addHistory(w);showWinner(w);}
+  },70);
+}
+
+/* ---------- Confetti ---------- */
+function launchConfetti(){
+  var cv=document.getElementById("confetti");cv.style.display="block";
+  cv.width=innerWidth;cv.height=innerHeight;var cctx=cv.getContext("2d");
+  var parts=[];for(var i=0;i<140;i++)parts.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*0.3,vx:(Math.random()-0.5)*4,vy:2+Math.random()*4,s:4+Math.random()*6,c:PALETTE[i%PALETTE.length],rot:Math.random()*6});
+  var t0=performance.now();
+  function frame(now){
+    cctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=0.1;cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.fillStyle=p.c;cctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);cctx.restore();});
+    if(now-t0<2500)requestAnimationFrame(frame);else{cctx.clearRect(0,0,cv.width,cv.height);cv.style.display="none";}
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Teams ---------- */
+function makeTeams(){
+  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  var shuffled=shuffle(names);var teams=[];
+  var mode=document.getElementById("teamMode").value;var v=Math.max(1,+document.getElementById("teamCount").value||1);
+  if(mode==="count"){var tc=Math.min(v,shuffled.length);for(var i=0;i<tc;i++)teams.push([]);shuffled.forEach(function(n,i){teams[i%tc].push(n);});}
+  else{var size=v;for(var i=0;i<shuffled.length;i+=size)teams.push(shuffled.slice(i,i+size));
+    if(document.getElementById("teamBalance").checked&&teams.length>1){var last=teams[teams.length-1];if(last.length<size/2){last.forEach(function(n,k){teams[k%(teams.length-1)].push(n);});teams.pop();}}}
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem">';
+  teams.forEach(function(team,i){html+='<div style="background:var(--surface);padding:1rem;border-radius:12px;border-top:3px solid '+PALETTE[i%PALETTE.length]+'"><strong>Team '+(i+1)+'</strong> ('+team.length+')<br>'+team.map(function(n){return '<div style="padding:.2rem 0">'+esc(n)+'</div>';}).join("")+'</div>';});
+  html+='</div>';document.getElementById("teams").innerHTML=html;
+}
+
+function shuffleNames(){var names=getNames();if(!names.length)return;document.getElementById("names").value=shuffle(names).join("\n");updateCount();document.getElementById("result").innerHTML='<p class="info">🔀 Names shuffled!</p>';}
+
+/* ---------- Share ---------- */
+function shareResult(){
+  if(!lastResultText)return alert("Pick something first!");
+  var text="🎯 Result: "+lastResultText+" — via freetoolhubs.com";
+  if(navigator.share){navigator.share({text:text}).catch(function(){});}
+  else{navigator.clipboard.writeText(text);alert("Result copied to clipboard!");}
+}
+
+/* ---------- History + Saved lists (localStorage) ---------- */
+var HKEY="npHistory",LKEY="npLists";
+var hist=JSON.parse(localStorage.getItem(HKEY)||"[]");
+function addHistory(entry){hist.unshift({v:entry,t:new Date().toLocaleString()});hist=hist.slice(0,50);localStorage.setItem(HKEY,JSON.stringify(hist));renderHistory();}
 function renderHistory(){
-  if(!hist.length)return;
-  document.getElementById("history").innerHTML='<h3>History</h3>'+hist.slice(0,10).map(function(h,i){return '<div style="padding:.2rem .5rem;color:var(--muted);font-size:.85rem">'+(i+1)+'. '+h+'</div>'}).join("");
+  if(!hist.length){document.getElementById("history").innerHTML="";return;}
+  document.getElementById("history").innerHTML='<h4>History</h4>'+hist.slice(0,15).map(function(h,i){return '<div style="padding:.15rem .5rem;color:var(--text2);font-size:.82rem">'+(i+1)+'. '+esc(h.v)+' <span style="opacity:.6">· '+esc(h.t)+'</span></div>';}).join("")+'<button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .8rem" onclick="clearHistory()">Clear History</button>';
 }
+function clearHistory(){hist=[];localStorage.setItem(HKEY,"[]");renderHistory();}
+function getLists(){return JSON.parse(localStorage.getItem(LKEY)||"{}");}
+function saveList(){
+  var name=document.getElementById("listName").value.trim();if(!name)return alert("Enter a list name.");
+  var lists=getLists();lists[name]=getNames();localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();
+}
+function loadList(name){var lists=getLists();if(lists[name]){document.getElementById("names").value=lists[name].join("\n");updateCount();}}
+function deleteList(name){var lists=getLists();delete lists[name];localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();}
+function renderSaved(){
+  var lists=getLists();var keys=Object.keys(lists);
+  if(!keys.length){document.getElementById("savedLists").innerHTML='<p class="info">No saved lists yet.</p>';return;}
+  document.getElementById("savedLists").innerHTML=keys.map(function(k){return '<span style="display:inline-block;background:var(--surface);padding:.3rem .6rem;border-radius:8px;margin:.2rem;font-size:.85rem">'+esc(k)+' ('+lists[k].length+') <a href="#" onclick="loadList(\''+k.replace(/'/g,"\\'")+'\');return false" style="margin-left:.3rem">load</a> · <a href="#" onclick="deleteList(\''+k.replace(/'/g,"\\'")+'\');return false" style="color:#f44336">×</a></span>';}).join("");
+}
+function exportLists(){var b=new Blob([JSON.stringify(getLists(),null,2)],{type:"application/json"});download(b,"name-lists.json");}
+function importLists(ev){
+  var f=ev.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var data=JSON.parse(r.result);var lists=getLists();for(var k in data)if(Array.isArray(data[k]))lists[k]=data[k];localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();alert("Lists imported!");}catch(e){alert("Invalid JSON file.");}};
+  r.readAsText(f);ev.target.value="";
+}
+
+/* ---------- Init ---------- */
+updateCount();renderHistory();renderSaved();drawWheel(getNames(),0);
+document.getElementById("names").addEventListener("input",function(){if(!spinning)drawWheel(getNames(),wheelAngle);});
+window.addEventListener("resize",function(){var cv=document.getElementById("confetti");if(cv.style.display==="block"){cv.width=innerWidth;cv.height=innerHeight;}});
   </script>
 </body>
 </html>

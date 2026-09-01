@@ -18,54 +18,97 @@
     <div class="tool-section">
       <h1>🌐 Favicon Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="50,85 90,50 120,75 150,45 170,85" fill="#8b5cf6" opacity=".4"/><circle cx="70" cy="40" r="12" fill="#6366f1" opacity=".6"/></svg></div>
-      <p class="info">Create favicons from text, emoji, or image. Download multiple sizes or all as ZIP.</p>
+      <p class="info">Create a complete favicon package from a letter/initial design or an uploaded image. Live previews, all PNG sizes, ZIP download, ready-to-paste HTML snippet and a site.webmanifest — 100% in your browser.</p>
 
       <h3>Mode</h3>
       <div class="row" style="gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="setMode('text')" id="mText">✏️ Text/Initials</button>
-        <button class="btn" onclick="setMode('emoji')" id="mEmoji">😀 Emoji</button>
-        <button class="btn" onclick="setMode('image')" id="mImage">🖼️ Image Upload</button>
+        <button class="btn btn-outline" onclick="setMode('emoji')" id="mEmoji">😀 Emoji</button>
+        <button class="btn btn-outline" onclick="setMode('image')" id="mImage">🖼️ Image Upload</button>
       </div>
 
       <div id="textPanel">
-        <div class="row"><input type="text" id="text" value="AT" placeholder="Text or emoji..." maxlength="3" oninput="gen()" style="text-align:center;font-size:1.3rem;max-width:100px"></div>
+        <div class="row"><input type="text" id="text" value="AT" placeholder="1-2 letters..." maxlength="3" oninput="gen()" style="text-align:center;font-size:1.3rem;max-width:120px"></div>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Background</label><input type="color" id="bg" value="#6366f1" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+          <div><label>Font</label><select id="font" onchange="gen()"><option value="Arial,sans-serif">Sans (Arial)</option><option value="Georgia,serif">Serif (Georgia)</option><option value="'Courier New',monospace">Mono (Courier)</option><option value="Impact,sans-serif">Impact</option><option value="'Trebuchet MS',sans-serif">Trebuchet</option><option value="Verdana,sans-serif">Verdana</option></select></div>
           <div><label>Text Color</label><input type="color" id="fg" value="#ffffff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
-          <div><label>Font Size</label><input type="range" id="fsize" min="20" max="80" value="48" oninput="gen()" style="max-width:120px"></div>
+          <div><label>Font Size</label><input type="range" id="fsize" min="20" max="90" value="52" oninput="gen()" style="max-width:120px"></div>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label><input type="checkbox" id="useGrad" onchange="gen()"> Gradient background</label></div>
+          <div><label>Background</label><input type="color" id="bg" value="#6366f1" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+          <div><label>Gradient 2</label><input type="color" id="bg2" value="#8b5cf6" oninput="gen()" style="height:40px;width:60px;border:none"></div>
           <div><label>Shape</label><select id="shape" onchange="gen()"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select></div>
+          <div><label>Padding</label><input type="range" id="pad" min="0" max="30" value="0" oninput="gen()" style="max-width:120px"></div>
         </div>
       </div>
 
       <div id="emojiPanel" style="display:none">
         <div class="row" style="flex-wrap:wrap;gap:.3rem" id="emojiGrid"></div>
         <div class="row"><input type="text" id="emojiCustom" placeholder="Or paste any emoji..." maxlength="2" oninput="selEmoji(this.value)" style="text-align:center;font-size:1.5rem;max-width:80px"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label><input type="checkbox" id="emojiBg" onchange="gen()"> Add background</label></div>
+          <div><label>BG Color</label><input type="color" id="ebg" value="#ffffff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+          <div><label>Shape</label><select id="eshape" onchange="gen()"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select></div>
+        </div>
       </div>
 
       <div id="imagePanel" style="display:none">
         <div class="row"><input type="file" id="imgFile" accept="image/*" onchange="loadImg(this)"></div>
-        <p class="info">Image will be cropped to center square.</p>
+        <p class="info">Upload a logo or photo. Adjust the square crop below. Transparent PNGs can get a background fill.</p>
+        <div id="imgControls" style="display:none">
+          <div class="row" style="flex-wrap:wrap">
+            <div><label>Zoom</label><input type="range" id="zoom" min="100" max="300" value="100" oninput="gen()" style="max-width:120px"></div>
+            <div><label>Horizontal</label><input type="range" id="posX" min="0" max="100" value="50" oninput="gen()" style="max-width:120px"></div>
+            <div><label>Vertical</label><input type="range" id="posY" min="0" max="100" value="50" oninput="gen()" style="max-width:120px"></div>
+          </div>
+          <div class="row" style="flex-wrap:wrap">
+            <div><label><input type="checkbox" id="imgFill" onchange="gen()"> Fill transparent areas</label></div>
+            <div><label>Fill Color</label><input type="color" id="fillColor" value="#ffffff" oninput="gen()" style="height:40px;width:60px;border:none"></div>
+            <div><label><input type="checkbox" id="imgTrim" onchange="gen()"> Trim transparent padding</label></div>
+            <div><label>Shape</label><select id="ishape" onchange="gen()"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select></div>
+          </div>
+        </div>
       </div>
 
       <div style="text-align:center;margin:1.5rem 0">
-        <canvas id="preview" width="128" height="128" style="border:1px solid var(--border);border-radius:8px"></canvas>
+        <canvas id="preview" width="128" height="128" style="border:1px solid rgba(255,255,255,.12);border-radius:8px"></canvas>
         <div style="margin-top:.5rem">
-          <canvas id="small" width="32" height="32" style="border:1px solid var(--border);border-radius:4px;margin:0 4px"></canvas>
-          <canvas id="medium" width="64" height="64" style="border:1px solid var(--border);border-radius:4px;margin:0 4px"></canvas>
+          <canvas id="s16" width="16" height="16" style="border:1px solid rgba(255,255,255,.12);border-radius:2px;margin:0 4px;vertical-align:middle" title="16x16"></canvas>
+          <canvas id="s32" width="32" height="32" style="border:1px solid rgba(255,255,255,.12);border-radius:4px;margin:0 4px;vertical-align:middle" title="32x32"></canvas>
+          <canvas id="s48" width="48" height="48" style="border:1px solid rgba(255,255,255,.12);border-radius:4px;margin:0 4px;vertical-align:middle" title="48x48"></canvas>
+          <canvas id="s64" width="64" height="64" style="border:1px solid rgba(255,255,255,.12);border-radius:6px;margin:0 4px;vertical-align:middle" title="64x64"></canvas>
         </div>
       </div>
+
+      <h3>🖥️ Live Preview</h3>
+      <p class="info">See how your favicon looks in real-world contexts. Toggle dark mode to check it doesn't disappear on a dark tab bar.</p>
+      <div class="row" style="margin:.5rem 0"><label><input type="checkbox" id="darkPrev" onchange="renderContextPreviews()"> Dark-mode preview</label></div>
+      <div class="row" id="contextPreviews" style="flex-wrap:wrap;align-items:flex-start;gap:1rem"></div>
+
+      <h3 style="margin-top:1.5rem">Download Individual Sizes</h3>
       <div class="row" style="justify-content:center;flex-wrap:wrap">
-        <button class="btn" onclick="dl(16)">16x16</button>
-        <button class="btn" onclick="dl(32)">32x32</button>
-        <button class="btn" onclick="dl(48)">48x48</button>
-        <button class="btn" onclick="dl(180)">180 (Apple)</button>
-        <button class="btn" onclick="dl(192)">192x192</button>
-        <button class="btn" onclick="dl(512)">512x512</button>
-        <button class="btn" onclick="dlZip()">📦 Download ZIP</button>
+        <button class="btn btn-outline" onclick="dl(16)">16</button>
+        <button class="btn btn-outline" onclick="dl(32)">32</button>
+        <button class="btn btn-outline" onclick="dl(48)">48</button>
+        <button class="btn btn-outline" onclick="dl(64)">64</button>
+        <button class="btn btn-outline" onclick="dl(96)">96</button>
+        <button class="btn btn-outline" onclick="dl(128)">128</button>
+        <button class="btn btn-outline" onclick="dl(150)">150 (Tile)</button>
+        <button class="btn btn-outline" onclick="dl(180)">180 (Apple)</button>
+        <button class="btn btn-outline" onclick="dl(192)">192</button>
+        <button class="btn btn-outline" onclick="dl(512)">512</button>
       </div>
-      <div style="margin-top:1rem">
-        <button class="btn" onclick="showManifest()">📋 Generate manifest.json</button>
-        <pre id="manifestOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
+      <div class="row" style="justify-content:center;flex-wrap:wrap;margin-top:.8rem">
+        <button class="btn" onclick="dlZip()">📦 Download Full Package (ZIP)</button>
+        <button class="btn" onclick="showSnippet()">🔗 HTML &lt;link&gt; Snippet</button>
+        <button class="btn" onclick="showManifest()">📋 site.webmanifest</button>
+      </div>
+      <pre id="snippetOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
+      <pre id="manifestOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
+
+      <div class="info" style="margin-top:1rem;padding:1rem;background:rgba(255,152,0,.1);border-radius:10px;color:var(--text2)">
+        <strong>ℹ️ About .ico files:</strong> A true multi-resolution <code>.ico</code> cannot be reliably built in the browser. This tool generates <strong>PNG favicons</strong>, which every modern browser supports via <code>&lt;link rel="icon" type="image/png"&gt;</code>. If you need an <code>.ico</code> as a fallback for very old browsers, use the 32x32 PNG with a dedicated ICO converter. The generated HTML snippet already declares PNG icons, so you're covered on all current browsers.
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -128,6 +171,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
 var mode="text",uploadedImg=null,selectedEmoji="😀";
+var ALL_SIZES=[16,32,48,64,96,128,150,180,192,512];
 const emojis=["😀","🚀","⚡","🔥","💎","🎯","🌟","💡","🎨","🏠","📱","💻","🎵","📚","🌍","❤️","✅","🔒"];
 
 function setMode(m){
@@ -135,61 +179,169 @@ function setMode(m){
   document.getElementById("textPanel").style.display=m==="text"?"":"none";
   document.getElementById("emojiPanel").style.display=m==="emoji"?"":"none";
   document.getElementById("imagePanel").style.display=m==="image"?"":"none";
+  document.getElementById("mText").className=m==="text"?"btn":"btn btn-outline";
+  document.getElementById("mEmoji").className=m==="emoji"?"btn":"btn btn-outline";
+  document.getElementById("mImage").className=m==="image"?"btn":"btn btn-outline";
   gen();
 }
 function initEmojis(){
-  document.getElementById("emojiGrid").innerHTML=emojis.map(e=>"<button style='font-size:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;cursor:pointer' onclick=\"selEmoji('"+e+"')\">"+e+"</button>").join("");
+  document.getElementById("emojiGrid").innerHTML=emojis.map(e=>"<button style='font-size:1.5rem;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.3rem .5rem;cursor:pointer' onclick=\"selEmoji('"+e+"')\">"+e+"</button>").join("");
 }
-function selEmoji(e){selectedEmoji=e;gen()}
+function selEmoji(e){if(e)selectedEmoji=e;gen()}
 function loadImg(input){
   if(!input.files[0])return;
   var r=new FileReader();
   r.onload=function(e){
-    var img=new Image();img.onload=function(){uploadedImg=img;gen()};img.src=e.target.result;
+    var img=new Image();img.onload=function(){uploadedImg=img;document.getElementById("imgControls").style.display="block";gen()};img.src=e.target.result;
   };r.readAsDataURL(input.files[0]);
+}
+
+// Apply a shape clip to the given context for the given size
+function clipShape(ctx,size,shape){
+  if(shape==="circle"){ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.clip()}
+  else if(shape==="rounded"){var r=size*0.2;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.clip()}
+}
+function fillShape(ctx,size,shape,style){
+  ctx.save();clipShape(ctx,size,shape);ctx.fillStyle=style;ctx.fillRect(0,0,size,size);ctx.restore();
+}
+
+// Detect the bounding box of non-transparent pixels of the uploaded image
+var _trimCache=null,_trimForImg=null;
+function getTrimBox(){
+  if(!uploadedImg)return null;
+  if(_trimForImg===uploadedImg&&_trimCache)return _trimCache;
+  var w=uploadedImg.width,h=uploadedImg.height;
+  var tc=document.createElement("canvas");tc.width=w;tc.height=h;
+  var tctx=tc.getContext("2d");tctx.drawImage(uploadedImg,0,0);
+  var d;try{d=tctx.getImageData(0,0,w,h).data}catch(e){return null;}
+  var minX=w,minY=h,maxX=0,maxY=0,found=false;
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){var a=d[(y*w+x)*4+3];if(a>10){found=true;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}}
+  _trimForImg=uploadedImg;
+  _trimCache=found?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:{x:0,y:0,w:w,h:h};
+  return _trimCache;
 }
 
 function draw(canvas,size){
   var ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,size,size);
   if(mode==="image"&&uploadedImg){
-    var s=Math.min(uploadedImg.width,uploadedImg.height);
-    var sx=(uploadedImg.width-s)/2,sy=(uploadedImg.height-s)/2;
-    ctx.drawImage(uploadedImg,sx,sy,s,s,0,0,size,size);
+    var iw=uploadedImg.width,ih=uploadedImg.height,srcX=0,srcY=0;
+    if(document.getElementById("imgTrim").checked){var tb=getTrimBox();if(tb){iw=tb.w;ih=tb.h;srcX=tb.x;srcY=tb.y}}
+    var shape=document.getElementById("ishape").value;
+    ctx.save();clipShape(ctx,size,shape);
+    if(document.getElementById("imgFill").checked){ctx.fillStyle=document.getElementById("fillColor").value;ctx.fillRect(0,0,size,size)}
+    var zoom=+document.getElementById("zoom").value/100;
+    var posX=+document.getElementById("posX").value/100,posY=+document.getElementById("posY").value/100;
+    // square crop dimension in source pixels, reduced by zoom (zoom in = smaller crop)
+    var cropDim=Math.min(iw,ih)/zoom;
+    var maxOffX=iw-cropDim,maxOffY=ih-cropDim;
+    var sx=srcX+maxOffX*posX,sy=srcY+maxOffY*posY;
+    ctx.drawImage(uploadedImg,sx,sy,cropDim,cropDim,0,0,size,size);
+    ctx.restore();
     return;
   }
   if(mode==="emoji"){
+    if(document.getElementById("emojiBg").checked){fillShape(ctx,size,document.getElementById("eshape").value,document.getElementById("ebg").value)}
+    ctx.save();clipShape(ctx,size,document.getElementById("eshape").value);
     ctx.font=size*0.75+"px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
     ctx.fillText(selectedEmoji,size/2,size/2+size*0.05);
+    ctx.restore();
     return;
   }
-  var bg=document.getElementById("bg").value,fg=document.getElementById("fg").value;
+  // text mode
+  var fg=document.getElementById("fg").value;
   var text=document.getElementById("text").value||"A",shape=document.getElementById("shape").value;
+  var pad=+document.getElementById("pad").value/100*size;
   var fsize=+document.getElementById("fsize").value*(size/128);
-  ctx.fillStyle=bg;
-  if(shape==="circle"){ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.fill()}
-  else if(shape==="rounded"){var r=size*0.2;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.fill()}
-  else{ctx.fillRect(0,0,size,size)}
-  ctx.fillStyle=fg;ctx.font="bold "+fsize+"px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(text,size/2,size/2+fsize*0.05);
+  ctx.save();clipShape(ctx,size,shape);
+  if(document.getElementById("useGrad").checked){
+    var g=ctx.createLinearGradient(0,0,size,size);
+    g.addColorStop(0,document.getElementById("bg").value);g.addColorStop(1,document.getElementById("bg2").value);
+    ctx.fillStyle=g;
+  }else{ctx.fillStyle=document.getElementById("bg").value}
+  ctx.fillRect(0,0,size,size);
+  ctx.fillStyle=fg;ctx.font="bold "+fsize+"px "+document.getElementById("font").value;ctx.textAlign="center";ctx.textBaseline="middle";
+  // padding shrinks available box: draw text centered, scaled to fit within padded area
+  var avail=size-2*pad;var scale=avail/size;
+  ctx.translate(size/2,size/2);ctx.scale(scale,scale);
+  ctx.fillText(text,0,fsize*0.05);
+  ctx.restore();
 }
-function gen(){draw(document.getElementById("preview"),128);draw(document.getElementById("small"),32);draw(document.getElementById("medium"),64)}
-function dl(size){var c=document.createElement("canvas");c.width=size;c.height=size;draw(c,size);c.toBlob(function(b){download(b,"favicon-"+size+"x"+size+".png")})}
+function gen(){
+  draw(document.getElementById("preview"),128);
+  draw(document.getElementById("s16"),16);
+  draw(document.getElementById("s32"),32);
+  draw(document.getElementById("s48"),48);
+  draw(document.getElementById("s64"),64);
+  renderContextPreviews();
+}
+
+function makeCanvas(size){var c=document.createElement("canvas");c.width=size;c.height=size;draw(c,size);return c}
+
+function renderContextPreviews(){
+  var dark=document.getElementById("darkPrev").checked;
+  var tabBg=dark?"#202124":"#f1f3f4",tabText=dark?"#e8eaed":"#202124";
+  var barBg=dark?"#2b2b3a":"#ffffff",barText=dark?"#e8eaed":"#333";
+  var url32=makeCanvas(32).toDataURL(),url64=makeCanvas(64).toDataURL(),url128=makeCanvas(128).toDataURL();
+  var box=document.getElementById("contextPreviews");
+  box.innerHTML=
+    // browser tab
+    '<div style="min-width:180px"><div class="info" style="margin:.2rem 0">Browser Tab</div>'
+    +'<div style="background:'+tabBg+';border-radius:8px 8px 0 0;padding:.5rem .7rem;display:flex;align-items:center;gap:.5rem;max-width:200px"><img src="'+url32+'" width="16" height="16" style="border-radius:2px"><span style="color:'+tabText+';font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">My Website</span></div></div>'
+    // bookmark bar
+    +'<div style="min-width:180px"><div class="info" style="margin:.2rem 0">Bookmark Bar</div>'
+    +'<div style="background:'+barBg+';border:1px solid rgba(128,128,128,.3);border-radius:6px;padding:.4rem .6rem;display:flex;align-items:center;gap:.4rem;max-width:200px"><img src="'+url32+'" width="16" height="16"><span style="color:'+barText+';font-size:.78rem">My Website</span></div></div>'
+    // iOS home screen
+    +'<div style="text-align:center;min-width:90px"><div class="info" style="margin:.2rem 0">iOS Home</div>'
+    +'<img src="'+url128+'" width="56" height="56" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.3)"><div style="font-size:.7rem;margin-top:.2rem;color:var(--text2)">My App</div></div>'
+    // android launcher
+    +'<div style="text-align:center;min-width:90px"><div class="info" style="margin:.2rem 0">Android</div>'
+    +'<img src="'+url64+'" width="52" height="52" style="border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3)"><div style="font-size:.7rem;margin-top:.2rem;color:var(--text2)">My App</div></div>';
+}
+
+function dl(size){makeCanvas(size).toBlob(function(b){download(b,"favicon-"+size+"x"+size+".png")})}
+
 function dlZip(){
-  var zip=new JSZip();var sizes=[16,32,48,180,192,512];var done=0;
-  sizes.forEach(function(size){
-    var c=document.createElement("canvas");c.width=size;c.height=size;draw(c,size);
-    c.toBlob(function(b){
-      zip.file("favicon-"+size+"x"+size+".png",b);
-      if(++done===sizes.length)zip.generateAsync({type:"blob"}).then(function(z){download(z,"favicons.zip")});
+  var zip=new JSZip();var done=0;
+  ALL_SIZES.forEach(function(size){
+    makeCanvas(size).toBlob(function(b){
+      var name=size===180?"apple-touch-icon.png":size===150?"mstile-150x150.png":"favicon-"+size+"x"+size+".png";
+      zip.file(name,b);
+      if(++done===ALL_SIZES.length){
+        zip.file("site.webmanifest",manifestJSON());
+        zip.file("favicon-links.html",snippetHTML());
+        zip.generateAsync({type:"blob"}).then(function(z){download(z,"favicon-package.zip")});
+      }
     });
   });
 }
-function showManifest(){
-  var el=document.getElementById("manifestOut");
-  el.style.display="block";
-  el.textContent=JSON.stringify({name:"My App",short_name:"App",icons:[{src:"/favicon-192x192.png",sizes:"192x192",type:"image/png"},{src:"/favicon-512x512.png",sizes:"512x512",type:"image/png"}],theme_color:"#6366f1",background_color:"#ffffff",display:"standalone"},null,2);
+
+function snippetHTML(){
+  return '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">\n'
+    +'<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">\n'
+    +'<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">\n'
+    +'<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">\n'
+    +'<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">\n'
+    +'<meta name="msapplication-TileImage" content="/mstile-150x150.png">\n'
+    +'<meta name="theme-color" content="#6366f1">\n'
+    +'<link rel="manifest" href="/site.webmanifest">';
 }
-initEmojis();gen();
+function showSnippet(){var el=document.getElementById("snippetOut");el.style.display="block";el.textContent=snippetHTML()}
+
+function manifestJSON(){
+  return JSON.stringify({
+    name:"My App",short_name:"App",
+    icons:[
+      {src:"/favicon-192x192.png",sizes:"192x192",type:"image/png"},
+      {src:"/favicon-512x512.png",sizes:"512x512",type:"image/png"},
+      {src:"/favicon-512x512.png",sizes:"512x512",type:"image/png",purpose:"any maskable"}
+    ],
+    theme_color:"#6366f1",background_color:"#ffffff",display:"standalone",start_url:"/"
+  },null,2);
+}
+function showManifest(){var el=document.getElementById("manifestOut");el.style.display="block";el.textContent=manifestJSON()}
+
+initEmojis();setMode("text");
   </script>
 </body>
 </html>

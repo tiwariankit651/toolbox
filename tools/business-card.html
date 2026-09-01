@@ -10,6 +10,24 @@
   <meta property="og:title" content="Business Card Generator — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/business-card"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <link rel="canonical" href="https://freetoolhubs.com/tools/business-card"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Business Card Generator","url":"https://freetoolhubs.com/tools/business-card","applicationCategory":"DesignApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Create professional business cards online for free. Choose from 4 design templates, customize colors and fonts, upload logo, and download as PNG."}</script>
+  <style>
+    .bc-panel{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem;margin:1rem 0}
+    .bc-panel h3{font-size:1rem;margin-bottom:.6rem}
+    .bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+    .bc-grid label{font-size:.82rem;font-weight:600;display:block;margin-bottom:.15rem}
+    .bc-grid .full{grid-column:1/-1}
+    .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin:.4rem 0}
+    .tmpl-card{background:var(--bg);border:2px solid rgba(255,255,255,.1);border-radius:10px;padding:.5rem;cursor:pointer;text-align:center;transition:all .2s;font-size:.75rem;font-weight:600}
+    .tmpl-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+    .tmpl-card.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+    .tmpl-card canvas{width:100%;height:auto;border-radius:5px;display:block;margin-bottom:.3rem;background:#fff}
+    .pill-row{display:flex;flex-wrap:wrap;gap:.4rem;margin:.4rem 0}
+    .pill{padding:.45rem .9rem;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:var(--bg);color:var(--text);cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s}
+    .pill.active{background:var(--gradient);color:#fff;border-color:transparent}
+    #cardCanvas{background:#fff}
+    .swatch{width:34px;height:34px;border-radius:8px;border:3px solid transparent;cursor:pointer}
+    .swatch.active{border-color:var(--text)}
+  </style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -18,69 +36,128 @@
     <div class="tool-section">
       <h1>🪪 Business Card Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#8b5cf6" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#6366f1" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Design professional business cards with live preview. Download front and back as PNG.</p>
+      <p class="info">Design professional business cards with 8 templates, front &amp; back, QR codes, multiple print sizes, and A4 sheet layout. Live preview, all in your browser.</p>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div>
-          <label>Full Name:</label><input type="text" id="cardName" placeholder="John Doe" oninput="renderCard()">
-        </div>
-        <div>
-          <label>Title / Designation:</label><input type="text" id="cardTitle" placeholder="Senior Developer" oninput="renderCard()">
-        </div>
-        <div>
-          <label>Company:</label><input type="text" id="cardCompany" placeholder="Acme Inc." oninput="renderCard()">
-        </div>
-        <div>
-          <label>Phone:</label><input type="text" id="cardPhone" placeholder="+1 234 567 8900" oninput="renderCard()">
-        </div>
-        <div>
-          <label>Email:</label><input type="text" id="cardEmail" placeholder="john@acme.com" oninput="renderCard()">
-        </div>
-        <div>
-          <label>Website:</label><input type="text" id="cardWebsite" placeholder="www.acme.com" oninput="renderCard()">
-        </div>
-        <div style="grid-column:1/-1">
-          <label>Address:</label><input type="text" id="cardAddress" placeholder="123 Main St, City, State 12345" oninput="renderCard()">
+      <div class="bc-panel">
+        <h3>1. Template Design</h3>
+        <div class="tmpl-grid" id="tplGrid"></div>
+      </div>
+
+      <div class="bc-panel">
+        <h3>2. Card Details</h3>
+        <div class="bc-grid">
+          <div><label>Full Name</label><input type="text" id="cardName" placeholder="John Doe" oninput="renderCard()"></div>
+          <div><label>Designation</label><input type="text" id="cardTitle" placeholder="Senior Developer" oninput="renderCard()"></div>
+          <div><label>Company</label><input type="text" id="cardCompany" placeholder="Acme Inc." oninput="renderCard()"></div>
+          <div><label>Tagline</label><input type="text" id="cardTagline" placeholder="Building the future" oninput="renderCard()"></div>
+          <div><label>Phone 1</label><input type="text" id="cardPhone" placeholder="+1 234 567 8900" oninput="renderCard()"></div>
+          <div><label>Phone 2</label><input type="text" id="cardPhone2" placeholder="+1 234 567 8901" oninput="renderCard()"></div>
+          <div><label>Email</label><input type="text" id="cardEmail" placeholder="john@acme.com" oninput="renderCard()"></div>
+          <div><label>Website</label><input type="text" id="cardWebsite" placeholder="www.acme.com" oninput="renderCard()"></div>
+          <div class="full"><label>Address</label><input type="text" id="cardAddress" placeholder="123 Main St, City, State 12345" oninput="renderCard()"></div>
+          <div><label>Social 1</label><input type="text" id="cardSocial1" placeholder="@johndoe" oninput="renderCard()"></div>
+          <div><label>Social 2</label><input type="text" id="cardSocial2" placeholder="linkedin.com/in/john" oninput="renderCard()"></div>
+          <div><label>Social 3</label><input type="text" id="cardSocial3" placeholder="github.com/john" oninput="renderCard()"></div>
+          <div><label>Social 4</label><input type="text" id="cardSocial4" placeholder="@john_dev" oninput="renderCard()"></div>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem">
-        <button class="btn" onclick="setTemplate('classic')" id="tplClassic">Classic</button>
-        <button class="btn btn-outline" onclick="setTemplate('modern')" id="tplModern">Modern</button>
-        <button class="btn btn-outline" onclick="setTemplate('minimal')" id="tplMinimal">Minimal</button>
-        <button class="btn btn-outline" onclick="setTemplate('bold')" id="tplBold">Bold</button>
+      <div class="bc-panel">
+        <h3>3. Card Size</h3>
+        <div class="pill-row" id="sizeRow">
+          <button class="pill active" data-size="us" onclick="setSize('us',this)">US/Intl 3.5×2 in</button>
+          <button class="pill" data-size="eu" onclick="setSize('eu',this)">European 85×55 mm</button>
+          <button class="pill" data-size="square" onclick="setSize('square',this)">Square 55×55 mm</button>
+          <button class="pill" data-size="slim" onclick="setSize('slim',this)">Slim 85×40 mm</button>
+        </div>
+        <label style="font-size:.85rem"><input type="checkbox" id="showGuides" onchange="renderCard()" style="width:auto"> Show bleed &amp; safe-area guides</label>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div>
-          <label>Accent Color:</label><input type="color" id="accentColor" value="#6366f1" oninput="renderCard()" style="width:100%;height:38px;border:none;cursor:pointer;border-radius:8px">
-        </div>
-        <div>
-          <label>Font Style:</label>
-          <select id="fontStyle" onchange="renderCard()" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)">
-            <option value="sans-serif">Sans-serif</option>
-            <option value="serif">Serif</option>
-            <option value="monospace">Monospace</option>
-          </select>
-        </div>
-        <div>
-          <label>Upload Logo:</label><input type="file" id="logoUpload" accept="image/*" onchange="loadLogo(event)" style="font-size:.8rem">
+      <div class="bc-panel">
+        <h3>4. Style &amp; Branding</h3>
+        <div class="bc-grid">
+          <div>
+            <label>Palette Preset</label>
+            <div class="pill-row" id="paletteRow"></div>
+          </div>
+          <div>
+            <label>Accent Colour</label>
+            <input type="color" id="accentColor" value="#6366f1" oninput="onAccentChange()" style="width:100%;height:38px;border:none;cursor:pointer;border-radius:8px">
+          </div>
+          <div>
+            <label>Font Style</label>
+            <select id="fontStyle" onchange="renderCard()" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--bg);color:var(--text)">
+              <option value="Arial, sans-serif">Sans-serif</option>
+              <option value="Georgia, serif">Serif</option>
+              <option value="'Courier New', monospace">Monospace</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+            </select>
+          </div>
+          <div>
+            <label>Upload Logo</label>
+            <input type="file" id="logoUpload" accept="image/*" onchange="loadLogo(event)" style="font-size:.8rem">
+          </div>
+          <div>
+            <label>Logo Scale: <span id="logoScaleVal">100%</span></label>
+            <input type="range" id="logoScale" min="30" max="200" value="100" oninput="onLogoScale()">
+          </div>
+          <div>
+            <label>Logo Position</label>
+            <select id="logoPos" onchange="renderCard()" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--bg);color:var(--text)">
+              <option value="tl">Top Left</option>
+              <option value="tr">Top Right</option>
+              <option value="center">Centre</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <div class="bc-panel">
+        <h3>5. Back Side &amp; QR Code</h3>
+        <div class="bc-grid">
+          <div>
+            <label>Back Content</label>
+            <select id="backMode" onchange="renderCard()" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--bg);color:var(--text)">
+              <option value="logo">Logo + Company</option>
+              <option value="qr">QR Code</option>
+              <option value="services">Services List</option>
+              <option value="tagline">Tagline</option>
+            </select>
+          </div>
+          <div>
+            <label>QR Type</label>
+            <select id="qrType" onchange="renderCard()" style="width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--bg);color:var(--text)">
+              <option value="url">Website URL</option>
+              <option value="vcard">vCard Contact</option>
+            </select>
+          </div>
+          <div class="full">
+            <label>Services / Back text (comma or newline separated)</label>
+            <input type="text" id="backServices" placeholder="Web Design, SEO, Consulting" oninput="renderCard()">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.5rem;margin:1rem 0">
         <button class="btn" onclick="showSide('front')" id="btnFront">Front</button>
         <button class="btn btn-outline" onclick="showSide('back')" id="btnBack">Back</button>
       </div>
 
       <div style="display:flex;justify-content:center;margin-bottom:1rem;background:var(--card);padding:1.5rem;border-radius:12px">
-        <canvas id="cardCanvas" width="700" height="400" style="max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)"></canvas>
+        <canvas id="cardCanvas" width="1050" height="600" style="max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)"></canvas>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem">
-        <button class="btn" onclick="downloadCard('front')">⬇️ Download Front</button>
-        <button class="btn" onclick="downloadCard('back')">⬇️ Download Back</button>
-        <button class="btn" onclick="printCard()">🖨️ Print</button>
+      <div class="bc-grid">
+        <button class="btn" onclick="downloadCard('front')">⬇️ Front PNG</button>
+        <button class="btn" onclick="downloadCard('back')">⬇️ Back PNG</button>
+        <button class="btn" onclick="downloadZip()">🗜️ Both as ZIP</button>
+        <button class="btn" onclick="downloadPDF()">📄 Print PDF</button>
+        <button class="btn" onclick="downloadSheetPDF()">📄 A4 Sheet (cut marks)</button>
+        <button class="btn btn-outline" onclick="printCard()">🖨️ Print</button>
+      </div>
+      <div class="pill-row" style="margin-top:.6rem">
+        <button class="btn btn-outline" onclick="saveCard()" style="margin:0">💾 Save Card Data</button>
+        <button class="btn btn-outline" onclick="loadCard()" style="margin:0">📂 Load Saved Data</button>
       </div>
     </div>
 
@@ -149,8 +226,11 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script>
-var template='classic',side='front',logoImg=null;
+var template='minimal',side='front',logoImg=null;
 var canvas=document.getElementById('cardCanvas'),ctx=canvas.getContext('2d');
 
 function setTemplate(t){template=t;

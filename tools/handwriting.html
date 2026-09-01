@@ -10,7 +10,9 @@
   <meta property="og:title" content="Handwritten Assignment Maker — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/handwriting"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Handwritten Assignment Maker","url":"https://freetoolhubs.com/tools/handwriting","description":"Convert text to handwritten PDF","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/handwriting"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-  <style>@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600&family=Dancing+Script&family=Gloria+Hallelujah&family=Indie+Flower&family=Kalam&family=Noto+Sans+Devanagari&family=Noto+Sans+Bengali&family=Noto+Sans+Tamil&family=Noto+Sans+Telugu&family=Patrick+Hand&family=Shadows+Into+Light&display=swap');</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600&family=Gloria+Hallelujah&family=Homemade+Apple&family=Indie+Flower&family=Kalam:wght@300;400;700&family=Noto+Sans+Bengali&family=Noto+Sans+Devanagari&family=Noto+Sans+Tamil&family=Noto+Sans+Telugu&family=Patrick+Hand&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -19,12 +21,22 @@
     <div class="tool-section">
       <h1>✍️ Handwritten Assignment Maker</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Type your text, choose handwriting style, and download as image. Perfect for assignments.</p>
-      <textarea id="text" rows="8" placeholder="Type your assignment text here..."></textarea>
-      <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
-        <div><label>Font:</label><select id="font" onchange="preview()">
+      <p class="info">Type your text, choose a handwriting style and paper, tweak the realism, and export as PNG, ZIP or multi-page PDF. Long text flows onto multiple pages automatically.</p>
+      <div class="info" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:.7rem 1rem;margin:.6rem 0">ℹ️ This produces a handwriting-<strong>style</strong> image, not a scan of real handwriting. Please check whether your school or college accepts computer-generated handwriting before submitting — we don't encourage academic dishonesty.</div>
+      <textarea id="text" rows="7" placeholder="Type your assignment text here..." oninput="scheduleRender()"></textarea>
+
+      <div class="row" style="flex-wrap:wrap;margin:.8rem 0;gap:.6rem;align-items:flex-start">
+        <div style="flex:1;min-width:150px"><label>Font</label><select id="font" onchange="reshuffleAndRender()">
           <optgroup label="English Handwriting">
-            <option value="Caveat">Caveat</option><option value="Indie Flower">Indie Flower</option><option value="Patrick Hand">Patrick Hand</option><option value="Dancing Script">Dancing Script</option><option value="Shadows Into Light">Shadows Into Light</option><option value="Kalam">Kalam</option><option value="Architects Daughter">Architects Daughter</option><option value="Gloria Hallelujah">Gloria Hallelujah</option>
+            <option value="Caveat">Caveat</option>
+            <option value="Kalam">Kalam</option>
+            <option value="Indie Flower">Indie Flower</option>
+            <option value="Patrick Hand">Patrick Hand</option>
+            <option value="Shadows Into Light">Shadows Into Light</option>
+            <option value="Architects Daughter">Architects Daughter</option>
+            <option value="Homemade Apple">Homemade Apple</option>
+            <option value="Dancing Script">Dancing Script</option>
+            <option value="Gloria Hallelujah">Gloria Hallelujah</option>
           </optgroup>
           <optgroup label="Indian Languages">
             <option value="Noto Sans Devanagari">Hindi / Marathi (Devanagari)</option>
@@ -33,17 +45,54 @@
             <option value="Noto Sans Telugu">Telugu</option>
           </optgroup>
         </select></div>
-        <div><label><input type="checkbox" id="showPageNum" checked> Page Number</label></div>
-        <div><label>Size:</label><input type="range" id="fsize" min="18" max="36" value="24" oninput="preview()" style="max-width:100px"></div>
-        <div><label>Ink:</label><select id="ink" onchange="preview()"><option value="#1a1aff">Blue</option><option value="#000000">Black</option><option value="#1a0a00">Dark Blue</option><option value="#8B0000">Red</option></select></div>
-        <div><label>Paper:</label><select id="paper" onchange="preview()"><option value="ruled">Ruled</option><option value="plain">Plain White</option><option value="grid">Grid</option><option value="yellow">Yellow Pad</option></select></div>
+        <div style="flex:0 0 auto"><label>Size</label><input type="range" id="fsize" min="16" max="40" value="24" oninput="scheduleRender()" style="max-width:110px"></div>
+        <div style="flex:0 0 auto"><label>Line spacing</label><input type="range" id="lineSpacing" min="1.2" max="3" step="0.1" value="1.7" oninput="scheduleRender()" style="max-width:110px"></div>
+        <div style="flex:0 0 auto"><label>Ink</label><select id="ink" onchange="scheduleRender()">
+          <option value="#12227a">Blue</option>
+          <option value="#111111">Black</option>
+          <option value="#0d1b3e">Blue-Black</option>
+        </select></div>
       </div>
-      <div style="text-align:center;margin:1rem 0"><canvas id="page" style="max-width:100%;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.2)"></canvas></div>
+
+      <div class="row" style="flex-wrap:wrap;margin:.6rem 0;gap:.6rem;align-items:flex-start">
+        <div style="flex:0 0 auto"><label>Paper</label><select id="paper" onchange="scheduleRender()">
+          <option value="plain">Plain white</option>
+          <option value="ruled" selected>Single-ruled</option>
+          <option value="double">Double-ruled</option>
+          <option value="fourline">Four-line</option>
+          <option value="grid">Grid / graph</option>
+          <option value="dotgrid">Dotted grid</option>
+        </select></div>
+        <div style="flex:0 0 auto"><label>Line colour</label><input type="color" id="lineColor" value="#9bb0d6" onchange="scheduleRender()" style="width:44px;height:38px;padding:2px"></div>
+        <div style="flex:0 0 auto"><label><input type="checkbox" id="marginLine" checked onchange="scheduleRender()"> Margin line</label></div>
+        <div style="flex:0 0 auto"><label><input type="checkbox" id="showPageNum" checked onchange="scheduleRender()"> Page number</label></div>
+      </div>
+
+      <div class="row" style="flex-wrap:wrap;margin:.6rem 0;gap:.6rem;align-items:flex-start">
+        <div style="flex:0 0 auto"><label>Page size</label><select id="pageSize" onchange="scheduleRender()"><option value="a4">A4</option><option value="letter">Letter</option></select></div>
+        <div style="flex:0 0 auto"><label>Orientation</label><select id="orient" onchange="scheduleRender()"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
+        <div style="flex:0 0 auto"><label>Margin</label><input type="range" id="margin" min="30" max="140" value="80" oninput="scheduleRender()" style="max-width:110px"></div>
+        <div style="flex:0 0 auto"><label>Realism</label><input type="range" id="realism" min="0" max="1.5" step="0.05" value="0.7" oninput="scheduleRender()" style="max-width:110px"></div>
+      </div>
+
+      <div class="row" style="justify-content:center;flex-wrap:wrap;margin:.6rem 0">
+        <button class="btn btn-outline" onclick="reshuffleAndRender()">🎲 Reshuffle look</button>
+      </div>
+
+      <div class="row" style="justify-content:center;align-items:center;flex-wrap:wrap;gap:.6rem;margin:.6rem 0">
+        <button class="btn btn-outline" onclick="pageNav(-1)">◀ Prev</button>
+        <span id="pageInfo" style="font-weight:600">Page 1 / 1</span>
+        <button class="btn btn-outline" onclick="pageNav(1)">Next ▶</button>
+      </div>
+
+      <div style="text-align:center;margin:1rem 0"><canvas id="page" style="max-width:100%;border:1px solid rgba(255,255,255,.12);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.2)"></canvas></div>
+
+      <p class="info" id="stats" style="text-align:center">0 words · 0 characters · ~1 page</p>
+
       <div class="row" style="justify-content:center;flex-wrap:wrap">
-        <button class="btn" onclick="preview()">🔄 Preview</button>
-        <button class="btn" onclick="dl('png')">💾 PNG</button>
-        <button class="btn" onclick="dl('jpg')">💾 JPG</button>
-        <button class="btn" onclick="dlPdf()">💾 PDF</button>
+        <button class="btn" onclick="dlPng()">💾 This page (PNG)</button>
+        <button class="btn" onclick="dlZip()">🗜️ All pages (ZIP)</button>
+        <button class="btn" onclick="dlPdf()">📄 All pages (PDF)</button>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -94,79 +143,213 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var c=document.getElementById("page"),ctx=c.getContext("2d");
-function preview(){
+var pages=[];          // array of {lines:[...]} per page
+var curPage=0;
+var seed=12345;        // deterministic seed for the "handwritten" randomness
+var renderTimer=null;
+
+// Page dimensions in px at ~96dpi-ish working resolution.
+var SIZES={a4:{w:794,h:1123},letter:{w:816,h:1056}};
+
+// Seeded PRNG (mulberry32) so re-rendering is stable unless we reshuffle.
+function makeRng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function getPageDims(){
+  var base=SIZES[document.getElementById("pageSize").value]||SIZES.a4;
+  if(document.getElementById("orient").value==="landscape")return {w:base.h,h:base.w};
+  return {w:base.w,h:base.h};
+}
+
+function layout(){
   var text=document.getElementById("text").value||"Type your assignment text above...";
   var font=document.getElementById("font").value;
   var fsize=+document.getElementById("fsize").value;
-  var ink=document.getElementById("ink").value;
-  var paper=document.getElementById("paper").value;
-  var W=794,lineH=fsize*1.6,margin=80,topMargin=100;
-  var lines=[];var paras=text.split(/\n/);
+  var lineSpacing=+document.getElementById("lineSpacing").value;
+  var margin=+document.getElementById("margin").value;
+  var dims=getPageDims();
+  var lineH=fsize*lineSpacing;
+  var topMargin=Math.max(margin,fsize*2);
+  var usableW=dims.w-margin*2;
+  var maxLinesPerPage=Math.floor((dims.h-topMargin-margin)/lineH);
+  if(maxLinesPerPage<1)maxLinesPerPage=1;
+
+  // wrap into lines
   ctx.font=fsize+"px '"+font+"'";
-  paras.forEach(function(para){
-    if(!para.trim()){lines.push("");return}
-    var ws=para.split(/\s+/);var line="";
-    ws.forEach(function(w){
-      if(ctx.measureText(line+w+" ").width>W-margin*2-20){lines.push(line.trim());line=""}
+  var allLines=[];
+  text.split(/\n/).forEach(function(para){
+    if(!para.trim()){allLines.push("");return}
+    var words=para.split(/\s+/),line="";
+    words.forEach(function(w){
+      if(ctx.measureText((line+w+" ")).width>usableW&&line){allLines.push(line.trim());line=""}
       line+=w+" ";
     });
-    if(line.trim())lines.push(line.trim());
+    if(line.trim())allLines.push(line.trim());
   });
-  var H=Math.max(1123,topMargin+lines.length*lineH+100);
-  c.width=W;c.height=H;
-  // Paper background
-  if(paper==="yellow"){ctx.fillStyle="#fffde7"}else{ctx.fillStyle="#ffffff"}
-  ctx.fillRect(0,0,W,H);
-  // Draw lines
-  if(paper==="ruled"||paper==="yellow"){
-    ctx.strokeStyle="rgba(200,200,220,0.5)";ctx.lineWidth=1;
-    for(var y=topMargin;y<H;y+=lineH){ctx.beginPath();ctx.moveTo(margin-20,y);ctx.lineTo(W-margin+20,y);ctx.stroke()}
-    ctx.strokeStyle="rgba(255,100,100,0.3)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(margin-10,0);ctx.lineTo(margin-10,H);ctx.stroke();
+
+  // paginate
+  pages=[];
+  for(var i=0;i<allLines.length;i+=maxLinesPerPage){
+    pages.push({lines:allLines.slice(i,i+maxLinesPerPage)});
   }
-  if(paper==="grid"){
-    ctx.strokeStyle="rgba(200,200,220,0.3)";ctx.lineWidth=0.5;
-    for(var x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
-    for(var y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  if(!pages.length)pages.push({lines:[""]});
+  if(curPage>=pages.length)curPage=pages.length-1;
+  if(curPage<0)curPage=0;
+
+  return {font:font,fsize:fsize,lineH:lineH,topMargin:topMargin,margin:margin,dims:dims};
+}
+
+function drawPaper(cfg){
+  var dims=cfg.dims,margin=cfg.margin,lineH=cfg.lineH,topMargin=cfg.topMargin;
+  var paper=document.getElementById("paper").value;
+  var lineColor=document.getElementById("lineColor").value;
+  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,dims.w,dims.h);
+
+  function hline(y,alpha,width){ctx.strokeStyle=hexA(lineColor,alpha);ctx.lineWidth=width||1;ctx.beginPath();ctx.moveTo(margin*0.5,y);ctx.lineTo(dims.w-margin*0.5,y);ctx.stroke()}
+
+  if(paper==="ruled"){
+    for(var y=topMargin;y<dims.h-margin*0.5;y+=lineH)hline(y,0.55);
+  }else if(paper==="double"){
+    for(var y=topMargin;y<dims.h-margin*0.5;y+=lineH){hline(y,0.55);hline(y-cfg.fsize*0.5,0.28)}
+  }else if(paper==="fourline"){
+    for(var y=topMargin;y<dims.h-margin*0.5;y+=lineH){
+      hline(y,0.5);                       // baseline
+      hline(y-cfg.fsize*0.5,0.25);        // midline
+      hline(y-cfg.fsize,0.4);             // top line
+      hline(y+cfg.fsize*0.4,0.25);        // descender line
+    }
+  }else if(paper==="grid"){
+    ctx.strokeStyle=hexA(lineColor,0.4);ctx.lineWidth=0.6;
+    for(var x=0;x<dims.w;x+=22){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,dims.h);ctx.stroke()}
+    for(var y=0;y<dims.h;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(dims.w,y);ctx.stroke()}
+  }else if(paper==="dotgrid"){
+    ctx.fillStyle=hexA(lineColor,0.6);
+    for(var x=22;x<dims.w;x+=22)for(var y=22;y<dims.h;y+=22){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill()}
   }
-  // Write text
-  ctx.font=fsize+"px '"+font+"'";ctx.fillStyle=ink;
-  lines.forEach(function(line,i){
-    var x=margin+(Math.random()*3-1.5);
-    var y=topMargin+i*lineH+(Math.random()*2-1);
-    // Render with letter variation for realism
-    var chars=line.split("");
-    var cx=x;
-    chars.forEach(function(ch){
+  // margin line
+  if(document.getElementById("marginLine").checked){
+    ctx.strokeStyle=hexA("#e05a5a",0.5);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(margin,0);ctx.lineTo(margin,dims.h);ctx.stroke();
+  }
+}
+
+function hexA(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return"rgba("+r+","+g+","+b+","+a+")"}
+
+function drawPage(cfg,pageIndex){
+  var pg=pages[pageIndex];
+  var dims=cfg.dims,margin=cfg.margin,lineH=cfg.lineH,topMargin=cfg.topMargin,fsize=cfg.fsize,font=cfg.font;
+  var ink=document.getElementById("ink").value;
+  var realism=+document.getElementById("realism").value;
+  // Seed per page so each page is stable but distinct.
+  var rng=makeRng(seed+pageIndex*997);
+  var baseR=parseInt(ink.slice(1,3),16),baseG=parseInt(ink.slice(3,5),16),baseB=parseInt(ink.slice(5,7),16);
+
+  ctx.textAlign="left";ctx.textBaseline="alphabetic";
+  pg.lines.forEach(function(line,i){
+    var wobble=(rng()-0.5)*realism*4;                  // per-line baseline wobble
+    var y=topMargin+i*lineH+wobble;
+    var cx=margin+(rng()-0.5)*realism*3;
+    line.split("").forEach(function(ch){
       ctx.save();
-      ctx.translate(cx,y);
-      ctx.rotate((Math.random()-0.5)*0.03);
-      var sizeVar=fsize+(Math.random()-0.5)*2;
-      ctx.font=sizeVar+"px '"+font+"'";
-      ctx.fillText(ch,0,(Math.random()-0.5)*1.5);
-      cx+=ctx.measureText(ch).width+(Math.random()-0.5)*0.5;
+      var sizeVar=fsize+(rng()-0.5)*realism*3;
+      var rot=(rng()-0.5)*0.045*realism;
+      var jitterY=(rng()-0.5)*realism*2.2;
+      // pen-pressure: vary alpha slightly per char
+      var alpha=0.82+rng()*0.18;
+      // ink colour micro-variation
+      var dr=(rng()-0.5)*10,dg=(rng()-0.5)*10,db=(rng()-0.5)*14;
+      ctx.fillStyle="rgba("+clamp(baseR+dr)+","+clamp(baseG+dg)+","+clamp(baseB+db)+","+alpha.toFixed(3)+")";
+      ctx.font=sizeVar.toFixed(2)+"px '"+font+"'";
+      ctx.translate(cx,y+jitterY);
+      ctx.rotate(rot);
+      ctx.fillText(ch,0,0);
+      var w=ctx.measureText(ch).width;
       ctx.restore();
+      cx+=w+(rng()-0.5)*realism*0.6;
     });
   });
-  // Page number
-  if(document.getElementById("showPageNum")&&document.getElementById("showPageNum").checked){ctx.fillStyle="#999";ctx.font="12px Arial";ctx.textAlign="center";ctx.fillText("- 1 -",W/2,H-20);ctx.textAlign="left"}
+  if(document.getElementById("showPageNum").checked){
+    ctx.fillStyle="rgba(120,120,120,.8)";ctx.font="13px Arial";ctx.textAlign="center";
+    ctx.fillText("- "+(pageIndex+1)+" -",dims.w/2,dims.h-margin*0.4);ctx.textAlign="left";
+  }
 }
-function dl(fmt){var mime=fmt==="jpg"?"image/jpeg":"image/png";c.toBlob(function(b){download(b,"assignment."+fmt)},mime,0.95)}
-function dlPdf(){
-  var imgData=c.toDataURL("image/png");
-  var w=c.width,h=c.height;
-  var pdfW=595.28,pdfH=pdfW*(h/w);
-  var pdf="";
-  // Simple PDF with embedded image
-  var img=new Image();img.src=imgData;
-  // Use canvas to create a printable page
-  var printWin=window.open("","_blank");
-  printWin.document.write('<html><head><title>Assignment</title><style>@page{margin:0}body{margin:0}img{width:100%;height:auto}</style></head><body><img src="'+imgData+'"><script>setTimeout(function(){window.print()},500)<\/script></body></html>');
-  printWin.document.close();
+function clamp(v){v=Math.round(v);return v<0?0:v>255?255:v}
+
+function render(){
+  var cfg=layout();
+  c.width=cfg.dims.w;c.height=cfg.dims.h;
+  drawPaper(cfg);
+  drawPage(cfg,curPage);
+  document.getElementById("pageInfo").textContent="Page "+(curPage+1)+" / "+pages.length;
+  updateStats();
 }
-setTimeout(preview,500);
+
+function updateStats(){
+  var text=document.getElementById("text").value||"";
+  var words=text.trim()?text.trim().split(/\s+/).length:0;
+  var chars=text.length;
+  document.getElementById("stats").textContent=words+" words · "+chars+" characters · "+pages.length+" page"+(pages.length>1?"s":"");
+}
+
+function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(render,120)}
+function reshuffleAndRender(){seed=Math.floor(Math.random()*1e9);render()}
+function pageNav(d){curPage+=d;if(curPage<0)curPage=0;if(curPage>=pages.length)curPage=pages.length-1;render()}
+
+/* ---- render a given page onto an offscreen canvas for export ---- */
+function renderToCanvas(pageIndex){
+  var off=document.createElement("canvas");
+  var savedCtx=ctx,savedC=c;
+  c=off;ctx=off.getContext("2d");
+  var cfg=layout();
+  off.width=cfg.dims.w;off.height=cfg.dims.h;
+  drawPaper(cfg);
+  drawPage(cfg,pageIndex);
+  c=savedC;ctx=savedC.getContext("2d");
+  return off;
+}
+
+function dlPng(){
+  var off=renderToCanvas(curPage);
+  off.toBlob(function(b){download(b,"handwriting-page-"+(curPage+1)+".png")},"image/png");
+}
+
+async function dlZip(){
+  window.showProcessing&&window.showProcessing("stats");
+  layout();
+  var zip=new JSZip();
+  for(var i=0;i<pages.length;i++){
+    var off=renderToCanvas(i);
+    var blob=await new Promise(function(res){off.toBlob(res,"image/png")});
+    zip.file("handwriting-page-"+(i+1)+".png",blob);
+  }
+  var out=await zip.generateAsync({type:"blob"});
+  download(out,"handwriting-pages.zip");
+  render();
+}
+
+async function dlPdf(){
+  window.showProcessing&&window.showProcessing("stats");
+  layout();
+  var doc=await PDFLib.PDFDocument.create();
+  for(var i=0;i<pages.length;i++){
+    var off=renderToCanvas(i);
+    var dataUrl=off.toDataURL("image/png");
+    var bytes=await (await fetch(dataUrl)).arrayBuffer();
+    var png=await doc.embedPng(bytes);
+    var page=doc.addPage([off.width,off.height]);
+    page.drawImage(png,{x:0,y:0,width:off.width,height:off.height});
+  }
+  var pdfBytes=await doc.save();
+  download(new Blob([pdfBytes],{type:"application/pdf"}),"handwriting.pdf");
+  render();
+}
+
+// Wait for fonts, then render.
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(render);setTimeout(render,600)}else{setTimeout(render,600)}
   </script>
 </body>
 </html>

@@ -41,52 +41,107 @@
     <div class="tool-section">
       <h1>✏️ Add Text to PDF</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="6" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M120,10 L145,35 H120 Z" fill="#6366f1" opacity=".3"/><line x1="75" y1="50" x2="125" y2="50" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="65" x2="125" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="80" x2="110" y2="80" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Upload a PDF, click anywhere on the page to add text. Navigate pages, change font size and color.</p>
+      <p class="info">Upload a PDF, then pick a tool and click on the page. Add text, images, shapes, whiteout/redact — navigate with the thumbnail strip. Everything stays in your browser.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
       <div id="editor" style="display:none">
-        <div class="row" style="flex-wrap:wrap;margin:.8rem 0">
-          <label>Font:</label>
-          <select id="fontFamily" style="max-width:150px">
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Calibri">Calibri</option>
-          </select>
-          <label>Size:</label><input type="number" id="fontSize" value="14" min="6" max="72" style="width:55px">
-          <label>Color:</label><input type="color" id="fontColor" value="#000000" style="width:35px;height:32px;border:none">
-          <button class="btn btn-outline" onclick="toggleBold()" id="boldBtn" style="font-weight:700;padding:.3rem .6rem">B</button>
-          <button class="btn btn-outline" onclick="toggleItalic()" id="italicBtn" style="font-style:italic;padding:.3rem .6rem">I</button>
+        <div class="info" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:.7rem 1rem;margin:.6rem 0">⚠️ Added text is a <strong>new layer</strong> on top of the PDF. The original text underneath still exists in the file. To truly hide something, cover it with the <strong>Whiteout / Redact</strong> tool before writing over it.</div>
+        <div class="row" style="flex-wrap:wrap;margin:.8rem 0;align-items:flex-start;gap:.6rem">
+          <div style="flex:1;min-width:150px">
+            <label>Tool</label>
+            <select id="toolMode" onchange="onToolChange()">
+              <option value="text">✏️ Add Text</option>
+              <option value="image">🖼️ Stamp Image / Signature</option>
+              <option value="rect">▭ Rectangle</option>
+              <option value="line">📏 Line</option>
+              <option value="whiteout">⬜ Whiteout / Redact</option>
+              <option value="highlight">🟡 Highlight</option>
+            </select>
+          </div>
+          <div style="flex:0 0 auto">
+            <label>Undo / Redo</label>
+            <div>
+              <button class="btn btn-outline" onclick="undo()" title="Undo" style="padding:.4rem .7rem">↩ Undo</button>
+              <button class="btn btn-outline" onclick="redo()" title="Redo" style="padding:.4rem .7rem">↪ Redo</button>
+            </div>
+          </div>
         </div>
-        <div class="row" style="margin-bottom:.5rem">
-          <label>Tool:</label>
-          <select id="toolMode">
-            <option value="text">✏️ Add Text</option>
-            <option value="whiteout">⬜ Whiteout (Erase)</option>
-            <option value="highlight">🟡 Highlight</option>
-          </select>
-          <label id="hlColorLabel">Highlight:</label>
-          <select id="hlColor">
-            <option value="rgba(255,255,0,0.4)">🟡 Yellow</option>
-            <option value="rgba(0,255,0,0.3)">🟢 Green</option>
-            <option value="rgba(0,150,255,0.3)">🔵 Blue</option>
-            <option value="rgba(255,100,100,0.3)">🔴 Red</option>
-          </select>
+
+        <!-- TEXT controls -->
+        <div class="row" id="textCtrls" style="flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
+          <div style="flex:1;min-width:150px"><label>Font</label>
+            <select id="fontFamily">
+              <option value="Helvetica">Helvetica</option>
+              <option value="Helvetica-Bold">Helvetica Bold</option>
+              <option value="Helvetica-Oblique">Helvetica Italic</option>
+              <option value="Helvetica-BoldOblique">Helvetica Bold Italic</option>
+              <option value="TimesRoman">Times Roman</option>
+              <option value="TimesRomanBold">Times Roman Bold</option>
+              <option value="TimesRomanItalic">Times Roman Italic</option>
+              <option value="TimesRomanBoldItalic">Times Roman Bold Italic</option>
+              <option value="Courier">Courier</option>
+              <option value="Courier-Bold">Courier Bold</option>
+              <option value="Courier-Oblique">Courier Italic</option>
+              <option value="Courier-BoldOblique">Courier Bold Italic</option>
+            </select>
+          </div>
+          <div style="flex:0 0 auto"><label>Size</label><input type="number" id="fontSize" value="16" min="6" max="120" style="width:70px"></div>
+          <div style="flex:0 0 auto"><label>Colour</label><input type="color" id="fontColor" value="#000000" style="width:44px;height:38px;padding:2px"></div>
+          <div style="flex:0 0 auto"><label>Opacity</label><input type="range" id="textOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
+          <div style="flex:0 0 auto"><label>Rotation</label><input type="number" id="textRotation" value="0" min="-180" max="180" style="width:70px"></div>
+        </div>
+
+        <!-- IMAGE controls -->
+        <div class="row" id="imageCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem;align-items:center">
+          <button class="btn btn-outline" onclick="document.getElementById('stampImg').click()">📤 Choose PNG / JPEG</button>
+          <input type="file" id="stampImg" accept="image/png,image/jpeg" style="display:none">
+          <span class="info" id="stampInfo">Then click on the page to place it. Drag to move, use the handle to scale.</span>
+        </div>
+
+        <!-- SHAPE controls -->
+        <div class="row" id="shapeCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
+          <div style="flex:0 0 auto"><label>Colour</label><input type="color" id="shapeColor" value="#e11d48" style="width:44px;height:38px;padding:2px"></div>
+          <div style="flex:0 0 auto"><label>Thickness</label><input type="number" id="shapeThickness" value="2" min="1" max="30" style="width:70px"></div>
+          <div style="flex:0 0 auto" id="rectFillWrap"><label><input type="checkbox" id="rectFill"> Filled</label></div>
+          <div style="flex:0 0 auto"><label>Opacity</label><input type="range" id="shapeOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
+        </div>
+
+        <!-- HIGHLIGHT controls -->
+        <div class="row" id="hlCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
+          <div style="flex:0 0 auto"><label>Highlight colour</label>
+            <select id="hlColor">
+              <option value="rgba(255,235,59,0.4)">🟡 Yellow</option>
+              <option value="rgba(76,175,80,0.35)">🟢 Green</option>
+              <option value="rgba(99,102,241,0.3)">🔵 Blue</option>
+              <option value="rgba(236,72,153,0.3)">🔴 Pink</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin:.5rem 0;align-items:center;flex-wrap:wrap">
           <button class="btn btn-outline" onclick="prevPage()">◀ Prev</button>
           <span id="pageInfo" style="padding:0 .5rem;font-weight:600">1/1</span>
           <button class="btn btn-outline" onclick="nextPage()">Next ▶</button>
-          <button class="btn btn-outline" onclick="undoLast()">↩ Undo</button>
         </div>
-        <p class="info">👆 Click on the PDF below where you want to add text. Type and press Enter or click elsewhere.</p>
-        <div id="pdfContainer" style="position:relative;display:inline-block;border:2px solid var(--border);border-radius:8px;overflow:hidden;cursor:crosshair">
-          <canvas id="pdfCanvas"></canvas>
-          <div id="textLayer" style="position:absolute;top:0;left:0;width:100%;height:100%"></div>
+
+        <p class="info" id="hint">👆 Click on the page to place text. Type, then press Enter or click away. Drag items to move; each has a ✕ delete button.</p>
+
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start">
+          <div id="thumbStrip" style="display:flex;flex-direction:column;gap:.4rem;max-height:640px;overflow-y:auto;flex:0 0 auto;width:110px"></div>
+          <div style="flex:1;min-width:260px">
+            <div id="pdfContainer" style="position:relative;display:inline-block;border:1px solid rgba(255,255,255,.12);border-radius:8px;overflow:hidden;cursor:crosshair;max-width:100%">
+              <canvas id="pdfCanvas"></canvas>
+              <div id="textLayer" style="position:absolute;top:0;left:0"></div>
+            </div>
+          </div>
         </div>
+
         <div class="row" style="margin-top:1rem">
           <button class="btn" onclick="savePdf()">💾 Download Edited PDF</button>
-          <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All Text</button>
+          <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All Annotations</button>
         </div>
+
+        <h2 style="margin-top:1.4rem;font-size:1.05rem">Added items</h2>
+        <div id="itemList" class="info">No annotations yet.</div>
       </div>
       <div id="result"></div>
     </div>
@@ -143,17 +198,86 @@
   <script src="../js/common.js"></script>
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5,textItems=[],isBold=false,isItalic=false,rects=[],drawing=false,drawStart=null;
-function toggleBold(){isBold=!isBold;document.getElementById("boldBtn").style.background=isBold?"var(--accent)":""}
-function toggleItalic(){isItalic=!isItalic;document.getElementById("italicBtn").style.background=isItalic?"var(--accent)":""}
-setupDrop("drop","inp",function(f){pdfFile=f[0];loadPdf()});
+
+/*
+  COORDINATE MODEL
+  ----------------
+  All annotation geometry is stored in *PDF user-space units* (points), with the
+  PDF origin at the BOTTOM-LEFT of the page. This is device/zoom independent, so
+  what the user sees maps exactly to what pdf-lib writes on save.
+
+  - pageDims[p] = {w,h} is the unscaled PDF size for page p (1-based index).
+  - The rendered canvas uses viewport scale `scale`, so:
+        canvasX = pdfX * scale
+        canvasY = (pageH - pdfY) * scale     (flip Y: PDF is bottom-up, canvas top-down)
+    and the inverse:
+        pdfX = canvasX / scale
+        pdfY = pageH - canvasY / scale
+  Text is anchored at its TOP-LEFT for display convenience; on save we convert the
+  top-left to pdf-lib's text baseline.
+*/
+
+var pdfFile,pdfDoc,currentPage=1,totalPages=1,scale=1.5;
+var items=[];              // annotation stack (all pages)
+var redoStack=[];
+var pageDims={};           // {pageNo:{w,h}}
+var pendingImage=null;     // {dataURL,type,w,h} chosen but not yet placed
+var drawing=false,drawStart=null;
+
+var FONT_MAP={
+  "Helvetica":"Helvetica","Helvetica-Bold":"Helvetica","Helvetica-Oblique":"Helvetica","Helvetica-BoldOblique":"Helvetica",
+  "TimesRoman":"'Times New Roman',serif","TimesRomanBold":"'Times New Roman',serif","TimesRomanItalic":"'Times New Roman',serif","TimesRomanBoldItalic":"'Times New Roman',serif",
+  "Courier":"'Courier New',monospace","Courier-Bold":"'Courier New',monospace","Courier-Oblique":"'Courier New',monospace","Courier-BoldOblique":"'Courier New',monospace"
+};
+function cssWeight(f){return /Bold/.test(f)?"700":"400"}
+function cssStyle(f){return /(Oblique|Italic)/.test(f)?"italic":"normal"}
+
+setupDrop("drop","inp",function(f){if(f&&f[0]){pdfFile=f[0];loadPdf()}});
+
 async function loadPdf(){
   var data=await pdfFile.arrayBuffer();
-  pdfDoc=await pdfjsLib.getDocument({data:data}).promise;
+  pdfDoc=await pdfjsLib.getDocument({data:data.slice(0)}).promise;
   totalPages=pdfDoc.numPages;currentPage=1;
+  items=[];redoStack=[];pageDims={};
+  // Cache unscaled page dimensions for every page.
+  for(var p=1;p<=totalPages;p++){
+    var pg=await pdfDoc.getPage(p);
+    var v=pg.getViewport({scale:1});
+    pageDims[p]={w:v.width,h:v.height};
+  }
   document.getElementById("editor").style.display="block";
-  renderPage();
+  await buildThumbs();
+  await renderPage();
+  updateItemList();
 }
+
+async function buildThumbs(){
+  var strip=document.getElementById("thumbStrip");
+  strip.innerHTML="";
+  for(var p=1;p<=totalPages;p++){
+    var pg=await pdfDoc.getPage(p);
+    var vp=pg.getViewport({scale:0.18});
+    var cv=document.createElement("canvas");
+    cv.width=vp.width;cv.height=vp.height;
+    await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+    var wrap=document.createElement("div");
+    wrap.dataset.page=p;
+    wrap.style.cssText="border:2px solid "+(p===currentPage?"var(--accent)":"rgba(255,255,255,.15)")+";border-radius:6px;cursor:pointer;padding:2px;background:#fff;position:relative";
+    cv.style.cssText="display:block;width:100%;height:auto;border-radius:4px";
+    var lbl=document.createElement("div");
+    lbl.textContent=p;
+    lbl.style.cssText="position:absolute;bottom:2px;right:4px;font-size:.65rem;background:rgba(0,0,0,.6);color:#fff;padding:0 4px;border-radius:4px";
+    wrap.appendChild(cv);wrap.appendChild(lbl);
+    wrap.addEventListener("click",(function(pn){return function(){currentPage=pn;renderPage();highlightThumb()}})(p));
+    strip.appendChild(wrap);
+  }
+}
+function highlightThumb(){
+  document.querySelectorAll("#thumbStrip [data-page]").forEach(function(w){
+    w.style.borderColor=(+w.dataset.page===currentPage)?"var(--accent)":"rgba(255,255,255,.15)";
+  });
+}
+
 async function renderPage(){
   var page=await pdfDoc.getPage(currentPage);
   var vp=page.getViewport({scale:scale});
@@ -161,122 +285,372 @@ async function renderPage(){
   canvas.width=vp.width;canvas.height=vp.height;
   await page.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise;
   document.getElementById("pageInfo").textContent=currentPage+"/"+totalPages;
-  document.getElementById("textLayer").style.width=vp.width+"px";
-  document.getElementById("textLayer").style.height=vp.height+"px";
-  renderTexts();
+  var layer=document.getElementById("textLayer");
+  layer.style.width=vp.width+"px";layer.style.height=vp.height+"px";
+  highlightThumb();
+  renderAnnotations();
 }
-function renderTexts(){
+
+// Convert stored PDF coords -> canvas (px) for the current page.
+function toCanvas(pdfX,pdfY){
+  var d=pageDims[currentPage];
+  return {x:pdfX*scale,y:(d.h-pdfY)*scale};
+}
+// Convert a canvas point (px) -> PDF coords for the current page.
+function toPdf(cx,cy){
+  var d=pageDims[currentPage];
+  return {x:cx/scale,y:d.h-cy/scale};
+}
+
+function renderAnnotations(){
   var layer=document.getElementById("textLayer");
   layer.innerHTML="";
-  rects.forEach(function(r){
-    if(r.page!==currentPage)return;
-    var div=document.createElement("div");
-    div.style.cssText="position:absolute;left:"+r.x+"px;top:"+r.y+"px;width:"+r.w+"px;height:"+r.h+"px;background:"+r.color+";pointer-events:none;";
-    layer.appendChild(div);
-  });
-  textItems.forEach(function(item,idx){
-    if(item.page!==currentPage)return;
-    var div=document.createElement("div");
-    div.textContent=item.text;
-    div.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";font-family:"+item.font+";font-weight:"+(item.bold?"700":"400")+";font-style:"+(item.italic?"italic":"normal")+";cursor:move;padding:2px;min-width:20px;white-space:nowrap;";
-    div.ondblclick=function(){editText(idx)};
-    layer.appendChild(div);
+  items.forEach(function(it,idx){
+    if(it.page!==currentPage)return;
+    if(it.type==="text")renderText(it,idx,layer);
+    else if(it.type==="image")renderImage(it,idx,layer);
+    else if(it.type==="line")renderLine(it,idx,layer);
+    else renderRect(it,idx,layer); // rect / whiteout / highlight
   });
 }
-document.getElementById("textLayer").addEventListener("mousedown",function(e){
-  if(e.target!==this)return;
-  var rect=this.getBoundingClientRect();
-  var x=e.clientX-rect.left;
-  var y=e.clientY-rect.top;
-  var mode=document.getElementById("toolMode").value;
-  if(mode==="text"){
-    var input=document.createElement("input");
-    input.type="text";input.placeholder="Type here...";
-    input.style.cssText="position:absolute;left:"+x+"px;top:"+y+"px;font-size:"+document.getElementById("fontSize").value+"px;color:"+document.getElementById("fontColor").value+";font-family:"+document.getElementById("fontFamily").value+";font-weight:"+(isBold?"700":"400")+";font-style:"+(isItalic?"italic":"normal")+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
-    this.appendChild(input);
-    input.focus();
-    var curFont=document.getElementById("fontFamily").value;var curBold=isBold;var curItalic=isItalic;
-    function done(){
-      if(input.value.trim()){
-        textItems.push({page:currentPage,x:x,y:y,text:input.value,size:+document.getElementById("fontSize").value,color:document.getElementById("fontColor").value,font:curFont,bold:curBold,italic:curItalic});
-      }
-      if(input.parentNode)input.remove();
-      renderTexts();
+
+function delBtn(idx){
+  var b=document.createElement("button");
+  b.textContent="✕";
+  b.title="Delete";
+  b.style.cssText="position:absolute;top:-10px;right:-10px;width:20px;height:20px;line-height:18px;text-align:center;border-radius:50%;border:none;background:#e11d48;color:#fff;cursor:pointer;font-size:.7rem;padding:0;z-index:20";
+  b.addEventListener("mousedown",function(e){e.stopPropagation()});
+  b.addEventListener("click",function(e){e.stopPropagation();pushHistory();items.splice(idx,1);renderAnnotations();updateItemList()});
+  return b;
+}
+
+function renderText(it,idx,layer){
+  var p=toCanvas(it.x,it.y); // top-left anchor
+  var div=document.createElement("div");
+  div.textContent=it.text;
+  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;font-size:"+(it.size*scale)+"px;line-height:1;color:"+it.color+";opacity:"+it.opacity+";font-family:"+FONT_MAP[it.font]+";font-weight:"+cssWeight(it.font)+";font-style:"+cssStyle(it.font)+";cursor:move;white-space:nowrap;transform-origin:left top;transform:rotate("+(-it.rotation)+"deg);padding:1px";
+  div.addEventListener("dblclick",function(e){e.stopPropagation();editText(idx)});
+  makeDraggable(div,it,idx);
+  div.appendChild(delBtn(idx));
+  layer.appendChild(div);
+}
+
+function renderImage(it,idx,layer){
+  var p=toCanvas(it.x,it.y+it.h); // stored x,y is bottom-left; top-left = y+h
+  var div=document.createElement("div");
+  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;width:"+(it.w*scale)+"px;height:"+(it.h*scale)+"px;cursor:move;opacity:"+it.opacity;
+  var img=document.createElement("img");
+  img.src=it.dataURL;img.style.cssText="width:100%;height:100%;display:block;pointer-events:none";
+  div.appendChild(img);
+  // scale handle (bottom-right)
+  var handle=document.createElement("div");
+  handle.style.cssText="position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:var(--accent);border:2px solid #fff;border-radius:50%;cursor:nwse-resize;z-index:20";
+  handle.addEventListener("mousedown",function(e){
+    e.preventDefault();e.stopPropagation();
+    pushHistory();
+    var startX=e.clientX,startW=it.w,startH=it.h,ratio=it.h/it.w;
+    function mm(ev){var dx=(ev.clientX-startX)/scale;var nw=Math.max(10,startW+dx);it.w=nw;it.h=nw*ratio;renderAnnotations()}
+    function mu(){document.removeEventListener("mousemove",mm);document.removeEventListener("mouseup",mu);updateItemList()}
+    document.addEventListener("mousemove",mm);document.addEventListener("mouseup",mu);
+  });
+  div.appendChild(handle);
+  makeDraggable(div,it,idx,true);
+  div.appendChild(delBtn(idx));
+  layer.appendChild(div);
+}
+
+function renderRect(it,idx,layer){
+  var p=toCanvas(it.x,it.y+it.h); // top-left
+  var div=document.createElement("div");
+  var bg="transparent",bd="none";
+  if(it.type==="whiteout"){bg="#ffffff";bd="1px solid rgba(0,0,0,.15)"}
+  else if(it.type==="highlight"){bg=it.color}
+  else{ // rect
+    if(it.fill){bg=it.color}
+    bd=it.thickness+"px solid "+it.color;
+  }
+  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;width:"+(it.w*scale)+"px;height:"+(it.h*scale)+"px;background:"+bg+";border:"+bd+";opacity:"+(it.opacity!=null?it.opacity:1)+";cursor:move;box-sizing:border-box";
+  makeDraggable(div,it,idx,true);
+  div.appendChild(delBtn(idx));
+  layer.appendChild(div);
+}
+
+function renderLine(it,idx,layer){
+  // it stores x1,y1,x2,y2 in PDF coords
+  var a=toCanvas(it.x1,it.y1),b=toCanvas(it.x2,it.y2);
+  var dx=b.x-a.x,dy=b.y-a.y;
+  var len=Math.sqrt(dx*dx+dy*dy);
+  var ang=Math.atan2(dy,dx)*180/Math.PI;
+  var div=document.createElement("div");
+  div.style.cssText="position:absolute;left:"+a.x+"px;top:"+(a.y-(it.thickness*scale)/2)+"px;width:"+len+"px;height:"+(it.thickness*scale)+"px;background:"+it.color+";opacity:"+it.opacity+";transform-origin:left center;transform:rotate("+ang+"deg);cursor:move";
+  // dragging a line moves both endpoints together
+  div.addEventListener("mousedown",function(e){
+    if(e.target!==div)return;
+    e.preventDefault();
+    pushHistory();
+    var sx=e.clientX,sy=e.clientY;var ox1=it.x1,oy1=it.y1,ox2=it.x2,oy2=it.y2;
+    function mm(ev){var ddx=(ev.clientX-sx)/scale,ddy=(ev.clientY-sy)/scale;it.x1=ox1+ddx;it.y1=oy1-ddy;it.x2=ox2+ddx;it.y2=oy2-ddy;renderAnnotations()}
+    function mu(){document.removeEventListener("mousemove",mm);document.removeEventListener("mouseup",mu);updateItemList()}
+    document.addEventListener("mousemove",mm);document.addEventListener("mouseup",mu);
+  });
+  var db=delBtn(idx);db.style.top="-16px";db.style.right="-16px";div.appendChild(db);
+  layer.appendChild(div);
+}
+
+// Generic drag for items with x,y bottom-left anchor (rect/image) or top-left (text).
+function makeDraggable(el,it,idx,bottomLeft){
+  el.addEventListener("mousedown",function(e){
+    if(e.target!==el&&e.target.tagName!=="IMG")return;
+    e.preventDefault();
+    pushHistory();
+    var sx=e.clientX,sy=e.clientY,ox=it.x,oy=it.y;
+    function mm(ev){
+      var ddx=(ev.clientX-sx)/scale,ddy=(ev.clientY-sy)/scale;
+      it.x=ox+ddx;
+      it.y=oy-ddy; // canvas down => PDF up
+      renderAnnotations();
     }
-    input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
-    input.addEventListener("blur",done);
-  } else {
-    drawing=true;drawStart={x:x,y:y};
+    function mu(){document.removeEventListener("mousemove",mm);document.removeEventListener("mouseup",mu);updateItemList()}
+    document.addEventListener("mousemove",mm);document.addEventListener("mouseup",mu);
+  });
+}
+
+/* ---- tool switching ---- */
+function onToolChange(){
+  var m=document.getElementById("toolMode").value;
+  document.getElementById("textCtrls").style.display=(m==="text")?"flex":"none";
+  document.getElementById("imageCtrls").style.display=(m==="image")?"flex":"none";
+  document.getElementById("shapeCtrls").style.display=(m==="rect"||m==="line")?"flex":"none";
+  document.getElementById("rectFillWrap").style.display=(m==="rect")?"block":"none";
+  document.getElementById("hlCtrls").style.display=(m==="highlight")?"flex":"none";
+  var hint=document.getElementById("hint");
+  if(m==="text")hint.textContent="👆 Click on the page to place text. Type, then Enter or click away. Drag items to move.";
+  else if(m==="image")hint.textContent="🖼️ Choose an image, then click on the page to place it. Drag to move, use the corner handle to scale.";
+  else if(m==="rect")hint.textContent="▭ Drag on the page to draw a rectangle (outlined or filled).";
+  else if(m==="line")hint.textContent="📏 Drag on the page to draw a line.";
+  else if(m==="whiteout")hint.textContent="⬜ Drag to draw a white redaction box that covers the original content.";
+  else hint.textContent="🟡 Drag to draw a translucent highlight.";
+}
+
+document.getElementById("stampImg").addEventListener("change",function(){
+  var f=this.files[0];if(!f)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      pendingImage={dataURL:reader.result,type:/png/i.test(f.type)?"png":"jpg",w:img.width,h:img.height};
+      document.getElementById("stampInfo").textContent="Loaded ✓ — now click on the page to place it.";
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(f);
+});
+
+/* ---- placing annotations ---- */
+var layerEl=document.getElementById("textLayer");
+function layerPos(e){var r=layerEl.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
+
+layerEl.addEventListener("mousedown",function(e){
+  if(e.target!==this)return; // only start on empty canvas area
+  var m=document.getElementById("toolMode").value;
+  var pos=layerPos(e);
+  if(m==="text"){placeText(pos);return}
+  if(m==="image"){placeImage(pos);return}
+  // shapes / whiteout / highlight => drag to draw
+  drawing=true;drawStart=pos;
+});
+
+layerEl.addEventListener("mousemove",function(e){
+  if(!drawing||!drawStart)return;
+  var pos=layerPos(e);
+  var m=document.getElementById("toolMode").value;
+  var pv=document.getElementById("drawPreview");
+  if(!pv){pv=document.createElement("div");pv.id="drawPreview";pv.style.cssText="position:absolute;pointer-events:none;z-index:15";this.appendChild(pv)}
+  if(m==="line"){
+    var dx=pos.x-drawStart.x,dy=pos.y-drawStart.y;var len=Math.sqrt(dx*dx+dy*dy);var ang=Math.atan2(dy,dx)*180/Math.PI;
+    var th=+document.getElementById("shapeThickness").value*scale;
+    pv.style.cssText="position:absolute;pointer-events:none;z-index:15;left:"+drawStart.x+"px;top:"+(drawStart.y-th/2)+"px;width:"+len+"px;height:"+th+"px;background:"+document.getElementById("shapeColor").value+";transform-origin:left center;transform:rotate("+ang+"deg)";
+  }else{
+    pv.style.cssText="position:absolute;pointer-events:none;z-index:15;border:1px dashed var(--accent);background:rgba(99,102,241,.08);left:"+Math.min(drawStart.x,pos.x)+"px;top:"+Math.min(drawStart.y,pos.y)+"px;width:"+Math.abs(pos.x-drawStart.x)+"px;height:"+Math.abs(pos.y-drawStart.y)+"px";
   }
 });
-document.getElementById("textLayer").addEventListener("mousemove",function(e){
-  if(!drawing||!drawStart)return;
-  var rect=this.getBoundingClientRect();
-  var x=e.clientX-rect.left;var y=e.clientY-rect.top;
-  var preview=document.getElementById("drawPreview");
-  if(!preview){preview=document.createElement("div");preview.id="drawPreview";preview.style.cssText="position:absolute;border:1px dashed #999;pointer-events:none;z-index:5;";this.appendChild(preview)}
-  preview.style.left=Math.min(drawStart.x,x)+"px";preview.style.top=Math.min(drawStart.y,y)+"px";
-  preview.style.width=Math.abs(x-drawStart.x)+"px";preview.style.height=Math.abs(y-drawStart.y)+"px";
-});
-document.getElementById("textLayer").addEventListener("mouseup",function(e){
+
+layerEl.addEventListener("mouseup",function(e){
   if(!drawing||!drawStart)return;
   drawing=false;
-  var rect=this.getBoundingClientRect();
-  var x=e.clientX-rect.left;var y=e.clientY-rect.top;
-  var rx=Math.min(drawStart.x,x),ry=Math.min(drawStart.y,y);
-  var rw=Math.abs(x-drawStart.x),rh=Math.abs(y-drawStart.y);
-  if(rw>5&&rh>5){
-    var mode=document.getElementById("toolMode").value;
-    var color=mode==="whiteout"?"#ffffff":document.getElementById("hlColor").value;
-    rects.push({page:currentPage,x:rx,y:ry,w:rw,h:rh,color:color,type:mode});
+  var pos=layerPos(e);
+  var m=document.getElementById("toolMode").value;
+  var pv=document.getElementById("drawPreview");if(pv)pv.remove();
+  if(m==="line"){
+    var a=toPdf(drawStart.x,drawStart.y),b=toPdf(pos.x,pos.y);
+    if(Math.abs(a.x-b.x)>1||Math.abs(a.y-b.y)>1){
+      pushHistory();
+      items.push({type:"line",page:currentPage,x1:a.x,y1:a.y,x2:b.x,y2:b.y,color:document.getElementById("shapeColor").value,thickness:+document.getElementById("shapeThickness").value,opacity:+document.getElementById("shapeOpacity").value});
+    }
+  }else{
+    var rx=Math.min(drawStart.x,pos.x),ry=Math.min(drawStart.y,pos.y);
+    var rw=Math.abs(pos.x-drawStart.x),rh=Math.abs(pos.y-drawStart.y);
+    if(rw>4&&rh>4){
+      var tl=toPdf(rx,ry);        // top-left in PDF coords
+      var pdfW=rw/scale,pdfH=rh/scale;
+      var it={type:m,page:currentPage,x:tl.x,y:tl.y-pdfH,w:pdfW,h:pdfH}; // store bottom-left
+      if(m==="rect"){it.color=document.getElementById("shapeColor").value;it.thickness=+document.getElementById("shapeThickness").value;it.fill=document.getElementById("rectFill").checked;it.opacity=+document.getElementById("shapeOpacity").value}
+      else if(m==="highlight"){it.color=document.getElementById("hlColor").value;it.opacity=1}
+      else{it.opacity=1} // whiteout
+      pushHistory();
+      items.push(it);
+    }
   }
   drawStart=null;
-  var preview=document.getElementById("drawPreview");if(preview)preview.remove();
-  renderTexts();
+  renderAnnotations();updateItemList();
 });
-function editText(idx){
-  var item=textItems[idx];
-  var layer=document.getElementById("textLayer");
+
+function placeText(pos){
   var input=document.createElement("input");
-  input.type="text";input.value=item.text;
-  input.style.cssText="position:absolute;left:"+item.x+"px;top:"+item.y+"px;font-size:"+item.size+"px;color:"+item.color+";background:rgba(255,255,200,0.8);border:1px solid #999;padding:2px;outline:none;z-index:10;min-width:100px;";
-  layer.appendChild(input);input.focus();input.select();
-  function done(){
-    if(input.value.trim())item.text=input.value;
-    else textItems.splice(idx,1);
+  input.type="text";input.placeholder="Type…";
+  var font=document.getElementById("fontFamily").value;
+  var size=+document.getElementById("fontSize").value;
+  input.style.cssText="position:absolute;left:"+pos.x+"px;top:"+pos.y+"px;font-size:"+(size*scale)+"px;color:"+document.getElementById("fontColor").value+";font-family:"+FONT_MAP[font]+";font-weight:"+cssWeight(font)+";font-style:"+cssStyle(font)+";background:rgba(255,255,200,.85);border:1px solid var(--accent);padding:1px 2px;outline:none;z-index:30;min-width:120px";
+  layerEl.appendChild(input);input.focus();
+  var color=document.getElementById("fontColor").value;
+  var opacity=+document.getElementById("textOpacity").value;
+  var rotation=+document.getElementById("textRotation").value;
+  var done=function(){
+    if(input._done)return;input._done=true;
+    if(input.value.trim()){
+      var tl=toPdf(pos.x,pos.y); // top-left in PDF coords
+      pushHistory();
+      items.push({type:"text",page:currentPage,x:tl.x,y:tl.y,text:input.value,size:size,color:color,font:font,opacity:opacity,rotation:rotation});
+    }
     if(input.parentNode)input.remove();
-    renderTexts();
-  }
-  input.addEventListener("keydown",function(ev){if(ev.key==="Enter")done()});
+    renderAnnotations();updateItemList();
+  };
+  input.addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault();done()}});
   input.addEventListener("blur",done);
 }
-function undoLast(){if(rects.length&&(!textItems.length||rects[rects.length-1])){rects.pop()}else if(textItems.length){textItems.pop()}renderTexts()}
-function clearAll(){textItems=[];rects=[];renderTexts()}
+
+function placeImage(pos){
+  if(!pendingImage){alert("Choose an image first.");return}
+  var tl=toPdf(pos.x,pos.y);
+  // default display width ~ 160 PDF units, keep aspect ratio
+  var dispW=Math.min(160,pageDims[currentPage].w*0.4);
+  var dispH=dispW*(pendingImage.h/pendingImage.w);
+  pushHistory();
+  items.push({type:"image",page:currentPage,x:tl.x,y:tl.y-dispH,w:dispW,h:dispH,dataURL:pendingImage.dataURL,imgType:pendingImage.type,opacity:1});
+  renderAnnotations();updateItemList();
+}
+
+function editText(idx){
+  var it=items[idx];
+  var p=toCanvas(it.x,it.y);
+  var input=document.createElement("input");
+  input.type="text";input.value=it.text;
+  input.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;font-size:"+(it.size*scale)+"px;color:"+it.color+";background:rgba(255,255,200,.85);border:1px solid var(--accent);padding:1px 2px;outline:none;z-index:30;min-width:120px";
+  layerEl.appendChild(input);input.focus();input.select();
+  var done=function(){
+    if(input._done)return;input._done=true;
+    pushHistory();
+    if(input.value.trim())it.text=input.value;else items.splice(idx,1);
+    if(input.parentNode)input.remove();
+    renderAnnotations();updateItemList();
+  };
+  input.addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault();done()}});
+  input.addEventListener("blur",done);
+}
+
+/* ---- history ---- */
+function snapshot(){return JSON.parse(JSON.stringify(items))}
+function pushHistory(){redoStack=[];historyStack.push(snapshot());if(historyStack.length>50)historyStack.shift()}
+var historyStack=[];
+function undo(){if(!historyStack.length)return;redoStack.push(snapshot());items=historyStack.pop();renderAnnotations();updateItemList()}
+function redo(){if(!redoStack.length)return;historyStack.push(snapshot());items=redoStack.pop();renderAnnotations();updateItemList()}
+function clearAll(){if(!items.length)return;pushHistory();items=[];renderAnnotations();updateItemList()}
+
 function prevPage(){if(currentPage>1){currentPage--;renderPage()}}
 function nextPage(){if(currentPage<totalPages){currentPage++;renderPage()}}
-async function savePdf(){
-  var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
-  var pages=doc.getPages();
-  rects.forEach(function(item){
-    var pg=pages[item.page-1];if(!pg)return;
-    var h=pg.getHeight();
-    if(item.type==="whiteout"){
-      pg.drawRectangle({x:item.x/scale,y:h-item.y/scale-item.h/scale,width:item.w/scale,height:item.h/scale,color:PDFLib.rgb(1,1,1)});
-    } else {
-      var m=item.color.match(/[\d.]+/g);
-      pg.drawRectangle({x:item.x/scale,y:h-item.y/scale-item.h/scale,width:item.w/scale,height:item.h/scale,color:PDFLib.rgb(m[0]/255,m[1]/255,m[2]/255),opacity:parseFloat(m[3])||0.4});
-    }
+
+function updateItemList(){
+  var el=document.getElementById("itemList");
+  if(!items.length){el.innerHTML="No annotations yet.";return}
+  var byPage={};
+  items.forEach(function(it,idx){(byPage[it.page]=byPage[it.page]||[]).push({it:it,idx:idx})});
+  var html="";
+  Object.keys(byPage).map(Number).sort(function(a,b){return a-b}).forEach(function(pg){
+    html+='<div style="margin:.5rem 0"><strong>Page '+pg+'</strong><ul style="list-style:none;margin:.3rem 0">';
+    byPage[pg].forEach(function(o){
+      var it=o.it,label;
+      if(it.type==="text")label="✏️ \""+(it.text.length>24?it.text.slice(0,24)+"…":it.text)+"\"";
+      else if(it.type==="image")label="🖼️ Image";
+      else if(it.type==="rect")label="▭ Rectangle";
+      else if(it.type==="line")label="📏 Line";
+      else if(it.type==="whiteout")label="⬜ Whiteout";
+      else label="🟡 Highlight";
+      html+='<li style="display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:.35rem .6rem;border-radius:8px;margin:.25rem 0;font-size:.85rem"><span>'+label+'</span><span><button class="btn btn-outline" style="padding:.15rem .5rem;font-size:.75rem" onclick="goToItem('+o.idx+')">Go</button> <button class="btn btn-outline" style="padding:.15rem .5rem;font-size:.75rem" onclick="deleteItem('+o.idx+')">Delete</button></span></li>';
+    });
+    html+='</ul></div>';
   });
-  textItems.forEach(function(item){
-    var pg=pages[item.page-1];
-    if(!pg)return;
-    var h=pg.getHeight();
-    var r=item.color.match(/\w\w/g).map(function(c){return parseInt(c,16)/255});
-    pg.drawText(item.text,{x:item.x/scale,y:h-item.y/scale-item.size,size:item.size/scale*0.75,color:PDFLib.rgb(r[0],r[1],r[2])});
-  });
-  download(new Blob([await doc.save()],{type:"application/pdf"}),"edited.pdf");
-  document.getElementById("result").innerHTML="<p class='info'>✅ PDF saved with text!</p>";
+  el.innerHTML=html;
 }
+function goToItem(idx){var it=items[idx];if(!it)return;if(it.page!==currentPage){currentPage=it.page;renderPage()}}
+function deleteItem(idx){if(!items[idx])return;pushHistory();items.splice(idx,1);renderAnnotations();updateItemList()}
+
+/* ---- save with pdf-lib (correct coordinate mapping) ---- */
+function hexToRgb(hex){var r=hex.match(/\w\w/g).map(function(c){return parseInt(c,16)/255});return PDFLib.rgb(r[0],r[1],r[2])}
+function rgbaToParts(str){var m=str.match(/[\d.]+/g);return {color:PDFLib.rgb(m[0]/255,m[1]/255,m[2]/255),opacity:m[3]!=null?parseFloat(m[3]):1}}
+
+async function savePdf(){
+  if(!pdfFile)return;
+  window.showProcessing&&window.showProcessing("result");
+  try{
+    var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+    var pages=doc.getPages();
+    var StdFonts=PDFLib.StandardFonts;
+    var fontKeyMap={
+      "Helvetica":StdFonts.Helvetica,"Helvetica-Bold":StdFonts.HelveticaBold,"Helvetica-Oblique":StdFonts.HelveticaOblique,"Helvetica-BoldOblique":StdFonts.HelveticaBoldOblique,
+      "TimesRoman":StdFonts.TimesRoman,"TimesRomanBold":StdFonts.TimesRomanBold,"TimesRomanItalic":StdFonts.TimesRomanItalic,"TimesRomanBoldItalic":StdFonts.TimesRomanBoldItalic,
+      "Courier":StdFonts.Courier,"Courier-Bold":StdFonts.CourierBold,"Courier-Oblique":StdFonts.CourierOblique,"Courier-BoldOblique":StdFonts.CourierBoldOblique
+    };
+    var fontCache={};
+    async function getFont(k){if(!fontCache[k])fontCache[k]=await doc.embedFont(fontKeyMap[k]||StdFonts.Helvetica);return fontCache[k]}
+
+    // Draw shapes/whiteout/highlight/images first, text last (so text sits on top).
+    var ordered=items.slice().sort(function(a,b){var r={image:0,whiteout:1,highlight:1,rect:1,line:1,text:2};return (r[a.type]||1)-(r[b.type]||1)});
+
+    for(var i=0;i<ordered.length;i++){
+      var it=ordered[i];
+      var pg=pages[it.page-1];if(!pg)continue;
+      if(it.type==="text"){
+        var font=await getFont(it.font);
+        // it.y is the TOP of the text in PDF coords. pdf-lib draws from baseline,
+        // so baseline = top - ascent. Approximate ascent as ~0.8*size.
+        var baselineY=it.y-it.size*0.8;
+        pg.drawText(it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
+      }else if(it.type==="image"){
+        var bytes=await (await fetch(it.dataURL)).arrayBuffer();
+        var emb=it.imgType==="png"?await doc.embedPng(bytes):await doc.embedJpg(bytes);
+        pg.drawImage(emb,{x:it.x,y:it.y,width:it.w,height:it.h,opacity:it.opacity!=null?it.opacity:1});
+      }else if(it.type==="line"){
+        pg.drawLine({start:{x:it.x1,y:it.y1},end:{x:it.x2,y:it.y2},thickness:it.thickness,color:hexToRgb(it.color),opacity:it.opacity});
+      }else if(it.type==="whiteout"){
+        pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:PDFLib.rgb(1,1,1)});
+      }else if(it.type==="highlight"){
+        var hp=rgbaToParts(it.color);
+        pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:hp.color,opacity:hp.opacity});
+      }else if(it.type==="rect"){
+        var opts={x:it.x,y:it.y,width:it.w,height:it.h,borderWidth:it.thickness,borderColor:hexToRgb(it.color),opacity:it.opacity,borderOpacity:it.opacity};
+        if(it.fill)opts.color=hexToRgb(it.color);
+        pg.drawRectangle(opts);
+      }
+    }
+    var out=await doc.save();
+    download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
+    document.getElementById("result").innerHTML="<p class='info'>✅ PDF saved with your annotations. Remember: only whiteout/redact boxes actually hide the original content.</p>";
+  }catch(err){
+    document.getElementById("result").innerHTML="<p style='color:#e11d48'>❌ Could not save: "+err.message+"</p>";
+  }
+}
+
+onToolChange();
   </script>
 </body>
 </html>

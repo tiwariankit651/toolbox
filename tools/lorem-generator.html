@@ -37,16 +37,66 @@
     <div class="tool-section">
       <h1>📝 Lorem Ipsum Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <div class="row">
-        <label>Count:</label><input type="number" id="count" value="3" min="1" max="50">
-        <label>Type:</label>
-        <select id="type"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select>
-        <label>Language:</label>
-        <select id="lang"><option value="latin">Latin (Lorem Ipsum)</option><option value="hindi">Hindi</option><option value="english">English</option></select>
-        <button class="btn" onclick="gen()">Generate</button>
+      <div class="row" style="border-bottom:1px solid rgba(99,102,241,.15);padding-bottom:.8rem;margin-bottom:.5rem;flex-wrap:wrap">
+        <button class="btn" id="tabText" onclick="switchTab('text')">📝 Text Generator</button>
+        <button class="btn btn-outline" id="tabData" onclick="switchTab('data')">🗃️ Dummy Data</button>
       </div>
-      <div id="out" class="result-box" style="white-space:pre-wrap;max-height:400px;overflow:auto"></div>
-      <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('out').textContent)">📋 Copy</button>
+
+      <!-- TEXT GENERATOR PANEL -->
+      <div id="panelText">
+        <div class="row">
+          <label>Count:</label><input type="number" id="count" value="3" min="1" max="500">
+          <label>Type:</label>
+          <select id="type" onchange="gen()"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option><option value="characters">Characters</option></select>
+          <label>Flavour:</label>
+          <select id="lang" onchange="gen()">
+            <option value="latin">Classic Latin (Lorem Ipsum)</option>
+            <option value="english">English readable</option>
+            <option value="hindi">Hindi (Devanagari)</option>
+            <option value="tech">Tech / Startup jargon</option>
+            <option value="corporate">Corporate buzzword</option>
+            <option value="pirate">Pirate / Whimsical</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Output:</label>
+          <select id="format" onchange="gen()">
+            <option value="plain">Plain text</option>
+            <option value="html-p">HTML (&lt;p&gt; wrapped)</option>
+            <option value="html-block">HTML structured block</option>
+            <option value="markdown">Markdown</option>
+          </select>
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="startLorem" checked onchange="gen()" style="width:auto;margin:0"> Start with "Lorem ipsum dolor sit amet"</label>
+        </div>
+        <div class="row">
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="varySent" checked onchange="gen()" style="width:auto;margin:0"> Vary sentence length</label>
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="varyPara" checked onchange="gen()" style="width:auto;margin:0"> Vary paragraph length</label>
+          <button class="btn" onclick="gen()">🔁 Generate</button>
+        </div>
+        <div id="out" class="result-box" style="white-space:pre-wrap;max-height:400px;overflow:auto"></div>
+        <div class="info" id="stats"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="copyOut()">📋 Copy</button>
+          <button class="btn btn-outline" onclick="downloadTxt()">💾 Download .txt</button>
+        </div>
+      </div>
+
+      <!-- DUMMY DATA PANEL -->
+      <div id="panelData" style="display:none">
+        <p class="info">⚠️ All data below is <strong>randomly generated for testing only</strong> — names, emails, phone numbers and addresses are fictitious and do not refer to real people.</p>
+        <div class="row">
+          <label>Rows:</label><input type="number" id="dataRows" value="10" min="1" max="500">
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="indianNames" checked onchange="genData()" style="width:auto;margin:0"> Indian names & addresses</label>
+          <button class="btn" onclick="genData()">🔁 Generate Data</button>
+        </div>
+        <div class="info">Columns: name, email, phone, address, city, pin, company, jobTitle, date, uuid, sentence</div>
+        <div id="dataOut" class="result-box" style="max-height:400px;overflow:auto;font-size:.8rem"></div>
+        <div class="row" style="flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="downloadData('json')">💾 JSON</button>
+          <button class="btn btn-outline" onclick="downloadData('csv')">💾 CSV</button>
+          <button class="btn btn-outline" onclick="downloadData('sql')">💾 SQL INSERT</button>
+        </div>
+      </div>
     </div>
     <div style="min-height:90px">
 <h2>Benefits of Using This Tool</h2>
@@ -91,24 +141,158 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-const WL="lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum".split(" ");
-const WH="यह एक परीक्षण पाठ है जो हिंदी भाषा में लिखा गया है शिक्षा का महत्व बहुत अधिक है हमारे देश में विभिन्न प्रकार की संस्कृतियाँ पाई जाती हैं प्रकृति ने हमें अनेक उपहार दिए हैं जीवन में सफलता प्राप्त करने के लिए कठिन परिश्रम आवश्यक है विज्ञान और प्रौद्योगिकी ने मानव जीवन को सरल बना दिया है स्वास्थ्य ही सबसे बड़ा धन है समय का सदुपयोग करना चाहिए पर्यावरण की रक्षा करना हम सबका कर्तव्य है".split(" ");
-const WE="the quick brown fox jumps over lazy dog and runs through forest while birds sing in trees above water flows gently down stream past green meadows where flowers bloom under bright sunshine during warm summer days people enjoy walking along paths reading books sharing stories with friends family gathering together celebrating life moments creating memories that last forever".split(" ");
-var W=WL;
+/* ---------- Word banks ---------- */
+var BANKS={
+latin:"lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum perspiciatis unde omnis iste natus error accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore veritatis quasi architecto beatae vitae dicta explicabo nemo ipsam quia voluptas aspernatur aut odit fugit sed magni dolores eos ratione sequi nesciunt neque porro quisquam dolorem adipisci numquam eius modi tempora incidunt magnam quaerat".split(" "),
+english:"the quick brown fox jumps over a lazy dog while birds sing softly in green trees above clear water flows gently down the stream past meadows where wildflowers bloom under bright warm sunshine during long summer days people walk along winding paths reading books sharing stories with friends and family gathering together celebrating small moments creating lasting memories that shape who we become over time every journey begins with a single step forward toward something new and worthwhile the morning light spills across quiet rooftops as the town slowly wakes children laugh in the distance and the smell of fresh bread drifts through open windows life unfolds one gentle chapter after another".split(" "),
+hindi:"यह एक परीक्षण पाठ है जो हिंदी भाषा में लिखा गया है शिक्षा का महत्व बहुत अधिक है हमारे देश में विभिन्न प्रकार की संस्कृतियाँ पाई जाती हैं प्रकृति ने हमें अनेक उपहार दिए हैं जीवन में सफलता प्राप्त करने के लिए कठिन परिश्रम आवश्यक है विज्ञान और प्रौद्योगिकी ने मानव जीवन को सरल बना दिया है स्वास्थ्य ही सबसे बड़ा धन है समय का सदुपयोग करना चाहिए पर्यावरण की रक्षा करना हम सबका कर्तव्य है ज्ञान एक ऐसा खजाना है जो कभी समाप्त नहीं होता पुस्तकें हमारी सच्ची मित्र होती हैं भारत विविधताओं से भरा हुआ एक सुंदर देश है यहाँ अनेक भाषाएँ बोली जाती हैं मेहनत का फल हमेशा मीठा होता है सच्चाई और ईमानदारी सबसे बड़े गुण हैं".split(" "),
+tech:"scalable cloud native microservice architecture leverages containerized kubernetes clusters with serverless functions and event driven pipelines our platform delivers real time analytics through a robust api gateway backed by distributed caching and horizontal autoscaling machine learning models train on streaming data lakes while ci cd automation ships continuous deployments blockchain enabled zero trust security ensures end to end encryption across the edge network developers iterate rapidly using agile sprints feature flags and observability dashboards refactoring the monolith into loosely coupled services boosts throughput latency drops as we optimize the query engine and shard the database".split(" "),
+corporate:"we must leverage synergies to drive scalable value across all verticals moving forward our core competency is to circle back and touch base on actionable deliverables that move the needle let us think outside the box and get our ducks in a row before we take this offline going forward the low hanging fruit is a paradigm shift that empowers stakeholders to align on strategic imperatives at the end of the day we need to boil the ocean deep dive into the data and unlock holistic best in class solutions that maximize bandwidth optimize workflows and deliver a win win outcome for every key stakeholder in the ecosystem".split(" "),
+pirate:"ahoy matey hoist the colors and set sail across the seven seas in search of buried treasure yo ho ho a bottle of grog keeps the salty crew merry as the ship cuts through crashing waves beware the kraken lurking beneath the dark water for it swallows galleons whole shiver me timbers cried the captain as cannon fire thundered across the horizon the parrot squawked upon the mast while the first mate plotted a course toward the hidden cove where doubloons gold and glittering jewels await bold buccaneers arr walk the plank ye scurvy dog or swab the deck till dawn".split(" ")
+};
+
+var W=BANKS.latin;
 function rw(){return W[Math.floor(Math.random()*W.length)]}
-function sent(){const l=8+Math.floor(Math.random()*12);let s=rw();s=s[0].toUpperCase()+s.slice(1);for(let i=1;i<l;i++)s+=" "+rw();return s+"."}
-function para(){const n=4+Math.floor(Math.random()*4);return Array.from({length:n},sent).join(" ")}
-function gen(){
-  var lang=document.getElementById("lang").value;
-  W=lang==="hindi"?WH:lang==="english"?WE:WL;
-  const c=+document.getElementById("count").value;
-  const t=document.getElementById("type").value;
-  let out;
-  if(t==="paragraphs")out=Array.from({length:c},para).join("\n\n");
-  else if(t==="sentences")out=Array.from({length:c},sent).join(" ");
-  else out=Array.from({length:c},rw).join(" ");
-  document.getElementById("out").textContent=out;
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function sentLen(){var vary=document.getElementById("varySent").checked;return vary?(6+Math.floor(Math.random()*12)):10;}
+function paraLen(){var vary=document.getElementById("varyPara").checked;return vary?(3+Math.floor(Math.random()*4)):4;}
+function sent(){var l=sentLen();var s=rw();for(var i=1;i<l;i++)s+=" "+rw();return cap(s)+".";}
+function para(){var n=paraLen();var arr=[];for(var i=0;i<n;i++)arr.push(sent());return arr.join(" ");}
+
+function switchTab(t){
+  document.getElementById("panelText").style.display=t==="text"?"":"none";
+  document.getElementById("panelData").style.display=t==="data"?"":"none";
+  document.getElementById("tabText").className=t==="text"?"btn":"btn btn-outline";
+  document.getElementById("tabData").className=t==="data"?"btn":"btn btn-outline";
+  if(t==="data"&&!document.getElementById("dataOut").innerHTML)genData();
 }
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function buildParagraphs(c){
+  var arr=[];for(var i=0;i<c;i++)arr.push(para());
+  if(document.getElementById("startLorem").checked&&arr.length){
+    arr[0]="Lorem ipsum dolor sit amet, consectetur adipiscing elit. "+arr[0];
+  }
+  return arr;
+}
+
+function toPlain(t,c){
+  if(t==="paragraphs")return buildParagraphs(c).join("\n\n");
+  if(t==="sentences"){
+    var arr=[];for(var i=0;i<c;i++)arr.push(sent());
+    if(document.getElementById("startLorem").checked&&arr.length)arr[0]="Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+    return arr.join(" ");
+  }
+  if(t==="words"){
+    var out=[];for(var i=0;i<c;i++)out.push(rw());
+    if(document.getElementById("startLorem").checked)out=("lorem ipsum dolor sit amet".split(" ")).concat(out).slice(0,c);
+    return out.join(" ");
+  }
+  // characters
+  var s="";if(document.getElementById("startLorem").checked)s="Lorem ipsum dolor sit amet, ";
+  while(s.length<c)s+=sent()+" ";
+  return s.slice(0,c).trim();
+}
+
+function gen(){
+  var lang=document.getElementById("lang").value;W=BANKS[lang]||BANKS.latin;
+  var c=Math.max(1,+document.getElementById("count").value||1);
+  var t=document.getElementById("type").value;
+  var fmt=document.getElementById("format").value;
+  var plain=toPlain(t,c);
+  var out;
+  if(fmt==="plain"){out=plain;}
+  else if(fmt==="markdown"){
+    if(t==="paragraphs"){var ps=plain.split("\n\n");out="## "+cap(rw())+" "+cap(rw())+"\n\n"+ps.join("\n\n")+"\n\n- "+sent()+"\n- "+sent()+"\n\n> "+sent();}
+    else out=plain;
+  }
+  else if(fmt==="html-p"){
+    var ps2=(t==="paragraphs")?plain.split("\n\n"):[plain];
+    out=ps2.map(function(p){return "<p>"+esc(p)+"</p>";}).join("\n");
+  }
+  else { // html-block
+    var ps3=buildParagraphs(Math.max(2,c));
+    var lines=[];
+    lines.push("<h2>"+esc(cap(rw())+" "+cap(rw())+" "+cap(rw()))+"</h2>");
+    lines.push("<p>"+esc(ps3[0])+"</p>");
+    lines.push("<h3>"+esc(cap(rw())+" "+cap(rw()))+"</h3>");
+    lines.push("<p>"+esc(ps3[1]||para())+"</p>");
+    lines.push("<ul>\n  <li>"+esc(sent())+"</li>\n  <li>"+esc(sent())+"</li>\n  <li>"+esc(sent())+"</li>\n</ul>");
+    lines.push("<ol>\n  <li>"+esc(sent())+"</li>\n  <li>"+esc(sent())+"</li>\n</ol>");
+    lines.push("<blockquote>"+esc(sent())+"</blockquote>");
+    lines.push('<p>'+esc(cap(rw())+" "+rw())+' <a href="#">'+esc(cap(rw())+" "+rw())+'</a> '+esc(rw()+" "+rw())+'.</p>');
+    out=lines.join("\n");
+  }
+  document.getElementById("out").textContent=out;
+  updateStats(out);
+}
+
+function updateStats(txt){
+  var words=txt.trim()?txt.trim().split(/\s+/).length:0;
+  document.getElementById("stats").textContent="Characters: "+txt.length+" · Words: "+words;
+}
+
+function copyOut(){navigator.clipboard.writeText(document.getElementById("out").textContent);}
+function downloadTxt(){var b=new Blob([document.getElementById("out").textContent],{type:"text/plain"});download(b,"lorem.txt");}
+
+/* ---------- Dummy Data ---------- */
+var IN_FIRST="Aarav Vivaan Aditya Arjun Reyansh Ishaan Kabir Ananya Diya Saanvi Aadhya Priya Riya Ishita Meera Rahul Amit Sneha Vikram Neha Rohan Pooja Kavya Aryan Tara".split(" ");
+var IN_LAST="Sharma Verma Patel Gupta Reddy Iyer Nair Singh Kumar Das Mehta Joshi Chopra Bose Rao Malhotra Agarwal Pillai Menon Desai".split(" ");
+var EN_FIRST="James Mary John Patricia Robert Jennifer Michael Linda William Elizabeth David Barbara Richard Susan Joseph Jessica Thomas Sarah Charles Karen".split(" ");
+var EN_LAST="Smith Johnson Williams Brown Jones Garcia Miller Davis Wilson Moore Taylor Anderson Thomas Jackson White Harris Martin Thompson".split(" ");
+var IN_CITY=["Mumbai","Delhi","Bengaluru","Hyderabad","Chennai","Kolkata","Pune","Ahmedabad","Jaipur","Lucknow","Surat","Indore","Bhopal","Patna","Nagpur"];
+var EN_CITY=["New York","London","Chicago","Toronto","Sydney","Seattle","Austin","Boston","Denver","Dublin","Berlin","Miami"];
+var STREETS=["MG Road","Park Street","Gandhi Nagar","Lake View","Nehru Marg","Church Street","Hill Road","Station Road","Green Avenue","Sector 21"];
+var COMPANIES=["Technova","Brightpath","Nexora","Quantify","Skylark","Cloudwing","Orbit Labs","Vertex","Pinnacle","Zenith","Blueriver","Corevance"];
+var JOBS=["Software Engineer","Product Manager","Data Analyst","UX Designer","Marketing Lead","Accountant","Teacher","Sales Executive","HR Manager","DevOps Engineer","Content Writer","QA Analyst"];
+var pick=function(a){return a[Math.floor(Math.random()*a.length)];}
+function uuid(){return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(ch){var r=Math.random()*16|0;var v=ch==="x"?r:(r&0x3|0x8);return v.toString(16);});}
+function pad(n){return n<10?"0"+n:""+n;}
+function randDate(){var y=1970+Math.floor(Math.random()*55);var m=1+Math.floor(Math.random()*12);var d=1+Math.floor(Math.random()*28);return y+"-"+pad(m)+"-"+pad(d);}
+function makeRow(){
+  var indian=document.getElementById("indianNames").checked;
+  var first=indian?pick(IN_FIRST):pick(EN_FIRST);
+  var last=indian?pick(IN_LAST):pick(EN_LAST);
+  var name=first+" "+last;
+  var email=(first+"."+last).toLowerCase()+(Math.floor(Math.random()*99))+"@"+pick(["example.com","testmail.in","demo.org","mail.co"]);
+  var phone=indian?("+91 "+(6+Math.floor(Math.random()*4))+(""+Math.floor(Math.random()*1000000000)).padStart(9,"0").slice(0,9)):("+1 "+(200+Math.floor(Math.random()*799))+"-"+pad(Math.floor(Math.random()*999))+"-"+(""+Math.floor(Math.random()*9999)).padStart(4,"0"));
+  var city=indian?pick(IN_CITY):pick(EN_CITY);
+  var pin=indian?(""+(110000+Math.floor(Math.random()*789999))):(""+(10000+Math.floor(Math.random()*89999)));
+  var address=(1+Math.floor(Math.random()*200))+" "+pick(STREETS);
+  W=BANKS.latin;
+  return {name:name,email:email,phone:phone,address:address,city:city,pin:pin,company:pick(COMPANIES),jobTitle:pick(JOBS),date:randDate(),uuid:uuid(),sentence:sent()};
+}
+var lastData=[];
+function genData(){
+  var n=Math.max(1,Math.min(500,+document.getElementById("dataRows").value||10));
+  lastData=[];for(var i=0;i<n;i++)lastData.push(makeRow());
+  var cols=["name","email","phone","address","city","pin","company","jobTitle","date"];
+  var html='<table style="border-collapse:collapse;width:100%"><thead><tr>'+cols.map(function(c){return '<th style="text-align:left;padding:.3rem .5rem;border-bottom:1px solid rgba(99,102,241,.3)">'+c+'</th>';}).join("")+'</tr></thead><tbody>';
+  lastData.slice(0,50).forEach(function(r){html+='<tr>'+cols.map(function(c){return '<td style="padding:.3rem .5rem;border-bottom:1px solid rgba(255,255,255,.06)">'+esc(String(r[c]))+'</td>';}).join("")+'</tr>';});
+  html+='</tbody></table>';
+  if(lastData.length>50)html+='<p class="info">Showing 50 of '+lastData.length+' rows. Download for the full set.</p>';
+  document.getElementById("dataOut").innerHTML=html;
+}
+function downloadData(kind){
+  if(!lastData.length)genData();
+  var cols=["name","email","phone","address","city","pin","company","jobTitle","date","uuid","sentence"];
+  var blob,fname;
+  if(kind==="json"){blob=new Blob([JSON.stringify(lastData,null,2)],{type:"application/json"});fname="dummy-data.json";}
+  else if(kind==="csv"){
+    var rows=[cols.join(",")];
+    lastData.forEach(function(r){rows.push(cols.map(function(c){return '"'+String(r[c]).replace(/"/g,'""')+'"';}).join(","));});
+    blob=new Blob([rows.join("\n")],{type:"text/csv"});fname="dummy-data.csv";
+  } else {
+    var lines=lastData.map(function(r){
+      var vals=cols.map(function(c){return "'"+String(r[c]).replace(/'/g,"''")+"'";}).join(", ");
+      return "INSERT INTO users ("+cols.join(", ")+") VALUES ("+vals+");";
+    });
+    blob=new Blob([lines.join("\n")],{type:"text/plain"});fname="dummy-data.sql";
+  }
+  download(blob,fname);
+}
+
 gen();
   </script>
 </body>

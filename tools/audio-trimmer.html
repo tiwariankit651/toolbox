@@ -18,21 +18,59 @@
     <div class="tool-section">
       <h1>✂️ Audio Trimmer</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
-      <p class="info">Upload audio, set start and end time, trim and download.</p>
-      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop audio file here (MP3, WAV, OGG)<input type="file" id="inp" accept="audio/*"></div>
+      <p class="info">Load audio, see an accurate waveform, drag handles to trim, add fades, adjust volume, split into segments, auto-trim silence, and export as WAV. Space = play/pause, ← → nudge handles. 100% in your browser.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop audio file here (MP3, WAV, OGG, M4A)<input type="file" id="inp" accept="audio/*"></div>
       <div id="editor" style="display:none">
-        <audio id="audio" controls style="width:100%;margin:.8rem 0"></audio>
-        <div id="durInfo" class="info" style="margin-bottom:.5rem"></div>
-        <canvas id="waveform" height="80" style="width:100%;background:var(--card);border-radius:8px;margin-bottom:.5rem"></canvas>
+        <div id="fileInfo" class="info" style="margin-bottom:.5rem"></div>
+        <canvas id="waveform" height="140" style="width:100%;background:var(--card);border-radius:8px;margin-bottom:.5rem;cursor:pointer"></canvas>
         <div class="row">
-          <div><label>Start (sec)</label><input type="number" id="startT" value="0" min="0" step="0.1" style="width:80px" oninput="updateRange()"></div>
-          <div style="flex:2"><label>Selection</label><input type="range" id="rangeStart" min="0" max="100" value="0" style="width:48%;display:inline" oninput="document.getElementById('startT').value=(this.value*1).toFixed(1);updateRange()"><input type="range" id="rangeEnd" min="0" max="100" value="100" style="width:48%;display:inline" oninput="document.getElementById('endT').value=(this.value*1).toFixed(1);updateRange()"></div>
-          <div><label>End (sec)</label><input type="number" id="endT" value="0" min="0" step="0.1" style="width:80px" oninput="updateRange()"></div>
+          <div><label>Start (s)</label><input type="number" id="startT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
+          <div><label>End (s)</label><input type="number" id="endT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
+          <div><label>Selection Duration</label><div id="selDur" style="padding:.55rem 0;font-weight:600">0.000 s</div></div>
         </div>
-        <div class="row" style="margin-top:.5rem"><label>Output:</label><select id="fmt"><option value="wav">WAV</option><option value="webm">WebM</option></select></div>
-        <div class="row" style="margin-top:.8rem">
-          <button class="btn btn-outline" onclick="previewTrim()">▶ Preview Selection</button>
-          <button class="btn" onclick="trimAudio()" id="trimBtn">✂️ Trim & Download</button>
+
+        <div class="row" style="margin-top:.4rem;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="playFull()">▶ Play Full</button>
+          <button class="btn btn-outline" onclick="playSelection()">▶ Play Selection</button>
+          <button class="btn btn-outline" onclick="toggleLoop()" id="loopBtn">🔁 Loop: Off</button>
+          <button class="btn btn-outline" onclick="stopPlayback()">⏹ Stop</button>
+        </div>
+
+        <h3 style="margin-top:1rem">Fades &amp; Volume</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Fade In (s)</label><input type="number" id="fadeIn" value="0" min="0" step="0.1" style="width:100px"></div>
+          <div><label>Fade Out (s)</label><input type="number" id="fadeOut" value="0" min="0" step="0.1" style="width:100px"></div>
+          <div><label>Volume/Gain (×): <span id="gainVal">1.0</span></label><input type="range" id="gain" min="0" max="3" step="0.05" value="1" oninput="document.getElementById('gainVal').textContent=(+this.value).toFixed(2)"></div>
+          <div><label><input type="checkbox" id="normalize"> Normalise peak to −0.1 dBFS</label></div>
+        </div>
+
+        <h3 style="margin-top:1rem">Export Options</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Sample Rate</label><select id="sr"><option value="0">Keep original</option><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
+          <div><label>Bit Depth</label><select id="bits"><option value="16">16-bit PCM</option><option value="32">32-bit float</option></select></div>
+          <div><label>Channels</label><select id="chOut"><option value="0">Keep original</option><option value="1">Mono</option><option value="2">Stereo</option></select></div>
+          <div><label>Est. output</label><div id="outSize" style="padding:.55rem 0;font-weight:600">—</div></div>
+        </div>
+        <p class="info">Export format is <strong>WAV</strong> (written manually in-browser). MP3 encoding is not available here because it requires an external encoder library — WAV is lossless and universally supported.</p>
+        <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
+          <button class="btn" onclick="exportTrim()" id="trimBtn">✂️ Trim &amp; Download WAV</button>
+        </div>
+
+        <h3 style="margin-top:1rem">Split into Segments</h3>
+        <p class="info">Enter split points in seconds, comma-separated (e.g. <code>5, 12.5, 30</code>). Exports each segment as a separate WAV in a ZIP.</p>
+        <div class="row">
+          <input type="text" id="splitPoints" placeholder="5, 12.5, 30" style="flex:2">
+          <button class="btn btn-outline" onclick="exportSegments()">🔪 Split &amp; Download ZIP</button>
+        </div>
+
+        <h3 style="margin-top:1rem">Auto Silence Trim</h3>
+        <div class="row" style="flex-wrap:wrap">
+          <div><label>Threshold: <span id="silVal">2</span>% of peak</label><input type="range" id="silence" min="0.5" max="20" step="0.5" value="2" oninput="document.getElementById('silVal').textContent=this.value"></div>
+          <button class="btn btn-outline" onclick="autoTrimSilence()">🤫 Detect &amp; Trim Silence</button>
+        </div>
+
+        <div class="info" style="margin-top:1rem;padding:.8rem 1rem;background:rgba(99,102,241,.08);border-radius:10px">
+          <strong>⌨️ Keyboard shortcuts:</strong> <kbd>Space</kbd> play/pause selection · <kbd>←</kbd>/<kbd>→</kbd> nudge start handle · <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> nudge end handle. Click anywhere on the waveform to seek.
         </div>
         <div id="progress"></div>
       </div>
@@ -94,72 +132,272 @@
     </div>
   </footer>
   <script src="../js/common.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
 var audioCtx,audioBuffer,audioFile;
+var selStart=0,selEnd=0,duration=0;
+var playSource=null,playStartCtxTime=0,playStartOffset=0,playEnd=0,looping=false,rafId=null;
+var dragging=null; // 'start' | 'end'
+
 setupDrop("drop","inp",function(f){
+  if(!f||!f[0])return;
   audioFile=f[0];
-  document.getElementById("audio").src=URL.createObjectURL(audioFile);
-  document.getElementById("editor").style.display="block";
-  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
   var reader=new FileReader();
-  reader.onload=function(){audioCtx.decodeAudioData(reader.result,function(buf){
-    audioBuffer=buf;
-    var dur=buf.duration;
-    document.getElementById("endT").value=dur.toFixed(1);
-    document.getElementById("endT").max=dur;
-    document.getElementById("startT").max=dur;
-    document.getElementById("rangeStart").max=dur;
-    document.getElementById("rangeEnd").max=dur;
-    document.getElementById("rangeEnd").value=dur;
-    document.getElementById("durInfo").textContent="Duration: "+dur.toFixed(1)+"s | Channels: "+buf.numberOfChannels+" | Sample rate: "+buf.sampleRate+"Hz";
-    drawWaveform(buf);
-  })};
+  reader.onload=function(){
+    audioCtx.decodeAudioData(reader.result.slice(0),function(buf){
+      audioBuffer=buf;duration=buf.duration;selStart=0;selEnd=duration;
+      document.getElementById("editor").style.display="block";
+      document.getElementById("startT").value=selStart.toFixed(3);
+      document.getElementById("endT").value=selEnd.toFixed(3);
+      document.getElementById("startT").max=duration;
+      document.getElementById("endT").max=duration;
+      document.getElementById("fileInfo").textContent=
+        "File: "+audioFile.name+" | Duration: "+duration.toFixed(3)+"s | Sample rate: "+buf.sampleRate+"Hz | Channels: "+buf.numberOfChannels+" | Size: "+formatSize(audioFile.size);
+      drawWaveform();updateSelUI();
+    },function(){alert("Could not decode this audio file. Try a different format.")});
+  };
   reader.readAsArrayBuffer(audioFile);
 });
-function drawWaveform(buf){
-  var canvas=document.getElementById("waveform");canvas.width=canvas.offsetWidth;
-  var ctx=canvas.getContext("2d");var data=buf.getChannelData(0);
-  var step=Math.ceil(data.length/canvas.width);var amp=canvas.height/2;
-  ctx.fillStyle="var(--card)";ctx.fillRect(0,0,canvas.width,canvas.height);
+
+// ===== Waveform =====
+function drawWaveform(){
+  if(!audioBuffer)return;
+  var canvas=document.getElementById("waveform");
+  canvas.width=canvas.offsetWidth||600;
+  var W=canvas.width,H=canvas.height;
+  var ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,W,H);
+  var data=audioBuffer.getChannelData(0);
+  var step=Math.max(1,Math.floor(data.length/W));var amp=H/2;
+  // selection highlight
+  var xs=selStart/duration*W,xe=selEnd/duration*W;
+  ctx.fillStyle="rgba(139,92,246,.18)";ctx.fillRect(xs,0,xe-xs,H);
+  // waveform
   ctx.strokeStyle="#6366f1";ctx.lineWidth=1;ctx.beginPath();
-  for(var i=0;i<canvas.width;i++){var min=1,max=-1;
+  for(var i=0;i<W;i++){
+    var min=1,max=-1;
     for(var j=0;j<step;j++){var d=data[i*step+j];if(d<min)min=d;if(d>max)max=d}
     ctx.moveTo(i,amp+min*amp);ctx.lineTo(i,amp+max*amp);
-  }ctx.stroke();
+  }
+  ctx.stroke();
+  // handles
+  drawHandle(ctx,xs,H,"#8b5cf6");
+  drawHandle(ctx,xe,H,"#8b5cf6");
+  // playhead
+  if(playSource){
+    var t=playStartOffset+(audioCtx.currentTime-playStartCtxTime);
+    if(t<=playEnd){var px=t/duration*W;ctx.strokeStyle="#ec4899";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke()}
+  }
 }
-function updateRange(){document.getElementById("rangeStart").value=document.getElementById("startT").value;document.getElementById("rangeEnd").value=document.getElementById("endT").value}
-function previewTrim(){var a=document.getElementById("audio");a.currentTime=+document.getElementById("startT").value;a.play();var end=+document.getElementById("endT").value;setTimeout(function(){a.pause()},((end-a.currentTime)*1000))}
-function trimAudio(){
-  if(!audioBuffer)return alert("Upload audio first");
-  var start=+document.getElementById("startT").value;var end=+document.getElementById("endT").value;
-  if(end<=start)return alert("End must be after start");
-  showProcessing("progress");
-  var sr=audioBuffer.sampleRate;var ch=audioBuffer.numberOfChannels;
-  var startSample=Math.floor(start*sr);var endSample=Math.floor(end*sr);
-  var len=endSample-startSample;
-  var trimmed=audioCtx.createBuffer(ch,len,sr);
-  for(var c=0;c<ch;c++){var src=audioBuffer.getChannelData(c);var dst=trimmed.getChannelData(c);for(var i=0;i<len;i++)dst[i]=src[startSample+i]}
-  var offCtx=new OfflineAudioContext(ch,len,sr);
-  var source=offCtx.createBufferSource();source.buffer=trimmed;source.connect(offCtx.destination);source.start();
-  offCtx.startRendering().then(function(rendered){
-    var wavBlob=bufferToWav(rendered);
-    download(wavBlob,"trimmed.wav");
-    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Trimmed! Duration: '+(end-start).toFixed(1)+'s</p>';
+function drawHandle(ctx,x,H,color){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(x-3,0,6,10);ctx.fillRect(x-3,H-10,6,10)}
+
+function updateSelUI(){
+  document.getElementById("startT").value=selStart.toFixed(3);
+  document.getElementById("endT").value=selEnd.toFixed(3);
+  document.getElementById("selDur").textContent=(selEnd-selStart).toFixed(3)+" s";
+  estimateSize();
+  drawWaveform();
+}
+function onNumInput(){
+  var s=parseFloat(document.getElementById("startT").value)||0;
+  var e=parseFloat(document.getElementById("endT").value)||0;
+  selStart=Math.max(0,Math.min(s,duration));
+  selEnd=Math.max(selStart,Math.min(e,duration));
+  updateSelUI();
+}
+
+// waveform interaction
+(function(){
+  var canvas=document.getElementById("waveform");
+  function xToTime(clientX){var r=canvas.getBoundingClientRect();return Math.max(0,Math.min(1,(clientX-r.left)/r.width))*duration}
+  canvas.addEventListener("mousedown",function(e){
+    if(!audioBuffer)return;
+    var t=xToTime(e.clientX);var W=canvas.getBoundingClientRect().width;
+    var xs=selStart/duration*W,xe=selEnd/duration*W,mx=e.clientX-canvas.getBoundingClientRect().left;
+    if(Math.abs(mx-xs)<10)dragging="start";
+    else if(Math.abs(mx-xe)<10)dragging="end";
+    else{seekTo(t);dragging=null}
   });
+  window.addEventListener("mousemove",function(e){
+    if(!dragging||!audioBuffer)return;
+    var t=xToTime(e.clientX);
+    if(dragging==="start")selStart=Math.min(t,selEnd);
+    else selEnd=Math.max(t,selStart);
+    updateSelUI();
+  });
+  window.addEventListener("mouseup",function(){dragging=null});
+})();
+
+// ===== Playback =====
+function stopPlayback(){if(playSource){try{playSource.stop()}catch(e){}playSource=null}if(rafId)cancelAnimationFrame(rafId);rafId=null;drawWaveform()}
+function playRange(from,to,loop){
+  stopPlayback();
+  playSource=audioCtx.createBufferSource();playSource.buffer=audioBuffer;playSource.loop=false;
+  playSource.connect(audioCtx.destination);
+  playStartCtxTime=audioCtx.currentTime;playStartOffset=from;playEnd=to;looping=loop;
+  playSource.onended=function(){
+    if(looping&&playSource){playRange(selStart,selEnd,true)}
+    else{playSource=null;if(rafId)cancelAnimationFrame(rafId);rafId=null;drawWaveform()}
+  };
+  playSource.start(0,from,Math.max(0.01,to-from));
+  tick();
 }
-function bufferToWav(buf){
-  var ch=buf.numberOfChannels;var sr=buf.sampleRate;var len=buf.length;
+function tick(){drawWaveform();rafId=requestAnimationFrame(tick)}
+function playFull(){if(audioBuffer)playRange(0,duration,false)}
+function playSelection(){if(audioBuffer)playRange(selStart,selEnd,looping)}
+function seekTo(t){if(audioBuffer)playRange(t,duration,false)}
+function toggleLoop(){looping=!looping;document.getElementById("loopBtn").textContent="🔁 Loop: "+(looping?"On":"Off");if(looping&&audioBuffer)playRange(selStart,selEnd,true)}
+
+// ===== Processing: build a processed buffer for the selection =====
+function buildProcessedBuffer(startSec,endSec){
+  var sr=audioBuffer.sampleRate,ch=audioBuffer.numberOfChannels;
+  var s0=Math.floor(startSec*sr),s1=Math.floor(endSec*sr);
+  var len=Math.max(0,s1-s0);
+  // channel mixing choice
+  var chOutSel=+document.getElementById("chOut").value;
+  var outCh=chOutSel===0?ch:chOutSel;
+  var tmp=audioCtx.createBuffer(outCh,len,sr);
+  for(var c=0;c<outCh;c++){
+    var dst=tmp.getChannelData(c);
+    if(chOutSel===1&&ch>1){ // downmix to mono
+      var l=audioBuffer.getChannelData(0),r=audioBuffer.getChannelData(1);
+      for(var i=0;i<len;i++)dst[i]=((l[s0+i]||0)+(r[s0+i]||0))/2;
+    }else{
+      var src=audioBuffer.getChannelData(Math.min(c,ch-1));
+      for(var k=0;k<len;k++)dst[k]=src[s0+k]||0;
+    }
+  }
+  // gain
+  var gain=+document.getElementById("gain").value;
+  // fades
+  var fadeIn=+document.getElementById("fadeIn").value*sr;
+  var fadeOut=+document.getElementById("fadeOut").value*sr;
+  for(var cc=0;cc<outCh;cc++){
+    var arr=tmp.getChannelData(cc);
+    for(var n=0;n<len;n++){
+      var g=gain;
+      if(fadeIn>0&&n<fadeIn)g*=n/fadeIn;
+      if(fadeOut>0&&n>len-fadeOut)g*=(len-n)/fadeOut;
+      arr[n]*=g;
+    }
+  }
+  // normalize
+  if(document.getElementById("normalize").checked){
+    var peak=0;
+    for(var a=0;a<outCh;a++){var da=tmp.getChannelData(a);for(var m=0;m<len;m++){var v=Math.abs(da[m]);if(v>peak)peak=v}}
+    if(peak>0){var target=Math.pow(10,-0.1/20);var f=target/peak;for(var b=0;b<outCh;b++){var db=tmp.getChannelData(b);for(var q=0;q<len;q++)db[q]*=f}}
+  }
+  // resample if requested
+  var srSel=+document.getElementById("sr").value;
+  if(srSel&&srSel!==sr){return resampleBuffer(tmp,srSel)}
+  return tmp;
+}
+// Simple linear resampler returning a plain {sampleRate,numberOfChannels,length,getChannelData}
+function resampleBuffer(buf,newSr){
+  var ratio=newSr/buf.sampleRate;var newLen=Math.floor(buf.length*ratio);var ch=buf.numberOfChannels;
+  var channels=[];
+  for(var c=0;c<ch;c++){
+    var src=buf.getChannelData(c);var out=new Float32Array(newLen);
+    for(var i=0;i<newLen;i++){var srcPos=i/ratio;var i0=Math.floor(srcPos);var frac=srcPos-i0;var s0=src[i0]||0;var s1=src[i0+1]||s0;out[i]=s0+(s1-s0)*frac}
+    channels.push(out);
+  }
+  return {sampleRate:newSr,numberOfChannels:ch,length:newLen,getChannelData:function(i){return channels[i]}};
+}
+
+// ===== WAV encoder (16-bit PCM or 32-bit float) =====
+function encodeWav(buf){
+  var bits=+document.getElementById("bits").value;
+  var ch=buf.numberOfChannels,sr=buf.sampleRate,len=buf.length;
+  var bytesPerSample=bits===32?4:2;
   var interleaved=new Float32Array(len*ch);
   for(var c=0;c<ch;c++){var data=buf.getChannelData(c);for(var i=0;i<len;i++)interleaved[i*ch+c]=data[i]}
-  var dataLen=interleaved.length*2;var buffer=new ArrayBuffer(44+dataLen);var view=new DataView(buffer);
+  var dataLen=interleaved.length*bytesPerSample;
+  var buffer=new ArrayBuffer(44+dataLen);var view=new DataView(buffer);
   function writeStr(o,s){for(var i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i))}
+  var format=bits===32?3:1; // 3 = IEEE float, 1 = PCM
   writeStr(0,"RIFF");view.setUint32(4,36+dataLen,true);writeStr(8,"WAVE");writeStr(12,"fmt ");
-  view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,ch,true);
-  view.setUint32(24,sr,true);view.setUint32(28,sr*ch*2,true);view.setUint16(32,ch*2,true);view.setUint16(34,16,true);
+  view.setUint32(16,16,true);view.setUint16(20,format,true);view.setUint16(22,ch,true);
+  view.setUint32(24,sr,true);view.setUint32(28,sr*ch*bytesPerSample,true);
+  view.setUint16(32,ch*bytesPerSample,true);view.setUint16(34,bits,true);
   writeStr(36,"data");view.setUint32(40,dataLen,true);
-  var offset=44;for(var i=0;i<interleaved.length;i++,offset+=2){var s=Math.max(-1,Math.min(1,interleaved[i]));view.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true)}
+  var offset=44;
+  if(bits===32){for(var f=0;f<interleaved.length;f++,offset+=4)view.setFloat32(offset,interleaved[f],true)}
+  else{for(var p=0;p<interleaved.length;p++,offset+=2){var s=Math.max(-1,Math.min(1,interleaved[p]));view.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true)}}
   return new Blob([buffer],{type:"audio/wav"});
 }
+
+function estimateSize(){
+  if(!audioBuffer)return;
+  var bits=+document.getElementById("bits").value;
+  var srSel=+document.getElementById("sr").value;var sr=srSel||audioBuffer.sampleRate;
+  var chSel=+document.getElementById("chOut").value;var ch=chSel||audioBuffer.numberOfChannels;
+  var secs=selEnd-selStart;
+  var bytes=44+Math.floor(secs*sr)*ch*(bits===32?4:2);
+  document.getElementById("outSize").textContent=formatSize(bytes);
+}
+["sr","bits","chOut"].forEach(function(id){document.addEventListener("change",function(e){if(e.target&&e.target.id===id)estimateSize()})});
+
+function exportTrim(){
+  if(!audioBuffer)return alert("Load an audio file first");
+  if(selEnd<=selStart)return alert("End must be after start");
+  showProcessing("progress");
+  setTimeout(function(){
+    var out=buildProcessedBuffer(selStart,selEnd);
+    var blob=encodeWav(out);
+    download(blob,(audioFile.name.replace(/\.[^.]+$/,"")||"trimmed")+"-trimmed.wav");
+    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Exported '+(selEnd-selStart).toFixed(3)+'s · '+formatSize(blob.size)+'</p>';
+  },50);
+}
+
+function exportSegments(){
+  if(!audioBuffer)return alert("Load an audio file first");
+  var raw=document.getElementById("splitPoints").value.trim();
+  if(!raw)return alert("Enter at least one split point in seconds");
+  var pts=raw.split(",").map(function(x){return parseFloat(x)}).filter(function(x){return !isNaN(x)&&x>0&&x<duration}).sort(function(a,b){return a-b});
+  var bounds=[0].concat(pts,[duration]);
+  var zip=new JSZip();
+  showProcessing("progress");
+  setTimeout(function(){
+    for(var i=0;i<bounds.length-1;i++){
+      var out=buildProcessedBuffer(bounds[i],bounds[i+1]);
+      zip.file("segment-"+(i+1)+".wav",encodeWav(out));
+    }
+    zip.generateAsync({type:"blob"}).then(function(z){
+      download(z,"audio-segments.zip");
+      document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Exported '+(bounds.length-1)+' segments</p>';
+    });
+  },50);
+}
+
+function autoTrimSilence(){
+  if(!audioBuffer)return alert("Load an audio file first");
+  var data=audioBuffer.getChannelData(0);var sr=audioBuffer.sampleRate;
+  var peak=0;for(var i=0;i<data.length;i++){var v=Math.abs(data[i]);if(v>peak)peak=v}
+  var thresh=peak*(+document.getElementById("silence").value/100);
+  var start=0,end=data.length-1;
+  while(start<data.length&&Math.abs(data[start])<thresh)start++;
+  while(end>start&&Math.abs(data[end])<thresh)end--;
+  selStart=start/sr;selEnd=(end+1)/sr;
+  updateSelUI();
+  document.getElementById("progress").innerHTML='<p class="info">🤫 Silence trimmed: selection set to '+selStart.toFixed(3)+'s → '+selEnd.toFixed(3)+'s</p>';
+}
+
+// ===== Keyboard shortcuts =====
+document.addEventListener("keydown",function(e){
+  if(!audioBuffer)return;
+  var tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="select"||tag==="textarea")return;
+  if(e.code==="Space"){e.preventDefault();if(playSource)stopPlayback();else playSelection()}
+  else if(e.key==="ArrowLeft"){e.preventDefault();var d=e.shiftKey?"end":"start";nudge(d,-0.05)}
+  else if(e.key==="ArrowRight"){e.preventDefault();var d2=e.shiftKey?"end":"start";nudge(d2,0.05)}
+});
+function nudge(which,delta){
+  if(which==="start")selStart=Math.max(0,Math.min(selStart+delta,selEnd));
+  else selEnd=Math.max(selStart,Math.min(selEnd+delta,duration));
+  updateSelUI();
+}
+window.addEventListener("resize",function(){if(audioBuffer)drawWaveform()});
   </script>
 </body>
 </html>

@@ -17,14 +17,71 @@
     <div class="tool-section" style="text-align:center">
       <h1>💡 Motivational Quote Generator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <p class="info">Get inspired! Generate quotes with beautiful backgrounds. Download for social media.</p>
-      <canvas id="canvas" width="800" height="450" style="width:100%;max-width:600px;border-radius:12px;margin:1rem 0"></canvas>
+      <p class="info">Get inspired! Hundreds of accurately attributed quotes. Filter, favourite, and make shareable images.</p>
+
+      <div id="qod" style="background:var(--card);border-radius:12px;padding:1rem;margin:1rem 0;text-align:left"></div>
+
       <div class="row" style="justify-content:center;flex-wrap:wrap">
-        <button class="btn" onclick="newQuote()">🔄 New Quote</button>
-        <button class="btn" onclick="newBg()">🎨 Change Background</button>
-        <button class="btn" onclick="document.getElementById('canvas').toBlob(function(b){download(b,'quote.png')})">💾 Download</button>
+        <select id="category" onchange="applyFilters()"><option value="all">All categories</option></select>
+        <input type="text" id="search" placeholder="🔍 Search text or author" oninput="applyFilters()">
+        <select id="authorFilter" onchange="applyFilters()"><option value="all">All authors</option></select>
       </div>
-      <div class="row" style="justify-content:center;margin-top:.5rem"><button class="btn btn-outline" onclick="custom()">✏️ Custom Quote</button></div>
+
+      <div id="quoteBox" style="background:var(--card);border-radius:12px;padding:1.5rem;margin:1rem 0;min-height:100px;text-align:center"></div>
+      <div class="info" id="filterCount" style="text-align:center"></div>
+
+      <div class="row" style="justify-content:center;flex-wrap:wrap">
+        <button class="btn" onclick="newQuote()">🔄 New Quote <span style="opacity:.7;font-size:.8rem">(N)</span></button>
+        <button class="btn btn-outline" onclick="favCurrent()">⭐ Favourite</button>
+        <button class="btn btn-outline" onclick="copyQuote()">📋 Copy</button>
+        <button class="btn btn-outline" onclick="shareQuote()">🔗 Share</button>
+      </div>
+
+      <div class="tool-section" style="margin-top:1.2rem;background:var(--card);text-align:left">
+        <h3>🖼️ Quote Image Maker</h3>
+        <canvas id="canvas" width="1080" height="1080" style="width:100%;max-width:420px;border-radius:12px;margin:1rem auto;display:block"></canvas>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Size:</label>
+          <select id="imgSize" onchange="renderImage()">
+            <option value="1080x1080">Instagram Square 1080×1080</option>
+            <option value="1080x1920">Story 1080×1920</option>
+            <option value="1200x675">Twitter/X 1200×675</option>
+            <option value="1080x1920s">WhatsApp Status 1080×1920</option>
+            <option value="2480x3508">A4 Poster 2480×3508</option>
+          </select>
+          <label>Background:</label>
+          <select id="bgType" onchange="onBgTypeChange()">
+            <option value="gradient">Palette gradient</option>
+            <option value="solid">Solid colour</option>
+            <option value="image">Uploaded image</option>
+          </select>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Solid/overlay:</label><input type="color" id="solidColor" value="#6366f1" onchange="renderImage()" style="width:60px;padding:.2rem">
+          <label>Text colour:</label><input type="color" id="textColor" value="#ffffff" onchange="renderImage()" style="width:60px;padding:.2rem">
+          <label>Align:</label>
+          <select id="align" onchange="renderImage()"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Font:</label>
+          <select id="font" onchange="renderImage()"><option value="Georgia,serif">Georgia (serif)</option><option value="Arial,sans-serif">Arial (sans)</option><option value="'Courier New',monospace">Courier (mono)</option><option value="'Trebuchet MS',sans-serif">Trebuchet</option></select>
+          <label>Font size:</label><input type="range" id="fontSize" min="30" max="120" value="60" oninput="renderImage()">
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="watermark" checked onchange="renderImage()" style="width:auto;margin:0"> Watermark</label>
+        </div>
+        <div class="row" style="flex-wrap:wrap">
+          <label>Upload bg image:</label><input type="file" id="bgUpload" accept="image/*" onchange="loadBgImage(event)">
+          <label>Overlay darkness:</label><input type="range" id="overlay" min="0" max="90" value="45" oninput="renderImage()">
+        </div>
+        <div class="row" style="justify-content:center">
+          <button class="btn" onclick="downloadImage()">💾 Download PNG</button>
+        </div>
+      </div>
+
+      <div class="tool-section" style="margin-top:1.2rem;background:var(--card);text-align:left">
+        <h3>⭐ Favourites</h3>
+        <div id="favList"></div>
+        <div class="row"><button class="btn btn-outline" onclick="exportFavs()">Export favourites (.txt)</button><button class="btn btn-outline" onclick="clearFavs()">Clear all</button></div>
+      </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Motivation chahiye? Random quote generate karo with beautiful gradient background. Instagram story pe daal do ya wallpaper bana lo.</p>
@@ -84,23 +141,313 @@
   </footer>
   <script src="../js/common.js"></script>
   <script>
-var quotes=[["The only way to do great work is to love what you do.","Steve Jobs"],["Be the change you wish to see in the world.","Mahatma Gandhi"],["In the middle of difficulty lies opportunity.","Albert Einstein"],["Success is not final, failure is not fatal: it is the courage to continue that counts.","Winston Churchill"],["Education is the most powerful weapon which you can use to change the world.","Nelson Mandela"],["The future belongs to those who believe in the beauty of their dreams.","Eleanor Roosevelt"],["It does not matter how slowly you go as long as you do not stop.","Confucius"],["Believe you can and you are halfway there.","Theodore Roosevelt"],["The best time to plant a tree was 20 years ago. The second best time is now.","Chinese Proverb"],["Your time is limited. Do not waste it living someone else's life.","Steve Jobs"],["Hard work beats talent when talent does not work hard.","Tim Notke"],["Dream big. Start small. Act now.","Robin Sharma"],["The only impossible journey is the one you never begin.","Tony Robbins"],["Success usually comes to those who are too busy to be looking for it.","Henry David Thoreau"],["Do not watch the clock. Do what it does. Keep going.","Sam Levenson"],["The secret of getting ahead is getting started.","Mark Twain"],["Opportunities do not happen. You create them.","Chris Grosser"],["It always seems impossible until it is done.","Nelson Mandela"],["The harder you work for something, the greater you will feel when you achieve it.","Anonymous"],["Push yourself because no one else is going to do it for you.","Anonymous"],["Strive not to be a success, but rather to be of value.","Albert Einstein"],["The mind is everything. What you think you become.","Buddha"],["An unexamined life is not worth living.","Socrates"],["Turn your wounds into wisdom.","Oprah Winfrey"],["The way to get started is to quit talking and begin doing.","Walt Disney"],["Life is what happens when you are busy making other plans.","John Lennon"],["The greatest glory in living lies not in never falling, but in rising every time we fall.","Nelson Mandela"],["If you want to live a happy life, tie it to a goal, not to people or things.","Albert Einstein"],["Never let the fear of striking out keep you from playing the game.","Babe Ruth"],["Money and success do not change people; they merely amplify what is already there.","Will Smith"],["Not how long, but how well you have lived is the main thing.","Seneca"],["If life were predictable it would cease to be life, and be without flavor.","Eleanor Roosevelt"],["The whole secret of a successful life is to find out what is one destiny to do, and then do it.","Henry Ford"],["In order to write about life first you must live it.","Ernest Hemingway"],["The big lesson in life is never be scared of anyone or anything.","Frank Sinatra"],["Sing like no one is listening. Love like you have never been hurt. Dance like nobody is watching.","Satchel Paige"],["Curiosity about life in all of its aspects, I think, is still the secret of great creative people.","Leo Burnett"],["Life is not a problem to be solved, but a reality to be experienced.","Soren Kierkegaard"],["The unexamined life is not worth living.","Socrates"],["You only live once, but if you do it right, once is enough.","Mae West"],["Many of life greatest failures are people who did not realize how close they were to success when they gave up.","Thomas Edison"],["If you really look closely, most overnight successes took a long time.","Steve Jobs"],["The real test is not whether you avoid this failure, because you will not. It is whether you let it harden or shame you into inaction.","Barack Obama"],["A person who never made a mistake never tried anything new.","Albert Einstein"],["What lies behind us and what lies before us are tiny matters compared to what lies within us.","Ralph Waldo Emerson"],["I have learned over the years that when one mind is made up, this diminishes fear.","Rosa Parks"],["Life shrinks or expands in proportion to one courage.","Anais Nin"],["You miss 100% of the shots you do not take.","Wayne Gretzky"],["Whether you think you can or you think you cannot, you are right.","Henry Ford"],["I alone cannot change the world, but I can cast a stone across the water to create many ripples.","Mother Teresa"],["Nothing is impossible, the word itself says I am possible.","Audrey Hepburn"],["The question is not who is going to let me; it is who is going to stop me.","Ayn Rand"],["The only person you are destined to become is the person you decide to be.","Ralph Waldo Emerson"],["Everything you have ever wanted is on the other side of fear.","George Addair"],["We can easily forgive a child who is afraid of the dark; the real tragedy of life is when men are afraid of the light.","Plato"],["Teach thy tongue to say I do not know, and thou shalt progress.","Maimonides"],["Start where you are. Use what you have. Do what you can.","Arthur Ashe"],["Fall seven times and stand up eight.","Japanese Proverb"],["When I let go of what I am, I become what I might be.","Lao Tzu"],["Life is really simple, but we insist on making it complicated.","Confucius"],["The best revenge is massive success.","Frank Sinatra"],["People often say that motivation does not last. Well, neither does bathing. That is why we recommend it daily.","Zig Ziglar"],["If opportunity does not knock, build a door.","Milton Berle"],["A winner is a dreamer who never gives up.","Nelson Mandela"],["It is during our darkest moments that we must focus to see the light.","Aristotle"],["The only limit to our realization of tomorrow will be our doubts of today.","Franklin D. Roosevelt"],["What you get by achieving your goals is not as important as what you become by achieving your goals.","Zig Ziglar"],["Believe in yourself. You are braver than you think, more talented than you know, and capable of more than you imagine.","Roy T. Bennett"],["I find that the harder I work, the more luck I seem to have.","Thomas Jefferson"],["Success is walking from failure to failure with no loss of enthusiasm.","Winston Churchill"],["Just when the caterpillar thought the world was ending, he turned into a butterfly.","Proverb"],["Successful people do what unsuccessful people are not willing to do. Do not wish it were easier; wish you were better.","Jim Rohn"],["Try not to become a man of success. Rather become a man of value.","Albert Einstein"],["Great minds discuss ideas; average minds discuss events; small minds discuss people.","Eleanor Roosevelt"],["If you cannot explain it simply, you do not understand it well enough.","Albert Einstein"],["The best way to predict the future is to create it.","Abraham Lincoln"],["You do not have to be great to start, but you have to start to be great.","Zig Ziglar"],["Action is the foundational key to all success.","Pablo Picasso"],["The only way to do great work is to love what you do. If you have not found it yet, keep looking.","Steve Jobs"],["Stay hungry, stay foolish.","Steve Jobs"],["Innovation distinguishes between a leader and a follower.","Steve Jobs"],["Your most unhappy customers are your greatest source of learning.","Bill Gates"],["If you are born poor it is not your mistake, but if you die poor it is your mistake.","Bill Gates"],["Do not compare yourself with anyone in this world. If you do so, you are insulting yourself.","Bill Gates"],["Strength does not come from winning. Your struggles develop your strengths.","Arnold Schwarzenegger"],["The difference between ordinary and extraordinary is that little extra.","Jimmy Johnson"],["Champions keep playing until they get it right.","Billie Jean King"],["You are never too old to set another goal or to dream a new dream.","C.S. Lewis"],["It is not the years in your life that count. It is the life in your years.","Abraham Lincoln"],["The purpose of our lives is to be happy.","Dalai Lama"],["Get busy living or get busy dying.","Stephen King"],["You have brains in your head. You have feet in your shoes. You can steer yourself any direction you choose.","Dr. Seuss"]];
-var bgs=[["#ff9a9e","#fad0c4"],["#a18cd1","#fbc2eb"],["#667eea","#764ba2"],["#4facfe","#00f2fe"],["#43e97b","#38f9d7"],["#fa709a","#fee140"],["#ff8177","#b12a5b"],["#00c6ff","#0072ff"],["#f857a6","#ff5858"],["#d4fc79","#96e6a1"],["#0f0c29","#302b63"],["#1a1a2e","#16213e"]];
-var c=document.getElementById("canvas"),ctx=c.getContext("2d"),curQ=0,curBg=0;
-function render(q,a){
-  var bg=bgs[curBg];var grd=ctx.createLinearGradient(0,0,c.width,c.height);grd.addColorStop(0,bg[0]);grd.addColorStop(1,bg[1]);ctx.fillStyle=grd;ctx.fillRect(0,0,c.width,c.height);
-  ctx.fillStyle="rgba(0,0,0,0.15)";ctx.fillRect(40,40,c.width-80,c.height-80);ctx.fillStyle="#fff";ctx.textAlign="center";
-  ctx.font="italic 28px Georgia,serif";var words=q.split(" ");var lines=[];var line="";
-  words.forEach(function(w){if(ctx.measureText(line+w+" ").width>c.width-120){lines.push(line.trim());line=""}line+=w+" "});if(line.trim())lines.push(line.trim());
-  var startY=c.height/2-(lines.length*36)/2;
-  ctx.font='italic 28px Georgia,serif';lines.forEach(function(l,i){ctx.fillText('"'+l+(i===lines.length-1?'"':""),c.width/2,startY+i*36)});
-  ctx.font="18px Arial,sans-serif";ctx.fillStyle="rgba(255,255,255,0.8)";ctx.fillText("— "+a,c.width/2,startY+lines.length*36+30);
-  ctx.font="12px Arial";ctx.fillStyle="rgba(255,255,255,0.4)";ctx.fillText("freetoolhubs.com",c.width/2,c.height-20);
+/* ---------- Quote library: [text, author, category] ---------- */
+var QUOTES=[
+// motivation
+["The only way to do great work is to love what you do.","Steve Jobs","motivation"],
+["Your time is limited, so don't waste it living someone else's life.","Steve Jobs","motivation"],
+["The future belongs to those who believe in the beauty of their dreams.","Eleanor Roosevelt","motivation"],
+["Believe you can and you're halfway there.","Theodore Roosevelt","motivation"],
+["It always seems impossible until it's done.","Nelson Mandela","motivation"],
+["The secret of getting ahead is getting started.","Mark Twain","motivation"],
+["Don't watch the clock; do what it does. Keep going.","Sam Levenson","motivation"],
+["The way to get started is to quit talking and begin doing.","Walt Disney","motivation"],
+["Everything you've ever wanted is on the other side of fear.","George Addair","motivation"],
+["Start where you are. Use what you have. Do what you can.","Arthur Ashe","motivation"],
+["The only limit to our realization of tomorrow will be our doubts of today.","Franklin D. Roosevelt","motivation"],
+["You miss 100% of the shots you don't take.","Wayne Gretzky","motivation"],
+["Whether you think you can or you think you can't, you're right.","Henry Ford","motivation"],
+["Act as if what you do makes a difference. It does.","William James","motivation"],
+["Well done is better than well said.","Benjamin Franklin","motivation"],
+// study and exams
+["Education is the most powerful weapon which you can use to change the world.","Nelson Mandela","study"],
+["Live as if you were to die tomorrow. Learn as if you were to live forever.","Mahatma Gandhi","study"],
+["The beautiful thing about learning is that no one can take it away from you.","B.B. King","study"],
+["The roots of education are bitter, but the fruit is sweet.","Aristotle","study"],
+["Develop a passion for learning. If you do, you will never cease to grow.","Anthony J. D'Angelo","study"],
+["An investment in knowledge pays the best interest.","Benjamin Franklin","study"],
+["The expert in anything was once a beginner.","Helen Hayes","study"],
+["Learning never exhausts the mind.","Leonardo da Vinci","study"],
+["The mind is not a vessel to be filled, but a fire to be kindled.","Plutarch","study"],
+["Success is the sum of small efforts, repeated day in and day out.","Robert Collier","study"],
+// success
+["Success is not final, failure is not fatal: it is the courage to continue that counts.","Winston Churchill","success"],
+["Success usually comes to those who are too busy to be looking for it.","Henry David Thoreau","success"],
+["Success is walking from failure to failure with no loss of enthusiasm.","Winston Churchill","success"],
+["Try not to become a person of success, but rather try to become a person of value.","Albert Einstein","success"],
+["Would you like me to give you a formula for success? Double your rate of failure.","Thomas J. Watson","success"],
+["The road to success and the road to failure are almost exactly the same.","Colin R. Davis","success"],
+["I never dreamed about success. I worked for it.","Estee Lauder","success"],
+["Success is not how high you have climbed, but how you make a positive difference to the world.","Roy T. Bennett","success"],
+["There are no secrets to success. It is the result of preparation, hard work, and learning from failure.","Colin Powell","success"],
+// leadership
+["A leader is one who knows the way, goes the way, and shows the way.","John C. Maxwell","leadership"],
+["Innovation distinguishes between a leader and a follower.","Steve Jobs","leadership"],
+["The greatest leader is not necessarily the one who does the greatest things. He is the one that gets the people to do the greatest things.","Ronald Reagan","leadership"],
+["Before you are a leader, success is all about growing yourself. When you become a leader, success is all about growing others.","Jack Welch","leadership"],
+["Leadership is the capacity to translate vision into reality.","Warren Bennis","leadership"],
+["The function of leadership is to produce more leaders, not more followers.","Ralph Nader","leadership"],
+["If your actions inspire others to dream more, learn more, do more and become more, you are a leader.","John Quincy Adams","leadership"],
+["Do not follow where the path may lead. Go instead where there is no path and leave a trail.","Ralph Waldo Emerson","leadership"],
+// perseverance
+["It does not matter how slowly you go as long as you do not stop.","Confucius","perseverance"],
+["Fall seven times, stand up eight.","Japanese Proverb","perseverance"],
+["Perseverance is not a long race; it is many short races one after the other.","Walter Elliot","perseverance"],
+["Our greatest glory is not in never falling, but in rising every time we fall.","Confucius","perseverance"],
+["Many of life's failures are people who did not realize how close they were to success when they gave up.","Thomas A. Edison","perseverance"],
+["It's not that I'm so smart, it's just that I stay with problems longer.","Albert Einstein","perseverance"],
+["Never give up, for that is just the place and time that the tide will turn.","Harriet Beecher Stowe","perseverance"],
+["Courage doesn't always roar. Sometimes courage is the quiet voice at the end of the day saying, 'I will try again tomorrow.'","Mary Anne Radmacher","perseverance"],
+["Patience and perseverance have a magical effect before which difficulties disappear and obstacles vanish.","John Quincy Adams","perseverance"],
+// wisdom
+["The only true wisdom is in knowing you know nothing.","Socrates","wisdom"],
+["Knowing yourself is the beginning of all wisdom.","Aristotle","wisdom"],
+["The unexamined life is not worth living.","Socrates","wisdom"],
+["Turn your wounds into wisdom.","Oprah Winfrey","wisdom"],
+["It is the mark of an educated mind to be able to entertain a thought without accepting it.","Aristotle","wisdom"],
+["We can easily forgive a child who is afraid of the dark; the real tragedy of life is when men are afraid of the light.","Plato","wisdom"],
+["Yesterday is history, tomorrow is a mystery, today is a gift.","Eleanor Roosevelt","wisdom"],
+["The journey of a thousand miles begins with a single step.","Lao Tzu","wisdom"],
+["When I let go of what I am, I become what I might be.","Lao Tzu","wisdom"],
+["Happiness is not something ready made. It comes from your own actions.","Dalai Lama","wisdom"],
+["The mind is everything. What you think you become.","Buddha","wisdom"],
+["Peace comes from within. Do not seek it without.","Buddha","wisdom"],
+// Indian leaders and freedom fighters
+["You must be the change you wish to see in the world.","Mahatma Gandhi","indian"],
+["In a gentle way, you can shake the world.","Mahatma Gandhi","indian"],
+["The weak can never forgive. Forgiveness is the attribute of the strong.","Mahatma Gandhi","indian"],
+["Strength does not come from physical capacity. It comes from an indomitable will.","Mahatma Gandhi","indian"],
+["Freedom is not worth having if it does not include the freedom to make mistakes.","Mahatma Gandhi","indian"],
+["A nation's culture resides in the hearts and in the soul of its people.","Mahatma Gandhi","indian"],
+["Faith is not something to grasp, it is a state to grow into.","Mahatma Gandhi","indian"],
+["A moment comes, which comes but rarely in history, when we step out from the old to the new.","Jawaharlal Nehru","indian"],
+["Failure comes only when we forget our ideals and objectives and principles.","Jawaharlal Nehru","indian"],
+["Life is like a game of cards. The hand you are dealt is determinism; the way you play it is free will.","Jawaharlal Nehru","indian"],
+["The only way to get rid of my fears is to make films about them.","Jawaharlal Nehru","indian"],
+["I measure the progress of a community by the degree of progress which women have achieved.","B.R. Ambedkar","indian"],
+["Cultivation of mind should be the ultimate aim of human existence.","B.R. Ambedkar","indian"],
+["Life should be great rather than long.","B.R. Ambedkar","indian"],
+["They cannot make history who forget history.","B.R. Ambedkar","indian"],
+["Arise, awake, and stop not till the goal is reached.","Swami Vivekananda","indian"],
+["In a day, when you don't come across any problems, you can be sure that you are travelling in a wrong path.","Swami Vivekananda","indian"],
+["Take up one idea. Make that one idea your life; think of it, dream of it, live on that idea.","Swami Vivekananda","indian"],
+["The greatest religion is to be true to your own nature. Have faith in yourselves.","Swami Vivekananda","indian"],
+["All power is within you; you can do anything and everything.","Swami Vivekananda","indian"],
+["Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.","A.P.J. Abdul Kalam","indian"],
+["You have to dream before your dreams can come true.","A.P.J. Abdul Kalam","indian"],
+["If you want to shine like a sun, first burn like a sun.","A.P.J. Abdul Kalam","indian"],
+["Excellence is a continuous process and not an accident.","A.P.J. Abdul Kalam","indian"],
+["Failure will never overtake me if my determination to succeed is strong enough.","A.P.J. Abdul Kalam","indian"],
+["Man needs his difficulties because they are necessary to enjoy success.","A.P.J. Abdul Kalam","indian"],
+["Everything is now as it should be: our being is founded on the being of the whole.","Rabindranath Tagore","indian"],
+["Faith is the bird that feels the light when the dawn is still dark.","Rabindranath Tagore","indian"],
+["You can't cross the sea merely by standing and staring at the water.","Rabindranath Tagore","indian"],
+["Let me not pray to be sheltered from dangers, but to be fearless in facing them.","Rabindranath Tagore","indian"],
+["Revolution is an inalienable right of mankind.","Bhagat Singh","indian"],
+["It is easy to kill individuals but you cannot kill the ideas.","Bhagat Singh","indian"],
+["Lovers, lunatics and poets are made of the same stuff.","Bhagat Singh","indian"],
+["Give me blood, and I shall give you freedom!","Subhas Chandra Bose","indian"],
+["It is our duty to pay for our liberty with our own blood.","Subhas Chandra Bose","indian"],
+["No real change in history has ever been achieved by discussions.","Subhas Chandra Bose","indian"],
+["Manpower is not the only measure of the strength of a nation.","Sardar Vallabhbhai Patel","indian"],
+["Every citizen of India must remember that he is an Indian and he has every right in this country but with certain duties.","Sardar Vallabhbhai Patel","indian"],
+["Faith is of no avail in absence of strength.","Sardar Vallabhbhai Patel","indian"],
+// Hindi (Devanagari) — confidently attributed
+["जहाँ चाह, वहाँ राह।","हिंदी कहावत","indian"],
+["करत करत अभ्यास के, जड़मति होत सुजान।","हिंदी कहावत","indian"],
+["सपने वो नहीं जो हम सोते हुए देखते हैं, सपने वो हैं जो हमें सोने नहीं देते।","ए. पी. जे. अब्दुल कलाम","indian"],
+["तुम मुझे खून दो, मैं तुम्हें आज़ादी दूँगा।","सुभाष चंद्र बोस","indian"],
+["उठो, जागो और तब तक मत रुको जब तक लक्ष्य प्राप्त न हो जाए।","स्वामी विवेकानंद","indian"],
+// science and innovation
+["Imagination is more important than knowledge.","Albert Einstein","science"],
+["Science knows no country, because knowledge belongs to humanity.","Louis Pasteur","science"],
+["Somewhere, something incredible is waiting to be known.","Carl Sagan","science"],
+["The important thing is not to stop questioning. Curiosity has its own reason for existing.","Albert Einstein","science"],
+["Nothing in life is to be feared, it is only to be understood.","Marie Curie","science"],
+["Research is what I'm doing when I don't know what I'm doing.","Wernher von Braun","science"],
+["Equipped with his five senses, man explores the universe around him and calls the adventure science.","Edwin Hubble","science"],
+["If I have seen further it is by standing on the shoulders of giants.","Isaac Newton","science"],
+["The good thing about science is that it's true whether or not you believe in it.","Neil deGrasse Tyson","science"],
+["Look up at the stars and not down at your feet. Try to make sense of what you see.","Stephen Hawking","science"],
+// sports
+["You miss 100% of the shots you don't take.","Wayne Gretzky","sports"],
+["It's not whether you get knocked down; it's whether you get up.","Vince Lombardi","sports"],
+["Champions keep playing until they get it right.","Billie Jean King","sports"],
+["Hard work beats talent when talent doesn't work hard.","Tim Notke","sports"],
+["You have to expect things of yourself before you can do them.","Michael Jordan","sports"],
+["I've failed over and over and over again in my life and that is why I succeed.","Michael Jordan","sports"],
+["The more difficult the victory, the greater the happiness in winning.","Pele","sports"],
+["Never say never, because limits, like fears, are often just an illusion.","Michael Jordan","sports"],
+// life
+["Life is what happens when you're busy making other plans.","John Lennon","life"],
+["The purpose of our lives is to be happy.","Dalai Lama","life"],
+["Get busy living or get busy dying.","Stephen King","life"],
+["You only live once, but if you do it right, once is enough.","Mae West","life"],
+["In three words I can sum up everything I've learned about life: it goes on.","Robert Frost","life"],
+["Life is really simple, but we insist on making it complicated.","Confucius","life"],
+["The good life is one inspired by love and guided by knowledge.","Bertrand Russell","life"],
+["It is not the years in your life that count. It is the life in your years.","Abraham Lincoln","life"],
+["Life isn't about finding yourself. Life is about creating yourself.","George Bernard Shaw","life"],
+// friendship
+["A friend is someone who knows all about you and still loves you.","Elbert Hubbard","friendship"],
+["Friendship is the only cement that will ever hold the world together.","Woodrow Wilson","friendship"],
+["The only way to have a friend is to be one.","Ralph Waldo Emerson","friendship"],
+["A real friend is one who walks in when the rest of the world walks out.","Walter Winchell","friendship"],
+["Friendship is born at that moment when one person says to another, 'What! You too?'","C.S. Lewis","friendship"],
+["True friendship comes when the silence between two people is comfortable.","David Tyson","friendship"],
+// humour
+["I have not failed. I've just found 10,000 ways that won't work.","Thomas A. Edison","humour"],
+["The trouble with having an open mind is that people keep coming along and sticking things into it.","Terry Pratchett","humour"],
+["People say nothing is impossible, but I do nothing every day.","A.A. Milne","humour"],
+["I am so clever that sometimes I don't understand a single word of what I am saying.","Oscar Wilde","humour"],
+["Be yourself; everyone else is already taken.","Oscar Wilde","humour"],
+["Age is an issue of mind over matter. If you don't mind, it doesn't matter.","Mark Twain","humour"],
+["Doing nothing is very hard to do, you never know when you're finished.","Leslie Nielsen","humour"]
+];
+
+var CAT_LABELS={all:"All",motivation:"Motivation",study:"Study & Exams",success:"Success",leadership:"Leadership",perseverance:"Perseverance",wisdom:"Wisdom",indian:"Indian Leaders",science:"Science & Innovation",sports:"Sports",life:"Life",friendship:"Friendship",humour:"Humour"};
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---------- Filters ---------- */
+var filtered=QUOTES.slice(),current=QUOTES[0];
+function buildFilters(){
+  var cats=Array.from(new Set(QUOTES.map(function(q){return q[2];})));
+  var csel=document.getElementById("category");
+  cats.forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=CAT_LABELS[c]||c;csel.appendChild(o);});
+  var authors=Array.from(new Set(QUOTES.map(function(q){return q[1];}))).sort();
+  var asel=document.getElementById("authorFilter");
+  authors.forEach(function(a){var o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
 }
-function newQuote(){curQ=Math.floor(Math.random()*quotes.length);render(quotes[curQ][0],quotes[curQ][1])}
-function newBg(){curBg=(curBg+1)%bgs.length;render(quotes[curQ][0],quotes[curQ][1])}
-function custom(){var q=prompt("Enter your quote:");var a=prompt("Author name:");if(q)render(q,a||"Anonymous")}
-newQuote();
+function applyFilters(){
+  var cat=document.getElementById("category").value;
+  var au=document.getElementById("authorFilter").value;
+  var s=document.getElementById("search").value.toLowerCase().trim();
+  filtered=QUOTES.filter(function(q){
+    if(cat!=="all"&&q[2]!==cat)return false;
+    if(au!=="all"&&q[1]!==au)return false;
+    if(s&&(q[0].toLowerCase().indexOf(s)<0&&q[1].toLowerCase().indexOf(s)<0))return false;
+    return true;
+  });
+  document.getElementById("filterCount").textContent=filtered.length+" quote"+(filtered.length===1?"":"s")+" match";
+  if(filtered.length){current=filtered[0];showQuote(current);}
+  else document.getElementById("quoteBox").innerHTML='<p class="info">No quotes match your filters.</p>';
+}
+function showQuote(q){
+  current=q;
+  document.getElementById("quoteBox").innerHTML='<blockquote style="font-size:1.3rem;font-style:italic;line-height:1.6;margin:0">“'+esc(q[0])+'”</blockquote><p style="margin-top:.8rem;color:var(--text2)">— '+esc(q[1])+' <span style="opacity:.6;font-size:.85rem">· '+esc(CAT_LABELS[q[2]]||q[2])+'</span></p>';
+  renderImage();
+}
+function newQuote(){if(!filtered.length)return;current=filtered[Math.floor(Math.random()*filtered.length)];showQuote(current);}
+
+/* ---------- Quote of the day (deterministic per date) ---------- */
+function quoteOfDay(){
+  var d=new Date();var key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  var idx=key%QUOTES.length;var q=QUOTES[idx];
+  document.getElementById("qod").innerHTML='<strong style="color:var(--accent)">⭐ Quote of the Day</strong><blockquote style="font-style:italic;margin:.5rem 0 0">“'+esc(q[0])+'”</blockquote><p style="margin:.3rem 0 0;color:var(--text2)">— '+esc(q[1])+'</p>';
+}
+
+/* ---------- Copy / Share ---------- */
+function quoteText(q){return '"'+q[0]+'" — '+q[1];}
+function copyQuote(){navigator.clipboard.writeText(quoteText(current));}
+function shareQuote(){
+  var text=quoteText(current)+" · via freetoolhubs.com";
+  if(navigator.share)navigator.share({text:text}).catch(function(){});
+  else{navigator.clipboard.writeText(text);alert("Quote copied to clipboard!");}
+}
+
+/* ---------- Favourites ---------- */
+var FKEY="qgFavs";
+var favs=JSON.parse(localStorage.getItem(FKEY)||"[]");
+function favCurrent(){
+  var t=quoteText(current);
+  if(favs.indexOf(t)<0){favs.push(t);localStorage.setItem(FKEY,JSON.stringify(favs));renderFavs();}
+}
+function removeFav(i){favs.splice(i,1);localStorage.setItem(FKEY,JSON.stringify(favs));renderFavs();}
+function renderFavs(){
+  if(!favs.length){document.getElementById("favList").innerHTML='<p class="info">No favourites yet. Click ⭐ Favourite on any quote.</p>';return;}
+  document.getElementById("favList").innerHTML=favs.map(function(f,i){return '<div style="padding:.4rem .5rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem">'+esc(f)+' <a href="#" onclick="removeFav('+i+');return false" style="color:#f44336;margin-left:.3rem">×</a></div>';}).join("");
+}
+function clearFavs(){favs=[];localStorage.setItem(FKEY,"[]");renderFavs();}
+function exportFavs(){if(!favs.length)return alert("No favourites to export.");var b=new Blob([favs.join("\n\n")],{type:"text/plain"});download(b,"favourite-quotes.txt");}
+
+/* ---------- Image maker ---------- */
+var c=document.getElementById("canvas"),ctx=c.getContext("2d");
+var GRADS=[["#6366f1","#8b5cf6"],["#8b5cf6","#ec4899"],["#06b6d4","#6366f1"],["#6366f1","#ec4899"]];
+var gradIdx=0,bgImg=null;
+function onBgTypeChange(){renderImage();}
+function loadBgImage(ev){
+  var f=ev.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){var im=new Image();im.onload=function(){bgImg=im;document.getElementById("bgType").value="image";renderImage();};im.src=r.result;};
+  r.readAsDataURL(f);
+}
+function sizeFor(){
+  var v=document.getElementById("imgSize").value;
+  if(v==="1080x1080")return[1080,1080];
+  if(v==="1200x675")return[1200,675];
+  if(v==="2480x3508")return[2480,3508];
+  return[1080,1920]; // story / whatsapp
+}
+function renderImage(){
+  var dim=sizeFor();c.width=dim[0];c.height=dim[1];
+  var W=c.width,H=c.height;
+  var bgType=document.getElementById("bgType").value;
+  if(bgType==="image"&&bgImg){
+    var scale=Math.max(W/bgImg.width,H/bgImg.height);
+    var iw=bgImg.width*scale,ih=bgImg.height*scale;
+    ctx.drawImage(bgImg,(W-iw)/2,(H-ih)/2,iw,ih);
+    var ov=+document.getElementById("overlay").value/100;
+    ctx.fillStyle="rgba(0,0,0,"+ov+")";ctx.fillRect(0,0,W,H);
+  } else if(bgType==="solid"){
+    ctx.fillStyle=document.getElementById("solidColor").value;ctx.fillRect(0,0,W,H);
+  } else {
+    var g=GRADS[gradIdx%GRADS.length];var grd=ctx.createLinearGradient(0,0,W,H);
+    grd.addColorStop(0,g[0]);grd.addColorStop(1,g[1]);ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+  }
+  // text
+  var col=document.getElementById("textColor").value;
+  var align=document.getElementById("align").value;
+  var font=document.getElementById("font").value;
+  var baseFs=+document.getElementById("fontSize").value;
+  var fs=baseFs*(W/1080);
+  ctx.fillStyle=col;ctx.textAlign=align;
+  var tx=align==="left"?W*0.1:align==="right"?W*0.9:W/2;
+  var maxW=W*0.8;
+  // auto-fit: shrink until it fits vertically
+  var text=current[0],lines,lineH;
+  do{
+    ctx.font="italic "+fs+"px "+font;
+    lines=wrap(text,maxW);lineH=fs*1.35;
+    if(lines.length*lineH>H*0.65&&fs>14)fs-=2;else break;
+  }while(fs>14);
+  ctx.font="italic "+fs+"px "+font;
+  var startY=H/2-(lines.length*lineH)/2+fs;
+  lines.forEach(function(l,i){ctx.fillText((i===0?"“":"")+l+(i===lines.length-1?"”":""),tx,startY+i*lineH);});
+  // author
+  ctx.font=(fs*0.55)+"px "+font;ctx.globalAlpha=0.9;
+  ctx.fillText("— "+current[1],tx,startY+lines.length*lineH+fs*0.6);
+  ctx.globalAlpha=1;
+  // watermark
+  if(document.getElementById("watermark").checked){
+    ctx.font=(W*0.018)+"px Arial";ctx.globalAlpha=0.5;ctx.textAlign="center";
+    ctx.fillText("freetoolhubs.com",W/2,H-H*0.03);ctx.globalAlpha=1;
+  }
+}
+function wrap(text,maxW){
+  var words=text.split(" "),lines=[],line="";
+  words.forEach(function(w){var test=line?line+" "+w:w;if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=w;}else line=test;});
+  if(line)lines.push(line);return lines;
+}
+function downloadImage(){c.toBlob(function(b){download(b,"quote.png");});}
+
+/* ---------- Keyboard shortcut ---------- */
+document.addEventListener("keydown",function(e){
+  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA"||e.target.tagName==="SELECT")return;
+  if(e.key==="n"||e.key==="N")newQuote();
+});
+
+/* ---------- Init ---------- */
+buildFilters();quoteOfDay();applyFilters();renderFavs();
   </script>
 </body>
 </html>
