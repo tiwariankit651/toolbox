@@ -306,7 +306,7 @@ var LIB={
   pres_arts:{label:'🎨 Presentation: Arts & Humanities',topics:[
     'The influence of Indian classical music','Evolution of Indian cinema','Street art as social commentary','The Renaissance and its impact',
     'Folk traditions of India','The power of storytelling','Photography as an art form','Architecture through the ages',
-    'Mythology in modern media','The history of theatre','Language and identity','Poetry that changed the world',
+    'Mythology in modern media','The tpHistory of theatre','Language and identity','Poetry that changed the world',
     'The role of museums','Fashion as cultural expression','Calligraphy and typography','The philosophy of happiness',
     'Cultural festivals of the world','The art of translation','Music and mental health','Dance forms of India'
   ]},
@@ -397,7 +397,7 @@ function starterFor(topic,catKey){
 var excluded=[];         // topics excluded in no-repeat mode
 var lastPicked=[];       // last picked topics (array)
 var customTopics=[];     // current working custom list [strings]
-var history=[];          // [{topic,date,rating,note}]
+var tpHistory=[];          // [{topic,date,rating,note}]
 var practiceTopic='';
 var pracTimer=null;
 var pracAudio=null;
@@ -501,7 +501,7 @@ function startPractice(){
     if(remaining<0){
       if(phase==='prep'){phase='speak';remaining=speak;setPill();cue(880,2);}
       else{phase='done';setPill();cue(523,3);clearInterval(pracTimer);pracTimer=null;document.getElementById('practiceTimer').textContent='00:00';
-        // auto-log to history
+        // auto-log to tpHistory
         logHistory(practiceTopic);return;}
     }
     document.getElementById('practiceTimer').textContent=fmtT(remaining);
@@ -509,18 +509,18 @@ function startPractice(){
 }
 function stopPractice(){clearInterval(pracTimer);pracTimer=null;document.getElementById('practicePhase').textContent='⏹ Stopped';document.getElementById('practicePhase').className='practice-phase phase-done';}
 
-/* ---- history ---- */
-function loadHistory(){try{history=JSON.parse(localStorage.getItem('tp_history')||'[]');}catch(e){history=[];}}
-function saveHistory(){localStorage.setItem('tp_history',JSON.stringify(history));}
-function logHistory(topic){history.unshift({id:Date.now(),topic:topic,date:new Date().toLocaleString(),rating:0,note:''});saveHistory();renderHistory();}
-function saveToHistory(){if(!lastPicked.length){alert('Pick a topic first.');return;}logHistory(lastPicked[0]);tpTab('history',document.querySelector('#tpTabs button[data-t="history"]'));}
-function rateHistory(id,r){var h=history.find(function(x){return x.id===id;});if(h){h.rating=r;saveHistory();renderHistory();}}
-function noteHistory(id,val){var h=history.find(function(x){return x.id===id;});if(h){h.note=val;saveHistory();}}
-function removeHistory(id){history=history.filter(function(x){return x.id!==id;});saveHistory();renderHistory();}
-function clearHistory(){if(confirm('Clear all history?')){history=[];saveHistory();renderHistory();}}
+/* ---- tpHistory ---- */
+function loadHistory(){try{tpHistory=JSON.parse(localStorage.getItem('tp_history')||'[]');}catch(e){tpHistory=[];}}
+function saveHistory(){localStorage.setItem('tp_history',JSON.stringify(tpHistory));}
+function logHistory(topic){tpHistory.unshift({id:Date.now(),topic:topic,date:new Date().toLocaleString(),rating:0,note:''});saveHistory();renderHistory();}
+function saveToHistory(){if(!lastPicked.length){alert('Pick a topic first.');return;}logHistory(lastPicked[0]);tpTab('tpHistory',document.querySelector('#tpTabs button[data-t="tpHistory"]'));}
+function rateHistory(id,r){var h=tpHistory.find(function(x){return x.id===id;});if(h){h.rating=r;saveHistory();renderHistory();}}
+function noteHistory(id,val){var h=tpHistory.find(function(x){return x.id===id;});if(h){h.note=val;saveHistory();}}
+function removeHistory(id){tpHistory=tpHistory.filter(function(x){return x.id!==id;});saveHistory();renderHistory();}
+function clearHistory(){if(confirm('Clear all tpHistory?')){tpHistory=[];saveHistory();renderHistory();}}
 function starsHtml(id,rating){var s='';for(var i=1;i<=5;i++){s+='<span onclick="rateHistory('+id+','+i+')">'+(i<=rating?'★':'☆')+'</span>';}return '<span class="stars">'+s+'</span>';}
 function renderHistory(){
-  document.getElementById('historyList').innerHTML=history.length?history.map(function(h){
+  document.getElementById('historyList').innerHTML=tpHistory.length?tpHistory.map(function(h){
     return '<div class="hist-item"><strong>'+escapeHtml(h.topic)+'</strong> <button onclick="removeHistory('+h.id+')" style="float:right;background:none;border:none;color:#ef4444;cursor:pointer">×</button>'+
       '<div class="meta">'+h.date+'</div>'+starsHtml(h.id,h.rating||0)+
       '<input type="text" placeholder="Notes..." value="'+escapeHtml(h.note||'')+'" oninput="noteHistory('+h.id+',this.value)" style="margin-top:.3rem;font-size:.85rem"></div>';
@@ -594,7 +594,7 @@ function downloadTxt(){
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='topics.txt';a.click();
 }
 function printSheet(){
-  var items=history.length?history.map(function(h){return h.topic;}):(customTopics.length?customTopics:getPool().slice(0,20));
+  var items=tpHistory.length?tpHistory.map(function(h){return h.topic;}):(customTopics.length?customTopics:getPool().slice(0,20));
   var w=window.open('','_blank');
   var html='<html><head><title>Practice Sheet</title><style>body{font-family:sans-serif;padding:24px;color:#111}h1{font-size:20px}li{margin:14px 0;list-style:decimal}.line{border-bottom:1px solid #ccc;height:22px;margin:6px 0}</style></head><body><h1>🎤 Practice Sheet</h1><p>Date: '+new Date().toLocaleDateString()+'</p><ol>';
   items.forEach(function(t){html+='<li><strong>'+t.replace(/</g,'&lt;')+'</strong><div class="line"></div><div class="line"></div></li>';});
