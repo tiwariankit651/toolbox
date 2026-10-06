@@ -174,7 +174,7 @@
   <script src="../js/common.js"></script>
   <script>
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec,recording=false,manualStop=false;
+let sttRec,recording=false,manualStop=false;
 let baseText='';        // finalised text committed before current session segment
 let undoStack=[];
 let timerInt=null,startTime=0;
@@ -245,18 +245,18 @@ function undoOutput(){
 // ---------- Recording ----------
 function toggleRec(){
   if(!SR)return;
-  if(recording){manualStop=true;rec.stop();return}
+  if(recording){manualStop=true;sttRec.stop();return}
   startRec();
 }
 function startRec(){
   manualStop=false;
-  rec=new SR();
-  rec.lang=document.getElementById('lang').value;
-  rec.continuous=document.getElementById('continuousMode').checked;
-  rec.interimResults=true;
+  sttRec=new SR();
+  sttRec.lang=document.getElementById('lang').value;
+  sttRec.continuous=document.getElementById('continuousMode').checked;
+  sttRec.interimResults=true;
   baseText=document.getElementById('output').value;
   if(baseText&&!/\s$/.test(baseText))baseText+=' ';
-  rec.onstart=()=>{
+  sttRec.onstart=()=>{
     recording=true;
     document.getElementById('recBtn').textContent='⏹ Stop Recording';
     document.getElementById('recBtn').style.background='#f44336';
@@ -264,7 +264,7 @@ function startRec(){
     document.getElementById('interimDisplay').style.display='block';
     if(!timerInt)startTimer();
   };
-  rec.onresult=(e)=>{
+  sttRec.onresult=(e)=>{
     let interim='',finalPiece='';
     for(let i=e.resultIndex;i<e.results.length;i++){
       if(e.results[i].isFinal)finalPiece+=e.results[i][0].transcript+' ';
@@ -280,21 +280,21 @@ function startRec(){
     document.getElementById('output').value=baseText+(interim?processText(interim):'');
     updateCounts();
   };
-  rec.onend=()=>{
+  sttRec.onend=()=>{
     // auto-restart if service stopped early during continuous mode
     if(recording&&!manualStop&&document.getElementById('continuousMode').checked){
       document.getElementById('status').textContent='🔄 Reconnecting...';
-      try{rec.start()}catch(err){setTimeout(()=>{try{rec.start()}catch(e2){finishRec()}},400)}
+      try{sttRec.start()}catch(err){setTimeout(()=>{try{sttRec.start()}catch(e2){finishRec()}},400)}
       return;
     }
     finishRec();
   };
-  rec.onerror=(e)=>{
+  sttRec.onerror=(e)=>{
     if(e.error==='no-speech'||e.error==='aborted')return; // let onend handle restart
     document.getElementById('status').textContent='❌ Error: '+e.error;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){manualStop=true}
   };
-  try{rec.start()}catch(err){document.getElementById('status').textContent='❌ '+err.message}
+  try{sttRec.start()}catch(err){document.getElementById('status').textContent='❌ '+err.message}
 }
 function finishRec(){
   recording=false;
