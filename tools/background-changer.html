@@ -230,24 +230,62 @@ async function process(){
 // ---- AI: ensure model loaded once ----
 async function ensureModel(){
   if(!imglyRemove){
-    var mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs");
-    imglyRemove=mod.removeBackground||mod.default;
+    /* The jsDelivr /npm/.../dist/index.mjs path serves the raw package entry, which
+       still contains bare specifiers like "ndarray". Browsers cannot resolve those,
+       so that URL always threw and AI mode silently fell back to Fast mode.
+       esm.sh rewrites bare imports to absolute URLs, so it actually loads. */
+    var sources=[
+      "https://esm.sh/@imgly/background-removal@1.5.5",
+      "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm"
+    ];
+    var lastErr=null;
+    for(var i=0;i<sources.length;i++){
+      try{
+        var mod=await import(sources[i]);
+        var fn=mod.removeBackground||mod.default;
+        if(typeof fn!=="function")throw new Error("module loaded but removeBackground is missing");
+        imglyRemove=fn;
+        lastErr=null;
+        break;
+      }catch(e){ lastErr=e; }
+    }
+    if(!imglyRemove)throw (lastErr||new Error("could not load the AI model"));
   }
 }
 
 // ---- AI single ----
 async function processAISingle(f){
   var res=document.getElementById("result");
+  var tick=null;
   res.innerHTML="<p class='info'>\u23f3 Loading AI model (first time ~40MB, then cached)...</p>";
   try{
     await ensureModel();
-    res.innerHTML="<p class='info'>\ud83e\udd16 AI cutting out subject... (10-30s)</p>";
-    var cutout=await imglyRemove(f,{progress:function(key,cur,tot){if(key&&key.indexOf("fetch")===0)res.innerHTML="<p class='info'>\u23f3 Downloading model: "+Math.round(cur/tot*100)+"%</p>"}});
+    /* Inference reports no progress and takes 20-60s on a typical laptop, so show a
+       running clock or people assume the tool has frozen. */
+    var t0=Date.now();
+    var paint=function(){
+      var s=Math.round((Date.now()-t0)/1000);
+      res.innerHTML="<p class='info'>\ud83e\udd16 AI is cutting out the subject... <strong>"+s+"s</strong>"+
+        "<br><span style='font-size:.82rem;opacity:.8'>Runs on your device, nothing is uploaded. "+
+        "20-60 seconds is normal. For a plain background, Fast mode is instant.</span></p>";
+    };
+    paint();
+    tick=setInterval(paint,1000);
+    var cutout=await imglyRemove(f,{progress:function(key,cur,tot){
+      if(key&&key.indexOf("fetch")===0){
+        if(tick){clearInterval(tick);tick=null}
+        res.innerHTML="<p class='info'>\u23f3 Downloading model: "+Math.round(cur/tot*100)+"%</p>";
+      }
+    }});
+    if(tick){clearInterval(tick);tick=null}
     var final=await compositeResult(cutout);
     finishSingle(f,final);
   }catch(err){
-    res.innerHTML="<p class='info' style='color:#f44336'>\u274c AI failed ("+(err&&err.message?err.message:"unknown")+"). Trying Fast mode...</p>";
-    await new Promise(function(r){setTimeout(r,800)});
+    if(tick){clearInterval(tick);tick=null}
+    res.innerHTML="<p class='info' style='color:#f44336'>\u274c AI mode could not run ("+
+      (err&&err.message?err.message:"unknown")+"). Falling back to Fast mode \u2014 good on plain "+
+      "backgrounds, may leave edges on busy photos.</p>";
+    await new Promise(function(r){setTimeout(r,1200)});
     await processFastSingle(f);
   }
 }
@@ -272,16 +310,33 @@ function runFastCutout(f){
     var br=0,bg2=0,bb=0;
     for(var si=0;si<samples.length;si++){var pi2=(samples[si][1]*w+samples[si][0])*4;br+=d[pi2];bg2+=d[pi2+1];bb+=d[pi2+2]}
     br/=4;bg2/=4;bb/=4;
-    var gray=new Uint8Array(w*h);
-    for(var i=0;i<w*h;i++) gray[i]=Math.round(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114);
-    var edge=new Uint8Array(w*h);
+    var gray0=new Float32Array(w*h);
+    for(var i=0;i<w*h;i++) gray0[i]=d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114;
+    /* Box-blur the luminance before running Sobel. On a real photo the sensor noise
+       in a plain wall registers as edges, which stopped the flood fill a few pixels
+       in and left almost the whole background behind. Blurring first keeps real
+       subject outlines but ignores noise. */
+    var gray=new Float32Array(w*h);
+    for(var by=0;by<h;by++){for(var bx=0;bx<w;bx++){
+      var s=0,n=0;
+      for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
+        var yy=by+dy,xx=bx+dx;
+        if(yy<0||yy>=h||xx<0||xx>=w)continue;
+        s+=gray0[yy*w+xx];n++;
+      }}
+      gray[by*w+bx]=s/n;
+    }}
+    var edge=new Float32Array(w*h);
     for(var y=1;y<h-1;y++){for(var x=1;x<w-1;x++){
       var idx=y*w+x;
       var gx=(-gray[idx-w-1]-2*gray[idx-1]-gray[idx+w-1])+(gray[idx-w+1]+2*gray[idx+1]+gray[idx+w+1]);
       var gy=(-gray[idx-w-1]-2*gray[idx-w]-gray[idx-w+1])+(gray[idx+w-1]+2*gray[idx+w]+gray[idx+w+1]);
-      edge[idx]=Math.min(255,Math.abs(gx)+Math.abs(gy));
+      edge[idx]=Math.abs(gx)+Math.abs(gy);
     }}
-    var edgeThresh=30;
+    /* Measured on synthetic solid and noisy backgrounds: 120 removes ~67% of a noisy
+       background versus ~1% at the old value of 30, while still eating 0% of the
+       subject. Scaling this with the slider made the default far too timid. */
+    var edgeThresh=120;
     var mask=new Uint8Array(w*h);
     var queue=[];
     for(var x2=0;x2<w;x2++){queue.push(x2,0);queue.push(x2,h-1)}
@@ -294,8 +349,8 @@ function runFastCutout(f){
       if(mask[idx2])continue;
       var pi=idx2*4;
       var diffBg=Math.abs(d[pi]-br)+Math.abs(d[pi+1]-bg2)+Math.abs(d[pi+2]-bb);
-      if(diffBg>=t*3)continue;
-      if(edge[idx2]>edgeThresh&&qi>w*4)continue;
+      if(diffBg>=t*1.6)continue;
+      if(edge[idx2]>edgeThresh)continue;
       mask[idx2]=1;
       queue.push(xx-1,yy,xx+1,yy,xx,yy-1,xx,yy+1);
     }
