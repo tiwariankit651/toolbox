@@ -269,6 +269,10 @@ function selectNote(id){
   renderList();
 }
 window.selectNote=selectNote;
+/* renderList is called from the search box via oninput="renderList()", so it has
+   to be exported out of this IIFE like the other handlers. Without this the
+   search field threw ReferenceError on every keystroke. */
+window.renderList=renderList;
 
 /* --- Save Current Note --- */
 function saveCurrentNote(){

@@ -237,12 +237,29 @@ function calcTotalsRaw(){var isInter=false;var supState=document.getElementById(
 function printInvoice(){updateInvPreview();window.print();}
 
 // --- PDF Generation ---
+/* Standard PDF fonts only cover WinAnsi. Any rupee sign, emoji, smart quote or
+   Indic character the user typed would otherwise throw and kill the download,
+   so every string drawn into the PDF passes through here first. */
+function wa(t){
+  return String(t==null?'':t)
+    .replace(/\u20b9/g,'Rs.')
+    .replace(/[\u2018\u2019]/g,"'")
+    .replace(/[\u201c\u201d]/g,'"')
+    .replace(/[\u2013\u2014]/g,'-')
+    .replace(/\u2026/g,'...')
+    .replace(/\u00a0/g,' ')
+    .replace(/[^\x20-\xFF]/g,'');
+}
+
 async function genInvoice(){
-  var calc=calcTotalsRaw();var cur='\u20b9';
+  var calc=calcTotalsRaw();
+  /* pdf-lib's standard fonts are WinAnsi-encoded and cannot encode the rupee sign
+     (U+20B9), which made every PDF download throw. Use "Rs." in the PDF instead. */
+  var cur='Rs.';
   var items=[];document.querySelectorAll('#items > div').forEach(function(r){var inp=r.querySelectorAll('input');var sel=r.querySelector('select');items.push({desc:inp[0]?inp[0].value:'Item',hsn:inp[1]?inp[1].value:'',qty:+(inp[2]?inp[2].value:0)||1,rate:+(inp[3]?inp[3].value:0)||0,disc:+(inp[4]?inp[4].value:0)||0,gst:+(sel?sel.value:18)});});
   var doc=await PDFLib.PDFDocument.create();var page=doc.addPage([595,842]);var font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);var bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
   var y=790;var acHex=document.getElementById('invAccent').value;var acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;var accent=PDFLib.rgb(acR,acG,acB);
-  var txt=function(t,x,yy,f2,s,col){page.drawText(t||'',{x:x,y:yy,font:f2||font,size:s||10,color:col||PDFLib.rgb(0.1,0.1,0.15)});};
+  var txt=function(t,x,yy,f2,s,col){page.drawText(wa(t),{x:x,y:yy,font:f2||font,size:s||10,color:col||PDFLib.rgb(0.1,0.1,0.15)});};
   // Header
   if(logoDataUrl){try{var isPng=logoDataUrl.includes('image/png');var imgBytes=Uint8Array.from(atob(logoDataUrl.split(',')[1]),function(c){return c.charCodeAt(0);});var img=isPng?await doc.embedPng(imgBytes):await doc.embedJpg(imgBytes);var scale=Math.min(50/img.height,100/img.width);page.drawImage(img,{x:50,y:y-5,width:img.width*scale,height:img.height*scale});}catch(e){}}
   txt(document.getElementById('bName').value||'Your Business',160,y,bold,16);y-=15;
