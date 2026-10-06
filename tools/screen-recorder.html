@@ -38,20 +38,99 @@
       <h1>🎥 Screen Recorder</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
       <p class="info">Record your screen, tab, or window directly from the browser. No software needed.</p>
-      <div class="row" style="justify-content:center;flex-wrap:wrap">
-        <label><input type="checkbox" id="audio"> Include Audio</label>
-        <span class="info" style="font-size:.7rem">⚠️ System audio works in Chrome/Edge only. Some browsers capture tab audio only.</span>
-        <label><input type="checkbox" id="camera"> Camera Overlay (PIP)</label>
+      <div class="row">
+        <label>Quality preset:</label>
+        <select id="srPreset" onchange="applySrPreset()">
+          <option value="youtube" selected>YouTube / tutorial (1080p 30fps)</option>
+          <option value="smooth">Smooth motion (1080p 60fps)</option>
+          <option value="small">Small file (720p 24fps)</option>
+          <option value="hq">High quality (1440p 60fps)</option>
+          <option value="whatsapp">WhatsApp friendly (720p, low bitrate)</option>
+          <option value="custom">Custom</option>
+        </select>
       </div>
-      <div id="camSelect" style="display:none;margin:.5rem 0"><label>Camera position:</label>
-        <select id="camPos"><option value="br">Bottom Right</option><option value="bl">Bottom Left</option><option value="tr">Top Right</option><option value="tl">Top Left</option></select>
-        <select id="camSize"><option value="150">Small</option><option value="200" selected>Medium</option><option value="280">Large</option></select>
+
+      <div class="row">
+        <label>Resolution:</label>
+        <select id="srRes" onchange="onSrCustom()">
+          <option value="0">Native (as captured)</option>
+          <option value="2160">2160p (4K)</option>
+          <option value="1440">1440p</option>
+          <option value="1080" selected>1080p</option>
+          <option value="720">720p</option>
+          <option value="480">480p</option>
+        </select>
+        <label>Frame rate:</label>
+        <select id="srFps" onchange="onSrCustom()">
+          <option value="60">60 fps</option>
+          <option value="30" selected>30 fps</option>
+          <option value="24">24 fps</option>
+          <option value="15">15 fps</option>
+        </select>
       </div>
-      <div style="margin:1.5rem 0">
-        <label>Countdown:</label><select id="countdown"><option value="0">None</option><option value="3" selected>3 sec</option><option value="5">5 sec</option></select>
-        <button class="btn" onclick="startWithCountdown()" id="startBtn">🔴 Start Recording</button>
-        <button class="btn btn-outline" onclick="stopRec()" id="stopBtn" disabled>⏹ Stop</button>
+
+      <div class="row">
+        <label>Bitrate: <strong id="srBrVal">6 Mbps</strong></label>
+        <input type="range" id="srBitrate" min="1" max="20" step="1" value="6" style="flex:2"
+               oninput="document.getElementById('srBrVal').textContent=this.value+' Mbps';onSrCustom();updateSrEstimate()">
+        <select id="srFormat" onchange="onSrCustom()">
+          <option value="auto" selected>Best format available</option>
+          <option value="video/webm;codecs=vp9">WebM VP9</option>
+          <option value="video/webm;codecs=vp8">WebM VP8</option>
+          <option value="video/mp4">MP4 (if supported)</option>
+        </select>
       </div>
+      <p class="info" id="srEstimate" style="font-size:.8rem"></p>
+
+      <div class="row" style="gap:1.2rem;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="audio" style="width:auto"> System / tab audio</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="srMic" style="width:auto"> Microphone (voice-over)</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="camera" style="width:auto" onchange="onCamToggle()"> Camera overlay (PiP)</label>
+      </div>
+      <span class="info" style="font-size:.72rem">⚠️ System audio works in Chrome/Edge only. Tick both boxes to mix system sound with your voice.</span>
+
+      <div id="camSelect" style="display:none;margin:.5rem 0">
+        <div class="row">
+          <label>Camera position:</label>
+          <select id="camPos"><option value="br" selected>Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option></select>
+          <select id="camSize"><option value="150">Small</option><option value="200" selected>Medium</option><option value="280">Large</option><option value="360">Extra large</option></select>
+          <select id="camShape"><option value="rounded" selected>Rounded box</option><option value="circle">Circle</option><option value="square">Square</option></select>
+        </div>
+        <div class="row">
+          <label>Mirror camera:</label>
+          <select id="camMirror"><option value="1" selected>Yes (natural)</option><option value="0">No</option></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Countdown:</label>
+        <select id="countdown"><option value="0">None</option><option value="3" selected>3 sec</option><option value="5">5 sec</option><option value="10">10 sec</option></select>
+        <label>Auto-stop after:</label>
+        <select id="srLimit">
+          <option value="0" selected>No limit</option>
+          <option value="60">1 minute</option><option value="300">5 minutes</option>
+          <option value="600">10 minutes</option><option value="1800">30 minutes</option>
+        </select>
+      </div>
+
+      <div class="row" style="flex-wrap:wrap;gap:.4rem">
+        <button class="btn" onclick="startWithCountdown()" id="startBtn" style="margin:0">🔴 Start recording</button>
+        <button class="btn btn-outline" onclick="pauseRec()" id="pauseBtn" disabled style="margin:0">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="stopRec()" id="stopBtn" disabled style="margin:0">⏹ Stop</button>
+      </div>
+
+      <div id="srLive" style="display:none;margin:.8rem 0;background:var(--card);padding:.8rem 1rem;border-radius:var(--radius)">
+        <div style="display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center">
+          <strong id="srTimer" style="font-size:1.4rem;font-variant-numeric:tabular-nums">00:00</strong>
+          <span class="info" id="srRecDot" style="color:#ec4899">● recording</span>
+          <span class="info" id="srSize"></span>
+        </div>
+        <div style="background:var(--bg2);border-radius:6px;height:6px;margin-top:.5rem;overflow:hidden">
+          <div id="srMeter" style="height:100%;width:0;background:var(--gradient);transition:width .1s"></div>
+        </div>
+        <p class="info" id="srMeterLabel" style="font-size:.74rem;margin:.3rem 0 0">Microphone level</p>
+      </div>
+
       <p class="info" id="status"></p>
       <video id="preview" style="max-width:100%;border-radius:12px;margin:1rem 0;display:none" controls></video>
       <div id="result"></div>
@@ -117,68 +196,305 @@
   <script src="../js/common.js"></script>
   <script>if(typeof formatSize==="undefined"){function formatSize(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(1)+" KB";return(b/1048576).toFixed(1)+" MB"}}</script>
   <script>
-let recorder,chunks=[],timer,secs=0,camStream=null;
-function startWithCountdown(){var cd=+document.getElementById("countdown").value;if(!cd){startRec();return}document.getElementById("status").textContent="Starting in "+cd+"...";document.getElementById("startBtn").disabled=true;var i=setInterval(function(){cd--;if(cd<=0){clearInterval(i);startRec()}else{document.getElementById("status").textContent="Starting in "+cd+"..."}},1000)}
-document.getElementById('camera').onchange=function(){document.getElementById('camSelect').style.display=this.checked?'block':'none'};
-async function startRec(){
-  try{
-    const audio=document.getElementById('audio').checked;
-    const useCamera=document.getElementById('camera').checked;
-    const screenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio});
-    let finalStream=screenStream;
-    if(useCamera){
-      try{
-        camStream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240},audio:false});
-        const canvas=document.createElement('canvas');
-        const screenTrack=screenStream.getVideoTracks()[0];
-        const screenSettings=screenTrack.getSettings();
-        canvas.width=screenSettings.width||1920;canvas.height=screenSettings.height||1080;
-        const ctx=canvas.getContext('2d');
-        const screenVid=document.createElement('video');screenVid.srcObject=screenStream;screenVid.muted=true;screenVid.play();
-        const camVid=document.createElement('video');camVid.srcObject=camStream;camVid.muted=true;camVid.play();
-        const camSize=+document.getElementById('camSize').value;
-        const camRatio=240/320;const camW=camSize;const camH=Math.round(camSize*camRatio);
-        const pos=document.getElementById('camPos').value;
-        const pad=20;
-        function getXY(){
-          if(pos==='bl')return[pad,canvas.height-camH-pad];
-          if(pos==='tr')return[canvas.width-camW-pad,pad];
-          if(pos==='tl')return[pad,pad];
-          return[canvas.width-camW-pad,canvas.height-camH-pad];
-        }
-        function draw(){ctx.drawImage(screenVid,0,0,canvas.width,canvas.height);var xy=getXY();ctx.save();ctx.beginPath();if(ctx.roundRect){ctx.roundRect(xy[0],xy[1],camW,camH,12)}else{var r=12,x=xy[0],y=xy[1];ctx.moveTo(x+r,y);ctx.arcTo(x+camW,y,x+camW,y+camH,r);ctx.arcTo(x+camW,y+camH,x,y+camH,r);ctx.arcTo(x,y+camH,x,y,r);ctx.arcTo(x,y,x+camW,y,r);ctx.closePath()}ctx.clip();ctx.drawImage(camVid,xy[0],xy[1],camW,camH);ctx.restore();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();if(ctx.roundRect){ctx.roundRect(xy[0],xy[1],camW,camH,12)}else{var r2=12,x2=xy[0],y2=xy[1];ctx.moveTo(x2+r2,y2);ctx.arcTo(x2+camW,y2,x2+camW,y2+camH,r2);ctx.arcTo(x2+camW,y2+camH,x2,y2+camH,r2);ctx.arcTo(x2,y2+camH,x2,y2,r2);ctx.arcTo(x2,y2,x2+camW,y2,r2);ctx.closePath()}ctx.stroke();requestAnimationFrame(draw)}
-        draw();
-        var canvasStream=canvas.captureStream(30);
-        if(audio&&screenStream.getAudioTracks().length){canvasStream.addTrack(screenStream.getAudioTracks()[0])}
-        finalStream=canvasStream;
-      }catch(e){console.log('Camera failed, recording without PIP')}
-    }
-    recorder=new MediaRecorder(finalStream,{mimeType:'video/webm'});
-    chunks=[];secs=0;
-    recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-    recorder.onstop=()=>{
-      screenStream.getTracks().forEach(t=>t.stop());
-      if(camStream)camStream.getTracks().forEach(t=>t.stop());
-      clearInterval(timer);
-      const blob=new Blob(chunks,{type:'video/webm'});
-      const url=URL.createObjectURL(blob);
-      const vid=document.getElementById('preview');
-      vid.src=url;vid.style.display='block';
-      document.getElementById('result').innerHTML="<p class='info'>✅ Recording saved ("+formatSize(blob.size)+")</p><a class='btn' href='"+url+"' download='recording.webm'>💾 Download Video</a>";
-      document.getElementById('status').textContent='';
-      document.getElementById('startBtn').disabled=false;
-      document.getElementById('stopBtn').disabled=true;
-    };
-    recorder.start();
-    document.getElementById('startBtn').disabled=true;
-    document.getElementById('stopBtn').disabled=false;
-    document.getElementById('preview').style.display='none';
-    document.getElementById('result').innerHTML='';
-    timer=setInterval(()=>{secs++;const m=Math.floor(secs/60),s=secs%60;document.getElementById('status').textContent='🔴 Recording... '+m+':'+(s<10?'0':'')+s},1000);
-    document.getElementById('status').textContent='🔴 Recording... 0:00';
-  }catch(e){alert('Screen sharing was cancelled or not supported.')}
+var srRecorder=null, srChunks=[], srTimer=null, srSecs=0, srPaused=false;
+var srScreen=null, srCam=null, srMicStream=null, srAudioCtx=null, srRaf=null;
+var srBlob=null, srBytes=0, srMeterRaf=null;
+
+function $s(x){return document.getElementById(x)}
+function fsz(b){return (typeof formatSize==='function')?formatSize(b):(b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB')}
+function mmss(t){var m=Math.floor(t/60),s=t%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s}
+
+var SR_PRESETS={
+  youtube:  {res:'1080', fps:'30', br:6,  fmt:'auto'},
+  smooth:   {res:'1080', fps:'60', br:10, fmt:'auto'},
+  small:    {res:'720',  fps:'24', br:2,  fmt:'auto'},
+  hq:       {res:'1440', fps:'60', br:16, fmt:'auto'},
+  whatsapp: {res:'720',  fps:'30', br:1,  fmt:'auto'}
+};
+
+function applySrPreset(){
+  var p=SR_PRESETS[$s('srPreset').value];
+  if(!p)return;
+  $s('srRes').value=p.res; $s('srFps').value=p.fps;
+  $s('srBitrate').value=p.br; $s('srBrVal').textContent=p.br+' Mbps';
+  $s('srFormat').value=p.fmt;
+  updateSrEstimate();
 }
-function stopRec(){if(recorder&&recorder.state!=='inactive')recorder.stop()}
-  </script>
+function onSrCustom(){ $s('srPreset').value='custom'; updateSrEstimate() }
+function onCamToggle(){ $s('camSelect').style.display=$s('camera').checked?'block':'none' }
+
+function updateSrEstimate(){
+  var br=parseInt($s('srBitrate').value,10)||6;
+  var perMin=br*1000000/8*60;
+  $s('srEstimate').textContent='About '+fsz(perMin)+' per minute of recording ('+fsz(perMin*10)+' for 10 minutes).';
+}
+
+function pickMime(){
+  var want=$s('srFormat').value;
+  if(want!=='auto'&&window.MediaRecorder&&MediaRecorder.isTypeSupported(want))return want;
+  var cands=['video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm;codecs=vp8,opus',
+             'video/webm','video/mp4;codecs=h264,aac','video/mp4'];
+  for(var i=0;i<cands.length;i++){
+    if(window.MediaRecorder&&MediaRecorder.isTypeSupported(cands[i]))return cands[i];
+  }
+  return '';
+}
+
+function startWithCountdown(){
+  var cd=parseInt($s('countdown').value,10)||0;
+  if(!cd){startRec();return}
+  $s('startBtn').disabled=true;
+  $s('status').textContent='Starting in '+cd+'...';
+  var iv=setInterval(function(){
+    cd--;
+    if(cd<=0){clearInterval(iv);$s('status').textContent='';startRec()}
+    else $s('status').textContent='Starting in '+cd+'...';
+  },1000);
+}
+
+/* ---- mic level meter so the user knows audio is actually captured ---- */
+function startMeter(stream){
+  try{
+    srAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    var an=srAudioCtx.createAnalyser(); an.fftSize=512;
+    srAudioCtx.createMediaStreamSource(stream).connect(an);
+    var buf=new Uint8Array(an.frequencyBinCount);
+    (function tick(){
+      an.getByteFrequencyData(buf);
+      var avg=0; for(var i=0;i<buf.length;i++)avg+=buf[i];
+      avg=avg/buf.length;
+      var el=$s('srMeter'); if(el)el.style.width=Math.min(100,avg*1.6)+'%';
+      srMeterRaf=requestAnimationFrame(tick);
+    })();
+  }catch(e){ $s('srMeterLabel').textContent='Microphone level unavailable' }
+}
+
+async function startRec(){
+  var useSys=$s('audio').checked, useMic=$s('srMic').checked, useCam=$s('camera').checked;
+  var fps=parseInt($s('srFps').value,10)||30;
+  var targetH=parseInt($s('srRes').value,10)||0;
+  srChunks=[]; srBytes=0; srSecs=0; srPaused=false; srBlob=null;
+  $s('result').innerHTML='';
+  $s('preview').style.display='none';
+
+  try{
+    srScreen=await navigator.mediaDevices.getDisplayMedia({
+      video:{frameRate:{ideal:fps}}, audio:useSys
+    });
+  }catch(e){
+    $s('startBtn').disabled=false;
+    $s('status').textContent=(e&&e.name==='NotAllowedError')
+      ? 'Screen sharing was cancelled or blocked.'
+      : 'Could not start capture: '+((e&&e.message)||'unknown');
+    return;
+  }
+
+  if(useMic){
+    try{
+      srMicStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+      $s('srLive').style.display='block';
+      startMeter(srMicStream);
+    }catch(e){
+      $s('status').textContent='Microphone unavailable — recording without voice-over.';
+      srMicStream=null;
+    }
+  }
+
+  var videoSource=srScreen;
+  var sTrack=srScreen.getVideoTracks()[0];
+  var st=sTrack.getSettings();
+  var srcW=st.width||1920, srcH=st.height||1080;
+  var outH=targetH||srcH, outW=Math.round(srcW*(outH/srcH));
+  outW-=outW%2; outH-=outH%2;
+  var needCanvas = useCam || (targetH && outH!==srcH);
+
+  if(needCanvas){
+    var canvas=document.createElement('canvas');
+    canvas.width=outW; canvas.height=outH;
+    var ctx=canvas.getContext('2d');
+    var sv=document.createElement('video'); sv.srcObject=srScreen; sv.muted=true;
+    try{await sv.play()}catch(e){}
+
+    var cv=null, camW=0, camH=0, shape='rounded', mirror=true;
+    if(useCam){
+      try{
+        srCam=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:false});
+        cv=document.createElement('video'); cv.srcObject=srCam; cv.muted=true;
+        try{await cv.play()}catch(e){}
+        camW=parseInt($s('camSize').value,10)||200;
+        camH=Math.round(camW*0.75);
+        shape=$s('camShape').value; mirror=$s('camMirror').value==='1';
+      }catch(e){ $s('status').textContent='Camera unavailable — recording screen only.'; srCam=null }
+    }
+    var pos=useCam?$s('camPos').value:'br', pad=24;
+    function camXY(){
+      if(pos==='bl')return[pad,outH-camH-pad];
+      if(pos==='tr')return[outW-camW-pad,pad];
+      if(pos==='tl')return[pad,pad];
+      return[outW-camW-pad,outH-camH-pad];
+    }
+    function pathFor(x,y,w,h){
+      ctx.beginPath();
+      if(shape==='circle'){ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);return}
+      if(shape==='square'){ctx.rect(x,y,w,h);return}
+      var r=14;
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);     ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+    }
+    (function draw(){
+      try{
+        ctx.drawImage(sv,0,0,outW,outH);
+        if(cv&&srCam){
+          var xy=camXY();
+          ctx.save(); pathFor(xy[0],xy[1],camW,camH); ctx.clip();
+          if(mirror){ctx.translate(xy[0]*2+camW,0);ctx.scale(-1,1)}
+          ctx.drawImage(cv,xy[0],xy[1],camW,camH);
+          ctx.restore();
+          ctx.save(); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=3;
+          pathFor(xy[0],xy[1],camW,camH); ctx.stroke(); ctx.restore();
+        }
+      }catch(e){}
+      srRaf=requestAnimationFrame(draw);
+    })();
+    videoSource=canvas.captureStream(fps);
+  }
+
+  // build final stream: video + mixed audio
+  var finalStream=new MediaStream();
+  videoSource.getVideoTracks().forEach(function(t){finalStream.addTrack(t)});
+  var sysTracks=srScreen.getAudioTracks();
+  if(srMicStream&&sysTracks.length){
+    // mix system + mic into one track
+    try{
+      var mixCtx=new (window.AudioContext||window.webkitAudioContext)();
+      var dest=mixCtx.createMediaStreamDestination();
+      mixCtx.createMediaStreamSource(new MediaStream(sysTracks)).connect(dest);
+      mixCtx.createMediaStreamSource(srMicStream).connect(dest);
+      dest.stream.getAudioTracks().forEach(function(t){finalStream.addTrack(t)});
+    }catch(e){
+      sysTracks.forEach(function(t){finalStream.addTrack(t)});
+    }
+  }else if(srMicStream){
+    srMicStream.getAudioTracks().forEach(function(t){finalStream.addTrack(t)});
+  }else{
+    sysTracks.forEach(function(t){finalStream.addTrack(t)});
+  }
+
+  var mime=pickMime();
+  var opts={videoBitsPerSecond:(parseInt($s('srBitrate').value,10)||6)*1000000};
+  if(mime)opts.mimeType=mime;
+  try{
+    srRecorder=new MediaRecorder(finalStream,opts);
+  }catch(e){
+    try{srRecorder=new MediaRecorder(finalStream)}
+    catch(e2){ $s('status').textContent='Recording is not supported in this browser.'; cleanupSr(); return }
+  }
+
+  srRecorder.ondataavailable=function(ev){
+    if(ev.data&&ev.data.size){srChunks.push(ev.data);srBytes+=ev.data.size;
+      var el=$s('srSize'); if(el)el.textContent=fsz(srBytes);}
+  };
+  srRecorder.onstop=finishRec;
+  srRecorder.start(1000);
+
+  // user stops sharing from the browser bar
+  sTrack.addEventListener('ended',function(){ if(srRecorder&&srRecorder.state!=='inactive')stopRec() });
+
+  $s('startBtn').disabled=true; $s('stopBtn').disabled=false; $s('pauseBtn').disabled=false;
+  $s('srLive').style.display='block';
+  $s('status').textContent='Recording '+outW+'x'+outH+' at '+fps+' fps';
+  var limit=parseInt($s('srLimit').value,10)||0;
+  srTimer=setInterval(function(){
+    if(srPaused)return;
+    srSecs++;
+    $s('srTimer').textContent=mmss(srSecs);
+    if(limit&&srSecs>=limit)stopRec();
+  },1000);
+}
+
+function pauseRec(){
+  if(!srRecorder||srRecorder.state==='inactive')return;
+  if(srRecorder.state==='recording'){
+    srRecorder.pause(); srPaused=true;
+    $s('pauseBtn').textContent='▶ Resume';
+    $s('srRecDot').textContent='❚❚ paused'; $s('srRecDot').style.color='#f59e0b';
+    $s('status').textContent='Paused — press Resume to continue the same file.';
+  }else{
+    srRecorder.resume(); srPaused=false;
+    $s('pauseBtn').textContent='⏸ Pause';
+    $s('srRecDot').textContent='● recording'; $s('srRecDot').style.color='#ec4899';
+    $s('status').textContent='Recording...';
+  }
+}
+
+function stopRec(){
+  if(srRecorder&&srRecorder.state!=='inactive')srRecorder.stop();
+  if(srTimer){clearInterval(srTimer);srTimer=null}
+}
+
+function cleanupSr(){
+  if(srRaf){cancelAnimationFrame(srRaf);srRaf=null}
+  if(srMeterRaf){cancelAnimationFrame(srMeterRaf);srMeterRaf=null}
+  [srScreen,srCam,srMicStream].forEach(function(s){
+    if(s)s.getTracks().forEach(function(t){try{t.stop()}catch(e){}});
+  });
+  srScreen=srCam=srMicStream=null;
+  if(srAudioCtx){try{srAudioCtx.close()}catch(e){} srAudioCtx=null}
+}
+
+function finishRec(){
+  cleanupSr();
+  if(srTimer){clearInterval(srTimer);srTimer=null}
+  $s('startBtn').disabled=false; $s('stopBtn').disabled=true; $s('pauseBtn').disabled=true;
+  $s('pauseBtn').textContent='⏸ Pause';
+  $s('srLive').style.display='none';
+  $s('status').textContent='';
+
+  if(!srChunks.length){ $s('result').innerHTML="<p class='info'>Nothing was recorded.</p>"; return }
+  var type=(srRecorder&&srRecorder.mimeType)||'video/webm';
+  srBlob=new Blob(srChunks,{type:type});
+  var ext=type.indexOf('mp4')>=0?'mp4':'webm';
+  var url=URL.createObjectURL(srBlob);
+  var v=$s('preview');
+  v.src=url; v.style.display='block';
+  window._srBlob=srBlob;
+  var mbPerMin=srSecs>0?(srBlob.size/1048576)/(srSecs/60):0;
+
+  $s('result').innerHTML=
+    "<div style='background:var(--card);padding:1rem;border-radius:var(--radius);margin-top:.8rem'>"+
+      "<strong>Recording ready — "+mmss(srSecs)+" &middot; "+fsz(srBlob.size)+"</strong>"+
+      "<p class='info' style='font-size:.8rem;margin:.3rem 0 .7rem'>Format "+ext.toUpperCase()+
+        (mbPerMin?(" &middot; about "+mbPerMin.toFixed(1)+" MB per minute"):"")+
+        ". Play it above before saving.</p>"+
+      "<div class='row' style='gap:.4rem;flex-wrap:wrap'>"+
+        "<button class='btn' style='margin:0' onclick=\"download(window._srBlob,'screen-recording-'+Date.now()+'."+ext+"')\">Download "+ext.toUpperCase()+"</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='grabFrame()'>Save current frame as PNG</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='discardRec()'>Discard</button>"+
+      "</div>"+
+      "<p class='info' style='font-size:.78rem;margin-top:.6rem'>Need a GIF or a trimmed clip? Use the "+
+        "<a href='/tools/video-to-gif'>Video to GIF</a> tool with this file.</p>"+
+    "</div>";
+}
+
+function grabFrame(){
+  var v=$s('preview');
+  if(!v||!v.videoWidth){alert('Play the video and pause on the frame you want first.');return}
+  var cv=document.createElement('canvas');
+  cv.width=v.videoWidth; cv.height=v.videoHeight;
+  cv.getContext('2d').drawImage(v,0,0);
+  cv.toBlob(function(b){download(b,'frame-'+Math.round(v.currentTime)+'s.png')},'image/png');
+}
+
+function discardRec(){
+  srChunks=[]; srBlob=null; srBytes=0; srSecs=0;
+  $s('preview').style.display='none'; $s('preview').removeAttribute('src');
+  $s('result').innerHTML='';
+}
+
+applySrPreset();
+onCamToggle();
+</script>
 </body>
 </html>

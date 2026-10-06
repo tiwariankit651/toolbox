@@ -51,11 +51,89 @@
           <option value="guj">Gujarati</option>
           <option value="pan">Punjabi</option>
           <option value="urd">Urdu</option>
+          <option value="kan">Kannada</option>
+          <option value="mal">Malayalam</option>
+          <option value="ori">Odia</option>
+          <option value="asm">Assamese</option>
+          <option value="san">Sanskrit</option>
+          <option value="nep">Nepali</option>
           <option value="eng+hin">English + Hindi</option>
+          <option value="eng+mar">English + Marathi</option>
+          <option value="eng+tam">English + Tamil</option>
+        </select>
+        <label>Page type:</label>
+        <select id="psm">
+          <option value="3">Auto (mixed page)</option>
+          <option value="6">Uniform block of text</option>
+          <option value="4">Columns / variable sizes</option>
+          <option value="11">Sparse text (signs, labels)</option>
+          <option value="7">Single line</option>
+          <option value="10">Single character</option>
         </select>
       </div>
+
+      <div class="row">
+        <label>Quick preset:</label>
+        <select id="ocrPreset" onchange="applyOcrPreset()">
+          <option value="custom">Custom</option>
+          <option value="scan" selected>Scanned document</option>
+          <option value="photo">Photo of a page</option>
+          <option value="handwriting">Handwritten notes</option>
+          <option value="screenshot">Screenshot</option>
+          <option value="lowlight">Faded / low contrast</option>
+        </select>
+        <label>Output:</label>
+        <select id="outMode">
+          <option value="plain">Plain text</option>
+          <option value="layout">Keep line breaks</option>
+          <option value="paragraph">Merge into paragraphs</option>
+        </select>
+      </div>
+
+      <details style="margin:.6rem 0;background:var(--card);border-radius:12px;padding:.7rem 1rem">
+        <summary style="cursor:pointer;font-weight:600">Image pre-processing (improves accuracy)</summary>
+        <div class="row" style="margin-top:.6rem">
+          <label>Rotate:</label>
+          <select id="rotate" onchange="redrawPrep()">
+            <option value="0">None</option><option value="90">90° right</option>
+            <option value="180">180°</option><option value="270">90° left</option>
+          </select>
+          <label>Scale up:</label>
+          <select id="upscale" onchange="redrawPrep()">
+            <option value="1">1x</option><option value="1.5">1.5x</option>
+            <option value="2" selected>2x (better for small text)</option><option value="3">3x</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Contrast: <strong id="conVal">1.0</strong></label>
+          <input type="range" id="contrast" min="0.5" max="3" step="0.1" value="1" oninput="document.getElementById('conVal').textContent=parseFloat(this.value).toFixed(1);redrawPrep()" style="flex:2">
+        </div>
+        <div class="row">
+          <label>Brightness: <strong id="brVal">0</strong></label>
+          <input type="range" id="brightness" min="-100" max="100" step="5" value="0" oninput="document.getElementById('brVal').textContent=this.value;redrawPrep()" style="flex:2">
+        </div>
+        <div class="row">
+          <label>Threshold: <strong id="thVal">off</strong></label>
+          <input type="range" id="threshold" min="0" max="255" step="5" value="0" oninput="document.getElementById('thVal').textContent=this.value==='0'?'off':this.value;redrawPrep()" style="flex:2">
+        </div>
+        <div class="row" style="gap:1.2rem;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="prepGray" checked style="width:auto" onchange="redrawPrep()"> Grayscale</label>
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="prepSharp" style="width:auto" onchange="redrawPrep()"> Sharpen</label>
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="prepInvert" style="width:auto" onchange="redrawPrep()"> Invert (white text on dark)</label>
+          <button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.8rem" onclick="resetPrep()">Reset</button>
+        </div>
+        <p class="info" style="font-size:.78rem">Tip: for faded scans try Threshold around 140 with Grayscale on. The preview below shows exactly what the OCR engine will read.</p>
+      </details>
+
+      <div class="row" id="cropRow" style="display:none">
+        <button class="btn btn-outline" style="margin:0" onclick="toggleCrop()" id="cropBtn">Select region to read</button>
+        <button class="btn btn-outline" style="margin:0" onclick="clearCrop()">Clear region</button>
+        <span class="info" id="cropInfo"></span>
+      </div>
+
       <p class="info" style="font-size:.78rem;opacity:.8">⚠️ Language data (~1–15 MB) downloads on first use for each language. Subsequent uses are instant.</p>
       <button class="btn" onclick="doOCR()" id="goBtn" disabled>Extract Text</button>
+      <button class="btn btn-outline" onclick="cancelOCR()" id="cancelOcrBtn" style="display:none">Cancel</button>
       <div id="preview" class="preview-area"></div>
       <div id="progress" style="display:none"><div style="background:var(--bg2);border-radius:8px;overflow:hidden;height:22px;margin:.5rem 0"><div id="progBar" style="height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);width:0%;transition:width .3s;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff"></div></div><p class="info" id="progText"></p></div>
       <div id="result"></div>
@@ -135,22 +213,6 @@ function loadPdfJs(){
   });
 }
 
-var files=[];
-var pdfFile=null;
-setupDrop("drop","inp",function(f){
-  var arr=Array.from(f);
-  pdfFile=null;files=[];
-  var preview=document.getElementById("preview");
-  if(arr.length===1&&arr[0].type==="application/pdf"){
-    pdfFile=arr[0];
-    preview.innerHTML="<p class='info'>📄 PDF selected: "+arr[0].name+"</p>";
-  }else{
-    files=arr.filter(function(x){return x.type.startsWith("image/");});
-    preview.innerHTML=files.map(function(x){return "<img src='"+URL.createObjectURL(x)+"' style='max-height:120px;margin:.25rem'>";}).join("");
-  }
-  document.getElementById("goBtn").disabled=false;
-});
-
 function detectTable(text){
   var lines=text.split("\n").filter(function(l){return l.trim();});
   var tabular=lines.filter(function(l){return /\t/.test(l)||/ {2,}/.test(l);});
@@ -184,63 +246,326 @@ async function renderPdfPages(pdfData){
   return images;
 }
 
-async function doOCR(){
-  if(!files.length&&!pdfFile)return;
-  var goBtn=document.getElementById("goBtn");
-  var progDiv=document.getElementById("progress");
-  var progBar=document.getElementById("progBar");
-  var progText=document.getElementById("progText");
-  var resultDiv=document.getElementById("result");
-  goBtn.disabled=true;
-  progDiv.style.display="block";
-  resultDiv.innerHTML="";
-  var lang=document.getElementById("lang").value;
+/* ---------- state ---------- */
+var ocrFiles=[], ocrPdf=null, ocrCancel=false, ocrWorker=null;
+var prepSrc=null;              // HTMLImageElement of the first/current image
+var cropRect=null, cropping=false, cropStart=null;
+var lastText='', lastConf=[];
 
-  var imagesToProcess=[];
-  if(pdfFile){
-    progText.textContent="⏳ Rendering PDF pages...";
-    var pdfData=await pdfFile.arrayBuffer();
-    imagesToProcess=await renderPdfPages(pdfData);
-  }else{
-    imagesToProcess=files;
-  }
+function $o(x){return document.getElementById(x)}
 
-  var total=imagesToProcess.length;
-  var combined="";
-  var currentIdx=0;
+/* ---------- presets ---------- */
+var OCR_PRESETS={
+  scan:        {contrast:1.2, brightness:0,   threshold:0,   gray:true,  sharp:false, invert:false, upscale:'2',   psm:'3'},
+  photo:       {contrast:1.5, brightness:10,  threshold:0,   gray:true,  sharp:true,  invert:false, upscale:'2',   psm:'3'},
+  handwriting: {contrast:1.1, brightness:5,   threshold:0,   gray:true,  sharp:false, invert:false, upscale:'3',   psm:'6'},
+  screenshot:  {contrast:1.0, brightness:0,   threshold:0,   gray:false, sharp:false, invert:false, upscale:'1.5', psm:'6'},
+  lowlight:    {contrast:2.0, brightness:25,  threshold:140, gray:true,  sharp:true,  invert:false, upscale:'2',   psm:'3'}
+};
 
-  var worker=await Tesseract.createWorker(lang,1,{logger:function(m){
-    if(m.status==="recognizing text"){
-      var overall=((currentIdx+m.progress)/total)*100;
-      progBar.style.width=overall+"%";
-      progBar.textContent=Math.round(overall)+"%";
+function applyOcrPreset(){
+  var k=$o('ocrPreset').value;
+  var p=OCR_PRESETS[k];
+  if(!p)return;
+  $o('contrast').value=p.contrast;   $o('conVal').textContent=p.contrast.toFixed(1);
+  $o('brightness').value=p.brightness; $o('brVal').textContent=p.brightness;
+  $o('threshold').value=p.threshold; $o('thVal').textContent=p.threshold?p.threshold:'off';
+  $o('prepGray').checked=p.gray; $o('prepSharp').checked=p.sharp; $o('prepInvert').checked=p.invert;
+  $o('upscale').value=p.upscale; $o('psm').value=p.psm;
+  redrawPrep();
+}
+
+function resetPrep(){
+  $o('contrast').value=1; $o('conVal').textContent='1.0';
+  $o('brightness').value=0; $o('brVal').textContent='0';
+  $o('threshold').value=0; $o('thVal').textContent='off';
+  $o('prepGray').checked=true; $o('prepSharp').checked=false; $o('prepInvert').checked=false;
+  $o('rotate').value='0'; $o('upscale').value='2';
+  $o('ocrPreset').value='custom';
+  redrawPrep();
+}
+
+/* ---------- pre-processing pipeline ---------- */
+function preprocess(img, forOcr){
+  var rot=parseInt($o('rotate').value,10)||0;
+  var up=parseFloat($o('upscale').value)||1;
+  if(!forOcr) up=Math.min(up,1);   // preview stays small
+  var sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height;
+  var cv=document.createElement('canvas');
+  var swap=(rot===90||rot===270);
+  cv.width=Math.round((swap?sh:sw)*up);
+  cv.height=Math.round((swap?sw:sh)*up);
+  var cx=cv.getContext('2d');
+  cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  cx.save();
+  cx.translate(cv.width/2,cv.height/2);
+  cx.rotate(rot*Math.PI/180);
+  cx.scale(up,up);
+  cx.drawImage(img,-sw/2,-sh/2);
+  cx.restore();
+
+  // crop to selected region (region is in natural, unrotated coords ratio)
+  if(cropRect&&forOcr){
+    var w=Math.round(cropRect.w*cv.width), h=Math.round(cropRect.h*cv.height);
+    if(w>8&&h>8){
+      var cr=document.createElement('canvas'); cr.width=w; cr.height=h;
+      cr.getContext('2d').drawImage(cv,Math.round(cropRect.x*cv.width),Math.round(cropRect.y*cv.height),w,h,0,0,w,h);
+      cv=cr; cx=cv.getContext('2d');
     }
-  }});
-
-  for(var i=0;i<total;i++){
-    currentIdx=i;
-    progText.textContent="⏳ OCR page "+(i+1)+"/"+total+"...";
-    var result=await worker.recognize(imagesToProcess[i]);
-    combined+=(i>0?"\n\n--- Page "+(i+1)+" ---\n\n":"")+result.data.text;
   }
-  await worker.terminate();
-  progDiv.style.display="none";
 
-  var table=detectTable(combined);
-  var tableHtml=table?"<details style='margin-top:.5rem'><summary>📊 Detected Table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";
-  var words=combined.split(/\s+/).filter(Boolean).length;
-  var chars=combined.length;
-  resultDiv.innerHTML="<p class='info'>✅ Text extracted — "+words+" words, "+chars+" characters ("+total+" "+(pdfFile?"page":"image")+(total>1?"s":"")+")</p><textarea style='min-height:250px' id='ocrOutput'>"+combined.replace(/</g,"&lt;")+"</textarea>"+tableHtml+"<div class='row'><button class='btn btn-outline' onclick='navigator.clipboard.writeText(document.getElementById(\"ocrOutput\").value)'>📋 Copy All</button><button class='btn btn-outline' onclick='copyFormatted()'>📝 Copy Formatted</button><button class='btn' onclick='download(new Blob([document.getElementById(\"ocrOutput\").value]),\"extracted-text.txt\")'>💾 Download .txt</button></div>";
-  goBtn.disabled=false;
+  var con=parseFloat($o('contrast').value)||1;
+  var br=parseInt($o('brightness').value,10)||0;
+  var th=parseInt($o('threshold').value,10)||0;
+  var gray=$o('prepGray').checked, inv=$o('prepInvert').checked, sharp=$o('prepSharp').checked;
+
+  if(con!==1||br!==0||th||gray||inv){
+    var im=cx.getImageData(0,0,cv.width,cv.height), d=im.data;
+    for(var i=0;i<d.length;i+=4){
+      var r=d[i],g=d[i+1],bl=d[i+2];
+      if(gray){var v=r*0.299+g*0.587+bl*0.114;r=g=bl=v}
+      r=(r-128)*con+128+br; g=(g-128)*con+128+br; bl=(bl-128)*con+128+br;
+      if(th){var l=(r+g+bl)/3; var o=l>=th?255:0; r=g=bl=o}
+      if(inv){r=255-r; g=255-g; bl=255-bl}
+      d[i]=r<0?0:r>255?255:r; d[i+1]=g<0?0:g>255?255:g; d[i+2]=bl<0?0:bl>255?255:bl;
+    }
+    cx.putImageData(im,0,0);
+  }
+
+  if(sharp){
+    var src=cx.getImageData(0,0,cv.width,cv.height);
+    var out=cx.createImageData(cv.width,cv.height);
+    var W=cv.width,H=cv.height,sd=src.data,od=out.data;
+    for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+      for(var ch=0;ch<3;ch++){
+        var o2=(y*W+x)*4+ch;
+        if(x===0||y===0||x===W-1||y===H-1){od[o2]=sd[o2];continue}
+        var sum=5*sd[o2]-sd[o2-4]-sd[o2+4]-sd[o2-W*4]-sd[o2+W*4];
+        od[o2]=sum<0?0:sum>255?255:sum;
+      }
+      od[(y*W+x)*4+3]=255;
+    }
+    cx.putImageData(out,0,0);
+  }
+  return cv;
 }
 
-function copyFormatted(){
-  var text=document.getElementById("ocrOutput").value;
-  var html=text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>");
-  var blob=new Blob([html],{type:"text/html"});
-  var plain=new Blob([text],{type:"text/plain"});
-  navigator.clipboard.write([new ClipboardItem({"text/html":blob,"text/plain":plain})]);
+function redrawPrep(){
+  $o('ocrPreset').value='custom';
+  if(!prepSrc)return;
+  var cv=preprocess(prepSrc,false);
+  var holder=$o('prepPreview');
+  if(!holder){
+    holder=document.createElement('div');
+    holder.id='prepPreview';
+    holder.style.cssText='margin:.6rem 0;text-align:center;position:relative;display:inline-block';
+    $o('preview').appendChild(holder);
+  }
+  holder.innerHTML="<p class='info' style='font-size:.78rem;margin:0 0 .3rem'>This is what the OCR engine will read:</p>";
+  cv.id='prepCanvas';
+  cv.style.cssText='max-width:100%;max-height:300px;border-radius:8px;border:1px solid rgba(148,148,184,.25);cursor:'+(cropping?'crosshair':'default');
+  holder.appendChild(cv);
+  if(cropping) attachCropHandlers(cv);
+  if(cropRect){
+    var box=document.createElement('div');
+    box.style.cssText='position:absolute;border:2px dashed #6366f1;background:rgba(99,102,241,.15);pointer-events:none;'+
+      'left:'+(cropRect.x*100)+'%;top:'+(cropRect.y*100)+'%;width:'+(cropRect.w*100)+'%;height:'+(cropRect.h*100)+'%';
+    holder.appendChild(box);
+  }
 }
-  </script>
+
+/* ---------- region selection ---------- */
+function toggleCrop(){
+  cropping=!cropping;
+  $o('cropBtn').textContent=cropping?'Click and drag on the image':'Select region to read';
+  redrawPrep();
+}
+function clearCrop(){ cropRect=null; cropping=false; $o('cropBtn').textContent='Select region to read'; $o('cropInfo').textContent=''; redrawPrep() }
+function attachCropHandlers(cv){
+  function pos(ev){
+    var r=cv.getBoundingClientRect();
+    var cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    var cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
+    return {x:Math.max(0,Math.min(1,cx/r.width)), y:Math.max(0,Math.min(1,cy/r.height))};
+  }
+  function down(ev){ ev.preventDefault(); cropStart=pos(ev) }
+  function up(ev){
+    if(!cropStart)return;
+    var p=pos(ev);
+    cropRect={x:Math.min(cropStart.x,p.x), y:Math.min(cropStart.y,p.y),
+              w:Math.abs(p.x-cropStart.x), h:Math.abs(p.y-cropStart.y)};
+    cropStart=null; cropping=false;
+    $o('cropBtn').textContent='Select region to read';
+    $o('cropInfo').textContent='Region set — only this area will be read.';
+    redrawPrep();
+  }
+  cv.addEventListener('mousedown',down); cv.addEventListener('mouseup',up);
+  cv.addEventListener('touchstart',down); cv.addEventListener('touchend',up);
+}
+
+/* ---------- upload ---------- */
+setupDrop("drop","inp",function(f){
+  var arr=Array.from(f);
+  ocrPdf=null; ocrFiles=[]; cropRect=null; prepSrc=null;
+  var preview=$o("preview");
+  preview.innerHTML="";
+  if(arr.length===1&&arr[0].type==="application/pdf"){
+    ocrPdf=arr[0];
+    preview.innerHTML="<p class='info'>📄 PDF selected: "+arr[0].name+" — pre-processing applies to every page.</p>";
+    $o('cropRow').style.display='none';
+  }else{
+    ocrFiles=arr.filter(function(x){return x.type.indexOf("image/")===0});
+    if(!ocrFiles.length){preview.innerHTML="<p class='info'>Please choose image files or a single PDF.</p>";return}
+    preview.innerHTML="<p class='info'>"+ocrFiles.length+" image"+(ocrFiles.length>1?'s':'')+" selected."+
+      (ocrFiles.length>1?' Settings below apply to all of them.':'')+"</p>";
+    var im=new Image();
+    im.onload=function(){ prepSrc=im; $o('cropRow').style.display='flex'; redrawPrep() };
+    im.src=URL.createObjectURL(ocrFiles[0]);
+  }
+  $o("goBtn").disabled=false;
+  applyOcrPreset();
+});
+
+/* ---------- output shaping ---------- */
+function shapeText(t){
+  var mode=$o('outMode').value;
+  if(mode==='plain')  return t.replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  if(mode==='layout') return t.replace(/[ \t]+$/gm,'').trim();
+  return t.split(/\n\s*\n/).map(function(p){return p.replace(/\s*\n\s*/g,' ').trim()}).filter(Boolean).join('\n\n');
+}
+
+function cancelOCR(){ ocrCancel=true; $o('progText').textContent='Cancelling...' }
+
+/* ---------- main ---------- */
+async function doOCR(){
+  if(!ocrFiles.length&&!ocrPdf)return;
+  ocrCancel=false;
+  var goBtn=$o("goBtn"), progDiv=$o("progress"), progBar=$o("progBar"),
+      progText=$o("progText"), resultDiv=$o("result");
+  goBtn.disabled=true; $o('cancelOcrBtn').style.display='inline-block';
+  progDiv.style.display="block"; resultDiv.innerHTML="";
+  var lang=$o("lang").value, psm=$o('psm').value;
+
+  try{
+    var imagesToProcess=[];
+    if(ocrPdf){
+      progText.textContent="⏳ Rendering PDF pages...";
+      imagesToProcess=await renderPdfPages(await ocrPdf.arrayBuffer());
+    }else{
+      imagesToProcess=ocrFiles;
+    }
+
+    // apply pre-processing to each source
+    progText.textContent="⏳ Pre-processing images...";
+    var prepped=[];
+    for(var k=0;k<imagesToProcess.length;k++){
+      if(ocrCancel)throw new Error('cancelled');
+      var img=await new Promise(function(res,rej){
+        var im=new Image(); im.onload=function(){res(im)}; im.onerror=rej;
+        im.src=URL.createObjectURL(imagesToProcess[k]);
+      });
+      prepped.push(preprocess(img,true).toDataURL('image/png'));
+      await new Promise(function(r){setTimeout(r,0)});
+    }
+
+    var total=prepped.length, combined="", currentIdx=0;
+    lastConf=[];
+    ocrWorker=await Tesseract.createWorker(lang,1,{logger:function(m){
+      if(m.status==="recognizing text"){
+        var overall=((currentIdx+m.progress)/total)*100;
+        progBar.style.width=overall+"%"; progBar.textContent=Math.round(overall)+"%";
+      }else if(m.status){
+        progText.textContent="⏳ "+m.status+(total>1?(" (page "+(currentIdx+1)+"/"+total+")"):"");
+      }
+    }});
+    if(psm) await ocrWorker.setParameters({tessedit_pageseg_mode:psm});
+
+    for(var i=0;i<total;i++){
+      if(ocrCancel)break;
+      currentIdx=i;
+      progText.textContent="⏳ Reading page "+(i+1)+" of "+total+"...";
+      var result=await ocrWorker.recognize(prepped[i]);
+      lastConf.push(result.data.confidence||0);
+      combined+=(i>0?"\n\n--- Page "+(i+1)+" ---\n\n":"")+result.data.text;
+    }
+    await ocrWorker.terminate(); ocrWorker=null;
+    progDiv.style.display="none";
+    $o('cancelOcrBtn').style.display='none'; goBtn.disabled=false;
+
+    if(ocrCancel&&!combined.trim()){ resultDiv.innerHTML="<p class='info'>Cancelled.</p>"; return }
+
+    lastText=shapeText(combined);
+    renderOcrResult(lastText);
+  }catch(e){
+    if(ocrWorker){try{await ocrWorker.terminate()}catch(e2){} ocrWorker=null}
+    progDiv.style.display="none"; $o('cancelOcrBtn').style.display='none'; goBtn.disabled=false;
+    resultDiv.innerHTML = (e&&e.message==='cancelled')
+      ? "<p class='info'>Cancelled.</p>"
+      : "<p class='info' style='color:#ec4899'>OCR failed: "+((e&&e.message)||'unknown error')+
+        ". Try a different language, or reduce the upscale if the image is very large.</p>";
+  }
+}
+
+function renderOcrResult(text){
+  var resultDiv=$o('result');
+  var words=text.split(/\s+/).filter(Boolean).length;
+  var chars=text.length;
+  var lines=text.split('\n').filter(function(l){return l.trim()}).length;
+  var avg=lastConf.length?Math.round(lastConf.reduce(function(a,b){return a+b},0)/lastConf.length):0;
+  var cColor=avg>=85?'#22c55e':avg>=70?'#f59e0b':'#ec4899';
+  var cNote=avg>=85?'High confidence':avg>=70?'Moderate — check the text':'Low — try a preset or raise contrast/threshold';
+
+  var table=detectTable(text);
+  var tableHtml=table?"<details style='margin-top:.5rem'><summary style='cursor:pointer'>📊 Detected table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";
+
+  window._ocrText=text;
+  resultDiv.innerHTML=
+    "<div style='background:var(--card);padding:1rem;border-radius:var(--radius);margin-top:.8rem'>"+
+      "<div style='display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:.6rem'>"+
+        "<strong style='color:"+cColor+"'>Accuracy "+avg+"%</strong>"+
+        "<span class='info' style='font-size:.8rem'>"+cNote+"</span>"+
+        "<span class='info' style='font-size:.8rem'>"+words+" words &middot; "+chars+" chars &middot; "+lines+" lines</span>"+
+      "</div>"+
+      "<textarea id='ocrOut' style='width:100%;min-height:240px;font-family:ui-monospace,monospace;font-size:.9rem' "+
+        "oninput='window._ocrText=this.value'>"+text.replace(/</g,'&lt;')+"</textarea>"+
+      "<div class='row' style='gap:.4rem;flex-wrap:wrap;margin-top:.5rem'>"+
+        "<button class='btn' style='margin:0' onclick='copyText(window._ocrText,this)'>Copy text</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='downloadOcr(\"txt\")'>Download .txt</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='downloadOcr(\"doc\")'>Download .doc</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='downloadOcr(\"csv\")'>Download .csv</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='cleanOcrText()'>Tidy up text</button>"+
+      "</div>"+
+      tableHtml+
+    "</div>";
+}
+
+function cleanOcrText(){
+  var t=window._ocrText||'';
+  t=t.replace(/[ \t]{2,}/g,' ')
+     .replace(/\n{3,}/g,'\n\n')
+     .replace(/(\w)-\n(\w)/g,'$1$2')      // rejoin hyphen-split words
+     .replace(/[‘’]/g,"'").replace(/[“”]/g,'"')
+     .replace(/\|/g,'I')                   // common OCR confusion in words
+     .replace(/\s+([,.;:!?])/g,'$1')
+     .trim();
+  window._ocrText=t;
+  var ta=$o('ocrOut'); if(ta)ta.value=t;
+}
+
+function downloadOcr(kind){
+  var t=window._ocrText||'';
+  if(kind==='txt') return download(new Blob([t],{type:'text/plain;charset=utf-8'}),'extracted-text.txt');
+  if(kind==='doc'){
+    var h="<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'"+
+      " xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body>"+
+      t.split(/\n\s*\n/).map(function(p){return '<p>'+p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</p>'}).join('')+
+      "</body></html>";
+    return download(new Blob([h],{type:'application/msword'}),'extracted-text.doc');
+  }
+  var rows=t.split('\n').filter(function(l){return l.trim()})
+    .map(function(l){return l.split(/\t| {2,}/).map(function(cl){return '"'+cl.trim().replace(/"/g,'""')+'"'}).join(',')});
+  download(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),'extracted-text.csv');
+}
+</script>
 </body>
 </html>
