@@ -87,3 +87,73 @@ if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('
 
 // Ctrl+K search shortcut
 document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();var s=document.getElementById('searchTools');if(s){s.focus();s.scrollIntoView({behavior:'smooth'})}}});
+
+/* ---------------------------------------------------------------------------
+   Unicode-safe PDF text helpers (shared by the pdf-lib based tools)
+
+   pdf-lib's 14 built-in fonts are WinAnsi-encoded. Drawing a rupee sign, any
+   Devanagari character or an emoji throws "WinAnsi cannot encode", which in
+   several tools landed in a catch block and produced no download at all - the
+   export looked broken for anyone typing an Indian name or amount.
+
+   uniFold   - swap smart quotes/dashes for ASCII lookalikes (the paste-from-Word
+               case) so the small built-in fonts still cover most documents
+   uniNeeded - true when something genuinely outside Latin-1 remains
+   uniEmbed  - lazily fetch and embed a real Unicode TTF via fontkit
+   uniSafe   - final guard at the drawText call site
+   --------------------------------------------------------------------------- */
+var _uniFontBytes=null,_fontkitReady=false;
+var UNI_FONT_URL="https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth%2Cwght%5D.ttf";
+
+function uniFold(s){
+  return String(s==null?"":s)
+    .replace(/[\u2018\u2019\u201a\u201b]/g,"'")
+    .replace(/[\u201c\u201d\u201e\u201f]/g,'"')
+    .replace(/[\u2013\u2014\u2015]/g,"-")
+    .replace(/\u2026/g,"...")
+    .replace(/\u00a0/g," ")
+    .replace(/[\u2022\u00b7]/g,"-");
+}
+
+function uniNeeded(s){ return /[^\u0000-\u00ff]/.test(String(s==null?"":s)) }
+
+function _loadScriptOnce(url){
+  return new Promise(function(res,rej){
+    var s=document.createElement("script");
+    s.src=url; s.onload=res;
+    s.onerror=function(){rej(new Error("could not load "+url))};
+    document.head.appendChild(s);
+  });
+}
+
+async function uniEmbed(doc){
+  if(!_fontkitReady){
+    /* The published fontkit UMD bundle references regeneratorRuntime without
+       shipping it, so embedFont throws unless the shim is loaded first. */
+    if(typeof window.regeneratorRuntime==="undefined")
+      await _loadScriptOnce("https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.js");
+    if(typeof window.fontkit==="undefined")
+      await _loadScriptOnce("https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js");
+    if(typeof window.fontkit==="undefined")throw new Error("Unicode font engine unavailable");
+    _fontkitReady=true;
+  }
+  if(!_uniFontBytes){
+    var r=await fetch(UNI_FONT_URL);
+    if(!r.ok)throw new Error("Unicode font download failed ("+r.status+")");
+    _uniFontBytes=await r.arrayBuffer();
+  }
+  doc.registerFontkit(window.fontkit);
+  return await doc.embedFont(_uniFontBytes,{subset:true});
+}
+
+/* Call this at every drawText site. If a Unicode font was embedded the string
+   passes through untouched; otherwise undrawable characters are replaced so the
+   export completes instead of dying. */
+function uniSafe(s,font){
+  var out=uniFold(s);
+  if(!uniNeeded(out))return out;
+  var canDraw=false;
+  try{ font.widthOfTextAtSize(out,10); canDraw=true }catch(e){ canDraw=false }
+  if(canDraw)return out;
+  return out.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"");
+}

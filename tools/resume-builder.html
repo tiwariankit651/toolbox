@@ -225,11 +225,24 @@ async function genResume(){
   var acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;
   var doc=await PDFLib.PDFDocument.create();var pg=doc.addPage([595,842]);
   var f=await doc.embedFont(PDFLib.StandardFonts.Helvetica);var b=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  /* pdf-lib's standard fonts are WinAnsi-encoded, so a rupee sign, a Hindi name or
+     an emoji anywhere in the form made drawText throw and the download never
+     happened. If the form contains anything outside Latin-1, swap in a real Unicode
+     face; otherwise keep the small built-in fonts. */
+  try{
+    var __formText=Array.prototype.map.call(
+      document.querySelectorAll("#resumeForm input, #resumeForm textarea, input, textarea"),
+      function(e){return e.value||""}).join(" ");
+    if(uniNeeded(uniFold(__formText))){
+      var __u=await uniEmbed(doc);
+      f=__u;b=__u;
+    }
+  }catch(e){ /* fall through: unsupported characters are folded below instead */ }
   var accent=PDFLib.rgb(acR,acG,acB);var dark=PDFLib.rgb(0.1,0.1,0.15);var gray=PDFLib.rgb(0.4,0.4,0.45);var white=PDFLib.rgb(1,1,1);var y=790;
   var photoImg=null;var photoData=await getPhotoBytes();
   if(photoData){try{photoImg=photoData.type==='png'?await doc.embedPng(photoData.bytes):await doc.embedJpg(photoData.bytes);}catch(e){}}
   var drawPhoto=function(cx,cy,r){if(!photoImg)return;pg.drawImage(photoImg,{x:cx-r,y:cy-r,width:r*2,height:r*2});};
-  var t=function(s,x,yy,font,sz,col){if(!s)return yy;pg.drawText(s,{x:x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy;};
+  var t=function(s,x,yy,font,sz,col){if(!s)return yy;pg.drawText(uniSafe(s,font||f),{x:x,y:yy,font:font||f,size:sz||10,color:col||dark});return yy;};
   var wrapText=function(s,x,yy,font,sz,maxW,col){if(!s)return yy;var words=s.split(' ');var ln='';words.forEach(function(w){if((font||f).widthOfTextAtSize(ln+' '+w,sz||10)>maxW){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);ln=w;}else{ln+=(ln?' ':'')+w;}});if(ln){t(ln,x,yy,font,sz,col);yy-=((sz||10)+4);}return yy;};
   var section=function(title,yy){yy-=10;t(title,50,yy,b,13,accent);pg.drawLine({start:{x:50,y:yy-5},end:{x:545,y:yy-5},thickness:1,color:PDFLib.rgb(.85,.85,.9)});return yy-20;};
   var allSkills=ratedSkills.slice();if(v('skills')){v('skills').split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});}
