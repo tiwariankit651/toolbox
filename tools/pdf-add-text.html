@@ -598,6 +598,64 @@ function deleteItem(idx){if(!items[idx])return;pushHistory();items.splice(idx,1)
 function hexToRgb(hex){var r=hex.match(/\w\w/g).map(function(c){return parseInt(c,16)/255});return PDFLib.rgb(r[0],r[1],r[2])}
 function rgbaToParts(str){var m=str.match(/[\d.]+/g);return {color:PDFLib.rgb(m[0]/255,m[1]/255,m[2]/255),opacity:m[3]!=null?parseFloat(m[3]):1}}
 
+/* ---- Unicode support for saving ----
+   pdf-lib's 14 standard fonts are WinAnsi-encoded. Any rupee sign, emoji or Indic
+   character threw "WinAnsi cannot encode", savePdf landed in its catch block and the
+   user got no file at all. When the annotations contain such characters we embed a
+   real Unicode TTF via fontkit instead. The font is ~640KB so it is fetched lazily,
+   only when it is actually needed, and cached for the rest of the session. */
+var UNI_FONT_URL="https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth%2Cwght%5D.ttf";
+var uniFontBytes=null, fontkitReady=false;
+
+function loadScriptOnce(url){
+  return new Promise(function(res,rej){
+    var s=document.createElement("script");
+    s.src=url; s.onload=res; s.onerror=function(){rej(new Error("could not load "+url))};
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureFontkit(){
+  if(fontkitReady)return;
+  /* The published fontkit UMD bundle references regeneratorRuntime without shipping
+     it, so it must be loaded first or embedFont throws. */
+  if(typeof window.regeneratorRuntime==="undefined"){
+    await loadScriptOnce("https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.js");
+  }
+  if(typeof window.fontkit==="undefined"){
+    await loadScriptOnce("https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js");
+  }
+  if(typeof window.fontkit==="undefined")throw new Error("Unicode font engine unavailable");
+  fontkitReady=true;
+}
+
+async function ensureUniFont(){
+  await ensureFontkit();
+  if(!uniFontBytes){
+    var r=await fetch(UNI_FONT_URL);
+    if(!r.ok)throw new Error("Unicode font download failed ("+r.status+")");
+    uniFontBytes=await r.arrayBuffer();
+  }
+  return uniFontBytes;
+}
+
+/* true when a string contains anything the standard WinAnsi fonts cannot encode */
+function needsUnicode(s){
+  return /[^\u0000-\u00ff]/.test(String(s==null?"":s));
+}
+
+/* Characters that have a sensible WinAnsi lookalike. Mapping these keeps the small
+   standard fonts in play for the common "smart quotes pasted from Word" case. */
+function winAnsiFold(s){
+  return String(s==null?"":s)
+    .replace(/[\u2018\u2019\u201a\u201b]/g,"'")
+    .replace(/[\u201c\u201d\u201e\u201f]/g,'"')
+    .replace(/[\u2013\u2014\u2015]/g,"-")
+    .replace(/\u2026/g,"...")
+    .replace(/\u00a0/g," ")
+    .replace(/[\u2022\u00b7]/g,"-");
+}
+
 async function savePdf(){
   if(!pdfFile)return;
   window.showProcessing&&window.showProcessing("result");
@@ -613,6 +671,33 @@ async function savePdf(){
     var fontCache={};
     async function getFont(k){if(!fontCache[k])fontCache[k]=await doc.embedFont(fontKeyMap[k]||StdFonts.Helvetica);return fontCache[k]}
 
+    /* Fold the easy lookalikes first, then see whether anything genuinely needs a
+       Unicode font. If it does, embed one once and use it for every text item so
+       the document does not mix two typefaces unpredictably. */
+    var textItems=items.filter(function(i){return i.type==="text"});
+    textItems.forEach(function(i){i._draw=winAnsiFold(i.text)});
+    var anyUnicode=textItems.some(function(i){return needsUnicode(i._draw)});
+    var uniFont=null;
+    if(anyUnicode){
+      document.getElementById("result").innerHTML=
+        "<p class='info'>\u23f3 Your text uses characters outside the basic Latin set "+
+        "(rupee sign, Hindi, emoji and so on), so a Unicode font is being embedded. "+
+        "First save downloads about 640KB.</p>";
+      try{
+        var bytes=await ensureUniFont();
+        doc.registerFontkit(window.fontkit);
+        uniFont=await doc.embedFont(bytes,{subset:true});
+      }catch(e){
+        /* Last resort: strip what cannot be drawn rather than failing the whole save. */
+        uniFont=null;
+        textItems.forEach(function(i){i._draw=i._draw.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"")});
+        document.getElementById("result").innerHTML=
+          "<p class='info' style='color:#e11d48'>\u26a0\ufe0f Could not load the Unicode font ("+
+          (e.message||"unknown")+"). Unsupported characters were removed so the rest of your "+
+          "PDF still saves.</p>";
+      }
+    }
+
     // Draw shapes/whiteout/highlight/images first, text last (so text sits on top).
     var ordered=items.slice().sort(function(a,b){var r={image:0,whiteout:1,highlight:1,rect:1,line:1,text:2};return (r[a.type]||1)-(r[b.type]||1)});
 
@@ -620,11 +705,11 @@ async function savePdf(){
       var it=ordered[i];
       var pg=pages[it.page-1];if(!pg)continue;
       if(it.type==="text"){
-        var font=await getFont(it.font);
+        var font=uniFont||await getFont(it.font);
         // it.y is the TOP of the text in PDF coords. pdf-lib draws from baseline,
         // so baseline = top - ascent. Approximate ascent as ~0.8*size.
         var baselineY=it.y-it.size*0.8;
-        pg.drawText(it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
+        pg.drawText(it._draw!=null?it._draw:it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
       }else if(it.type==="image"){
         var bytes=await (await fetch(it.dataURL)).arrayBuffer();
         var emb=it.imgType==="png"?await doc.embedPng(bytes):await doc.embedJpg(bytes);
