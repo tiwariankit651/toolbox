@@ -12,7 +12,7 @@
   <style>
   .ub-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
   .ub-tab{padding:.5rem 1rem;border-radius:10px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text2);transition:all .2s}
-  .ub-tab.active,.ub-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ub-tab.active,.ub-tab:hover{background:var(--accent-strong);color:#fff;border-color:var(--accent)}
   .ub-panel{display:none}.ub-panel.active{display:block}
   .ub-tree summary{cursor:pointer;padding:.4rem .6rem;border-radius:8px;font-weight:600;margin:.2rem 0}
   .ub-tree summary:hover{background:rgba(99,102,241,.1)}
@@ -25,7 +25,7 @@
   .ub-card{background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0}
   .ub-fc{min-height:140px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;border-radius:12px;background:var(--card);padding:1.5rem;font-size:1rem;border:2px solid transparent;transition:all .2s;user-select:none}
   .ub-fc:hover{border-color:var(--accent)}
-  .ub-badge{display:inline-block;font-size:.65rem;padding:.15rem .45rem;border-radius:4px;background:rgba(99,102,241,.15);color:var(--accent);margin:.1rem}
+  .ub-badge{display:inline-block;font-size:.75rem;padding:.15rem .45rem;border-radius:4px;background:rgba(99,102,241,.15);color:var(--accent-text);margin:.1rem}
   </style>
 </head>
 <body>
@@ -109,7 +109,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -185,7 +185,7 @@ function renderSyllabus(){
       SYLLABUS[paper][sec].forEach(function(t){paperTotal++;totalTopics++;var k=paper+'|'+sec+'|'+t;if(D.syllabus[k]){paperChecked++;checkedTopics++;}});
     });
     var pct=paperTotal?Math.round(paperChecked/paperTotal*100):0;
-    html+='<details class="ub-tree" style="margin:.5rem 0;background:var(--card);border-radius:12px;padding:.5rem"><summary style="font-size:1rem"><strong>'+escH(paper)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent)">'+pct+'% ('+paperChecked+'/'+paperTotal+')</span></summary>';
+    html+='<details class="ub-tree" style="margin:.5rem 0;background:var(--card);border-radius:12px;padding:.5rem"><summary style="font-size:1rem"><strong>'+escH(paper)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent-text)">'+pct+'% ('+paperChecked+'/'+paperTotal+')</span></summary>';
     html+='<div class="ub-pbar"><div style="width:'+pct+'%"></div></div>';
     Object.keys(SYLLABUS[paper]).forEach(function(sec){
       var secChecked=0;SYLLABUS[paper][sec].forEach(function(t){if(D.syllabus[paper+'|'+sec+'|'+t])secChecked++;});
@@ -209,14 +209,14 @@ function renderAnswer(){
   var html='<p class="info">Practice UPSC Mains answer writing with word limit awareness.</p>';
   html+='<div class="ub-card"><label><strong>Question:</strong></label><textarea id="awQuestion" rows="2" placeholder="Type or paste the question here..."></textarea>';
   html+='<div class="row" style="margin:.5rem 0"><label>Word Limit:</label><select id="awLimit"><option value="150">150 words</option><option value="250">250 words</option></select><button class="btn" onclick="startAWTimer()" style="flex:none">Start Timer</button></div>';
-  html+='<div id="awTimerDisplay" style="font-size:1.3rem;font-weight:700;color:var(--accent);margin:.3rem 0"></div>';
+  html+='<div id="awTimerDisplay" style="font-size:1.3rem;font-weight:700;color:var(--accent-text);margin:.3rem 0"></div>';
   html+='<p class="info" style="font-size:.75rem;margin:.3rem 0">💡 Structure: <strong>Introduction</strong> (define/context, 1-2 lines) → <strong>Body</strong> (points with examples) → <strong>Conclusion</strong> (way forward/summary)</p>';
   html+='<textarea id="awEditor" rows="10" placeholder="Write your answer here..." oninput="updateAWCount()"></textarea>';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin:.3rem 0"><span id="awWordCount" style="font-weight:600">0 words</span><button class="btn" onclick="saveAnswer()">Save Answer</button></div></div>';
   html+='<h3 style="margin-top:1rem">Saved Answers ('+D.answers.length+')</h3>';
   D.answers.slice().reverse().forEach(function(a,ri){
     var i=D.answers.length-1-ri;
-    html+='<div class="ub-card"><strong>Q:</strong> '+escH(a.question)+'<br><span class="info">'+a.date+' | '+a.wordCount+' words (limit: '+a.limit+')</span><details><summary style="cursor:pointer;color:var(--accent);font-size:.85rem">View Answer</summary><p style="white-space:pre-wrap;margin-top:.5rem;font-size:.9rem">'+escH(a.answer)+'</p></details><button onclick="deleteAnswer('+i+')" style="font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer;margin-top:.3rem">Delete</button></div>';
+    html+='<div class="ub-card"><strong>Q:</strong> '+escH(a.question)+'<br><span class="info">'+a.date+' | '+a.wordCount+' words (limit: '+a.limit+')</span><details><summary style="cursor:pointer;color:var(--accent-text);font-size:.85rem">View Answer</summary><p style="white-space:pre-wrap;margin-top:.5rem;font-size:.9rem">'+escH(a.answer)+'</p></details><button onclick="deleteAnswer('+i+')" style="font-size:.75rem;color:var(--danger);background:none;border:none;cursor:pointer;margin-top:.3rem">Delete</button></div>';
   });
   document.getElementById('answerContent').innerHTML=html;
 }
@@ -249,7 +249,7 @@ function renderCAList(){
   var html='<h3 style="margin:.8rem 0">Notes ('+filtered.length+')</h3>';
   filtered.forEach(function(c,i){
     var origIdx=D.current.indexOf(c);
-    html+='<div class="ub-card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap"><strong>'+escH(c.title)+'</strong><span class="ub-badge">'+escH(c.tag)+'</span></div><p class="info" style="font-size:.8rem">'+c.date+'</p><p style="font-size:.9rem;white-space:pre-wrap">'+escH(c.note)+'</p><button onclick="deleteCA('+origIdx+')" style="font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer">Delete</button></div>';
+    html+='<div class="ub-card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap"><strong>'+escH(c.title)+'</strong><span class="ub-badge">'+escH(c.tag)+'</span></div><p class="info" style="font-size:.8rem">'+c.date+'</p><p style="font-size:.9rem;white-space:pre-wrap">'+escH(c.note)+'</p><button onclick="deleteCA('+origIdx+')" style="font-size:.75rem;color:var(--danger);background:none;border:none;cursor:pointer">Delete</button></div>';
   });
   var el=document.getElementById('caList');if(el)el.innerHTML=html;
 }
@@ -276,7 +276,7 @@ function renderRevision(){
     var subChecked=0;
     REVISION_LIST[sub].forEach(function(item){totalItems++;var k=sub+'|'+item;if(D.revision[k]){subChecked++;checkedItems++;}});
     var pct=REVISION_LIST[sub].length?Math.round(subChecked/REVISION_LIST[sub].length*100):0;
-    html+='<details class="ub-tree" style="margin:.4rem 0;background:var(--card);border-radius:10px;padding:.5rem"><summary><strong>'+escH(sub)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent)">'+pct+'%</span></summary>';
+    html+='<details class="ub-tree" style="margin:.4rem 0;background:var(--card);border-radius:10px;padding:.5rem"><summary><strong>'+escH(sub)+'</strong> <span style="float:right;font-size:.8rem;color:var(--accent-text)">'+pct+'%</span></summary>';
     html+='<div class="ub-pbar"><div style="width:'+pct+'%"></div></div>';
     REVISION_LIST[sub].forEach(function(item){
       var k=sub+'|'+item;
@@ -295,16 +295,16 @@ var timerRunning=false;var timerStart=0;var timerElapsed=0;var timerInterval=nul
 function renderTimer(){
   if(!D.timerLog)D.timerLog={};
   var html='<p class="info">Log study hours by subject. See weekly progress.</p>';
-  html+='<div class="ub-card" style="text-align:center"><div id="timerDisplay" style="font-size:2.5rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">00:00:00</div>';
+  html+='<div class="ub-card" style="text-align:center"><div id="timerDisplay" style="font-size:2.5rem;font-weight:800;color:var(--accent-text);font-variant-numeric:tabular-nums">00:00:00</div>';
   html+='<select id="timerSubject" style="margin:.5rem 0;max-width:200px"><option>History</option><option>Polity</option><option>Geography</option><option>Economy</option><option>Science & Tech</option><option>Environment</option><option>Ethics</option><option>Current Affairs</option><option>CSAT</option><option>Essay</option><option>Optional</option></select>';
-  html+='<div class="row" style="justify-content:center;margin-top:.5rem"><button class="btn" id="timerBtn" onclick="toggleTimer()">▶ Start</button><button class="btn" onclick="resetTimer()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">Reset</button><button class="btn" onclick="logTime()" style="flex:none">Log Session</button></div></div>';
+  html+='<div class="row" style="justify-content:center;margin-top:.5rem"><button class="btn" id="timerBtn" onclick="toggleTimer()">▶ Start</button><button class="btn" onclick="resetTimer()" style="background:transparent;border:2px solid var(--accent);color:var(--accent-text)">Reset</button><button class="btn" onclick="logTime()" style="flex:none">Log Session</button></div></div>';
   html+='<h3 style="margin:1rem 0 .5rem">📊 This Week</h3><canvas id="timerChart" width="700" height="200" style="width:100%;max-height:200px;background:var(--card);border-radius:12px"></canvas>';
   html+='<h3 style="margin:1rem 0 .5rem">Recent Logs</h3>';
   var keys=Object.keys(D.timerLog).sort().reverse().slice(0,14);
   keys.forEach(function(day){
     var entries=D.timerLog[day];
     var totalMin=0;entries.forEach(function(e){totalMin+=e.minutes;});
-    html+='<div class="ub-card"><strong>'+day+'</strong> — <span style="color:var(--accent)">'+Math.round(totalMin)+' min</span>';
+    html+='<div class="ub-card"><strong>'+day+'</strong> — <span style="color:var(--accent-text)">'+Math.round(totalMin)+' min</span>';
     entries.forEach(function(e){html+='<br><span class="ub-badge">'+escH(e.subject)+'</span> '+e.minutes+' min';});
     html+='</div>';
   });
@@ -389,10 +389,10 @@ var fcIndex=0;var fcFlipped=false;
 function renderFlash(){
   var card=FLASHCARDS[fcIndex];
   var html='<p class="info">Polity flashcards — Articles, Schedules & Amendments. Click to flip.</p>';
-  html+='<div style="text-align:center;margin:.5rem 0"><span style="color:var(--accent);font-weight:600">'+(fcIndex+1)+' / '+FLASHCARDS.length+'</span></div>';
+  html+='<div style="text-align:center;margin:.5rem 0"><span style="color:var(--accent-text);font-weight:600">'+(fcIndex+1)+' / '+FLASHCARDS.length+'</span></div>';
   html+='<div class="ub-fc" onclick="flipFC()" id="fcCard"><div style="font-size:1.2rem;font-weight:700">'+(fcFlipped?escH(card.a):'❓ '+escH(card.q))+'</div></div>';
   html+='<div class="row" style="justify-content:center;margin-top:.8rem"><button class="btn" onclick="prevFC()">◀ Prev</button><button class="btn" onclick="flipFC()">🔄 Flip</button><button class="btn" onclick="nextFC()">Next ▶</button></div>';
-  html+='<div style="text-align:center;margin-top:.5rem"><button class="btn" onclick="shuffleFC()" style="background:transparent;border:2px solid var(--accent);color:var(--accent);font-size:.8rem">🔀 Shuffle</button></div>';
+  html+='<div style="text-align:center;margin-top:.5rem"><button class="btn" onclick="shuffleFC()" style="background:transparent;border:2px solid var(--accent);color:var(--accent-text);font-size:.8rem">🔀 Shuffle</button></div>';
   document.getElementById('flashContent').innerHTML=html;
 }
 function flipFC(){fcFlipped=!fcFlipped;renderFlash();}
@@ -403,7 +403,7 @@ function shuffleFC(){for(var i=FLASHCARDS.length-1;i>0;i--){var j=Math.floor(Mat
 /* ===== BACKUP ===== */
 function renderBackup(){
   var html='<p class="info">Export or import all your UPSC bundle data as a single JSON file.</p>';
-  html+='<div class="row"><button class="btn" onclick="exportAll()">📥 Export All Data</button><button class="btn" onclick="document.getElementById(\'importFile\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">📤 Import Data</button></div>';
+  html+='<div class="row"><button class="btn" onclick="exportAll()">📥 Export All Data</button><button class="btn" onclick="document.getElementById(\'importFile\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent-text)">📤 Import Data</button></div>';
   html+='<input type="file" id="importFile" accept=".json" style="display:none" onchange="importAll(event)">';
   html+='<p class="info" style="margin-top:1rem">Data includes: syllabus progress, saved answers, current affairs notes, revision checklist, and study timer logs.</p>';
   document.getElementById('backupContent').innerHTML=html;

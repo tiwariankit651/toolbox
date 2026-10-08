@@ -32,7 +32,7 @@
   <style>
     .lt-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
     .lt-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
-    .lt-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .lt-tab.active{background:var(--gradient-strong);color:#fff;border-color:transparent}
     .lt-panel{display:none}.lt-panel.active{display:block}
     .lt-notice{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.4);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
     .lt-info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:.9rem 1rem;font-size:.85rem;margin:.75rem 0;line-height:1.6}
@@ -208,7 +208,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -228,17 +228,17 @@ function getHistory(){try{return JSON.parse(localStorage.getItem('urlHistory')||
 function saveHistory(h){localStorage.setItem('urlHistory',JSON.stringify(h.slice(0,5)));}
 function renderHistory(){var h=getHistory();if(!h.length){document.getElementById('history').innerHTML='';return;}
 var html='<h3>📋 Recent Links</h3><div style="display:flex;flex-direction:column;gap:.4rem">';
-h.forEach(function(item){html+='<div class="lt-saved"><span style="flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(item.long)+'">'+esc(item.long)+'</span><a href="'+esc(item.short)+'" target="_blank" rel="noopener" style="font-weight:bold">'+esc(item.short)+'</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="copyText(\''+item.short+'\')">📋</button></div>';});
+h.forEach(function(item){html+='<div class="lt-saved"><span style="flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(item.long)+'">'+esc(item.long)+'</span><a href="'+esc(item.short)+'" target="_blank" rel="noopener" style="font-weight:bold">'+esc(item.short)+'</a><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="copyText(\''+item.short+'\')">📋</button></div>';});
 html+='</div>';document.getElementById('history').innerHTML=html;}
 async function shortenUrl(){var url=document.getElementById('longUrl').value.trim();
-if(!url){document.getElementById('result').innerHTML='<p style="color:#ec4899">Please enter a URL</p>';return;}
-if(!/^https?:\/\/.+/.test(url)){document.getElementById('result').innerHTML='<p style="color:#ec4899">Please enter a valid URL starting with http:// or https://</p>';return;}
+if(!url){document.getElementById('result').innerHTML='<p style="color:var(--accent3-text)">Please enter a URL</p>';return;}
+if(!/^https?:\/\/.+/.test(url)){document.getElementById('result').innerHTML='<p style="color:var(--accent3-text)">Please enter a valid URL starting with http:// or https://</p>';return;}
 document.getElementById('result').innerHTML='<p class="info">Shortening via is.gd…</p>';
 try{var res=await fetch('https://is.gd/create.php?format=json&url='+encodeURIComponent(url));var data=await res.json();
 if(data.shorturl){document.getElementById('result').innerHTML='<div class="lt-card" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap"><span style="flex:1;font-size:1.05rem;font-weight:bold"><a href="'+esc(data.shorturl)+'" target="_blank" rel="noopener">'+esc(data.shorturl)+'</a></span><button class="btn" onclick="copyText(\''+data.shorturl+'\')">📋 Copy</button></div>';
 var h=getHistory();h.unshift({long:url,short:data.shorturl});saveHistory(h);renderHistory();}
-else{document.getElementById('result').innerHTML='<p style="color:#ec4899">Error: '+esc(data.errormessage||'Could not shorten URL')+'</p>';}}
-catch(e){document.getElementById('result').innerHTML='<p style="color:#ec4899">Network error. Please try again.</p>';}}
+else{document.getElementById('result').innerHTML='<p style="color:var(--accent3-text)">Error: '+esc(data.errormessage||'Could not shorten URL')+'</p>';}}
+catch(e){document.getElementById('result').innerHTML='<p style="color:var(--accent3-text)">Network error. Please try again.</p>';}}
 
 // ---------- UTM BUILDER ----------
 var UTM_PRESETS={
@@ -270,14 +270,14 @@ function getCampaigns(){try{return JSON.parse(localStorage.getItem('utmCampaigns
 function saveCampaign(){var url=document.getElementById('utmOut').textContent;if(!url||url==='—')return;var c=getCampaigns();c.unshift({url:url,name:document.getElementById('utmCampaign').value.trim()||'campaign',ts:Date.now()});c=c.slice(0,20);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
 function delCampaign(i){var c=getCampaigns();c.splice(i,1);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
 function renderCampaigns(){var c=getCampaigns();var el=document.getElementById('utmSaved');if(!c.length){el.innerHTML='';return;}
-el.innerHTML='<h3>💾 Saved Campaigns</h3>'+c.map(function(x,i){return '<div class="lt-saved"><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+' — '+esc(x.url)+'</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="copyText(\''+x.url.replace(/'/g,"\\'")+'\')">📋</button><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="delCampaign('+i+')">✕</button></div>';}).join('');}
+el.innerHTML='<h3>💾 Saved Campaigns</h3>'+c.map(function(x,i){return '<div class="lt-saved"><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+' — '+esc(x.url)+'</a><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="copyText(\''+x.url.replace(/'/g,"\\'")+'\')">📋</button><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="delCampaign('+i+')">✕</button></div>';}).join('');}
 
 // ---------- URL PARSER ----------
 var parsedParams=[];var parsedBase='';var parsedHash='';
 function parseUrl(){
   var raw=document.getElementById('parseInput').value.trim();var out=document.getElementById('parseOut');
   if(!raw){out.innerHTML='';return;}
-  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL. Include the protocol (https://).</p>';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:var(--accent3-text)">Invalid URL. Include the protocol (https://).</p>';return;}
   var host=u.hostname;var hp=host.split('.');
   var tld=hp.length>1?hp[hp.length-1]:'';
   var domain=hp.length>1?hp.slice(-2).join('.'):host;
@@ -309,7 +309,7 @@ function renderParamTable(){
   var html='';
   if(parsedParams.length){
     html+='<table class="lt-tbl"><tr><th>Key</th><th>Value</th><th></th></tr>';
-    parsedParams.forEach(function(p,i){html+='<tr><td><input value="'+esc(p[0])+'" oninput="updParam('+i+',0,this.value)"></td><td><input value="'+esc(p[1])+'" oninput="updParam('+i+',1,this.value)"></td><td><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .45rem" onclick="delParam('+i+')">✕</button></td></tr>';});
+    parsedParams.forEach(function(p,i){html+='<tr><td><input value="'+esc(p[0])+'" oninput="updParam('+i+',0,this.value)"></td><td><input value="'+esc(p[1])+'" oninput="updParam('+i+',1,this.value)"></td><td><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .45rem" onclick="delParam('+i+')">✕</button></td></tr>';});
     html+='</table>';
   }else{html+='<p class="info">No query parameters.</p>';}
   area.innerHTML=html;
@@ -329,7 +329,7 @@ var TRACKERS=['utm_source','utm_medium','utm_campaign','utm_term','utm_content',
 function cleanUrl(){
   var raw=document.getElementById('cleanInput').value.trim();var out=document.getElementById('cleanOut');
   if(!raw){out.innerHTML='';return;}
-  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL.</p>';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:var(--accent3-text)">Invalid URL.</p>';return;}
   var removed=[];
   TRACKERS.forEach(function(t){if(u.searchParams.has(t)){removed.push(t+'='+u.searchParams.get(t));u.searchParams.delete(t);}});
   // also remove any param starting with utm_
@@ -361,7 +361,7 @@ var SUSPICIOUS_TLD=['zip','mov','xyz','top','tk','ml','ga','cf','gq','work','cli
 function checkSafety(){
   var raw=document.getElementById('safetyInput').value.trim();var out=document.getElementById('safetyOut');
   if(!raw){out.innerHTML='';return;}
-  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:#ec4899">Invalid URL.</p>';return;}
+  var u;try{u=new URL(raw);}catch(e){out.innerHTML='<p style="color:var(--accent3-text)">Invalid URL.</p>';return;}
   var flags=[];
   if(u.protocol==='http:')flags.push(['warn','Uses insecure http:// instead of https://']);
   if(/^\d{1,3}(\.\d{1,3}){3}$/.test(u.hostname))flags.push(['warn','Host is a raw IP address, not a domain name']);

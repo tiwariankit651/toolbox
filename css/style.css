@@ -1,6 +1,12 @@
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a12;--bg2:#111122;--surface:#15152a;--card:#1e1e3a;--accent:#6366f1;--accent2:#8b5cf6;--accent3:#ec4899;--accent-glow:rgba(99,102,241,.35);--gradient:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);--gradient2:linear-gradient(135deg,#06b6d4,#6366f1);--text:#f8f8ff;--text2:#9494b8;--radius:18px;--shadow:0 10px 40px rgba(0,0,0,.4);--border:rgba(148,148,184,.22);--muted:#9494b8}
-.light{--bg:#f0f2f8;--bg2:#e8ebf3;--surface:#ffffff;--card:#f4f6fb;--accent:#6366f1;--accent2:#8b5cf6;--accent3:#ec4899;--accent-glow:rgba(99,102,241,.15);--text:#141428;--text2:#5a5a7a;--shadow:0 6px 24px rgba(0,0,0,.08);--border:rgba(20,20,40,.14);--muted:#5a5a7a}
+/* --accent / --accent2 / --accent3 are brand FILL colours: good for buttons,
+   gradients, borders and glows. On the dark surfaces they only reach ~3.6:1 as
+   text, below the 4.5:1 floor, so small labels rendered in them were hard to read.
+   --accent-text / --accent2-text / --accent3-text are the lightened variants to use
+   whenever the accent is the text colour. In light mode they fall back to the
+   original hues, which are already dark enough against white. */
+:root{--bg:#0a0a12;--bg2:#111122;--surface:#15152a;--card:#1e1e3a;--accent:#6366f1;--accent2:#8b5cf6;--accent3:#ec4899;--accent-strong:#4f46e5;--accent-text:#9aa6ff;--accent2-text:#b79dff;--accent3-text:#f78fc2;--accent-glow:rgba(99,102,241,.35);--gradient:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);--gradient2:linear-gradient(135deg,#06b6d4,#6366f1);--text:#f8f8ff;--text2:#a8a8c8;--radius:18px;--shadow:0 10px 40px rgba(0,0,0,.4);--border:rgba(148,148,184,.22);--muted:#a8a8c8}
+.light{--bg:#f0f2f8;--bg2:#e8ebf3;--surface:#ffffff;--card:#f4f6fb;--accent:#6366f1;--accent2:#8b5cf6;--accent3:#ec4899;--accent-strong:#4338ca;--accent-text:#4338ca;--accent2-text:#6d28d9;--accent3-text:#be185d;--accent-glow:rgba(99,102,241,.15);--text:#141428;--text2:#4a4a68;--shadow:0 6px 24px rgba(0,0,0,.08);--border:rgba(20,20,40,.14);--muted:#4a4a68}
 body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background-color .4s ease,color .3s ease;background-image:radial-gradient(circle at 15% 15%,rgba(99,102,241,.08),transparent 40%),radial-gradient(circle at 85% 20%,rgba(236,72,153,.06),transparent 40%),radial-gradient(circle at 50% 90%,rgba(139,92,246,.06),transparent 45%)}
 a{color:var(--accent);text-decoration:none}
 nav{display:flex;align-items:center;padding:1rem 2rem;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.06);gap:1rem;flex-wrap:nowrap;backdrop-filter:blur(10px)}
@@ -17,7 +23,7 @@ h2{margin-bottom:.8rem;font-weight:700;font-size:1.25rem;color:var(--text)}
 .tool-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient);opacity:0;transition:opacity .3s}
 .tool-card:hover{border-color:transparent;transform:translateY(-6px) scale(1.02);box-shadow:0 16px 45px var(--accent-glow)}
 .tool-card:hover::after{opacity:1}
-.tool-card small{color:var(--text2);font-size:.72rem;font-weight:400}
+.tool-card small{color:var(--text2);font-size:.75rem;font-weight:400}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin:2rem 0 .8rem}
 .section-header h2{margin:0;position:relative;padding-left:.9rem}
 .section-header h2::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:22px;background:var(--gradient);border-radius:3px}
@@ -31,7 +37,7 @@ h2{margin-bottom:.8rem;font-weight:700;font-size:1.25rem;color:var(--text)}
 .btn{background:var(--gradient);color:#fff;border:none;padding:.8rem 1.7rem;border-radius:14px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .25s;margin:.3rem;letter-spacing:.2px}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--accent-glow)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-outline{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+.btn-outline{background:transparent;border:2px solid var(--accent);color:var(--accent-text)}
 .btn-outline:hover{background:var(--accent);color:#fff}
 input[type=text],input[type=number],input[type=url],input[type=email],select,textarea{width:100%;background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.75rem 1rem;font-size:.95rem;margin:.4rem 0;font-family:inherit;transition:border-color .2s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
@@ -142,10 +148,10 @@ footer{background:linear-gradient(180deg,var(--surface),var(--bg))}
 .drop-zone::before{content:'📁';font-size:2rem;display:block;margin-bottom:.5rem;opacity:.5}
 
 /* Badge/tag styles */
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;padding:.25rem .6rem;border-radius:6px;font-weight:600;letter-spacing:.3px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;padding:.28rem .65rem;border-radius:6px;font-weight:600;letter-spacing:.3px}  /* .7rem rendered at 11px, under the 12px readability floor */
 .badge-green{background:rgba(76,175,80,.15);color:#4caf50}
-.badge-blue{background:rgba(99,102,241,.15);color:var(--accent)}
-.badge-purple{background:rgba(168,85,247,.15);color:#a855f7}
+.badge-blue{background:rgba(99,102,241,.15);color:var(--accent-text)}
+.badge-purple{background:rgba(168,85,247,.15);color:#c084fc}  /* #a855f7 was 3.83:1 on the tinted dark surface */
 
 /* Result/output box glow */
 .result-box,.preview-area>div{border:1px solid rgba(99,102,241,.1);transition:border-color .3s}
@@ -185,3 +191,177 @@ footer{background:linear-gradient(180deg,var(--surface),var(--bg))}
 .light .cat-tab{background:rgba(99,102,241,.1);color:#333}
 .light .cat-tab:hover{background:rgba(99,102,241,.2);color:var(--accent)}
 .light .cat-tab.active{background:var(--gradient);color:#fff}
+
+/* ===========================================================================
+   Modern polish layer
+   Site-wide fixes applied here rather than in 115 individual tool files.
+   =========================================================================== */
+
+/* --- Custom checkboxes and radios ---------------------------------------
+   Native controls rendered at 13x13px: far below the 44px touch guidance and
+   visually out of place next to the rest of the UI. */
+input[type=checkbox],input[type=radio]{
+  appearance:none;-webkit-appearance:none;
+  width:20px;height:20px;
+  min-width:20px;min-height:20px;   /* a flex parent was squashing these to 20x16 */
+  flex:0 0 auto;
+  margin:0;position:relative;cursor:pointer;vertical-align:middle;
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:6px;
+  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+input[type=radio]{border-radius:50%}
+input[type=checkbox]:hover,input[type=radio]:hover{border-color:var(--accent)}
+input[type=checkbox]:checked,input[type=radio]:checked{
+  background:var(--gradient);border-color:transparent;
+}
+input[type=checkbox]:checked::after{
+  content:"";position:absolute;left:5px;top:1px;
+  width:6px;height:11px;
+  border:solid #fff;border-width:0 2.5px 2.5px 0;
+  transform:rotate(45deg);
+}
+input[type=radio]:checked::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:8px;height:8px;margin:-4px 0 0 -4px;
+  background:#fff;border-radius:50%;
+}
+input[type=checkbox]:disabled,input[type=radio]:disabled{opacity:.45;cursor:not-allowed}
+/* keep the label and its control on one line, comfortably spaced */
+label:has(> input[type=checkbox]),label:has(> input[type=radio]){
+  display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;
+  min-height:32px;line-height:1.3;
+}
+
+/* --- Visible keyboard focus everywhere ---------------------------------- */
+:focus-visible{
+  outline:3px solid var(--accent-text);
+  outline-offset:2px;
+  border-radius:6px;
+}
+button:focus-visible,a:focus-visible,select:focus-visible,
+input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--accent-text);
+  outline-offset:2px;
+}
+/* mouse users keep the quieter glow */
+input:focus:not(:focus-visible),select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible){outline:none}
+
+/* --- Comfortable minimum sizes ------------------------------------------ */
+.btn,button.btn{min-height:40px}
+.btn-outline{min-height:40px}
+select,input[type=text],input[type=number],input[type=email],input[type=url],
+input[type=date],input[type=time],input[type=password],input[type=search]{min-height:40px}
+/* small inline buttons stay compact but remain tappable */
+button:not(.btn):not(#themeToggle):not([class*=swatch]):not([class*=cat-tab]){
+  min-height:32px;
+}
+
+/* --- Readability ------------------------------------------------------- */
+/* Anything below 12px is hard to read on a phone. */
+.info{font-size:.875rem;line-height:1.55}
+small,.small{font-size:.8125rem}
+
+/* A tinted callout raises the background luminance, so the muted --text2 used by
+   .info drops near 1:1 against it. Any .info carrying its own background gets the
+   full-strength text colour instead. */
+.info[style*="background"]{color:var(--text)}
+.info[style*="background"] strong{color:var(--text)}
+
+/* Use the lightened accent whenever the brand colour carries text, so these
+   labels clear 4.5:1 instead of sitting at ~3.6:1. */
+a{color:var(--accent-text)}
+a:hover{color:var(--accent2-text)}
+.accent-text,.chip,.badge,.tag,.pill{color:var(--accent-text)}
+code,kbd{color:var(--accent-text)}
+
+/* --- Motion preference -------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
+
+/* --- Overflow guards ---------------------------------------------------- */
+/* Long unbroken strings (URLs, base64, hashes) must not widen the page. */
+body{overflow-x:hidden}
+pre,code{overflow-x:auto;max-width:100%}
+.tool-section{overflow-wrap:break-word}
+table{max-width:100%}
+img,canvas,video,svg{max-width:100%}
+
+
+/* --- Status colours ------------------------------------------------------
+   A single warning/danger/success hue cannot clear 4.5:1 on both a near-black
+   and a near-white surface, so each theme gets its own value. */
+:root{--warn:#fbbf24;--danger:#f87171;--ok:#4ade80;--urgent:#fb923c}
+.light{--warn:#92400e;--danger:#b91c1c;--ok:#15803d;--urgent:#9a3412}  /* #c2410c was 4.14:1 on the lighter cards */
+
+/* --- Selection ---------------------------------------------------------- */
+::selection{background:var(--accent);color:#fff}
+
+/* --- White text on brand fills -----------------------------------------
+   The brand gradient stops sit at 4.47:1 (#6366f1), 4.23:1 (#8b5cf6) and
+   3.53:1 (#ec4899) against white, all under the 4.5:1 floor. --gradient-solid is
+   a slightly deeper version used wherever white label text sits on the fill,
+   such as active tabs and filled badges. Decorative gradients are unchanged. */
+:root{--gradient-strong:linear-gradient(135deg,#4f46e5 0%,#6d28d9 50%,#be185d 100%)}
+.light{--gradient-strong:linear-gradient(135deg,#4f46e5 0%,#6d28d9 50%,#be185d 100%)}
+
+/* Scoped to tab BUTTONS only. An earlier [class*="tab"].active also matched
+   content panels such as .tab-pane.active, painting a whole form's labels white
+   and making them invisible in light mode. */
+.cat-tab.active,.tab.active,.ec-tab.active,.ub-tab.active,
+.mt-tab.active,.tp-tab.active,.tab-btn.active,.tabBtn.active,
+button.tab.active,button[class*="tab"].active,
+a[class*="tab"].active,li[class*="tab"].active{
+  background:var(--gradient-strong);
+  color:#fff;
+}
+.note-item.active,.note-item[aria-selected="true"]{
+  background:var(--gradient-strong);
+  color:#fff;
+}
+.note-item.active .note-meta,.note-item[aria-selected="true"] .note-meta{
+  color:rgba(255,255,255,.88);
+}
+
+/* Small inline icon buttons still need to be reachable on a phone. */
+.chip,.pill,.tag{min-height:32px;display:inline-flex;align-items:center}
+
+/* --- Fallback styling for bare icon buttons ----------------------------
+   A few tools emit small <button> elements from JS without a class. They were
+   picking up browser-default chrome, which looks out of place and is hard to hit.
+   Scoped to buttons with no class so anything deliberately styled is untouched. */
+button:not([class]):not([style]):not(#themeToggle){
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.35rem .6rem;
+  font-size:.9rem;
+  font-family:inherit;
+  cursor:pointer;
+  min-height:32px;
+  min-width:32px;
+  transition:background .18s ease,border-color .18s ease,transform .12s ease;
+}
+button:not([class]):not([style]):not(#themeToggle):hover{
+  background:var(--surface);
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+button:not([class]):not([style]):not(#themeToggle):active{transform:translateY(0)}
+
+/* A file input inside a drop zone is often visually hidden, so focus has to be
+   shown on the zone itself for keyboard users. */
+.drop-zone:focus-within{
+  outline:3px solid var(--accent-text);
+  outline-offset:2px;
+  border-color:var(--accent);
+}
+
+

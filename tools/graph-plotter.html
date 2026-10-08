@@ -41,7 +41,7 @@
         <div class="row"><label style="flex:0;min-width:50px">y(t) =</label><input type="text" id="paramY" value="sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" value="#8b5cf6" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
         <div class="row"><label style="flex:0;min-width:50px">t range:</label><input type="number" id="tmin" value="0" style="width:70px;flex:0" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:70px;flex:0" oninput="plot()"></div>
       </div>
-      <div id="parseError" class="info" style="color:#ec4899;min-height:1.1em"></div>
+      <div id="parseError" class="info" style="color:var(--accent3-text);min-height:1.1em"></div>
       <!-- Range and view controls -->
       <div class="row"><label style="flex:0;min-width:70px">X range:</label><input type="number" id="xmin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="xmax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
       <div class="row"><label style="flex:0;min-width:70px">Y range:</label><input type="number" id="ymin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="ymax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
@@ -140,7 +140,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -546,7 +546,7 @@ function buildTable(){
   var host=document.getElementById('valueTable');
   if(!f){host.innerHTML='<p class="info">No visible Cartesian function to tabulate.</p>';return;}
   var comp=compileExpr(f.expr,'x');
-  if(comp.error){host.innerHTML='<p class="info" style="color:#ec4899">Error: '+comp.error+'</p>';return;}
+  if(comp.error){host.innerHTML='<p class="info" style="color:var(--accent3-text)">Error: '+comp.error+'</p>';return;}
   var lo=+document.getElementById('tblMin').value,hi=+document.getElementById('tblMax').value,st=+document.getElementById('tblStep').value;
   if(!(st>0)||!(hi>lo)){host.innerHTML='<p class="info">Enter a valid range and positive step.</p>';return;}
   var rows='<table style="width:100%;border-collapse:collapse;font-size:.85rem"><tr><th style="text-align:left;padding:.3rem">x</th><th style="text-align:left;padding:.3rem">f(x)</th></tr>';

@@ -13,7 +13,7 @@
   <style>
     .wa-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
     .wa-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
-    .wa-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .wa-tab.active{background:var(--gradient-strong);color:#fff;border-color:transparent}
     .wa-panel{display:none}.wa-panel.active{display:block}
     .wa-in,.wa-sel,.wa-ta{width:100%;padding:.65rem;border-radius:10px;border:1px solid rgba(99,102,241,.35);background:var(--card);color:var(--text);box-sizing:border-box;font-family:inherit}
     .wa-lbl{display:block;font-weight:600;font-size:.8rem;margin:.6rem 0 .25rem;color:var(--text2)}
@@ -24,7 +24,7 @@
     .wa-tbl{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem}
     .wa-tbl th,.wa-tbl td{padding:.4rem .55rem;border:1px solid rgba(255,255,255,.1);text-align:left;vertical-align:top}
     .wa-tbl th{background:rgba(99,102,241,.1)}
-    .wa-ok{color:#8b5cf6;font-weight:700}.wa-bad{color:#ec4899;font-weight:700}
+    .wa-ok{color:var(--accent2-text);font-weight:700}.wa-bad{color:var(--accent3-text);font-weight:700}
     .wa-built{word-break:break-all;font-family:monospace;font-size:.82rem;background:rgba(99,102,241,.06);padding:.6rem;border-radius:8px;margin-top:.4rem}
     #waQr canvas,#waQr img{background:#fff;padding:8px;border-radius:8px}
     .wa-prev{background:rgba(99,102,241,.05);border-radius:10px;padding:.75rem;white-space:pre-wrap;word-break:break-word;font-size:.95rem;margin-top:.4rem}
@@ -171,7 +171,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -266,7 +266,7 @@ function delContact(entry){var h=getContacts().filter(function(x){return x!==ent
 function renderHistory(){
   var h=getContacts();var el=document.getElementById('history');
   if(!h.length){el.innerHTML='<p class="info">No saved contacts yet.</p>';return;}
-  el.innerHTML=h.map(function(n){var digits=n.replace(/[^\d]/g,'');return '<div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0" class="wa-card"><span style="flex:1">'+esc(n)+'</span><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener" style="font-size:.8rem">Open</a><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="delContact(\''+esc(n)+'\')">✕</button></div>';}).join('');
+  el.innerHTML=h.map(function(n){var digits=n.replace(/[^\d]/g,'');return '<div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0" class="wa-card"><span style="flex:1">'+esc(n)+'</span><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener" style="font-size:.8rem">Open</a><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="delContact(\''+esc(n)+'\')">✕</button></div>';}).join('');
 }
 
 // ---------- templates ----------
@@ -310,7 +310,7 @@ function bulkGen(){
   var out=document.getElementById('bulkResult');
   if(!bulkRows.length){out.innerHTML='<p class="wa-bad">Enter at least one valid number.</p>';return;}
   var html='<table class="wa-tbl"><tr><th>Name</th><th>Number</th><th>Link</th><th></th></tr>';
-  bulkRows.forEach(function(r,i){html+='<tr><td>'+esc(r.name||'—')+'</td><td>+'+esc(r.code+r.num)+'</td><td><a href="'+esc(r.url)+'" target="_blank" rel="noopener">Open</a></td><td><button class="btn btn-outline" style="font-size:.7rem;padding:.2rem .5rem" onclick="copyText(bulkRows['+i+'].url)">📋</button></td></tr>';});
+  bulkRows.forEach(function(r,i){html+='<tr><td>'+esc(r.name||'—')+'</td><td>+'+esc(r.code+r.num)+'</td><td><a href="'+esc(r.url)+'" target="_blank" rel="noopener">Open</a></td><td><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="copyText(bulkRows['+i+'].url)">📋</button></td></tr>';});
   html+='</table>';
   out.innerHTML=html;
 }

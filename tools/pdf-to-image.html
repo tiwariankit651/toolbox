@@ -155,7 +155,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -243,7 +243,7 @@ setupDrop('drop','inp',async function(fl){
     $g('selRow').style.display='flex';
     refreshGrid(); onFmtChange();
   }catch(e){
-    $g('fileInfo').innerHTML="<p class='info' style='color:#ec4899'>Could not read this PDF ("+(e.message||'error')+"). It may be encrypted.</p>";
+    $g('fileInfo').innerHTML="<p class='info' style='color:var(--accent3-text)'>Could not read this PDF ("+(e.message||'error')+"). It may be encrypted.</p>";
   }
 });
 
@@ -265,7 +265,7 @@ async function buildGrid(){
     await page.render({canvasContext:cv.getContext('2d'),viewport:tv}).promise;
     frag+="<div id='pg"+pno+"' onclick='togglePage("+pno+")' style='cursor:pointer;border-radius:6px;overflow:hidden;text-align:center;background:var(--card);padding:.2rem'>"+
       "<img src='"+cv.toDataURL()+"' style='max-width:100%;display:block;margin:0 auto'>"+
-      "<span class='info' style='font-size:.7rem'>"+pno+"</span></div>";
+      "<span class='info' style='font-size:.75rem'>"+pno+"</span></div>";
     if(i%5===4)await new Promise(function(r){setTimeout(r,0)});
   }
   g.innerHTML=frag;
@@ -350,7 +350,7 @@ async function convertPDF(){
       await new Promise(function(r){setTimeout(r,0)});
     }
   }catch(e){
-    res.innerHTML="<p class='info' style='color:#ec4899'>Error: "+(e.message||'unknown')+"</p>";
+    res.innerHTML="<p class='info' style='color:var(--accent3-text)'>Error: "+(e.message||'unknown')+"</p>";
     $g('progressWrap').style.display='none'; $g('goBtn').disabled=false; $g('stitchBtn').disabled=false;
     return;
   }
@@ -366,7 +366,7 @@ async function convertPDF(){
     window['_p2i'+i]=o.blob;
     html+="<div style='background:var(--card);padding:.5rem;border-radius:8px;text-align:center'>"+
       "<img src='"+o.url+"' style='max-width:100%;border-radius:4px'>"+
-      "<div class='info' style='font-size:.72rem;margin:.3rem 0'>p"+o.page+" &middot; "+o.w+"x"+o.h+"<br>"+sz(o.blob.size)+"</div>"+
+      "<div class='info' style='font-size:.75rem;margin:.3rem 0'>p"+o.page+" &middot; "+o.w+"x"+o.h+"<br>"+sz(o.blob.size)+"</div>"+
       "<button class='btn' style='padding:.4rem .7rem;font-size:.78rem;margin:0' onclick=\"download(window._p2i"+i+",'"+o.name+"')\">Save</button></div>";
   });
   html+="</div>";
@@ -408,7 +408,7 @@ async function stitchLong(){
       "<button class='btn' onclick=\"download(window._p2iLong,'"+p2iFile.name.replace(/\.pdf$/i,'')+"-long.png')\">Download long image</button>"+
       "<p class='info' style='font-size:.78rem;margin-top:.4rem'>Handy for sharing a whole document on WhatsApp as a single image.</p></div>";
   }catch(e){
-    res.innerHTML="<p class='info' style='color:#ec4899'>Error: "+(e.message||'unknown')+"</p>";
+    res.innerHTML="<p class='info' style='color:var(--accent3-text)'>Error: "+(e.message||'unknown')+"</p>";
   }
   $g('progressWrap').style.display='none';
   $g('stitchBtn').disabled=false; $g('goBtn').disabled=false;

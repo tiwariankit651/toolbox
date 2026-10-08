@@ -35,7 +35,7 @@
     .compare-slider .cs-overlay img{display:block;max-height:300px;width:auto;height:100%}
     .compare-slider .cs-handle{position:absolute;top:0;width:3px;height:100%;background:var(--accent);cursor:ew-resize}
     .compare-slider .cs-handle::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-    .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.7rem;background:rgba(0,0,0,.6);color:#fff}
+    .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff}
     .compare-slider .cs-label-left{left:8px}
     .compare-slider .cs-label-right{right:8px}
   </style>
@@ -137,7 +137,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -269,7 +269,7 @@ for(var i=0;i<files.length;i++){
   var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
   if(i===0){firstOrigUrl=origUrl;firstCompUrl=compUrl;}
   var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"\u2705":"\u26a0\ufe0f Could not reach target"):"";
-  html+="<div style='background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap'><div style='display:flex;gap:.3rem;align-items:center'><img src='"+origUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c' title='Original'><span style='font-size:.7rem'>\u2192</span><img src='"+compUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60' title='Compressed'></div><div style='flex:1;min-width:150px'><strong>"+file.name+"</strong><br><span class='info'>"+formatSize(file.size)+" \u2192 "+formatSize(blob.size)+" ("+saved+"% smaller) "+w+"x"+h+"px</span>"+(sizeOk?"<br><span style='font-size:.8rem'>"+sizeOk+"</span>":"")+"</div><button class='btn' onclick=\"download(window._cb"+i+",'"+outName+"')\">\ud83d\udcbe</button></div>";
+  html+="<div style='background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap'><div style='display:flex;gap:.3rem;align-items:center'><img src='"+origUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c' title='Original'><span style='font-size:.75rem'>\u2192</span><img src='"+compUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60' title='Compressed'></div><div style='flex:1;min-width:150px'><strong>"+file.name+"</strong><br><span class='info'>"+formatSize(file.size)+" \u2192 "+formatSize(blob.size)+" ("+saved+"% smaller) "+w+"x"+h+"px</span>"+(sizeOk?"<br><span style='font-size:.8rem'>"+sizeOk+"</span>":"")+"</div><button class='btn' onclick=\"download(window._cb"+i+",'"+outName+"')\">\ud83d\udcbe</button></div>";
 }
 var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
 html="<div style='background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center'><strong>Total: "+formatSize(totalOrig)+" \u2192 "+formatSize(totalComp)+" ("+totalSaved+"% saved)</strong>"+(compressedBlobs.length>1?"<br><button class='btn' style='margin-top:.5rem' onclick='downloadZip()'>\ud83d\udce6 Download All as ZIP</button>":"")+"</div>"+html;

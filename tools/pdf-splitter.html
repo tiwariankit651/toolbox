@@ -128,7 +128,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -163,7 +163,7 @@ setupDrop("drop", "inp", async function(f) {
     modeChanged();
     await renderThumbnails(data);
   } catch (err) {
-    document.getElementById('fileInfo').innerHTML = '<p style="color:#f44336">❌ Failed to load PDF: ' + err.message + '</p>';
+    document.getElementById('fileInfo').innerHTML = '<p style="color:var(--danger)">❌ Failed to load PDF: ' + err.message + '</p>';
   }
 });
 
@@ -200,11 +200,11 @@ function renderGrid() {
     var opacity = st.deleted ? '0.3' : '1';
     html += '<div class="thumb-card" data-page="' + i + '" style="position:relative;background:var(--card);border-radius:10px;padding:.4rem;text-align:center;border:' + border + ';opacity:' + opacity + ';cursor:pointer;transition:all .2s">';
     html += '<img src="' + (thumbnails[i] || '') + '" style="width:100%;border-radius:6px;transform:rotate(' + st.rotation + 'deg)" alt="Page ' + (i + 1) + '">';
-    if (sel) html += '<div style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:.7rem">✓</div>';
+    if (sel) html += '<div style="position:absolute;top:4px;right:4px;background:var(--accent-strong);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:.75rem">✓</div>';
     html += '<div style="font-size:.75rem;margin-top:.3rem;color:var(--text2)">Page ' + (i + 1) + '</div>';
     html += '<div style="display:flex;justify-content:center;gap:3px;margin-top:.2rem">';
-    html += '<button onclick="event.stopPropagation();rotatePage(' + i + ')" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:4px;font-size:.65rem;cursor:pointer;padding:1px 4px" title="Rotate 90°">↻</button>';
-    html += '<button onclick="event.stopPropagation();deletePage(' + i + ')" style="background:none;border:1px solid #f44336;color:#f44336;border-radius:4px;font-size:.65rem;cursor:pointer;padding:1px 4px" title="' + (st.deleted ? 'Restore' : 'Delete') + '">' + (st.deleted ? '↩' : '✕') + '</button>';
+    html += '<button onclick="event.stopPropagation();rotatePage(' + i + ')" style="background:none;border:1px solid var(--accent);color:var(--accent-text);border-radius:4px;font-size:.75rem;cursor:pointer;padding:1px 4px" title="Rotate 90°">↻</button>';
+    html += '<button onclick="event.stopPropagation();deletePage(' + i + ')" style="background:none;border:1px solid #f44336;color:var(--danger);border-radius:4px;font-size:.75rem;cursor:pointer;padding:1px 4px" title="' + (st.deleted ? 'Restore' : 'Delete') + '">' + (st.deleted ? '↩' : '✕') + '</button>';
     html += '</div>';
     html += '</div>';
   }
@@ -312,14 +312,14 @@ async function doSplit() {
       for (var i = 0; i < pageStates.length; i++) {
         if (pageStates[i].selected && !pageStates[i].deleted) indices.push(i);
       }
-      if (indices.length === 0) { resultEl.innerHTML = '<p style="color:#f44336">No pages selected!</p>'; return; }
+      if (indices.length === 0) { resultEl.innerHTML = '<p style="color:var(--danger)">No pages selected!</p>'; return; }
       var bytes = await buildPdf(srcData, indices);
       outputs.push({ name: 'extracted.pdf', data: bytes });
     } else if (mode === 'range') {
       var rangeStr = document.getElementById('rangeInput').value.trim();
-      if (!rangeStr) { resultEl.innerHTML = '<p style="color:#f44336">Enter a page range!</p>'; return; }
+      if (!rangeStr) { resultEl.innerHTML = '<p style="color:var(--danger)">Enter a page range!</p>'; return; }
       var indices2 = parseRange(rangeStr, totalPages).filter(function(idx) { return !pageStates[idx].deleted; });
-      if (indices2.length === 0) { resultEl.innerHTML = '<p style="color:#f44336">No valid pages in range!</p>'; return; }
+      if (indices2.length === 0) { resultEl.innerHTML = '<p style="color:var(--danger)">No valid pages in range!</p>'; return; }
       var bytes2 = await buildPdf(srcData, indices2);
       outputs.push({ name: 'split_range.pdf', data: bytes2 });
     } else if (mode === 'every') {
@@ -348,7 +348,7 @@ async function doSplit() {
     }
 
     if (outputs.length === 0) {
-      resultEl.innerHTML = '<p style="color:#f44336">No output generated!</p>';
+      resultEl.innerHTML = '<p style="color:var(--danger)">No output generated!</p>';
     } else if (outputs.length === 1) {
       var blob = new Blob([outputs[0].data], { type: 'application/pdf' });
       download(blob, outputs[0].name);
@@ -365,7 +365,7 @@ async function doSplit() {
       resultEl.innerHTML = '<p class="info" style="color:#4caf50">✅ Downloaded ZIP with ' + outputs.length + ' PDFs · ' + formatSize(zipBlob.size) + '</p>';
     }
   } catch (err) {
-    resultEl.innerHTML = '<p style="color:#f44336">❌ Error: ' + err.message + '</p>';
+    resultEl.innerHTML = '<p style="color:var(--danger)">❌ Error: ' + err.message + '</p>';
   }
 }
 </script>

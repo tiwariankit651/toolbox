@@ -136,7 +136,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -167,14 +167,14 @@ document.getElementById("jsonFile").addEventListener("change",function(){var f=t
 // Type helpers
 function typeOf(v){if(v===null)return "null";if(Array.isArray(v))return "array";return typeof v}
 function typeColor(t){return {string:"#4caf50",number:O,boolean:Pu,"null":"#9494b8",object:Bl,array:Bl}[t]||"var(--text2)"}
-function badge(t,extra){return "<span style='background:rgba(99,102,241,.15);color:"+typeColor(t)+";font-size:.65rem;padding:.05rem .4rem;border-radius:4px;margin-left:.3rem'>"+t+(extra!==undefined?" "+extra:"")+"</span>"}
+function badge(t,extra){return "<span style='background:rgba(99,102,241,.15);color:"+typeColor(t)+";font-size:.75rem;padding:.05rem .4rem;border-radius:4px;margin-left:.3rem'>"+t+(extra!==undefined?" "+extra:"")+"</span>"}
 
 // Collapsible tree
 var treeSeq=0;
 function treeView(){var r=parseJSON(document.getElementById("j").value);document.getElementById("treeContainer").style.display="block";if(!r.ok){document.getElementById("treeContainer").innerHTML="<span style='color:"+R+"'>"+errMsg(r)+"</span>";return}treeSeq=0;document.getElementById("treeContainer").innerHTML=buildTree(r.value,"$","root");buildStats(r.value);applySearch()}
-function buildTree(obj,path,label){var t=typeOf(obj);if(t!=="object"&&t!=="array"){return "<div class='tnode' data-text='"+esc((label+" "+JSON.stringify(obj)).toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--text2)'>"+esc(label)+":</span> <span style='color:"+typeColor(t)+"'>"+esc(JSON.stringify(obj))+"</span>"+badge(t)+" <span style='color:var(--text2);font-size:.65rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span></div>"}
+function buildTree(obj,path,label){var t=typeOf(obj);if(t!=="object"&&t!=="array"){return "<div class='tnode' data-text='"+esc((label+" "+JSON.stringify(obj)).toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--text2)'>"+esc(label)+":</span> <span style='color:"+typeColor(t)+"'>"+esc(JSON.stringify(obj))+"</span>"+badge(t)+" <span style='color:var(--text2);font-size:.75rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span></div>"}
   var id="tn"+(treeSeq++);var count=Array.isArray(obj)?obj.length:Object.keys(obj).length;var summary=Array.isArray(obj)?("["+count+"]"):("{"+count+" key"+(count===1?"":"s")+"}");
-  var head="<div class='tnode' data-text='"+esc(label.toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--accent);cursor:pointer;user-select:none' onclick='toggleNode(\""+id+"\")'><span id='"+id+"_ar'>▾</span> "+esc(label)+"</span> <span style='color:var(--text2)'>"+summary+"</span>"+badge(t,count)+" <span style='color:var(--text2);font-size:.65rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span>";
+  var head="<div class='tnode' data-text='"+esc(label.toLowerCase())+"' style='margin-left:1rem'><span style='color:var(--accent-text);cursor:pointer;user-select:none' onclick='toggleNode(\""+id+"\")'><span id='"+id+"_ar'>▾</span> "+esc(label)+"</span> <span style='color:var(--text2)'>"+summary+"</span>"+badge(t,count)+" <span style='color:var(--text2);font-size:.75rem;cursor:pointer' onclick='copyPath(\""+esc(path)+"\")'>📋 "+esc(path)+"</span>";
   var children="<div id='"+id+"' class='tchildren'>";
   if(Array.isArray(obj)){for(var i=0;i<obj.length;i++){children+=buildTree(obj[i],path+"["+i+"]","["+i+"]")}}
   else{for(var k in obj){children+=buildTree(obj[k],path+"."+k,k)}}

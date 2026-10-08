@@ -20,19 +20,19 @@
   <style>
   .ht-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.8rem 0}
   .ht-tab{padding:.45rem 1rem;border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text2);transition:all .2s}
-  .ht-tab.active,.ht-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ht-tab.active,.ht-tab:hover{background:var(--accent-strong);color:#fff;border-color:var(--accent)}
   .ht-panel{display:none}.ht-panel.active{display:block}
   .ht-card{background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0}
   .ht-hm{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}.ht-hm-week{display:flex;flex-direction:column;gap:2px}
   .ht-hm-cell{width:100%;aspect-ratio:1;border-radius:3px;cursor:default}
-  .ht-badge{display:inline-block;font-size:.7rem;padding:.1rem .4rem;border-radius:4px;margin:.1rem}
+  .ht-badge{display:inline-block;font-size:.75rem;padding:.1rem .4rem;border-radius:4px;margin:.1rem}
   .ht-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
   .ht-modal{background:var(--surface);border-radius:var(--radius);padding:1.5rem;max-width:440px;width:100%;max-height:85vh;overflow-y:auto}
   .ht-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:.5rem 0}
   .ht-cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:.75rem;cursor:pointer;background:var(--card)}
-  .ht-cal-cell.done{background:rgba(34,197,94,.3);color:#22c55e;font-weight:700}
+  .ht-cal-cell.done{background:rgba(34,197,94,.3);color:var(--ok);font-weight:700}
   .ht-cal-cell.today{border:2px solid var(--accent)}
-  .ht-cal-head{font-size:.65rem;font-weight:700;color:var(--text2);text-align:center;padding:.2rem 0}
+  .ht-cal-head{font-size:.75rem;font-weight:700;color:var(--text2);text-align:center;padding:.2rem 0}
   @media(max-width:600px){.ht-hm-cell{border-radius:2px}}
   </style>
 </head>
@@ -121,7 +121,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -220,14 +220,14 @@ function renderHabits(){
       html+='<div style="display:flex;align-items:center;gap:.3rem"><button onclick="changeVal('+i+',-1)" style="background:none;border:none;cursor:pointer;font-size:1.1rem">−</button><span style="font-weight:700;color:'+(done?'#22c55e':'var(--text)')+'">'+val+'/'+(h.target||1)+'</span><button onclick="changeVal('+i+',1)" style="background:none;border:none;cursor:pointer;font-size:1.1rem">+</button></div>';
     }
     html+='<div style="flex:1;min-width:100px"><strong style="'+(done?'opacity:.6':'')+'">'+escH(h.emoji||'✅')+' '+escH(h.name)+'</strong>';
-    html+='<div style="font-size:.7rem;color:var(--text2)">'+escH(h.type)+' | '+escH(h.schedule==='weekdays'?'Selected days':h.schedule==='weekly'?h.timesPerWeek+'x/week':'Daily')+'</div>';
+    html+='<div style="font-size:.75rem;color:var(--text2)">'+escH(h.type)+' | '+escH(h.schedule==='weekdays'?'Selected days':h.schedule==='weekly'?h.timesPerWeek+'x/week':'Daily')+'</div>';
     html+='<div style="margin-top:3px">'+last7+'</div></div>';
     html+='<div style="display:flex;gap:.8rem;flex-wrap:wrap;text-align:center">';
-    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--accent)">'+streak+'</div><div style="font-size:.65rem;color:var(--text2)">streak</div></div>';
-    html+='<div><div style="font-size:1.1rem;font-weight:700;color:#f59e0b">'+longest+'</div><div style="font-size:.65rem;color:var(--text2)">best</div></div>';
-    html+='<div><div style="font-size:1.1rem;font-weight:700">'+totalDone+'</div><div style="font-size:.65rem;color:var(--text2)">total</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--accent-text)">'+streak+'</div><div style="font-size:.75rem;color:var(--text2)">streak</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--warn)">'+longest+'</div><div style="font-size:.75rem;color:var(--text2)">best</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700">'+totalDone+'</div><div style="font-size:.75rem;color:var(--text2)">total</div></div>';
     html+='</div>';
-    html+='<div style="display:flex;gap:.3rem"><button onclick="showEditHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem" title="Edit">✏️</button><button onclick="removeHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#ef4444" title="Delete">🗑️</button></div>';
+    html+='<div style="display:flex;gap:.3rem"><button onclick="showEditHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem" title="Edit">✏️</button><button onclick="removeHabit('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--danger)" title="Delete">🗑️</button></div>';
     html+='</div></div>';
   });
   document.getElementById('habitList').innerHTML=html||'<p class="info" style="text-align:center;padding:1.5rem">No habits yet. Click "+ Add Habit" to get started!</p>';
@@ -278,7 +278,7 @@ function renderHeatmap(){
     html+='<h4 style="margin-top:1rem">'+escH(h.emoji)+' '+escH(h.name)+'</h4>';
     html+=buildHeatmapHTML(h);
   });
-  html+='<div style="display:flex;align-items:center;gap:4px;margin-top:.5rem;font-size:.7rem"><span>Less</span>';
+  html+='<div style="display:flex;align-items:center;gap:4px;margin-top:.5rem;font-size:.75rem"><span>Less</span>';
   ['rgba(148,148,184,.15)','#c6e48b','#7bc96f','#239a3b','#196127'].forEach(function(c){html+='<span style="width:12px;height:12px;border-radius:2px;background:'+c+';display:inline-block"></span>';});
   html+='<span>More</span></div>';
   document.getElementById('heatmapContent').innerHTML=html;
@@ -350,7 +350,7 @@ function renderStats(){
   html+='<tr style="border-bottom:1px solid rgba(255,255,255,.1)"><th style="text-align:left;padding:.5rem">Habit</th><th>Streak</th><th>Best</th><th>7d</th><th>30d</th><th>Total</th></tr>';
   H.habits.forEach(function(h){
     var total=0;Object.keys(h.log||{}).forEach(function(k){if(isDone(h,k))total++;});
-    html+='<tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:.4rem">'+escH(h.emoji)+' '+escH(h.name)+'</td><td style="text-align:center;color:var(--accent);font-weight:700">'+getStreak(h)+'</td><td style="text-align:center;color:#f59e0b;font-weight:700">'+getLongestStreak(h)+'</td><td style="text-align:center">'+getCompletionRate(h,7)+'%</td><td style="text-align:center">'+getCompletionRate(h,30)+'%</td><td style="text-align:center">'+total+'</td></tr>';
+    html+='<tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:.4rem">'+escH(h.emoji)+' '+escH(h.name)+'</td><td style="text-align:center;color:var(--accent-text);font-weight:700">'+getStreak(h)+'</td><td style="text-align:center;color:var(--warn);font-weight:700">'+getLongestStreak(h)+'</td><td style="text-align:center">'+getCompletionRate(h,7)+'%</td><td style="text-align:center">'+getCompletionRate(h,30)+'%</td><td style="text-align:center">'+total+'</td></tr>';
   });
   html+='</table></div>';
   document.getElementById('statsContent').innerHTML=html;
@@ -377,7 +377,7 @@ function drawWeekChart(){
 /* ===== DATA ===== */
 function renderData(){
   var html='<h3>💾 Data Management</h3>';
-  html+='<div class="row"><button class="btn" onclick="exportHT()">📥 Export JSON</button><button class="btn" onclick="document.getElementById(\'htImport\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent)">📤 Import JSON</button><button class="btn" onclick="resetHT()" style="background:transparent;border:2px solid #ef4444;color:#ef4444">🗑️ Reset All</button></div>';
+  html+='<div class="row"><button class="btn" onclick="exportHT()">📥 Export JSON</button><button class="btn" onclick="document.getElementById(\'htImport\').click()" style="background:transparent;border:2px solid var(--accent);color:var(--accent-text)">📤 Import JSON</button><button class="btn" onclick="resetHT()" style="background:transparent;border:2px solid #ef4444;color:var(--danger)">🗑️ Reset All</button></div>';
   html+='<input type="file" id="htImport" accept=".json" style="display:none" onchange="importHT(event)">';
   html+='<p class="info" style="margin-top:1rem">Export saves all habits, logs, and settings. Import will replace current data.</p>';
   document.getElementById('dataContent').innerHTML=html;
@@ -399,7 +399,7 @@ function renderQuick(){
   var total=H.habits.length;var completed=0;
   H.habits.forEach(function(h){if(isDone(h,TODAY))completed++;});
   var pct=total?Math.round(completed/total*100):0;
-  document.getElementById('quickStats').innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+total+'</div><div class="info" style="font-size:.7rem">Habits</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#22c55e">'+completed+'</div><div class="info" style="font-size:.7rem">Done Today</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700">'+pct+'%</div><div class="info" style="font-size:.7rem">Completion</div></div>';
+  document.getElementById('quickStats').innerHTML='<div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--accent-text)">'+total+'</div><div class="info" style="font-size:.75rem">Habits</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--ok)">'+completed+'</div><div class="info" style="font-size:.75rem">Done Today</div></div><div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><div style="font-size:1.2rem;font-weight:700">'+pct+'%</div><div class="info" style="font-size:.75rem">Completion</div></div>';
 }
 
 /* ===== REMINDERS ===== */

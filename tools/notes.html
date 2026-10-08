@@ -41,32 +41,35 @@
   .sidebar-header input{flex:1;min-width:100px;padding:.4rem .6rem;font-size:.85rem}
   .note-item{padding:.6rem .8rem;border-radius:8px;cursor:pointer;margin:.2rem 0;transition:all .15s;border:1px solid transparent;position:relative}
   .note-item:hover{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2)}
-  .note-item.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .note-item.active{background:var(--accent-strong);color:#fff;border-color:var(--accent)}
   .note-item.active .note-meta{color:rgba(255,255,255,.7)}
   .note-item.active .note-label{border-color:rgba(255,255,255,.5)}
   .note-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.3rem}
-  .note-meta{font-size:.7rem;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .note-meta{font-size:.75rem;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .note-label{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
-  .pin-icon{font-size:.7rem;opacity:.7}
+  .pin-icon{font-size:.75rem;opacity:.7}
   .note-editor{display:flex;flex-direction:column;gap:.5rem}
   .editor-header{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
   .editor-header input{flex:1;font-size:1.1rem;font-weight:600;background:transparent;border:none;border-bottom:1px solid rgba(99,102,241,.2);border-radius:0;padding:.3rem 0}
   .editor-header input:focus{border-color:var(--accent)}
   .editor-controls{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center}
   .editor-controls button{padding:4px 8px;font-size:.75rem}
-  .label-picker{display:flex;gap:4px;align-items:center;margin-left:.5rem}
-  .label-picker span{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+  .label-picker{display:flex;gap:10px;align-items:center;margin-left:.5rem}
+  .label-picker span{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;position:relative}
+/* The visible dot stays small, but an invisible padded hit area makes each
+   colour reachable on a phone - 16px was well under the touch guidance. */
+.label-picker span::before{content:"";position:absolute;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%)}
   .label-picker span:hover,.label-picker span.active{transform:scale(1.3);border-color:var(--text)}
   .saved-indicator{font-size:.75rem;color:var(--text2);transition:opacity .3s;margin-left:auto}
   .saved-indicator.show{color:#4caf50}
   .note-stats{font-size:.75rem;color:var(--text2);display:flex;gap:1rem}
   .sort-bar{display:flex;gap:.5rem;align-items:center;font-size:.75rem;color:var(--text2);margin-top:.3rem;flex-wrap:wrap}
-  .sort-bar button{padding:2px 6px;font-size:.7rem;border:1px solid var(--text2);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;transition:all .15s}
-  .sort-bar button.active{border-color:var(--accent);color:var(--accent);background:rgba(99,102,241,.1)}
+  .sort-bar button{padding:2px 6px;font-size:.75rem;border:1px solid var(--text2);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;transition:all .15s}
+  .sort-bar button.active{border-color:var(--accent);color:var(--accent-text);background:rgba(99,102,241,.1)}
   .mobile-toggle{display:none;align-items:center;gap:.5rem;margin-bottom:.5rem}
   .mobile-toggle button{padding:.4rem .8rem;font-size:.8rem}
   .checklist-line{display:flex;align-items:center;gap:.5rem;padding:.2rem 0}
-  .checklist-line input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+  .checklist-line input[type=checkbox]{width:20px;height:20px;flex:0 0 20px}  /* was 16px, under the touch floor; sizing now comes from style.css */
   .checklist-line.checked span{text-decoration:line-through;opacity:.5}
   mark{background:rgba(99,102,241,.3);border-radius:2px;padding:0 1px}
   </style>
@@ -121,7 +124,7 @@
             <button class="btn btn-outline" onclick="downloadNote()">💾 .txt</button>
             <button class="btn btn-outline" onclick="exportAll()">📦 Backup</button>
             <button class="btn btn-outline" onclick="importNotes()">📥 Import</button>
-            <button class="btn btn-outline" onclick="deleteNote()" style="color:#f44336">🗑️</button>
+            <button class="btn btn-outline" onclick="deleteNote()" style="color:var(--danger)">🗑️</button>
           </div>
           <div id="checklistView" style="display:none;background:var(--card);border-radius:12px;padding:1rem;min-height:300px;overflow-y:auto"></div>
           <textarea id="noteContent" placeholder="Start writing..." oninput="saveCurrentNote()" style="min-height:350px;font-size:1rem;line-height:1.7"></textarea>
@@ -161,7 +164,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>

@@ -167,7 +167,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -310,7 +310,7 @@ function drawPie(principal,interest){
   var a0=-Math.PI/2;
   var segs=[['#6366f1',principal],['#ec4899',interest]];
   segs.forEach(function(s){var ang=s[1]/total*2*Math.PI;ctx.fillStyle=s[0];ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rad,a0,a0+ang);ctx.closePath();ctx.fill();a0+=ang;});
-  document.getElementById('pieLegend').innerHTML='<span style="color:#6366f1">■ Principal '+fmt(principal)+' ('+(principal/total*100).toFixed(1)+'%)</span> &nbsp; <span style="color:#ec4899">■ Interest '+fmt(interest)+' ('+(interest/total*100).toFixed(1)+'%)</span>';
+  document.getElementById('pieLegend').innerHTML='<span style="color:var(--accent-text)">■ Principal '+fmt(principal)+' ('+(principal/total*100).toFixed(1)+'%)</span> &nbsp; <span style="color:var(--accent3-text)">■ Interest '+fmt(interest)+' ('+(interest/total*100).toFixed(1)+'%)</span>';
 }
 
 /* ===== CSV & print of primary schedule ===== */
@@ -328,7 +328,7 @@ function printSchedule(){
   var body='<h1>Loan Amortisation Schedule</h1><p>Amount: '+fmt(p.amt)+' · Rate: '+p.rate+'% · Tenure: '+p.months+' months · EMI: '+fmt(s.emi)+'</p>';
   body+='<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px"><tr><th>Month</th><th>EMI</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>';
   s.rows.forEach(function(r){body+='<tr><td>'+r.month+'</td><td>'+fmt(r.emi)+'</td><td>'+fmt(r.principal)+'</td><td>'+fmt(r.interest)+'</td><td>'+fmt(r.balance)+'</td></tr>';});
-  body+='</table><p style="font-size:11px;color:#666">Estimates only — actual bank terms will differ.</p>';
+  body+='</table><p style="font-size:12px;color:#666">Estimates only — actual bank terms will differ.</p>';
   w.document.write('<html><head><title>Loan Schedule</title><style>body{font-family:system-ui,Arial,sans-serif;padding:1.5rem;color:#141428}</style></head><body>'+body+'</body></html>');
   w.document.close();w.focus();w.print();
 }
@@ -350,8 +350,8 @@ function calcPrepay(){
   var el=document.getElementById('prepResult');el.style.display='';
   var strat=opts.prepay.strategy==='emi'?'Reduce EMI':'Reduce Tenure';
   el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem">'+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:#22c55e'>"+fmt(saved)+"</div><div class='info'>Interest Saved</div></div>"+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent)'>"+monthsSaved+" months</div><div class='info'>Tenure Reduced</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--ok)'>"+fmt(saved)+"</div><div class='info'>Interest Saved</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent-text)'>"+monthsSaved+" months</div><div class='info'>Tenure Reduced</div></div>"+
     "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700'>"+pre.tenureMonths+" months</div><div class='info'>New Tenure</div></div></div>"+
     "<p class='info'>Strategy: "+strat+". New total interest "+fmt(pre.totalInterest)+" vs original "+fmt(base.totalInterest)+".</p>";
 }
@@ -367,8 +367,8 @@ function calcMoratorium(){
   var newSched=buildSchedule(bal,p.rate,p.months);
   var el=document.getElementById('moraResult');el.style.display='';
   el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem">'+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:#ec4899'>"+fmt(accrued)+"</div><div class='info'>Interest Accrued</div></div>"+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent)'>"+fmt(bal)+"</div><div class='info'>New Principal</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent3-text)'>"+fmt(accrued)+"</div><div class='info'>Interest Accrued</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent-text)'>"+fmt(bal)+"</div><div class='info'>New Principal</div></div>"+
     "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700'>"+fmt(newSched.emi)+"</div><div class='info'>Revised EMI</div></div></div>"+
     "<p class='info'>During a "+mm+"-month EMI holiday, interest of "+fmt(accrued)+" is added to the principal. EMI then rises from "+fmt(_primary.sched.emi)+" to "+fmt(newSched.emi)+" over the same tenure.</p>";
 }
@@ -384,8 +384,8 @@ function calcFloating(){
   var extraTenure=flo.tenureMonths-base.tenureMonths;
   var el=document.getElementById('floatResult');el.style.display='';
   el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem">'+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:#ec4899'>"+fmt(Math.abs(extraInt))+"</div><div class='info'>"+(extraInt>=0?'Extra':'Less')+" Interest</div></div>"+
-    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent)'>"+(extraTenure>=0?'+':'')+extraTenure+" months</div><div class='info'>Tenure Change</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent3-text)'>"+fmt(Math.abs(extraInt))+"</div><div class='info'>"+(extraInt>=0?'Extra':'Less')+" Interest</div></div>"+
+    "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700;color:var(--accent-text)'>"+(extraTenure>=0?'+':'')+extraTenure+" months</div><div class='info'>Tenure Change</div></div>"+
     "<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.15rem;font-weight:700'>"+flo.tenureMonths+" months</div><div class='info'>New Tenure</div></div></div>"+
     "<p class='info'>Rate changes to "+opts.newRate+"% from month "+opts.rateChangeMonth+", keeping EMI fixed at "+fmt(base.emi)+".</p>";
 }
@@ -425,7 +425,7 @@ var grid='';
 var best=loans.reduce(function(a,b){return b.effective<a.effective?b:a;},loans[0]);
 loans.forEach(function(l){
 grid+='<div style="background:var(--card);padding:1rem;border-radius:12px'+(l===best?';border:2px solid #22c55e':'')+'"><h3>Offer '+l.id+(l===best?' ✅ Best':'')+'</h3>';
-grid+='<div style="font-size:1.2rem;font-weight:700;color:var(--accent)">'+fmt(l.emi)+'</div><div class="info">Monthly EMI @ '+l.rate+'%</div>';
+grid+='<div style="font-size:1.2rem;font-weight:700;color:var(--accent-text)">'+fmt(l.emi)+'</div><div class="info">Monthly EMI @ '+l.rate+'%</div>';
 grid+='<div style="margin-top:.5rem"><strong>Total Interest:</strong> '+fmt(l.totalInt)+'</div>';
 grid+='<div><strong>Processing Fee:</strong> '+fmt(l.fee)+'</div>';
 grid+='<div><strong>Effective Cost:</strong> '+fmt(l.effective)+'</div></div>';
@@ -462,11 +462,11 @@ var rate=+document.getElementById('eligRate').value/100/12;
 var months=+document.getElementById('eligYears').value*12;
 var maxEmi=income*foir-existEmi;
 var el=document.getElementById('eligResult');el.style.display='';
-if(maxEmi<=0){el.innerHTML='<p style="color:#ec4899">Your existing EMIs exceed the FOIR limit of your income. Reduce obligations first.</p>';return;}
+if(maxEmi<=0){el.innerHTML='<p style="color:var(--accent3-text)">Your existing EMIs exceed the FOIR limit of your income. Reduce obligations first.</p>';return;}
 var maxLoan=rate===0?maxEmi*months:maxEmi*(Math.pow(1+rate,months)-1)/(rate*Math.pow(1+rate,months));
 el.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem">'+
-"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.2rem;font-weight:700;color:var(--accent)'>"+fmt(maxLoan)+"</div><div class='info'>Max Loan (approx)</div></div>"+
-"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.2rem;font-weight:700;color:#22c55e'>"+fmt(maxEmi)+"</div><div class='info'>Max Affordable EMI</div></div></div>"+
+"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.2rem;font-weight:700;color:var(--accent-text)'>"+fmt(maxLoan)+"</div><div class='info'>Max Loan (approx)</div></div>"+
+"<div style='background:var(--card);padding:1rem;border-radius:12px;text-align:center'><div style='font-size:1.2rem;font-weight:700;color:var(--ok)'>"+fmt(maxEmi)+"</div><div class='info'>Max Affordable EMI</div></div></div>"+
 "<p class='info'>"+numWords(maxLoan)+". Approximation using FOIR "+(foir*100)+"% — banks apply their own criteria.</p>";
 }
 

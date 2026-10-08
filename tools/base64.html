@@ -50,7 +50,7 @@
         <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="urlSafe" style="width:auto"> URL-safe Base64 (- and _ instead of + and /)</label>
         <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="pad" checked style="width:auto"> Include <code>=</code> padding</label>
         <textarea id="inp" placeholder="Paste text or Base64 string — auto-detects input type..."></textarea>
-        <div id="autoDetect" style="font-size:.8rem;color:var(--accent);margin:.3rem 0"></div>
+        <div id="autoDetect" style="font-size:.8rem;color:var(--accent-text);margin:.3rem 0"></div>
         <div class="row"><button class="btn" onclick="go('e')">Encode (UTF-8 safe)</button><button class="btn btn-outline" onclick="go('d')">Decode</button></div>
         <div id="textSizes" class="info"></div>
         <div class="result-box" id="result" style="max-height:250px;overflow:auto"></div>
@@ -144,7 +144,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -259,7 +259,7 @@ function b64ToFile(){
     download(new Blob([arr],{type:mime}),name);
     if(mime.startsWith('image/')){prev.innerHTML='<img src="data:'+mime+';base64,'+data+'" alt="decoded image">';}
     else{prev.innerHTML='<p class="info">Detected type: <b>'+mime+'</b> — downloaded as '+name+'</p>'}
-  }catch(e){prev.innerHTML='<p style="color:#f44336">❌ Invalid Base64: '+e.message+'</p>'}
+  }catch(e){prev.innerHTML='<p style="color:var(--danger)">❌ Invalid Base64: '+e.message+'</p>'}
 }
 document.getElementById('b64Input').addEventListener('input',function(){
   const raw=this.value.trim(),prev=document.getElementById('preview');

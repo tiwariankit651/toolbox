@@ -105,7 +105,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -158,7 +158,7 @@ function getFg(){return parseCol(document.getElementById("fgHex").value)||parseC
 function getBg(){return parseCol(document.getElementById("bgHex").value)||parseCol(document.getElementById("bg").value)}
 function swap(){var f=document.getElementById("fgHex").value;var b=document.getElementById("bgHex").value;document.getElementById("fgHex").value=b;document.getElementById("bgHex").value=f;var pc=parseCol(b);if(pc)document.getElementById("fg").value=rgbToHex(pc.r,pc.g,pc.b);var pc2=parseCol(f);if(pc2)document.getElementById("bg").value=rgbToHex(pc2.r,pc2.g,pc2.b);check()}
 
-function badge(pass){return pass?'<span style="background:#4caf50;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">✅ PASS</span>':'<span style="background:#f44336;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">❌ FAIL</span>'}
+function badge(pass){return pass?'<span style="background:#2e7d32;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">✅ PASS</span>':'<span style="background:#c62828;color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600">❌ FAIL</span>'}
 function resultCard(label,thr,ratio){return'<div style="background:var(--card);padding:1rem;border-radius:10px"><strong>'+label+'</strong> ('+thr+':1)<br>'+badge(ratio>=thr)+'</div>'}
 
 var lastRatio=1;
@@ -208,13 +208,13 @@ function applyPair(fgHex,bgHex){document.getElementById("fgHex").value=fgHex;doc
 
 function renderCvd(fg,bg){var types=[["normal","Normal vision"],["protanopia","Protanopia"],["deuteranopia","Deuteranopia"],["tritanopia","Tritanopia"],["achromatopsia","Achromatopsia"]];
   document.getElementById("cvd").innerHTML=types.map(function(t){var sf=t[0]==="normal"?fg:simulate(fg,t[0]);var sb=t[0]==="normal"?bg:simulate(bg,t[0]);var pr=contrastRatio(sf,sb);
-    return'<div style="border-radius:10px;overflow:hidden;border:1px solid rgba(128,128,128,.25)"><div style="background:'+rgbToHex(sb.r,sb.g,sb.b)+';color:'+rgbToHex(sf.r,sf.g,sf.b)+';padding:.8rem;text-align:center;font-weight:600">Sample<br><span style="font-size:.8rem">'+pr.toFixed(2)+':1</span></div><div style="font-size:.72rem;text-align:center;padding:.3rem;color:var(--text2)">'+t[1]+'</div></div>'}).join("")}
+    return'<div style="border-radius:10px;overflow:hidden;border:1px solid rgba(128,128,128,.25)"><div style="background:'+rgbToHex(sb.r,sb.g,sb.b)+';color:'+rgbToHex(sf.r,sf.g,sf.b)+';padding:.8rem;text-align:center;font-weight:600">Sample<br><span style="font-size:.8rem">'+pr.toFixed(2)+':1</span></div><div style="font-size:.75rem;text-align:center;padding:.3rem;color:var(--text2)">'+t[1]+'</div></div>'}).join("")}
 
 /* ===== Batch ===== */
 function runBatch(){var lines=document.getElementById("batchInput").value.split(/\n/).map(function(l){return l.trim()}).filter(Boolean);
   if(!lines.length){document.getElementById("batchOut").innerHTML='<p class="info">Paste some pairs first.</p>';return}
   var rows=lines.map(function(l){var parts=l.split(/[,;\t]/).map(function(x){return x.trim()});var fg=parseCol(parts[0]),bg=parseCol(parts[1]);
-    if(!fg||!bg)return'<tr><td colspan="6" style="color:#f44336">Invalid: '+l.replace(/</g,"&lt;")+'</td></tr>';
+    if(!fg||!bg)return'<tr><td colspan="6" style="color:var(--danger)">Invalid: '+l.replace(/</g,"&lt;")+'</td></tr>';
     var r=contrastRatio(fg,bg);var fh=rgbToHex(fg.r,fg.g,fg.b),bh=rgbToHex(bg.r,bg.g,bg.b);var mk=function(t){return r>=t?'✅':'❌'};
     return'<tr><td style="padding:.4rem;background:'+bh+';color:'+fh+'">'+fh+' / '+bh+'</td><td style="padding:.4rem;text-align:center">'+r.toFixed(2)+'</td><td style="text-align:center">'+mk(4.5)+'</td><td style="text-align:center">'+mk(3)+'</td><td style="text-align:center">'+mk(7)+'</td><td style="text-align:center">'+mk(4.5)+'</td></tr>'}).join("");
   document.getElementById("batchOut").innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.8rem;background:var(--card);border-radius:8px"><thead><tr style="text-align:left"><th style="padding:.4rem">Pair</th><th>Ratio</th><th>AA</th><th>AA Lg</th><th>AAA</th><th>AAA Lg</th></tr></thead><tbody>'+rows+'</tbody></table>'}

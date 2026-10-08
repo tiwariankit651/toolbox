@@ -39,17 +39,17 @@
     .meter>span{display:block;height:100%;background:var(--gradient);transition:width .6s ease}
     .tc-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
     .tc-table th,.tc-table td{padding:.5rem .7rem;border-bottom:1px solid rgba(148,148,184,.15);text-align:left}
-    .tc-table th{color:var(--accent);font-weight:700}
+    .tc-table th{color:var(--accent-text);font-weight:700}
     .tc-cols{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
     .tc-cols .col{background:var(--card);border-radius:10px;padding:.8rem;font-size:.82rem}
-    .tc-tag{display:inline-block;background:rgba(99,102,241,.12);color:var(--accent);border-radius:6px;padding:.1rem .5rem;margin:.15rem;font-size:.78rem}
+    .tc-tag{display:inline-block;background:rgba(99,102,241,.12);color:var(--accent-text);border-radius:6px;padding:.1rem .5rem;margin:.15rem;font-size:.78rem}
     .tc-tag.only-a{background:rgba(244,67,54,.13);color:#f26d6d}
-    .tc-tag.only-b{background:rgba(139,92,246,.15);color:var(--accent2)}
+    .tc-tag.only-b{background:rgba(139,92,246,.15);color:var(--accent2-text)}
     .verdict{text-align:center;padding:1.2rem;border-radius:14px;background:var(--card);margin:1rem 0}
     .verdict .vbig{font-size:2.2rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
     .fuzzy-result{padding:1rem;border-radius:12px;text-align:center;font-weight:700;font-size:1.1rem;margin:.8rem 0}
     .fuzzy-yes{background:rgba(76,175,80,.15);color:#4caf50}
-    .fuzzy-no{background:rgba(244,67,54,.15);color:#f44336}
+    .fuzzy-no{background:rgba(244,67,54,.15);color:var(--danger)}
     @media(max-width:600px){.tc-cols{grid-template-columns:1fr}}
   </style>
 </head>
@@ -159,7 +159,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -444,7 +444,7 @@ function runBatch(){
   lastBatchRows=rows;
   var html='<table class="tc-table"><tr><th>#</th><th>String A</th><th>String B</th><th>Similarity</th><th>Result</th></tr>';
   rows.forEach(function(r,i){
-    if(r.bad){html+='<tr><td>'+(i+1)+'</td><td colspan="4" style="color:#f44336">⚠️ No delimiter found in line</td></tr>';return;}
+    if(r.bad){html+='<tr><td>'+(i+1)+'</td><td colspan="4" style="color:var(--danger)">⚠️ No delimiter found in line</td></tr>';return;}
     html+='<tr><td>'+(i+1)+'</td><td>'+esc(r.a)+'</td><td>'+esc(r.b)+'</td><td>'+pct(r.score)+'%</td><td>'+(r.match?'✅':'❌')+'</td></tr>';
   });
   html+='</table>';

@@ -13,18 +13,18 @@
   <style>
     .ec-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}
     .ec-tab{padding:.5rem 1.2rem;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text2);transition:all .2s}
-    .ec-tab.active,.ec-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .ec-tab.active,.ec-tab:hover{background:var(--accent-strong);color:#fff;border-color:var(--accent)}
     .ec-filters{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin:1rem 0}
     .ec-filters select,.ec-filters input{padding:.5rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:var(--card);color:var(--text);font-size:.85rem;min-width:140px}
     .ec-card{background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border-left:4px solid var(--accent);transition:all .2s}
     .ec-card:hover{box-shadow:0 4px 16px var(--accent-glow)}
-    .ec-card.starred{border-left-color:#f59e0b}
+    .ec-card.starred{border-left-color:var(--warn)}
     .ec-star{cursor:pointer;font-size:1.3rem;background:none;border:none;transition:transform .2s}
     .ec-star:hover{transform:scale(1.2)}
     .ec-days{font-weight:700;font-size:.85rem;padding:.2rem .6rem;border-radius:6px;white-space:nowrap}
-    .ec-days.red{background:rgba(239,68,68,.15);color:#ef4444}
-    .ec-days.orange{background:rgba(249,115,22,.15);color:#f97316}
-    .ec-days.green{background:rgba(34,197,94,.15);color:#22c55e}
+    .ec-days.red{background:rgba(239,68,68,.15);color:var(--danger)}
+    .ec-days.orange{background:rgba(249,115,22,.15);color:var(--urgent)}
+    .ec-days.green{background:rgba(34,197,94,.15);color:var(--ok)}
     .ec-days.gray{background:rgba(148,148,184,.15);color:var(--text2)}
     .ec-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:.5rem 0}
     .ec-cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:.75rem;cursor:default;position:relative;background:var(--card);min-height:48px}
@@ -32,13 +32,13 @@
     .ec-cal-cell.has-exam{background:rgba(99,102,241,.15);cursor:pointer}
     .ec-cal-cell.has-starred{background:rgba(245,158,11,.2)}
     .ec-cal-cell .ec-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:2px}
-    .ec-cal-head{font-size:.7rem;font-weight:700;color:var(--text2);text-align:center;padding:.3rem 0}
+    .ec-cal-head{font-size:.75rem;font-weight:700;color:var(--text2);text-align:center;padding:.3rem 0}
     .ec-countdown-widget{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;padding:1.2rem 1.5rem;border-radius:14px;margin:1rem 0;text-align:center}
     .ec-countdown-widget .ec-big{font-size:2.2rem;font-weight:800}
-    .ec-badge{display:inline-block;font-size:.65rem;padding:.15rem .4rem;border-radius:4px;background:rgba(99,102,241,.15);color:var(--accent);text-transform:uppercase;letter-spacing:.3px}
+    .ec-badge{display:inline-block;font-size:.75rem;padding:.15rem .4rem;border-radius:4px;background:rgba(99,102,241,.15);color:var(--accent-text);text-transform:uppercase;letter-spacing:.3px}
     .ec-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
     .ec-modal{background:var(--surface);border-radius:var(--radius);padding:1.5rem;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-    @media(max-width:600px){.ec-card{flex-direction:column;align-items:flex-start;gap:.5rem}.ec-filters{flex-direction:column}.ec-cal-cell{min-height:36px;font-size:.65rem}}
+    @media(max-width:600px){.ec-card{flex-direction:column;align-items:flex-start;gap:.5rem}.ec-filters{flex-direction:column}.ec-cal-cell{min-height:36px;font-size:.75rem}}
   </style>
 </head>
 <body>
@@ -84,8 +84,8 @@
       <!-- Action Buttons -->
       <div class="row" style="margin-bottom:1rem">
         <button class="btn" onclick="showAddCustom()" style="flex:none">+ Add Custom Exam</button>
-        <button class="btn" onclick="exportICS()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent)">📥 Export .ics</button>
-        <button class="btn" onclick="exportJSON()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent)">💾 JSON Backup</button>
+        <button class="btn" onclick="exportICS()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent-text)">📥 Export .ics</button>
+        <button class="btn" onclick="exportJSON()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent-text)">💾 JSON Backup</button>
       </div>
 
       <!-- Main Content Area -->
@@ -159,7 +159,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -323,12 +323,12 @@ function renderList() {
     html += '<div style="min-width:70px;text-align:center"><div style="font-size:1.2rem;font-weight:700">' + dStr.split(' ')[0] + '</div><div style="font-size:.75rem;color:var(--text2)">' + dStr.split(' ').slice(1).join(' ') + '</div></div>';
     html += '<div style="flex:1;min-width:180px"><strong>' + escHtml(e.name) + '</strong><br><span class="info">' + escHtml(e.detail) + '</span>';
     if (e.body && e.body !== 'Custom') html += '<br><span class="ec-badge">' + escHtml(e.body) + '</span>';
-    if (e.eligibility && e.eligibility !== '-') html += ' <span class="ec-badge" style="background:rgba(139,92,246,.15);color:#8b5cf6">' + escHtml(e.eligibility).substring(0, 50) + '</span>';
+    if (e.eligibility && e.eligibility !== '-') html += ' <span class="ec-badge" style="background:rgba(139,92,246,.15);color:var(--accent2-text)">' + escHtml(e.eligibility).substring(0, 50) + '</span>';
     html += '</div>';
     html += '<div style="text-align:right;min-width:110px"><span class="ec-days ' + dc + '">' + daysText + '</span>';
-    if (e.notifyMonth && e.notifyMonth !== '-') html += '<br><span class="info" style="font-size:.7rem">Notification: ~' + escHtml(e.notifyMonth) + '</span>';
-    if (e.website) html += '<br><a href="' + e.website + '" target="_blank" rel="noopener" style="font-size:.7rem">Official Site ↗</a>';
-    if (e.isCustom) html += '<br><button onclick="removeCustom(\'' + e.id.replace('custom-','') + '\')" style="font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer">Delete</button>';
+    if (e.notifyMonth && e.notifyMonth !== '-') html += '<br><span class="info" style="font-size:.75rem">Notification: ~' + escHtml(e.notifyMonth) + '</span>';
+    if (e.website) html += '<br><a href="' + e.website + '" target="_blank" rel="noopener" style="font-size:.75rem">Official Site ↗</a>';
+    if (e.isCustom) html += '<br><button onclick="removeCustom(\'' + e.id.replace('custom-','') + '\')" style="font-size:.75rem;color:var(--danger);background:none;border:none;cursor:pointer">Delete</button>';
     html += '</div></div>';
   });
   document.getElementById('mainContent').innerHTML = html;
@@ -442,7 +442,7 @@ function showAddCustom() {
   html += '<h3 style="margin-bottom:1rem">Add Custom Exam/Event</h3>';
   html += '<label style="font-size:.85rem;color:var(--text2)">Exam/Event Name</label><input type="text" id="customName" placeholder="e.g. State TET 2026">';
   html += '<label style="font-size:.85rem;color:var(--text2)">Date</label><input type="date" id="customDate">';
-  html += '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="btn" onclick="addCustomExam()">Add</button><button class="btn" style="background:transparent;border:2px solid var(--accent);color:var(--accent)" onclick="closeModal()">Cancel</button></div>';
+  html += '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="btn" onclick="addCustomExam()">Add</button><button class="btn" style="background:transparent;border:2px solid var(--accent);color:var(--accent-text)" onclick="closeModal()">Cancel</button></div>';
   html += '</div></div>';
   document.getElementById('modalContainer').innerHTML = html;
 }

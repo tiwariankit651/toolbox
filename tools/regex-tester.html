@@ -21,48 +21,48 @@
       <style>
         .rx-tabs{display:flex;gap:.3rem;margin:1rem 0 .5rem;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:.5rem}
         .rx-tab{padding:.5rem 1.2rem;border-radius:10px 10px 0 0;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);background:transparent;border:none;transition:all .2s}
-        .rx-tab.active{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent)}
-        .rx-tab:hover{color:var(--accent)}
+        .rx-tab.active{color:var(--accent-text);background:var(--card);border-bottom:2px solid var(--accent)}
+        .rx-tab:hover{color:var(--accent-text)}
         .rx-panel{display:none}
         .rx-panel.active{display:block}
         .rx-flags{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
         .rx-flag{display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.82rem}
         .rx-flag input[type="checkbox"]{width:auto;margin:0}
-        .rx-flag code{font-family:monospace;font-weight:700;color:var(--accent)}
-        .rx-flag .flag-desc{color:var(--text2);font-size:.72rem}
+        .rx-flag code{font-family:monospace;font-weight:700;color:var(--accent-text)}
+        .rx-flag .flag-desc{color:var(--text2);font-size:.75rem}
         .rx-highlight-wrap{position:relative;margin:.8rem 0}
         .rx-highlight-backdrop{position:absolute;top:0;left:0;right:0;bottom:0;padding:.75rem 1rem;font-size:.95rem;font-family:inherit;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;overflow:auto;color:transparent;pointer-events:none;border-radius:12px;border:1px solid transparent}
         .rx-highlight-backdrop mark{background:rgba(99,102,241,.25);border-radius:3px;border-bottom:2px solid var(--accent);color:transparent;padding:1px 0}
         .rx-highlight-textarea{background:transparent;position:relative;z-index:1;color:var(--text);resize:vertical;min-height:120px;line-height:1.5}
-        .rx-error{color:#ef4444;font-size:.85rem;margin:.4rem 0;padding:.4rem .8rem;background:rgba(239,68,68,.1);border-radius:8px;display:none}
+        .rx-error{color:var(--danger);font-size:.85rem;margin:.4rem 0;padding:.4rem .8rem;background:rgba(239,68,68,.1);border-radius:8px;display:none}
         .rx-error.visible{display:block}
         .rx-results{background:var(--card);border-radius:12px;padding:1rem;margin:.8rem 0;max-height:300px;overflow-y:auto;font-size:.85rem}
         .rx-results .match-item{border-bottom:1px solid rgba(255,255,255,.05);padding:.5rem 0}
         .rx-results .match-item:last-child{border-bottom:none}
-        .rx-results .match-idx{color:var(--accent);font-weight:700;font-size:.75rem}
+        .rx-results .match-idx{color:var(--accent-text);font-weight:700;font-size:.75rem}
         .rx-results .match-text{font-family:monospace;background:rgba(99,102,241,.1);padding:2px 6px;border-radius:4px;margin:0 .3rem}
         .rx-results .group-item{margin-left:1rem;color:var(--text2);font-size:.8rem}
-        .rx-results .group-item code{color:var(--accent);font-family:monospace}
-        .rx-match-count{font-weight:700;color:var(--accent);margin-bottom:.5rem}
+        .rx-results .group-item code{color:var(--accent-text);font-family:monospace}
+        .rx-match-count{font-weight:700;color:var(--accent-text);margin-bottom:.5rem}
         .rx-replace-output{background:var(--card);border-radius:12px;padding:1rem;margin:.5rem 0;font-family:monospace;font-size:.9rem;word-break:break-all;min-height:40px;position:relative}
-        .rx-copy-btn{position:absolute;top:.5rem;right:.5rem;background:var(--gradient);color:#fff;border:none;padding:.3rem .7rem;border-radius:8px;cursor:pointer;font-size:.75rem}
+        .rx-copy-btn{position:absolute;top:.5rem;right:.5rem;background:var(--gradient-strong);color:#fff;border:none;padding:.3rem .7rem;border-radius:8px;cursor:pointer;font-size:.75rem}
         .rx-patterns-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.4rem;margin:.5rem 0}
         .rx-patterns-grid button{font-size:.75rem;padding:.5rem .6rem;margin:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .rx-cheat{background:var(--card);border-radius:12px;padding:1rem;margin:.8rem 0}
         .rx-cheat-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:.5rem;font-weight:600;margin-bottom:.5rem}
-        .rx-cheat-toggle::before{content:"\25B6";font-size:.7rem;transition:transform .2s}
+        .rx-cheat-toggle::before{content:"\25B6";font-size:.75rem;transition:transform .2s}
         .rx-cheat-toggle.open::before{transform:rotate(90deg)}
         .rx-cheat-body{display:none;max-height:400px;overflow-y:auto}
         .rx-cheat-body.open{display:block}
         .rx-cheat table{width:100%;border-collapse:collapse;font-size:.82rem}
         .rx-cheat td{padding:4px 8px;border-bottom:1px solid rgba(128,128,128,.12);vertical-align:top}
-        .rx-cheat td:first-child{font-family:monospace;font-weight:700;color:var(--accent);white-space:nowrap;width:80px}
+        .rx-cheat td:first-child{font-family:monospace;font-weight:700;color:var(--accent-text);white-space:nowrap;width:80px}
         .rx-cheat td:last-child{color:var(--text2)}
         .rx-cheat h4{margin:1rem 0 .3rem;color:var(--text);font-size:.9rem}
       </style>
 
       <!-- Pattern & Flags -->
-      <div class="row"><label style="font-size:1.2rem;font-family:monospace">/</label><input type="text" id="pattern" placeholder="Enter regex pattern..." value="\b(\w+)@(\w+)\.(\w+)\b" style="flex:3;font-family:monospace"><label style="font-size:1.2rem;font-family:monospace">/</label><span id="flagDisplay" style="font-family:monospace;min-width:40px;color:var(--accent)">gi</span></div>
+      <div class="row"><label style="font-size:1.2rem;font-family:monospace">/</label><input type="text" id="pattern" placeholder="Enter regex pattern..." value="\b(\w+)@(\w+)\.(\w+)\b" style="flex:3;font-family:monospace"><label style="font-size:1.2rem;font-family:monospace">/</label><span id="flagDisplay" style="font-family:monospace;min-width:40px;color:var(--accent-text)">gi</span></div>
 
       <!-- Flag toggles -->
       <div class="rx-flags">
@@ -272,7 +272,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>

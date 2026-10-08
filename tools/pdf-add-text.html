@@ -190,7 +190,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -266,7 +266,7 @@ async function buildThumbs(){
     cv.style.cssText="display:block;width:100%;height:auto;border-radius:4px";
     var lbl=document.createElement("div");
     lbl.textContent=p;
-    lbl.style.cssText="position:absolute;bottom:2px;right:4px;font-size:.65rem;background:rgba(0,0,0,.6);color:#fff;padding:0 4px;border-radius:4px";
+    lbl.style.cssText="position:absolute;bottom:2px;right:4px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff;padding:0 4px;border-radius:4px";
     wrap.appendChild(cv);wrap.appendChild(lbl);
     wrap.addEventListener("click",(function(pn){return function(){currentPage=pn;renderPage();highlightThumb()}})(p));
     strip.appendChild(wrap);
@@ -318,7 +318,7 @@ function delBtn(idx){
   var b=document.createElement("button");
   b.textContent="✕";
   b.title="Delete";
-  b.style.cssText="position:absolute;top:-10px;right:-10px;width:20px;height:20px;line-height:18px;text-align:center;border-radius:50%;border:none;background:#e11d48;color:#fff;cursor:pointer;font-size:.7rem;padding:0;z-index:20";
+  b.style.cssText="position:absolute;top:-10px;right:-10px;width:20px;height:20px;line-height:18px;text-align:center;border-radius:50%;border:none;background:#e11d48;color:#fff;cursor:pointer;font-size:.75rem;padding:0;z-index:20";
   b.addEventListener("mousedown",function(e){e.stopPropagation()});
   b.addEventListener("click",function(e){e.stopPropagation();pushHistory();items.splice(idx,1);renderAnnotations();updateItemList()});
   return b;
@@ -692,7 +692,7 @@ async function savePdf(){
         uniFont=null;
         textItems.forEach(function(i){i._draw=i._draw.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"")});
         document.getElementById("result").innerHTML=
-          "<p class='info' style='color:#e11d48'>\u26a0\ufe0f Could not load the Unicode font ("+
+          "<p class='info' style='color:var(--danger)'>\u26a0\ufe0f Could not load the Unicode font ("+
           (e.message||"unknown")+"). Unsupported characters were removed so the rest of your "+
           "PDF still saves.</p>";
       }
@@ -731,7 +731,7 @@ async function savePdf(){
     download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
     document.getElementById("result").innerHTML="<p class='info'>✅ PDF saved with your annotations. Remember: only whiteout/redact boxes actually hide the original content.</p>";
   }catch(err){
-    document.getElementById("result").innerHTML="<p style='color:#e11d48'>❌ Could not save: "+err.message+"</p>";
+    document.getElementById("result").innerHTML="<p style='color:var(--danger)'>❌ Could not save: "+err.message+"</p>";
   }
 }
 

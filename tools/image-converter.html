@@ -40,9 +40,9 @@
       <p class="info">Convert images between PNG, JPG, WebP, AVIF & BMP. Batch convert, resize, target file size, and download as ZIP. EXIF data is stripped for privacy.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="preview" style="display:none;margin:.8rem 0;background:var(--card);padding:.8rem;border-radius:10px"><div id="previewThumbs" style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center"></div><p class="info" id="previewInfo" style="margin-top:.5rem;text-align:center"></p></div>
-      <div class="row"><label>Convert to:</label><select id="fmt"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option><option value="image/avif">AVIF</option><option value="image/bmp">BMP</option></select><span id="fmtWarn" style="font-size:.75rem;color:#f59e0b;display:none;margin-left:.5rem">⚠️ Not supported in this browser</span></div>
+      <div class="row"><label>Convert to:</label><select id="fmt"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option><option value="image/avif">AVIF</option><option value="image/bmp">BMP</option></select><span id="fmtWarn" style="font-size:.75rem;color:var(--warn);display:none;margin-left:.5rem">⚠️ Not supported in this browser</span></div>
       <div class="row" id="qualityRow"><label>Quality:</label><input type="range" id="quality" min="10" max="100" value="92" style="flex:1"><span id="qualityVal">92%</span></div>
-      <div class="row"><label>Target size (KB):</label><input type="number" id="targetKB" placeholder="Leave empty to skip" style="width:130px" min="1"><span class="info" style="font-size:.7rem;margin-left:.4rem">Binary search ~8 iterations</span></div>
+      <div class="row"><label>Target size (KB):</label><input type="number" id="targetKB" placeholder="Leave empty to skip" style="width:130px" min="1"><span class="info" style="font-size:.75rem;margin-left:.4rem">Binary search ~8 iterations</span></div>
       <div class="row"><label>Resize:</label><select id="resizeMode" style="width:140px"><option value="none">No resize</option><option value="max">Max width/height</option><option value="scale">Scale %</option></select><input type="number" id="resizeVal" placeholder="e.g. 800 or 50" style="width:90px;display:none" min="1"></div>
       <div class="row" id="bgRow" style="display:none"><label>Background for transparency:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"><span class="info" style="font-size:.75rem;margin-left:.5rem">⚠️ JPEG cannot hold transparency — alpha pixels will use this color</span></div>
       <p class="info" style="font-size:.75rem;margin-top:.3rem">🔒 Canvas re-encode strips EXIF metadata by default — a privacy benefit. No location or camera data in output files.</p>
@@ -104,7 +104,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -207,7 +207,7 @@ async function go(){
       blob=await blobAtQuality(img,w,h,fmt,quality);
     }
     if(!blob){
-      table+='<tr><td colspan="6" style="padding:.4rem;color:#ef4444">'+f.name+' — conversion failed (format may not be supported)</td></tr>';
+      table+='<tr><td colspan="6" style="padding:.4rem;color:var(--danger)">'+f.name+' — conversion failed (format may not be supported)</td></tr>';
       continue;
     }
     var pct=((blob.size-f.size)/f.size*100).toFixed(1);
@@ -217,7 +217,7 @@ async function go(){
     var newName=f.name.replace(/\.[^.]+$/,"")+"."+ext;
     convertedBlobs.push({blob:blob,name:newName});
 
-    table+='<tr style="border-bottom:1px solid rgba(99,102,241,.15)"><td style="padding:.4rem;word-break:break-all">'+f.name+'</td><td style="text-align:center">'+f.type.split("/")[1].toUpperCase()+'<br>'+formatSize(f.size)+'</td><td style="text-align:center">'+ext.toUpperCase()+'<br>'+formatSize(blob.size)+'</td><td style="text-align:center;color:'+pctColor+'">'+pct+'%</td><td style="text-align:center">'+w+'\u00d7'+h+'</td><td style="text-align:center"><img src="'+origThumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"> \u2192 <img src="'+thumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"><br><button class="btn" style="font-size:.7rem;padding:.2rem .5rem;margin-top:.2rem" onclick="download(convertedBlobs['+i+'].blob,convertedBlobs['+i+'].name)">Download</button></td></tr>';
+    table+='<tr style="border-bottom:1px solid rgba(99,102,241,.15)"><td style="padding:.4rem;word-break:break-all">'+f.name+'</td><td style="text-align:center">'+f.type.split("/")[1].toUpperCase()+'<br>'+formatSize(f.size)+'</td><td style="text-align:center">'+ext.toUpperCase()+'<br>'+formatSize(blob.size)+'</td><td style="text-align:center;color:'+pctColor+'">'+pct+'%</td><td style="text-align:center">'+w+'\u00d7'+h+'</td><td style="text-align:center"><img src="'+origThumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"> \u2192 <img src="'+thumbUrl+'" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle"><br><button class="btn" style="font-size:.75rem;padding:.2rem .5rem;margin-top:.2rem" onclick="download(convertedBlobs['+i+'].blob,convertedBlobs['+i+'].name)">Download</button></td></tr>';
   }
   table+='</tbody></table>';
   res.innerHTML=table;

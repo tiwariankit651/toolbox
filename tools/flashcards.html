@@ -36,9 +36,9 @@
     .btn-dont{background:#f44336;color:#fff}
     .tab-btns{display:flex;gap:6px;margin-bottom:1rem}
     .tab-btns button{flex:1;padding:.6rem;border:none;border-radius:8px;cursor:pointer;background:var(--card);color:var(--text);font-weight:600}
-    .tab-btns button.active{background:var(--accent);color:#fff}
+    .tab-btns button.active{background:var(--accent-strong);color:#fff}
     .set-card{background:var(--card);padding:1rem;border-radius:12px;cursor:pointer;margin-bottom:.5rem;transition:background .2s}
-    .set-card:hover{background:var(--accent);color:#fff}
+    .set-card:hover{background:var(--accent-strong);color:#fff}
   </style>
 </head>
 <body>
@@ -144,7 +144,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -239,7 +239,7 @@ function shuffleDeck(){
 function updateScore(){
   var total=score.know+score.dont;
   var pct=total?Math.round(score.know/total*100):0;
-  document.getElementById("scoreDisplay").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+score.know+'</div><div class="info">Correct</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#f44336">'+score.dont+'</div><div class="info">Wrong</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent)">'+pct+'%</div><div class="info">Score</div></div>';
+  document.getElementById("scoreDisplay").innerHTML='<div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#4caf50">'+score.know+'</div><div class="info">Correct</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--danger)">'+score.dont+'</div><div class="info">Wrong</div></div><div style="background:var(--card);padding:.8rem;border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--accent-text)">'+pct+'%</div><div class="info">Score</div></div>';
 }
 function addCustomCard(){
   var f=document.getElementById("newFront").value.trim();
@@ -254,7 +254,7 @@ function renderCustomList(){
   var saved=localStorage.getItem("fcCustom");
   if(saved&&!customCards.length)customCards=JSON.parse(saved);
   document.getElementById("customList").innerHTML=customCards.map(function(c,i){
-    return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center"><span><strong>'+c.front+'</strong> → '+c.back+'</span><button onclick="customCards.splice('+i+',1);localStorage.setItem(\'fcCustom\',JSON.stringify(customCards));renderCustomList()" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:1.2rem">×</button></div>';
+    return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center"><span><strong>'+c.front+'</strong> → '+c.back+'</span><button onclick="customCards.splice('+i+',1);localStorage.setItem(\'fcCustom\',JSON.stringify(customCards));renderCustomList()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.2rem">×</button></div>';
   }).join("")||'<p class="info">No cards yet. Add some above!</p>';
 }
 function studyCustom(){

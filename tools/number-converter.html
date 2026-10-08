@@ -32,7 +32,7 @@
   <style>
     .nc-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
     .nc-tab{padding:.5rem .9rem;border-radius:12px;border:1px solid rgba(99,102,241,.35);background:rgba(99,102,241,.06);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600}
-    .nc-tab.active{background:var(--gradient);color:#fff;border-color:transparent}
+    .nc-tab.active{background:var(--gradient-strong);color:#fff;border-color:transparent}
     .nc-panel{display:none}
     .nc-panel.active{display:block}
     .output-row{display:flex;align-items:center;gap:.5rem;margin:.5rem 0;padding:.5rem .75rem;background:rgba(99,102,241,.06);border-radius:10px}
@@ -61,7 +61,7 @@
     .nc-warn{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.35)}
     .nc-ok{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.35)}
     label.nc-lbl{display:block;font-weight:600;font-size:.8rem;margin:.6rem 0 .2rem;color:var(--text2)}
-    .ieee-grid{display:flex;flex-wrap:wrap;gap:2px;font-family:monospace;font-size:.7rem}
+    .ieee-grid{display:flex;flex-wrap:wrap;gap:2px;font-family:monospace;font-size:.75rem}
     .ieee-grid .b{width:20px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:3px}
     .ieee-sign{background:#ec4899;color:#fff}
     .ieee-exp{background:#8b5cf6;color:#fff}
@@ -208,7 +208,7 @@
       </div>
 
       <div class="bit-vis" style="margin-top:1.5rem">
-        <h4 style="display:flex;justify-content:space-between;align-items:center">Conversion History <button class="btn btn-outline" style="font-size:.7rem;padding:.25rem .5rem" onclick="clearHistory()">Clear</button></h4>
+        <h4 style="display:flex;justify-content:space-between;align-items:center">Conversion History <button class="btn btn-outline" style="font-size:.75rem;padding:.25rem .5rem" onclick="clearHistory()">Clear</button></h4>
         <div id="ncHistory"></div>
       </div>
     </div>
@@ -293,7 +293,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -402,7 +402,7 @@ function renderBits(){
   var boxes=document.getElementById('bitBoxes');var labels=document.getElementById('bitLabels');
   if(raw===''){boxes.innerHTML='';labels.innerHTML='';['bUdec','bSdec','bHex','bTc'].forEach(function(id){document.getElementById(id).textContent='—';});return;}
   var v=parseBig(raw,10);
-  if(v===undefined||v===null){boxes.innerHTML='<span style="color:#ec4899">Invalid decimal</span>';labels.innerHTML='';return;}
+  if(v===undefined||v===null){boxes.innerHTML='<span style="color:var(--accent3-text)">Invalid decimal</span>';labels.innerHTML='';return;}
   var u=toTwos(v,width);
   var bin=u.toString(2).padStart(width,'0');
   var lh='',bh='';
@@ -530,9 +530,9 @@ function renderIeee(){
   for(var i=0;i<bits.length;i++){var cls=i<signW?'ieee-sign':(i<signW+expW?'ieee-exp':'ieee-man');grid+='<span class="b '+cls+'">'+bits[i]+'</span>';}
   out.innerHTML='<div class="ieee-grid">'+grid+'</div>'+
     '<div style="margin-top:.7rem;font-size:.85rem;line-height:1.9">'+
-    '<div><span style="color:#ec4899">■</span> Sign: '+sign+' ('+(sign==='1'?'negative':'positive')+')</div>'+
-    '<div><span style="color:#8b5cf6">■</span> Exponent: '+exp+' = '+expVal+' (bias '+bias+', unbiased '+(expVal-bias)+')</div>'+
-    '<div><span style="color:#6366f1">■</span> Mantissa: '+man+'</div>'+
+    '<div><span style="color:var(--accent3-text)">■</span> Sign: '+sign+' ('+(sign==='1'?'negative':'positive')+')</div>'+
+    '<div><span style="color:var(--accent2-text)">■</span> Exponent: '+exp+' = '+expVal+' (bias '+bias+', unbiased '+(expVal-bias)+')</div>'+
+    '<div><span style="color:var(--accent-text)">■</span> Mantissa: '+man+'</div>'+
     '<div style="margin-top:.4rem">Value: '+num+'</div>'+
     '<div>Hex: 0x'+(bitsToHex(bits))+'</div></div>';
 }
@@ -566,7 +566,7 @@ function clearHistory(){localStorage.removeItem('ncHistory');renderHistory();}
 function renderHistory(){
   var h=getHist();var el=document.getElementById('ncHistory');
   if(!h.length){el.innerHTML='<p class="info">No conversions yet.</p>';return;}
-  el.innerHTML=h.map(function(e){return '<div class="nc-hist-item"><span>'+e.replace(/</g,'&lt;')+'</span><button onclick="copyText(this.previousSibling.textContent)" style="font-size:.7rem;padding:.2rem .45rem;border:1px solid rgba(99,102,241,.35);border-radius:6px;background:rgba(99,102,241,.08);color:var(--text);cursor:pointer">Copy</button></div>';}).join('');
+  el.innerHTML=h.map(function(e){return '<div class="nc-hist-item"><span>'+e.replace(/</g,'&lt;')+'</span><button onclick="copyText(this.previousSibling.textContent)" style="font-size:.75rem;padding:.2rem .45rem;border:1px solid rgba(99,102,241,.35);border-radius:6px;background:rgba(99,102,241,.08);color:var(--text);cursor:pointer">Copy</button></div>';}).join('');
 }
 
 // ---------- init ----------

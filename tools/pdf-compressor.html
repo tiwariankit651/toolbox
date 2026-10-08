@@ -160,7 +160,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -231,7 +231,7 @@ function parseRange(str,total){
 /* ---------- upload ---------- */
 setupDrop('drop','inp',function(fl){
   pcFiles=Array.prototype.slice.call(fl).filter(function(f){return /\.pdf$/i.test(f.name)});
-  if(!pcFiles.length){$id('result').innerHTML="<p class='info' style='color:#ec4899'>Please choose a PDF file.</p>";return}
+  if(!pcFiles.length){$id('result').innerHTML="<p class='info' style='color:var(--accent3-text)'>Please choose a PDF file.</p>";return}
   $id('goBtn').disabled=false;
   showFileInfo();
 });
@@ -258,7 +258,7 @@ async function showFileInfo(){
       "<span class='info'>"+fsz(f.size)+" &middot; "+pdf.numPages+" page"+(pdf.numPages>1?'s':'')+
       " &middot; page 1 is "+Math.round(vp.width)+"x"+Math.round(vp.height)+" pt</span></div></div>"+extra;
   }catch(e){
-    box.innerHTML="<p class='info' style='color:#ec4899'>Could not read this PDF ("+(e.message||'unknown error')+"). It may be encrypted or damaged.</p>";
+    box.innerHTML="<p class='info' style='color:var(--accent3-text)'>Could not read this PDF ("+(e.message||'unknown error')+"). It may be encrypted or damaged.</p>";
   }
 }
 
@@ -340,7 +340,7 @@ async function compressPDF(){
       var src=new Uint8Array(await file.arrayBuffer());
       var probe=await pdfjsLib.getDocument({data:src.slice(0)}).promise;
       var pages=parseRange(rangeStr,probe.numPages);
-      if(!pages.length){res.innerHTML="<p class='info' style='color:#ec4899'>Page range matched no pages.</p>";break}
+      if(!pages.length){res.innerHTML="<p class='info' style='color:var(--accent3-text)'>Page range matched no pages.</p>";break}
       var tag=pcFiles.length>1?('['+(fi+1)+'/'+pcFiles.length+'] '+file.name):'';
 
       var built, usedQuality, hitTarget=null;
@@ -385,7 +385,7 @@ async function compressPDF(){
     }
   }catch(e){
     if(String(e.message)!=='cancelled'){
-      res.innerHTML="<p class='info' style='color:#ec4899'>Error: "+(e.message||'unknown')+"</p>";
+      res.innerHTML="<p class='info' style='color:var(--accent3-text)'>Error: "+(e.message||'unknown')+"</p>";
       $id('goBtn').disabled=false; $id('cancelBtn').style.display='none';
       $id('progressWrap').style.display='none';
       return;
@@ -412,8 +412,8 @@ function renderResults(){
     var bigger=r.blob.size>=r.origSize;
     var col=bigger?'#f59e0b':'#22c55e';
     var targetNote='';
-    if(r.hitTarget===true)targetNote="<div class='info' style='color:#22c55e'>Target size reached</div>";
-    else if(r.hitTarget===false)targetNote="<div class='info' style='color:#f59e0b'>Could not reach the target even at lowest quality — try a lower DPI or enable grayscale</div>";
+    if(r.hitTarget===true)targetNote="<div class='info' style='color:var(--ok)'>Target size reached</div>";
+    else if(r.hitTarget===false)targetNote="<div class='info' style='color:var(--warn)'>Could not reach the target even at lowest quality — try a lower DPI or enable grayscale</div>";
 
     html+="<div style='background:var(--card);padding:1.2rem;border-radius:var(--radius);margin:.6rem 0;border:1px solid rgba(148,148,184,.22)'>"+
       "<strong>"+r.name+"</strong>"+

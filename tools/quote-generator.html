@@ -136,7 +136,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -344,7 +344,7 @@ function newQuote(){if(!filtered.length)return;current=filtered[Math.floor(Math.
 function quoteOfDay(){
   var d=new Date();var key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
   var idx=key%QUOTES.length;var q=QUOTES[idx];
-  document.getElementById("qod").innerHTML='<strong style="color:var(--accent)">⭐ Quote of the Day</strong><blockquote style="font-style:italic;margin:.5rem 0 0">“'+esc(q[0])+'”</blockquote><p style="margin:.3rem 0 0;color:var(--text2)">— '+esc(q[1])+'</p>';
+  document.getElementById("qod").innerHTML='<strong style="color:var(--accent-text)">⭐ Quote of the Day</strong><blockquote style="font-style:italic;margin:.5rem 0 0">“'+esc(q[0])+'”</blockquote><p style="margin:.3rem 0 0;color:var(--text2)">— '+esc(q[1])+'</p>';
 }
 
 /* ---------- Copy / Share ---------- */
@@ -366,7 +366,7 @@ function favCurrent(){
 function removeFav(i){favs.splice(i,1);localStorage.setItem(FKEY,JSON.stringify(favs));renderFavs();}
 function renderFavs(){
   if(!favs.length){document.getElementById("favList").innerHTML='<p class="info">No favourites yet. Click ⭐ Favourite on any quote.</p>';return;}
-  document.getElementById("favList").innerHTML=favs.map(function(f,i){return '<div style="padding:.4rem .5rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem">'+esc(f)+' <a href="#" onclick="removeFav('+i+');return false" style="color:#f44336;margin-left:.3rem">×</a></div>';}).join("");
+  document.getElementById("favList").innerHTML=favs.map(function(f,i){return '<div style="padding:.4rem .5rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem">'+esc(f)+' <a href="#" onclick="removeFav('+i+');return false" style="color:var(--danger);margin-left:.3rem">×</a></div>';}).join("");
 }
 function clearFavs(){favs=[];localStorage.setItem(FKEY,"[]");renderFavs();}
 function exportFavs(){if(!favs.length)return alert("No favourites to export.");var b=new Blob([favs.join("\n\n")],{type:"text/plain"});download(b,"favourite-quotes.txt");}

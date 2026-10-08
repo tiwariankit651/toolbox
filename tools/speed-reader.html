@@ -20,7 +20,7 @@
 <style>
 .sr-rsvp-box{text-align:center;padding:2.5rem 1rem;background:var(--card);border-radius:14px;margin:1rem 0;min-height:160px;position:relative;border:1px solid rgba(255,255,255,.06)}
 .sr-rsvp-word{font-weight:800;transition:font-size .2s;line-height:1.3;letter-spacing:1px}
-.sr-pivot{color:var(--accent2)}
+.sr-pivot{color:var(--accent2-text)}
 .sr-controls{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin:.8rem 0}
 .sr-controls button{min-width:44px}
 .sr-progress-bar{width:100%;height:6px;background:rgba(255,255,255,.08);border-radius:4px;margin:.6rem 0;cursor:pointer;position:relative}
@@ -34,13 +34,13 @@
 .sr-highlight-box .sr-hl-active{background:rgba(99,102,241,.3);border-radius:3px;padding:0 2px}
 .sr-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin:.8rem 0}
 .sr-stat{background:var(--card);border-radius:10px;padding:.6rem;text-align:center}
-.sr-stat-val{font-size:1.2rem;font-weight:700;color:var(--accent)}
-.sr-stat-label{font-size:.72rem;color:var(--text2)}
+.sr-stat-val{font-size:1.2rem;font-weight:700;color:var(--accent-text)}
+.sr-stat-label{font-size:.75rem;color:var(--text2)}
 .sr-history-item{background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;flex-wrap:wrap;font-size:.85rem}
 .sr-quiz-opt{background:var(--card);border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem 1rem;cursor:pointer;transition:all .2s;margin:.3rem 0}
 .sr-quiz-opt:hover{border-color:var(--accent)}
-.sr-quiz-opt.correct{border-color:#22c55e;background:rgba(34,197,94,.1)}
-.sr-quiz-opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.1)}
+.sr-quiz-opt.correct{border-color:var(--ok);background:rgba(34,197,94,.1)}
+.sr-quiz-opt.wrong{border-color:var(--danger);background:rgba(239,68,68,.1)}
 .sr-kbd{display:inline-block;background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:1px 6px;font-size:.75rem;font-family:monospace;color:var(--text2)}
 @media(max-width:600px){.sr-settings{grid-template-columns:1fr}.sr-stats-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -213,7 +213,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -599,8 +599,8 @@ function srCheckComp(qi, oi, el) {
   if (oi !== correct) el.classList.add('wrong');
   var fb = document.getElementById('srCompFb' + qi);
   fb.innerHTML = oi === correct ?
-    '<span style="color:#22c55e">\u2705 Correct!</span>' :
-    '<span style="color:#ef4444">\u274c Wrong</span>';
+    '<span style="color:var(--ok)">\u2705 Correct!</span>' :
+    '<span style="color:var(--danger)">\u274c Wrong</span>';
 
   // Check if all answered
   var totalQ = p.questions.length;

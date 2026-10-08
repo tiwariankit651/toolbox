@@ -100,7 +100,7 @@
       <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
         <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
   <script src="../js/common.js"></script>
@@ -346,7 +346,7 @@ function buildOutput(original){
 function renderStats(before, after){
   var acceptedCount=suggestions.filter(function(s){return s.accepted;}).length;
   function card(title,val,sub){
-    return '<div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><strong style="font-size:1.05rem">'+val+'</strong><br><span class="info">'+title+'</span>'+(sub?'<br><span class="info" style="font-size:.7rem">'+sub+'</span>':'')+'</div>';
+    return '<div style="background:var(--card);padding:.6rem;border-radius:10px;text-align:center"><strong style="font-size:1.05rem">'+val+'</strong><br><span class="info">'+title+'</span>'+(sub?'<br><span class="info" style="font-size:.75rem">'+sub+'</span>':'')+'</div>';
   }
   var html="";
   html+=card("Readability (Flesch)", Math.round(before.flesch)+" → "+Math.round(after.flesch), fleschLabel(after.flesch));
@@ -374,9 +374,9 @@ function renderChangeList(original){
     var to=s.replacement.trim()===""?'<em>(removed)</em>':escapeHtml(s.replacement.trim());
     return '<label style="display:flex;gap:.6rem;align-items:flex-start;padding:.5rem .6rem;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin:.35rem 0;background:var(--card)">'
       +'<input type="checkbox" data-sid="'+s.id+'" '+(s.accepted?"checked":"")+' onchange="toggleChange(this)" style="width:auto;margin-top:.25rem">'
-      +'<span style="flex:1"><span style="font-size:.72rem;color:var(--accent);font-weight:600">'+RULE_LABELS[s.rule]+'</span><br>'
+      +'<span style="flex:1"><span style="font-size:.75rem;color:var(--accent-text);font-weight:600">'+RULE_LABELS[s.rule]+'</span><br>'
       +'<span style="text-decoration:line-through;color:var(--text2)">'+from+'</span> → <strong>'+to+'</strong>'
-      +'<br><span class="info" style="font-size:.72rem">'+escapeHtml(s.note)+'</span></span></label>';
+      +'<br><span class="info" style="font-size:.75rem">'+escapeHtml(s.note)+'</span></span></label>';
   });
   box.innerHTML=rows.join("");
 }
