@@ -62,11 +62,12 @@
       <div id="subjectsTab" class="no-print" style="display:none">
         <h3>Manage Subjects</h3>
         <div class="row" style="gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap">
-          <input type="text" id="newSubName" placeholder="Subject name..." style="flex:2;min-width:140px">
+          <input type="text" id="newSubName" placeholder="Subject name..." style="flex:2;min-width:140px" oninput="subNameFeedback()">
           <input type="number" id="newSubHrs" placeholder="Target hrs/week" min="0" step="0.5" style="flex:1;min-width:100px">
           <input type="color" id="newSubColor" value="#6366f1" style="width:40px;height:38px;border:none;cursor:pointer;padding:0">
           <button class="btn" onclick="addSubject()">+ Add</button>
         </div>
+      <p class="info" id="subNameNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
         <div id="subjectsList" class="sub-list"></div>
         <p class="info" style="margin-top:.5rem">Add subjects here, then use them when filling the timetable. Target hours help track planned vs needed study time.</p>
       </div>
@@ -108,16 +109,18 @@
             <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button>
           </div>
           <div class="save-row">
-            <input type="text" id="ttName" placeholder="Timetable name...">
+            <input type="text" id="ttName" placeholder="Timetable name..." oninput="ttNameFeedback()">
             <button class="btn" onclick="saveTT()">💾 Save</button>
             <select id="ttList" onchange="loadSaved()"><option value="">— Load Saved —</option></select>
             <button class="btn btn-outline" onclick="deleteSaved()">🗑️</button>
           </div>
+      <p class="info" id="ttNameNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
             <button class="btn" onclick="exportPNG()">📷 Export PNG</button>
         <button class="btn btn-outline" onclick="copyTimetable()">📋 Copy as text</button>
         <button class="btn btn-outline" onclick="downloadTimetableText()">📄 Download .txt</button>
         <button class="btn btn-outline" onclick="exportTimetableCsv()">📊 Export CSV</button>
+        <button class="btn btn-outline" onclick="exportAllTimetables()">🗜️ Export all as ZIP</button>
             <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
             <button class="btn btn-outline" onclick="exportJSON()">📤 Export JSON</button>
             <button class="btn btn-outline" onclick="document.getElementById('jsonImp').click()">📥 Import JSON</button>
@@ -216,6 +219,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -299,6 +303,96 @@ function updateHoursSummary(){
 /* Grid */
 /* Students share a timetable in a WhatsApp group far more often than they print
    it, so a plain-text version is a primary output rather than a nicety. */
+/* This tool keeps any number of named timetables (tt_saved), so a student can
+   have "Sem 1", "Exam week" and "Holidays" side by side. Exporting one at a time
+   is the tedious part; a single ZIP with every saved timetable as both text and
+   CSV is the actual use case. */
+function gridAsText(g, title){
+  var filled=Object.keys(g).filter(function(k){return g[k]&&String(g[k]).trim()});
+  if(!filled.length)return null;
+  var byDay={};
+  filled.forEach(function(k){
+    var i=k.lastIndexOf('-');
+    (byDay[k.slice(0,i)]=byDay[k.slice(0,i)]||[]).push({h:k.slice(i+1),v:g[k]});
+  });
+  var L=[(title||'TIMETABLE').toUpperCase()];
+  DAYS.forEach(function(d){
+    var rows=byDay[d];
+    if(!rows||!rows.length)return;
+    rows.sort(function(a,b){return (+a.h)-(+b.h)});
+    L.push('');
+    L.push(d.toUpperCase());
+    rows.forEach(function(r){
+      var hr=+r.h;
+      L.push('  '+(hr%12===0?12:hr%12)+(hr<12?' am':' pm')+'  '+r.v);
+    });
+  });
+  L.push('');
+  L.push('Total planned: '+filled.length+' hour'+(filled.length===1?'':'s'));
+  return L.join('\n');
+}
+
+function gridAsCsv(g){
+  var filled=Object.keys(g).filter(function(k){return g[k]&&String(g[k]).trim()});
+  if(!filled.length)return null;
+  var hours={};
+  filled.forEach(function(k){hours[k.slice(k.lastIndexOf('-')+1)]=true});
+  var hrList=Object.keys(hours).sort(function(a,b){return (+a)-(+b)});
+  var rows=[['Time'].concat(DAYS)];
+  hrList.forEach(function(h){
+    rows.push([h+':00'].concat(DAYS.map(function(d){return g[d+'-'+h]||''})));
+  });
+  return rows.map(function(r){
+    return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',');
+  }).join('\n');
+}
+
+async function exportAllTimetables(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  var saved=storeGet('tt_saved', {});
+  var names=Object.keys(saved);
+  /* include the timetable on screen even if it was never saved under a name */
+  var current=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  if(!names.length&&!current.length){
+    notify('Nothing to export yet. Fill in some slots or save a timetable first.','warn');
+    return;
+  }
+  try{
+    var zip=new JSZip();
+    var count=0;
+    var safe=function(s){return String(s).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-')||'timetable'};
+    if(current.length){
+      var t=gridAsText(grid,'Current timetable');
+      var v=gridAsCsv(grid);
+      if(t)zip.file('current/current.txt',t);
+      if(v)zip.file('current/current.csv','\ufeff'+v);
+      count++;
+    }
+    names.forEach(function(n){
+      var g=(saved[n]&&saved[n].grid)||{};
+      var t=gridAsText(g,n), v=gridAsCsv(g);
+      if(!t)return;
+      var dir=safe(n);
+      zip.file(dir+'/'+dir+'.txt',t);
+      if(v)zip.file(dir+'/'+dir+'.csv','\ufeff'+v);
+      count++;
+    });
+    if(!count){notify('The saved timetables are all empty.','warn');return}
+    /* a short index so the ZIP is self-explanatory */
+    zip.file('README.txt',
+      'Timetables exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'Each folder holds one timetable as .txt (readable) and .csv (opens in\n'+
+      'Excel or Google Sheets).\n\n'+
+      'Included: '+count+'\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'timetables.zip');
+    notify(count+' timetable'+(count>1?'s':'')+' exported as ZIP.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function timetableAsText(){
   var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
   if(!filled.length)return null;
@@ -478,11 +572,59 @@ function autoLoad(){
 function saveTT(){
   var name=document.getElementById('ttName').value.trim();
   if(!name){notify('Enter a name', 'warn');return}
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  if(!filled.length){notify('Fill in some slots before saving.','warn');return}
   var saved=storeGet('tt_saved', {});
+  /* Saving over an existing name silently replaced it, which is easy to do when
+     the names are short like "Sem 1". Confirm first. */
+  if(saved[name]&&!confirm('"'+name+'" already exists. Replace it?'))return;
+  var replacing=!!saved[name];
   saved[name]={grid:grid,subjectColors:subjectColors,subjects:subjects};
-  storeSet('tt_saved', saved);
+  if(!storeSet('tt_saved', saved))return;
   loadList();
   document.getElementById('ttName').value='';
+  ttNameFeedback();
+  notify(replacing?('Replaced "'+name+'".'):('Saved as "'+name+'" ('+filled.length+' slots).'),'ok');
+}
+
+/* ---- live feedback on the two text fields ----
+   Both have a real failure mode that is cheaper to show while typing than after
+   pressing the button: a timetable name that would overwrite an existing save,
+   and a subject name that already exists and will therefore be updated rather
+   than added. */
+function ttNameFeedback(){
+  var inp=document.getElementById('ttName');
+  var note=document.getElementById('ttNameNote');
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.style.display='none';note.textContent='';return}
+  var saved=storeGet('tt_saved', {});
+  note.style.display='block';
+  if(saved[v]){
+    note.style.color='var(--warn)';
+    var slots=Object.keys(saved[v].grid||{}).length;
+    note.textContent='"'+v+'" already exists ('+slots+' slots). Saving will replace it.';
+  }else{
+    note.style.color='var(--ok)';
+    note.textContent='Will save as a new timetable.';
+  }
+}
+
+function subNameFeedback(){
+  var inp=document.getElementById('newSubName');
+  var note=document.getElementById('subNameNote');
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.style.display='none';note.textContent='';return}
+  var hit=subjects.find(function(s){return s.name.toLowerCase()===v.toLowerCase()});
+  note.style.display='block';
+  if(hit){
+    note.style.color='var(--warn)';
+    note.textContent='"'+hit.name+'" exists — its hours and colour will be updated.';
+  }else{
+    note.style.color='var(--ok)';
+    note.textContent='Will be added as a new subject.';
+  }
 }
 function loadList(){
   var sel=document.getElementById('ttList');
