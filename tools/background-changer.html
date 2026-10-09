@@ -198,7 +198,9 @@ function paintBackground(ctx,w,h){
 // Composite cutout blob onto chosen background, optionally resizing
 function compositeResult(cutoutBlob){
   return new Promise(async function(resolve){
-    var subject=await loadImage(cutoutBlob);
+    var subject;
+    try{ subject=await loadImage(cutoutBlob) }
+    catch(err){ imgError(err); resolve(null); return }
     var size=getOutputSize();
     var w=size?size.w:subject.width;
     var h=size?size.h:subject.height;
@@ -294,6 +296,7 @@ async function processAISingle(f){
 async function processFastSingle(f){
   document.getElementById("result").innerHTML="<p class='info'>\u23f3 Processing...</p>";
   var cutout=await runFastCutout(f);
+  if(!cutout)return;   /* the cutout step already reported why */
   var final=await compositeResult(cutout);
   finishSingle(f,final);
 }
@@ -301,7 +304,10 @@ async function processFastSingle(f){
 // Fast flood-fill returns transparent cutout blob
 function runFastCutout(f){
   return new Promise(async function(resolve){
-    var img=await loadImage(f);
+    var img;
+    /* No reject is available in this wrapper, so report and settle with null;
+       the caller already checks for a falsy result. */
+    try{ img=await loadImage(f) }catch(err){ imgError(err); resolve(null); return }
     var c=document.createElement("canvas");c.width=img.width;c.height=img.height;
     var ctx=c.getContext("2d");ctx.drawImage(img,0,0);
     var data=ctx.getImageData(0,0,c.width,c.height);var d=data.data;

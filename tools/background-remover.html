@@ -223,7 +223,10 @@ async function runAI(f,single){
 // ---- Fast mode: corner flood-fill (solid backgrounds only) ----
 function runFastOnFile(f){
   return new Promise(async function(resolve){
-    var img=await loadImage(f);var c=document.createElement("canvas");c.width=img.width;c.height=img.height;var ctx=c.getContext("2d");ctx.drawImage(img,0,0);var data=ctx.getImageData(0,0,c.width,c.height);var d=data.data;var t=+document.getElementById("thresh").value;var w=c.width,h=c.height;
+    var img;
+    /* No reject is available in this wrapper, so report and settle with null;
+       the caller already checks for a falsy result. */
+    try{ img=await loadImage(f) }catch(err){ imgError(err); resolve(null); return }var c=document.createElement("canvas");c.width=img.width;c.height=img.height;var ctx=c.getContext("2d");ctx.drawImage(img,0,0);var data=ctx.getImageData(0,0,c.width,c.height);var d=data.data;var t=+document.getElementById("thresh").value;var w=c.width,h=c.height;
     var gray0=new Float32Array(w*h);
     for(var i=0;i<w*h;i++) gray0[i]=d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114;
     /* Box-blur the luminance before running Sobel. On a real photo the sensor noise
@@ -281,6 +284,7 @@ function runFastOnFile(f){
 async function runFastSingle(f){
   showProcessing("result");
   var blob=await runFastOnFile(f);
+  if(!blob)return;     /* the cutout step already reported why */
   showResult(blob);
 }
 

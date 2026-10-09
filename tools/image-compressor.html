@@ -246,7 +246,11 @@ var html=avifNotice;var totalOrig=0,totalComp=0;compressedBlobs=[];
 var firstOrigUrl=null,firstCompUrl=null;
 
 for(var i=0;i<files.length;i++){
-  var file=files[i];var img=await loadImage(file);
+  var file=files[i];
+  var img;
+  /* One unreadable file used to abort the entire batch. Skip it instead. */
+  try{ img=await loadImage(file) }
+  catch(err){ notify(file.name+" could not be read, skipping it.","warn"); continue }
   var w=img.width,h=img.height;
   if(maxW>0&&maxH>0){w=maxW;h=maxH}
   else if(maxW>0&&img.width>maxW){h=Math.round(img.height*(maxW/img.width));w=maxW}

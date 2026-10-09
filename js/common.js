@@ -3,7 +3,35 @@ function toggleTheme(){document.body.classList.toggle('light');document.getEleme
 try{if(localStorage.getItem('theme')==='light')document.body.classList.add('light')}catch(e){}
 function copyText(t,btn){navigator.clipboard.writeText(t);if(btn){btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1000)}}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();var t=document.createElement('div');t.textContent='🎉 Downloaded: '+name;t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999;animation:fadeUp .3s ease';document.body.appendChild(t);setTimeout(function(){t.remove()},2500);if(!document.getElementById('toastCSS')){var s=document.createElement('style');s.id='toastCSS';s.textContent='@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';document.head.appendChild(s)}}
-function loadImage(file){return new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=URL.createObjectURL(file)})}
+/* Shared rejection handler for loadImage chains. Without one, a corrupt file
+   turns into an unhandled promise rejection, which is exactly as silent for the
+   user as the old never-settling promise was. */
+function imgError(err){
+  notify((err && err.message) ? err.message : 'That image could not be read.', 'error');
+  var el = document.getElementById('result') || document.getElementById('output');
+  if (el && !el.innerHTML.trim()) {
+    el.innerHTML = '<p class="info" style="color:var(--danger)">' +
+      ((err && err.message) ? String(err.message) : 'That image could not be read.') + '</p>';
+  }
+}
+
+/* A corrupt or non-image file fires onerror, never onload. Without an onerror
+   handler this promise never settled at all, so every caller's .then() simply
+   never ran and the tool sat there with no output and no message. */
+function loadImage(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    const clean=()=>{try{URL.revokeObjectURL(url)}catch(e){}};
+    img.onload=()=>{clean();resolve(img)};
+    img.onerror=()=>{
+      clean();
+      reject(new Error('"'+(file&&file.name?file.name:'that file')+'" is not a readable image. '+
+                       'Try a PNG, JPG or WEBP file.'));
+    };
+    img.src=url;
+  });
+}
 function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 

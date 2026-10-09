@@ -274,7 +274,7 @@ function handleFiles(files){
     loadImage(f).then(function(img){
       try{ results[i]={src:img.src,pixels:getPixels(img),name:f.name} }
       catch(e){ failed++ }
-    }).catch(function(){ failed++ }).then(function(){
+    }).catch(imgError).catch(function(){ failed++ }).then(function(){
       done++;
       if(done<imgs.length)return;
       IMAGES=results.filter(Boolean);

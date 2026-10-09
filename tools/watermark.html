@@ -236,14 +236,14 @@ setupDrop('drop','inp',function(fl){
     document.getElementById('controls').style.display='';
     renderQueue();
     updatePreview();
-  });
+  }).catch(imgError);
 });
 
 document.getElementById('logoInp').addEventListener('change',function(e){
   if(!e.target.files[0])return;
   document.getElementById('logoName').textContent=e.target.files[0].name;
   document.getElementById('logoOn').checked=true;syncFieldsets();
-  loadImage(e.target.files[0]).then(function(img){logoImg=img;updatePreview()});
+  loadImage(e.target.files[0]).then(function(img){logoImg=img;updatePreview()}).catch(imgError);
 });
 
 function switchTab(t){
@@ -445,7 +445,7 @@ function processAll(){
           if(st){st.textContent='done · '+formatSize(blob.size);st.classList.add('done')}
           var dl=document.getElementById('qd'+i);if(dl)dl.style.display='';
         });
-      });
+      }).catch(imgError);
     });
   });
   chain.then(function(){

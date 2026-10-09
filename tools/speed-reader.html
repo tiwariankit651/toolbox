@@ -284,6 +284,9 @@ function srLoadFile(e) {
     document.getElementById('srText').value = ev.target.result;
     srUpdateStats();
   };
+  reader.onerror = function() {
+    notify("That file could not be read. Try a plain .txt file.", "error");
+  };
   reader.readAsText(file);
   e.target.value = '';
 }

@@ -150,6 +150,11 @@ var videoFile,videoDuration=0;
 setupDrop("drop","inp",function(f){
   videoFile=f[0];var vid=document.getElementById("vid");
   vid.src=URL.createObjectURL(videoFile);
+  /* A corrupt or unsupported container fires onerror, never onloadedmetadata,
+     so the tool previously sat with no duration and no explanation. */
+  vid.onerror=function(){
+    notify("That video could not be read. Try an MP4 or WEBM file.","error");
+  };
   vid.onloadedmetadata=function(){
     videoDuration=vid.duration;
     document.getElementById("startT").value=0;

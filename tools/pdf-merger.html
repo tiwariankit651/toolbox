@@ -120,16 +120,36 @@ document.getElementById('inp2').addEventListener('change', function() { addFiles
 
 async function addFiles(fileList) {
   if (!checkFileSize(fileList)) return;
+  var skipped = [], added = 0;
   for (var i = 0; i < fileList.length; i++) {
     var f = fileList[i];
-    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) continue;
-    var ab = await f.arrayBuffer();
-    var pdfDoc = await PDFLib.PDFDocument.load(ab);
-    var pageCount = pdfDoc.getPageCount();
-    var thumbUrl = await renderThumb(ab);
-    pdfItems.push({ file: f, pageCount: pageCount, thumbUrl: thumbUrl, pageRange: '' });
+    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+      skipped.push(f.name + ' (not a PDF)');
+      continue;
+    }
+    /* A corrupt or password-protected PDF makes PDFDocument.load throw. That used
+       to abort the whole loop before render(), so nothing appeared on screen and
+       the only clue was a console message the user never sees. */
+    try {
+      var ab = await f.arrayBuffer();
+      var pdfDoc = await PDFLib.PDFDocument.load(ab);
+      var pageCount = pdfDoc.getPageCount();
+      var thumbUrl = await renderThumb(ab);
+      pdfItems.push({ file: f, pageCount: pageCount, thumbUrl: thumbUrl, pageRange: '' });
+      added++;
+    } catch (err) {
+      var why = /encrypt|password/i.test(err && err.message ? err.message : '')
+        ? ' (password protected)' : ' (could not be read)';
+      skipped.push(f.name + why);
+    }
   }
   render();
+  if (skipped.length) {
+    notify('Skipped ' + skipped.length + ': ' + skipped.slice(0, 3).join(', ') +
+           (skipped.length > 3 ? '...' : ''), added ? 'warn' : 'error');
+  } else if (added) {
+    notify('Added ' + added + ' PDF' + (added > 1 ? 's' : '') + '.', 'ok');
+  }
 }
 
 async function renderThumb(arrayBuffer) {

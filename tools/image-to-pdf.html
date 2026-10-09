@@ -49,7 +49,9 @@
     .quality-display{font-size:.75rem;color:var(--text2);text-align:right}
     .stats-bar{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin:.8rem 0;font-size:.85rem;color:var(--text2)}
     .stats-bar span{background:var(--card);padding:.3rem .7rem;border-radius:var(--radius);font-size:.8rem}
-  </style>
+  .thumb-bad{outline:2px solid var(--danger);position:relative}
+.thumb-bad::after{content:"unreadable";position:absolute;inset:auto 0 50% 0;text-align:center;font-size:.75rem;color:var(--danger);font-weight:600}
+</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -215,7 +217,7 @@ function renderThumbs(){
     div.innerHTML=
       '<button class="thumb-remove" onclick="removeImage('+i+')" title="Remove">×</button>'+
       '<span class="rotation-badge" id="rotBadge'+i+'" style="'+(rot?'display:block':'')+'">'+rot+'°</span>'+
-      '<img src="'+url+'" style="transform:rotate('+rot+'deg)" alt="'+f.name+'">'+
+      '<img src="'+url+'" style="transform:rotate('+rot+'deg)" alt="'+f.name+'" onerror="this.style.display=&quot;none&quot;;this.parentNode.classList.add(&quot;thumb-bad&quot;)">'+
       '<div class="thumb-name">'+f.name+'</div>'+
       '<div class="thumb-actions">'+
         '<button onclick="moveImage('+i+',-1)" title="Move up">▲</button>'+
@@ -295,9 +297,18 @@ function addFiles(newFiles){
 }
 
 setupDrop("drop","inp",function(f){
-  files=Array.from(f);
+  var all=Array.from(f);
+  /* A PDF or video dropped here used to be accepted silently and then fail at
+     conversion time with nothing on screen. */
+  files=all.filter(function(x){return !x.type||x.type.indexOf("image/")===0});
+  var skipped=all.length-files.length;
   rotations={};
   renderThumbs();
+  if(!files.length){
+    notify("Those files are not images. Try PNG, JPG or WEBP.","error");
+  }else if(skipped){
+    notify("Skipped "+skipped+" file"+(skipped>1?"s":"")+" that are not images.","warn");
+  }
 });
 
 document.getElementById("inp2").addEventListener("change",function(e){

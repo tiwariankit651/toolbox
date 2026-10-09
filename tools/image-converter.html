@@ -197,7 +197,10 @@ async function go(){
 
   for(var i=0;i<files.length;i++){
     var f=files[i];
-    var img=await loadImage(f);
+    var img;
+    /* Skip an unreadable file rather than failing the whole conversion. */
+    try{ img=await loadImage(f) }
+    catch(err){ notify((f.name||"That file")+" could not be read, skipping it.","warn"); continue }
     var dims=getResizedDims(img.width,img.height);
     var w=dims.w,h=dims.h;
     var blob;

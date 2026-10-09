@@ -195,7 +195,8 @@ function gen(){
     if(shape==='circle'){ctx.beginPath();ctx.arc(x+px/2,y2+px/2,px/2.2,0,Math.PI*2);ctx.fill();}
     else if(shape==='rounded'){var rd=px*0.3;ctx.beginPath();ctx.moveTo(x+rd,y2);ctx.lineTo(x+px-rd,y2);ctx.quadraticCurveTo(x+px,y2,x+px,y2+rd);ctx.lineTo(x+px,y2+px-rd);ctx.quadraticCurveTo(x+px,y2+px,x+px-rd,y2+px);ctx.lineTo(x+rd,y2+px);ctx.quadraticCurveTo(x,y2+px,x,y2+px-rd);ctx.lineTo(x,y2+rd);ctx.quadraticCurveTo(x,y2,x+rd,y2);ctx.fill();}
     else{ctx.fillRect(x,y2,px+0.5,px+0.5);}}}}
-  if(hasLogo){var file=document.getElementById('qrLogo').files[0];var img=new Image();img.onload=function(){var ls=size*0.22;var pad=ls*0.15;var cx2=(size-ls)/2;var cy2=(size-ls)/2;ctx.fillStyle=bg;ctx.beginPath();ctx.arc(size/2,size/2,ls/2+pad,0,Math.PI*2);ctx.fill();ctx.drawImage(img,cx2,cy2,ls,ls);showResult(cv);};img.src=URL.createObjectURL(file);}
+  if(hasLogo){var file=document.getElementById('qrLogo').files[0];var img=new Image();img.onload=function(){var ls=size*0.22;var pad=ls*0.15;var cx2=(size-ls)/2;var cy2=(size-ls)/2;ctx.fillStyle=bg;ctx.beginPath();ctx.arc(size/2,size/2,ls/2+pad,0,Math.PI*2);ctx.fill();ctx.drawImage(img,cx2,cy2,ls,ls);showResult(cv);};img.onerror=function(){notify("That logo image could not be read. The QR code is unchanged.","warn")};
+  img.src=URL.createObjectURL(file);}
   else{showResult(cv);}}
 function showResult(cv){
   var img=cv.toDataURL('image/png');

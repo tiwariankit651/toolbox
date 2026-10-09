@@ -173,8 +173,25 @@ document.getElementById("imgInput").addEventListener("change",function(){
 });
 
 async function loadPDF(){
-  var data=await file.arrayBuffer();
-  pdfDoc=await pdfjsLib.getDocument({data:data}).promise;
+  /* A corrupt or password-protected PDF makes getDocument reject. Without this the
+     rejection surfaced only in the console and the toolbar never appeared, so the
+     page looked like nothing had happened at all. */
+  var data, msg;
+  try{
+    data=await file.arrayBuffer();
+    pdfDoc=await pdfjsLib.getDocument({data:data}).promise;
+  }catch(err){
+    var m=(err&&err.message)||"";
+    if(/password/i.test(m)||err&&err.name==="PasswordException")
+      msg="That PDF is password protected. Remove the password and try again.";
+    else if(/invalid|structure|header/i.test(m)||err&&err.name==="InvalidPDFException")
+      msg="That file is not a readable PDF. It may be corrupt or renamed from another format.";
+    else msg="Could not open that PDF"+(m?(": "+m):".");
+    notify(msg,"error");
+    var fi=document.getElementById("fileInfo");
+    if(fi){fi.style.display="block";fi.innerHTML='<p class="info" style="color:var(--danger)">'+msg+'</p>'}
+    return;
+  }
   document.getElementById("toolbar").style.display="flex";
   document.getElementById("pageNav").style.display="block";
   totalPages=pdfDoc.numPages;
