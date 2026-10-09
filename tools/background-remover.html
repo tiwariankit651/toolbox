@@ -133,6 +133,45 @@ setupDrop("drop","inp",function(f){
   }
 });
 
+/* Mode and threshold are re-chosen on every visit. That matters here because AI
+   mode downloads a ~40MB model, so someone who deliberately picked Fast mode to
+   avoid it has to pick it again each time. */
+var BR_KEY='background-remover-settings-v1';
+function brSave(){
+  storeSet(BR_KEY,{
+    mode:document.getElementById('mode').value,
+    thresh:document.getElementById('thresh').value
+  },true);
+}
+function brRestore(){
+  var d=storeGet(BR_KEY,null);
+  if(!d)return;
+  var m=document.getElementById('mode');
+  if(d.mode&&Array.prototype.some.call(m.options,function(o){return o.value===d.mode})){
+    m.value=d.mode;
+    m.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  var t=document.getElementById('thresh');
+  if(d.thresh&&t){t.value=d.thresh;t.dispatchEvent(new Event('input',{bubbles:true}))}
+}
+
+/* Copying the cutout straight to the clipboard skips the download step, which is
+   the point when pasting into a chat or a slide. */
+async function copyCutout(){
+  try{
+    var img=document.querySelector('#result img');
+    if(!img){notify('Remove a background first.','warn');return}
+    var res=await fetch(img.src);
+    var blob=await res.blob();
+    if(!navigator.clipboard||!window.ClipboardItem)
+      throw new Error('this browser cannot copy images; use Download instead');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    notify('Cutout copied - paste it anywhere.','ok');
+  }catch(err){
+    notify('Copy failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 async function go(){
   if(!files.length)return;
   document.getElementById("goBtn").disabled=true;
@@ -364,7 +403,18 @@ async function downloadAllZip(){
 function showResult(b){
   document.getElementById("result").innerHTML="<div style=\"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/20px 20px;border-radius:10px;padding:10px;display:inline-block\"><img src=\""+URL.createObjectURL(b)+"\" style=\"max-width:100%;max-height:300px\"></div><br><button class=\"btn\" onclick=\"download(window._b,'no-bg.png')\">\ud83d\udcbe Download PNG</button>";
   window._b=b;
+  /* Added via the DOM rather than by editing the escaped HTML string above, which
+     is where the quoting goes wrong. */
+  var copyBtn=document.createElement("button");
+  copyBtn.className="btn btn-outline";
+  copyBtn.textContent="\ud83d\udccb Copy";
+  copyBtn.onclick=copyCutout;
+  document.getElementById("result").appendChild(copyBtn);
   document.getElementById("goBtn").disabled=false;
 }
+
+brRestore();
+['mode','thresh'].forEach(function(id){var el=document.getElementById(id);
+  if(el){el.addEventListener('change',brSave);el.addEventListener('input',brSave)}});
 </script>
 </body></html>

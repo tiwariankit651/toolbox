@@ -140,6 +140,7 @@
 
       <div class="row" style="margin-top:1rem">
         <button class="btn btn-outline" onclick="exportCSV()">📥 Export CSV</button>
+        <button class="btn btn-outline" onclick="copyBudgetSummary()">📋 Copy summary</button>
         <button class="btn btn-outline" onclick="exportJSON()">📦 Export JSON</button>
         <button class="btn btn-outline" onclick="document.getElementById('importJson').click()">📤 Import JSON</button>
         <input type="file" id="importJson" accept="application/json,.json" style="display:none" onchange="importJSON(event)">
@@ -532,6 +533,46 @@ function renderInsights(){
 }
 
 /* ---- export / import ---- */
+/* A short monthly summary is what gets shared with a partner or pasted into a
+   note. The CSV already covers the spreadsheet case. */
+function budgetSummaryText(){
+  var d=storeGet(STORE_KEY,null);
+  if(!d||!d.tx||!d.tx.length)return null;
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var month=d.tx.filter(function(t){return (t.date||'').indexOf(ym)===0});
+  var use=month.length?month:d.tx;
+  var inc=0,exp=0,byCat={};
+  use.forEach(function(t){
+    var amt=+t.amt||0;   /* the field is amt, not amount */
+    if(t.type==='income')inc+=amt;
+    else{exp+=amt;byCat[t.cat||'Other']=(byCat[t.cat||'Other']||0)+amt}
+  });
+  var L=['BUDGET SUMMARY'+(month.length?(' - '+now.toLocaleString(undefined,{month:'long',year:'numeric'})):' (all time)')];
+  L.push('');
+  L.push('Income:  \u20b9'+inc.toFixed(2));
+  L.push('Expense: \u20b9'+exp.toFixed(2));
+  L.push('Balance: \u20b9'+(inc-exp).toFixed(2));
+  var cats=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a]});
+  if(cats.length){
+    L.push('');
+    L.push('BY CATEGORY');
+    cats.forEach(function(k){
+      var pct=exp?Math.round(byCat[k]/exp*100):0;
+      L.push('  '+k+': \u20b9'+byCat[k].toFixed(2)+'  ('+pct+'%)');
+    });
+  }
+  L.push('');
+  L.push(use.length+' transaction'+(use.length===1?'':'s'));
+  return L.join('\n');
+}
+
+function copyBudgetSummary(){
+  var t=budgetSummaryText();
+  if(!t){notify('Add some transactions first.','warn');return}
+  copyNow(t,'Budget summary copied.');
+}
+
 function exportCSV(){
   if(!data.txns.length){notify('No transactions to export.', 'warn');return;}
   var csv='Date,Description,Type,Category,Method,Amount,Note\n';

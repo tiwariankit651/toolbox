@@ -34,7 +34,17 @@
       <textarea id="jobdesc" rows="5" placeholder="Paste the target job description here for keyword matching..."></textarea>
 
       <div class="row" style="margin-top:.5rem">
-        <label for="expLevel" style="flex:0 0 auto"><strong>Experience level:</strong></label>
+        <label for="atsRole"><strong>Sample job description</strong></label>
+      <select id="atsRole" onchange="atsApplyRole()" style="width:100%;margin-bottom:.6rem">
+        <option value="">Choose a role to load an example...</option>
+        <option value="fresher">Fresher software engineer</option>
+        <option value="frontend">Frontend developer</option>
+        <option value="backend">Backend engineer</option>
+        <option value="dataAnalyst">Data analyst</option>
+        <option value="support">Customer support</option>
+        <option value="sales">Sales executive</option>
+      </select>
+      <label for="expLevel" style="flex:0 0 auto"><strong>Experience level:</strong></label>
         <select id="expLevel" style="flex:1">
           <option value="entry">Entry / Fresher (0-2 yrs)</option>
           <option value="mid" selected>Mid-level (2-7 yrs)</option>
@@ -225,6 +235,36 @@ function wordCount(t){t=(t||'').trim();return t?t.split(/\s+/).length:0}
 function updateWordCount(){document.getElementById('liveWords').textContent=wordCount(document.getElementById('resume').value)}
 
 // ---------- Main analysis ----------
+/* People often arrive without a job description to paste, which is the input the
+   keyword score depends on. These seed a realistic one for common Indian entry
+   routes so the check still produces something meaningful, and set the matching
+   experience level. */
+var ATS_ROLES={
+  fresher:{level:'entry',jd:'Looking for a fresher software engineer with knowledge of data structures, algorithms, OOP, SQL, Git and at least one of Java, Python or JavaScript. Good communication skills. B.Tech or BCA degree. Internship or project experience preferred.'},
+  frontend:{level:'mid',jd:'Frontend developer with 2-5 years experience in React, JavaScript, TypeScript, HTML, CSS, REST APIs, Git, responsive design, performance optimisation and unit testing. Experience with Next.js and state management is a plus.'},
+  backend:{level:'mid',jd:'Backend engineer with experience in Node.js or Java, REST API design, SQL and NoSQL databases, Docker, AWS, caching, microservices, unit testing and CI/CD pipelines.'},
+  dataAnalyst:{level:'entry',jd:'Data analyst with SQL, Excel, Python or R, Power BI or Tableau, statistics, data cleaning, dashboard building and stakeholder reporting experience.'},
+  support:{level:'entry',jd:'Customer support executive with excellent English and Hindi communication, CRM tools, ticketing systems, problem solving, email etiquette and the ability to work in rotational shifts.'},
+  sales:{level:'mid',jd:'Sales executive with B2B lead generation, CRM, cold calling, negotiation, target achievement, client relationship management and reporting experience.'}
+};
+function atsApplyRole(){
+  var k=document.getElementById('atsRole').value;
+  var r=ATS_ROLES[k];
+  if(!r)return;
+  var lvl=document.getElementById('expLevel');
+  if(lvl&&Array.prototype.some.call(lvl.options,function(o){return o.value===r.level})){
+    lvl.value=r.level;
+    lvl.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  var jd=document.getElementById('jobdesc');
+  if(jd){
+    if(jd.value.trim()&&!confirm('Replace the job description you have already pasted?'))return;
+    jd.value=r.jd;
+    jd.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  notify('Loaded a sample '+k.replace(/([A-Z])/g,' $1').toLowerCase()+' job description. Replace it with the real one for an accurate score.','ok');
+}
+
 function checkATS(){
   var resume=document.getElementById('resume').value.trim();
   var job=document.getElementById('jobdesc').value.trim();

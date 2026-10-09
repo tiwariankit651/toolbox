@@ -114,6 +114,7 @@
         <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="dcCopySide('b')">📄 Copy B</button>
         <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="downloadDiff()">⬇️ .diff</button>
       </div>
+      <p class="info" id="dcBusy" style="display:none;margin:.4rem 0;color:var(--accent-text)"></p>
       <div id="output" class="diff-output" style="display:none"></div>
     </div>
     <div style="min-height:90px">
@@ -228,10 +229,28 @@ function readLines(str,o){
   return lines;
 }
 
-function compare(){
+async function compare(){
   var rawA=document.getElementById('textA').value;
   var rawB=document.getElementById('textB').value;
   var o=getOpts();
+  /* The LCS pass is synchronous and takes about 1.3s on 5000 lines, so the tab
+     freezes with no indication anything is happening. Show a note and yield once
+     so the browser can paint it before the work starts. */
+  var bigA=rawA.split('\n').length, bigB=rawB.split('\n').length;
+  var busy=document.getElementById('dcBusy');
+  if(busy&&Math.max(bigA,bigB)>800){
+    busy.style.display='block';
+    busy.textContent='Comparing '+Math.max(bigA,bigB).toLocaleString()+' lines...';
+    await new Promise(function(r){requestAnimationFrame(function(){setTimeout(r,0)})});
+  }
+  try{
+    compareNow(rawA,rawB,o);
+  }finally{
+    if(busy)busy.style.display='none';
+  }
+}
+
+function compareNow(rawA,rawB,o){
   var linesA=rawA.split('\n'), linesB=rawB.split('\n');
   if(linesA.length>MAX_LINES||linesB.length>MAX_LINES){
     if(!confirm('Large input ('+Math.max(linesA.length,linesB.length)+' lines). Comparison may be slow and will be capped at '+MAX_LINES+' lines. Continue?')){return;}

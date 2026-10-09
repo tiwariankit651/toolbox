@@ -87,6 +87,7 @@
         <div class="row" id="jpgQRow" style="display:none"><label>Quality: <strong id="jqv">92</strong>%</label><input type="range" id="jpgQuality" min="10" max="100" value="92" style="flex:3" oninput="document.getElementById('jqv').textContent=this.value"></div>
         <p id="fileSizeInfo" class="info" style="font-size:.8rem"></p>
         <button class="btn" onclick="downloadCollage()" style="width:100%">💾 Download Collage</button>
+        <button class="btn btn-outline" onclick="copyCollage()">📋 Copy collage</button>
       </div>
 
       <div class="faq"><h2>FAQ</h2>
@@ -247,8 +248,29 @@ setupDrop("drop","inp",function(f){
     thumbs.appendChild(img);
   });
   document.getElementById("goBtn").disabled=false;
-  Promise.all(arr.map(function(file){return loadImage(file)})).then(function(loaded){
-    loadedImgs=loaded;
+  /* Promise.all rejects as soon as one image fails, which threw away every other
+     image the user had picked. Load them individually and drop only the bad ones. */
+  Promise.all(arr.map(function(file){
+    return loadImage(file).then(function(img){return img},function(){return null});
+  })).then(function(loaded){
+    var bad=[];
+    loadedImgs=loaded.filter(function(img,i){
+      if(img)return true;
+      bad.push(arr[i].name);
+      return false;
+    });
+    if(bad.length){
+      /* keep images and loadedImgs aligned, otherwise the wrong picture lands in
+         the wrong cell */
+      images=images.filter(function(f){return bad.indexOf(f.name)===-1});
+      notify(bad.length+' image'+(bad.length>1?'s':'')+' could not be read and were skipped: '+
+             bad.slice(0,3).join(', ')+(bad.length>3?'...':''),'warn');
+    }
+    if(!loadedImgs.length){
+      notify('None of those images could be read. Try PNG, JPG or WEBP.','error');
+      document.getElementById('goBtn').disabled=true;
+      return;
+    }
     resetCellState();
   });
 });
@@ -348,7 +370,19 @@ function drawCollageToCanvas(canvas){
 async function renderCollage(){
   if(!images.length)return;
   if(!loadedImgs.length){
-    loadedImgs=await Promise.all(images.map(function(file){return loadImage(file)}));
+    var results=await Promise.all(images.map(function(file){
+      return loadImage(file).then(function(img){return img},function(){return null});
+    }));
+    var skipped=results.filter(function(r){return !r}).length;
+    loadedImgs=results.filter(Boolean);
+    if(skipped){
+      images=images.filter(function(f,i){return !!results[i]});
+      notify(skipped+' image'+(skipped>1?'s':'')+' could not be read and were skipped.','warn');
+    }
+    if(!loadedImgs.length){
+      notify('None of those images could be read.','error');
+      return;
+    }
     resetCellState();
   }
   var canvas=document.getElementById("previewCanvas");
@@ -460,6 +494,54 @@ function updateFileSize(){
   },{passive:false});
 })();
 
+/* Copying straight to the clipboard skips the download step entirely, which is
+   what people want when pasting a collage into a chat. */
+async function copyCollage(){
+  try{
+    var canvas=document.getElementById('previewCanvas');
+    if(!canvas||!canvas.width){notify('Build a collage first.','warn');return}
+    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png')});
+    if(!blob)throw new Error('could not read the collage');
+    if(!navigator.clipboard||!window.ClipboardItem)
+      throw new Error('this browser cannot copy images; use Download instead');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    notify('Collage copied - paste it anywhere.','ok');
+  }catch(err){
+    notify('Copy failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
+/* The layout, spacing and background get re-chosen every visit even though most
+   people reuse the same look across several collages. */
+var CM_KEY='collage-maker-settings-v1';
+var CM_FIELDS=['gap','padding','radius','bgColor','bgColor2','bgGradient',
+               'sizePreset','customW','customH','dlFmt','jpgQuality',
+               'captionText','captionPos','captionSize','captionColor'];
+function cmSave(){
+  var d={};
+  CM_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(CM_KEY,d,true);
+}
+function cmRestore(){
+  var d=storeGet(CM_KEY,null);
+  if(!d)return;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      /* an unlisted value silently blanks a select */
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+  });
+}
+
 function downloadCollage(){
   var fmt=document.getElementById("dlFmt").value;
   var q=fmt==="jpeg"?+document.getElementById("jpgQuality").value/100:undefined;
@@ -472,6 +554,10 @@ function downloadCollage(){
     download(blob,"collage."+fmt);
   },"image/"+fmt,q);
 }
+
+cmRestore();
+CM_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',cmSave)});
 </script>
 </body>
 </html>

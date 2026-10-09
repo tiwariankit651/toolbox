@@ -46,10 +46,11 @@
         <div style="flex:0"><button class="btn btn-outline" onclick="newProfile()" style="white-space:nowrap">+ New</button></div>
       </div>
       <div class="row" style="flex-wrap:wrap">
-        <input type="text" id="profileName" placeholder="Profile name (e.g. B.Tech CSE)" style="flex:2">
+        <input type="text" id="profileName" placeholder="Profile name (e.g. B.Tech CSE)" style="flex:2" oninput="profileNameFeedback()">
         <button class="btn btn-outline" onclick="saveProfile()">💾 Save Profile</button>
         <button class="btn btn-outline" onclick="deleteProfile()">🗑 Delete</button>
       </div>
+      <p class="info" id="profileNameNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
 
       <!-- Editable grade mapping -->
       <details style="margin-top:1rem;background:var(--card);border-radius:10px;padding:.8rem">
@@ -101,6 +102,7 @@
       <!-- Import/Export/Print -->
       <div class="row" style="margin-top:1rem;flex-wrap:wrap">
         <button class="btn btn-outline" onclick="exportJSON()">⬇ Export JSON</button>
+        <button class="btn btn-outline" onclick="exportAllProfiles()">🗜️ Export all profiles (ZIP)</button>
         <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
         <button class="btn btn-outline" onclick="printSheet()">🖨 Print / PDF Grade Sheet</button>
@@ -150,6 +152,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 /* ===== Grading scales & editable mappings ===== */
@@ -359,8 +362,80 @@ function refreshProfileSelect(sel){
 function saveProfile(){
   var name=document.getElementById("profileName").value.trim();
   if(!name){notify("Enter a profile name to save", 'warn');return;}
-  var profiles=readProfiles();profiles[name]=currentState();writeProfiles(profiles);
-  refreshProfileSelect(name);notify("Saved profile: "+name, 'ok');
+  var profiles=readProfiles();
+  /* Saving over an existing profile replaced it with no warning. Easy to trigger
+     with short names like "Sem 1", and the previous state was unrecoverable. */
+  var replacing=!!profiles[name];
+  if(replacing&&!confirm('Profile "'+name+'" already exists. Replace it?'))return;
+  profiles[name]=currentState();
+  writeProfiles(profiles);
+  refreshProfileSelect(name);
+  profileNameFeedback();
+  notify(replacing?('Replaced profile: '+name):('Saved profile: '+name), 'ok');
+}
+
+/* Live feedback on the profile name, so the overwrite is visible before the click
+   rather than after it. */
+function profileNameFeedback(){
+  var inp=document.getElementById("profileName");
+  var note=document.getElementById("profileNameNote");
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.style.display="none";note.textContent="";return}
+  var profiles=readProfiles();
+  note.style.display="block";
+  if(profiles[v]){
+    note.style.color="var(--warn)";
+    var sems=(profiles[v].semesters||[]).length;
+    note.textContent='"'+v+'" already exists ('+sems+' semester'+(sems===1?'':'s')+'). Saving will replace it.';
+  }else{
+    note.style.color="var(--ok)";
+    note.textContent="Will save as a new profile.";
+  }
+}
+
+/* Export every saved profile at once. Students keep one profile per semester and
+   a combined one, and exporting them one at a time is the tedious part. */
+async function exportAllProfiles(){
+  if(typeof JSZip==="undefined"){notify("ZIP library is still loading, try again in a second.","warn");return}
+  var profiles=readProfiles();
+  var names=Object.keys(profiles);
+  if(!names.length){notify("No saved profiles yet. Save one first.","warn");return}
+  try{
+    var zip=new JSZip();
+    var safe=function(s){return String(s).replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"-")||"profile"};
+    var kept=0;
+    var activeName=document.getElementById("profileName").value.trim();
+    var activeState=currentState();
+    names.forEach(function(n){
+      /* applyState rebuilds the DOM, so compute each profile's sheet from its own
+         stored state rather than switching the UI around for every profile. */
+      applyState(profiles[n]);
+      calcAll();
+      var lines=buildSheetLines();
+      if(!lines)return;
+      var dir=safe(n);
+      zip.file(dir+"/"+dir+".txt",lines.join("\n"));
+      zip.file(dir+"/"+dir+".json",JSON.stringify(profiles[n],null,2));
+      kept++;
+    });
+    /* put the user back where they were */
+    applyState(activeState);
+    calcAll();
+    document.getElementById("profileName").value=activeName;
+    if(!kept){notify("The saved profiles are all empty.","warn");return}
+    zip.file("README.txt",
+      "CGPA profiles exported from freetoolhubs.com\n"+
+      "Generated: "+new Date().toLocaleString()+"\n\n"+
+      "Each folder holds one profile as .txt (readable grade sheet) and\n"+
+      ".json (re-importable into this tool).\n\n"+
+      "Included: "+kept+"\n");
+    var blob=await zip.generateAsync({type:"blob"});
+    download(blob,"cgpa-profiles.zip");
+    notify(kept+" profile"+(kept>1?"s":"")+" exported as ZIP.","ok");
+  }catch(err){
+    notify("ZIP export failed: "+((err&&err.message)||"unknown"),"error");
+  }
 }
 function loadProfile(){
   var name=document.getElementById("profileSelect").value;

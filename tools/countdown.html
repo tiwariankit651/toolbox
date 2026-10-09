@@ -83,7 +83,8 @@
       </div>
 
       <div class="cd-form">
-        <div><label>Event Name</label><input type="text" id="eventName" placeholder="e.g. JEE Mains 2026"></div>
+        <div><label>Event Name</label><input type="text" id="eventName" placeholder="e.g. JEE Mains 2026" oninput="cdNameFeedback()"></div>
+      <p class="info" id="cdNameNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
         <div><label>Target Date &amp; Time</label><input type="datetime-local" id="eventDate"></div>
         <div><label>Start Date (for progress bar, optional)</label><input type="datetime-local" id="startDate"></div>
         <div><label>Recurring</label><select id="recurring"><option value="none">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
@@ -96,6 +97,8 @@
         <button class="btn btn-outline" onclick="toggleDisplayMode()" id="dispModeBtn">🔎 Compact Mode</button>
         <button class="btn btn-outline" onclick="copySummary()">📋 Copy Summary</button>
         <button class="btn btn-outline" onclick="exportCountdowns()">📥 Export JSON</button>
+        <button class="btn btn-outline" onclick="copyCountdowns()">📋 Copy list</button>
+        <button class="btn btn-outline" onclick="exportCountdownsIcs()">📅 Export .ics</button>
         <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
         <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importCountdowns(event)">
       </div>
@@ -392,6 +395,89 @@ function copySummary(){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){notify('Summary copied!', 'ok');},function(){prompt('Copy:',text);});}
   else prompt('Copy:',text);
 }
+/* Copying the list as text is how people share "what's coming up" in a group,
+   and an .ics file puts the same dates straight into a real calendar. */
+function countdownsAsText(){
+  if(!countdowns.length)return null;
+  var now=Date.now();
+  var sorted=countdowns.slice().sort(function(a,b){return a.target-b.target});
+  var L=['MY COUNTDOWNS ('+countdowns.length+')'];
+  sorted.forEach(function(c){
+    var diff=c.target-now;
+    var when=new Date(c.target).toLocaleString();
+    var rel;
+    if(diff<0){
+      rel=Math.floor(-diff/86400000)+' days ago';
+    }else{
+      var d=Math.floor(diff/86400000);
+      var h=Math.floor((diff%86400000)/3600000);
+      rel=d?(d+' day'+(d===1?'':'s')+(h?(', '+h+'h'):'')+' left'):(h+'h left');
+    }
+    L.push('');
+    L.push((c.emoji||'\u23f3')+' '+c.name);
+    L.push('   '+when+'  ('+rel+')');
+    if(c.recurring&&c.recurring!=='none')L.push('   repeats '+c.recurring);
+  });
+  return L.join('\n');
+}
+
+function copyCountdowns(){
+  var t=countdownsAsText();
+  if(!t){notify('Add a countdown first.','warn');return}
+  copyNow(t,countdowns.length+' countdowns copied.');
+}
+
+/* One .ics with every countdown as an all-day event. */
+function exportCountdownsIcs(){
+  if(!countdowns.length){notify('Add a countdown first.','warn');return}
+  try{
+    var pad=function(n){return n<10?'0'+n:''+n};
+    var stamp=function(ms){
+      var d=new Date(ms);
+      return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+
+             pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';
+    };
+    var esc=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n')};
+    var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FreeToolHubs//Countdown//EN','CALSCALE:GREGORIAN'];
+    countdowns.forEach(function(c){
+      L.push('BEGIN:VEVENT');
+      L.push('UID:'+(c.id||Math.random().toString(36).slice(2))+'@freetoolhubs.com');
+      L.push('DTSTAMP:'+stamp(Date.now()));
+      L.push('DTSTART:'+stamp(c.target));
+      L.push('DTEND:'+stamp(c.target+3600000));
+      L.push('SUMMARY:'+esc((c.emoji?c.emoji+' ':'')+c.name));
+      if(c.recurring==='yearly')L.push('RRULE:FREQ=YEARLY');
+      else if(c.recurring==='monthly')L.push('RRULE:FREQ=MONTHLY');
+      else if(c.recurring==='weekly')L.push('RRULE:FREQ=WEEKLY');
+      L.push('END:VEVENT');
+    });
+    L.push('END:VCALENDAR');
+    download(new Blob([L.join('\r\n')],{type:'text/calendar;charset=utf-8'}),'countdowns.ics');
+    notify(countdowns.length+' countdowns exported as .ics - open it to add them to your calendar.','ok');
+  }catch(err){
+    notify('Calendar export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
+/* Live feedback while typing a countdown name: flag a duplicate, since two
+   countdowns with the same name are indistinguishable in the list. */
+function cdNameFeedback(){
+  var inp=document.getElementById('eventName');
+  var note=document.getElementById('cdNameNote');
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.style.display='none';note.textContent='';return}
+  note.style.display='block';
+  var hit=countdowns.find(function(c){return (c.name||'').toLowerCase()===v.toLowerCase()});
+  if(hit){
+    note.style.color='var(--warn)';
+    note.textContent='You already have a countdown called "'+hit.name+'".';
+  }else{
+    note.style.color='var(--ok)';
+    note.textContent='Will be added as a new countdown.';
+  }
+}
+
 function exportCountdowns(){
   var blob=new Blob([JSON.stringify(countdowns,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='countdowns.json';a.click();
