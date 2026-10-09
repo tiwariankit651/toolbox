@@ -28,7 +28,15 @@
         </label>
       </div>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here<input type="file" id="inp" accept="image/*" multiple></div>
-      <div id="result" style="margin-top:1rem"></div></div>
+      <div id="result" style="margin-top:1rem"></div>
+      <p class="info" id="ceNote" style="display:none;margin:.4rem 0"></p>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap;margin:.5rem 0">
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="ceCopyAll('hex')">📋 Copy all HEX</button>
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="ceCopyAll('rgb')">📋 Copy all RGB</button>
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="ceSavePalette()">💾 Save palette</button>
+      </div>
+      <div id="ceSaved"></div>
+      <p class="info" style="font-size:.78rem">Keyboard: <strong>1-9</strong> copy that swatch · <strong>C</strong> copy all · <strong>S</strong> save · <strong>P</strong> download strip</p></div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Love the colors in a photo? Want to use them in your design? Upload that image here</li>
@@ -241,9 +249,144 @@ function exportStrip(){var pal=window.CURRENT_PALETTE||[];if(!pal.length)return;
 
 /* ===== Load / reprocess ===== */
 function reprocess(){if(IMAGES.length)render()}
-function handleFiles(files){var arr=Array.from(files);if(!arr.length)return;var loaded=0;var newImgs=[];
-  arr.forEach(function(f,i){loadImage(f).then(function(img){newImgs[i]={src:img.src,pixels:getPixels(img)};loaded++;if(loaded===arr.length){IMAGES=newImgs.filter(Boolean);pickHistory=[];render()}})})}
+
+function ceNote(msg,isErr){
+  var el=document.getElementById("ceNote");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--ok)";
+  el.textContent=msg||"";
+  if(!isErr)setTimeout(function(){if(el)el.textContent=""},2200);
+}
+
+function handleFiles(files){
+  var arr=Array.from(files);
+  if(!arr.length)return;
+  /* loadImage() rejects on a corrupt or unsupported file. The old version had no
+     rejection handler, so one bad image meant the counter never reached the total
+     and the tool sat there doing nothing with no explanation. */
+  var imgs=arr.filter(function(f){return !f.type||f.type.indexOf("image/")===0});
+  var skipped=arr.length-imgs.length;
+  if(!imgs.length){ceNote("Those files are not images. Try PNG, JPG or WEBP.",true);return}
+  ceNote("Reading "+imgs.length+" image"+(imgs.length>1?"s":"")+"...");
+  var results=[],done=0,failed=0;
+  imgs.forEach(function(f,i){
+    loadImage(f).then(function(img){
+      try{ results[i]={src:img.src,pixels:getPixels(img),name:f.name} }
+      catch(e){ failed++ }
+    }).catch(function(){ failed++ }).then(function(){
+      done++;
+      if(done<imgs.length)return;
+      IMAGES=results.filter(Boolean);
+      pickHistory=[];
+      if(!IMAGES.length){
+        ceNote("None of those images could be read. They may be corrupt.",true);
+        return;
+      }
+      render();
+      var msg=IMAGES.length+" image"+(IMAGES.length>1?"s":"")+" loaded";
+      if(failed)msg+=", "+failed+" could not be read";
+      if(skipped)msg+=", "+skipped+" skipped (not an image)";
+      ceNote(msg, failed>0);
+    });
+  });
+}
 setupDrop("drop","inp",handleFiles);
+
+/* ===== Copy with feedback =====
+   The swatches called copyText() with no second argument, so nothing confirmed the
+   copy and clipboard rejections were swallowed entirely. */
+function ceCopy(value,label){
+  try{
+    if(typeof copyText==="function"){copyText(value,null);ceNote("Copied "+(label||value));return}
+    navigator.clipboard.writeText(value).then(
+      function(){ceNote("Copied "+(label||value))},
+      function(){ceNote("Copy was blocked by the browser.",true)});
+  }catch(e){ ceNote("Copy failed: "+(e.message||"unknown"),true) }
+}
+
+function ceCopyAll(kind){
+  var pal=window.CURRENT_PALETTE||[];
+  if(!pal.length){ceNote("Extract a palette first.",true);return}
+  var out;
+  if(kind==="hex")      out=pal.map(function(c){return rgbToHex(c.r,c.g,c.b)}).join(", ");
+  else if(kind==="rgb") out=pal.map(function(c){return "rgb("+c.r+","+c.g+","+c.b+")"}).join(", ");
+  else                  out=(document.getElementById("exportOut").textContent||"").trim();
+  if(!out){ceNote("Choose an export format first.",true);return}
+  ceCopy(out,pal.length+" colours");
+}
+
+function ceCopyExport(){
+  var out=(document.getElementById("exportOut").textContent||"").trim();
+  if(!out){ceNote("Pick an export format first.",true);return}
+  ceCopy(out,"the export block");
+}
+
+/* ===== Palette persistence =====
+   A palette pulled off a photo is worth keeping; losing it on refresh was the
+   main reason to re-upload the same image twice. */
+var CE_KEY="color-extractor-saved-v1";
+function ceRead(){
+  try{var v=JSON.parse(localStorage.getItem(CE_KEY)||"[]");return Array.isArray(v)?v:[]}catch(e){return []}
+}
+function ceWrite(a){
+  try{localStorage.setItem(CE_KEY,JSON.stringify(a.slice(0,12)))}
+  catch(e){ceNote("Could not save — browser storage is full or blocked.",true)}
+}
+function ceSavePalette(){
+  var pal=window.CURRENT_PALETTE||[];
+  if(!pal.length){ceNote("Extract a palette first.",true);return}
+  var hexes=pal.map(function(c){return rgbToHex(c.r,c.g,c.b)});
+  var all=ceRead();
+  if(all.some(function(p){return p.join()===hexes.join()})){ceNote("That palette is already saved.");return}
+  all.unshift(hexes);
+  ceWrite(all);
+  ceRenderSaved();
+  ceNote("Palette saved.");
+}
+function ceLoadPalette(i){
+  var all=ceRead(), hexes=all[i];
+  if(!hexes)return;
+  ceCopy(hexes.join(", "),hexes.length+" colours");
+}
+function ceDeletePalette(i){
+  var all=ceRead();
+  all.splice(i,1);
+  ceWrite(all);
+  ceRenderSaved();
+}
+function ceRenderSaved(){
+  var host=document.getElementById("ceSaved");
+  if(!host)return;
+  var all=ceRead();
+  if(!all.length){host.innerHTML="";return}
+  host.innerHTML='<p class="info" style="font-size:.8rem;margin:.4rem 0">Saved palettes (click to copy):</p>'+
+    all.map(function(hexes,i){
+      return '<div class="row" style="gap:.3rem;align-items:center;margin:.25rem 0">'+
+        '<span onclick="ceLoadPalette('+i+')" style="display:inline-flex;cursor:pointer;border-radius:6px;overflow:hidden;border:1px solid var(--border)" title="Copy these '+hexes.length+' colours">'+
+          hexes.map(function(h){return '<span style="width:26px;height:26px;background:'+h+';display:inline-block"></span>'}).join("")+
+        '</span>'+
+        '<button class="btn btn-outline" style="margin:0;padding:.2rem .5rem;font-size:.78rem" onclick="ceDeletePalette('+i+')" title="Remove">✕</button>'+
+      '</div>';
+    }).join("");
+}
+
+/* ===== Keyboard ===== */
+document.addEventListener("keydown",function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"");
+  if(typing)return;
+  var pal=window.CURRENT_PALETTE||[];
+  if(!pal.length)return;
+  if(e.key==="c"||e.key==="C"){ceCopyAll("hex")}
+  else if(e.key==="s"||e.key==="S"){ceSavePalette()}
+  else if(e.key==="p"||e.key==="P"){exportStrip()}
+  else if(e.key>="1"&&e.key<="9"){
+    var idx=+e.key-1;
+    if(pal[idx])ceCopy(rgbToHex(pal[idx].r,pal[idx].g,pal[idx].b));
+  }
+});
+
+ceRenderSaved();
   </script>
 </body>
 </html>

@@ -116,6 +116,7 @@
           <button class="btn" onclick="render()">🔄 Generate</button>
           <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
           <button class="btn btn-outline" onclick="dlPng()">💾 PNG (current page)</button>
+        <button class="btn btn-outline" onclick="hpCopyText()">📋 Copy text</button>
           <button class="btn btn-outline" onclick="dlPdf()">📄 PDF (all pages)</button>
         </div>
 
@@ -130,6 +131,8 @@
     <div class="tool-section" id="worksheetSection" style="margin-top:1.5rem">
       <h2>Preview</h2>
       <div id="wsPages"></div>
+      <p class="info" id="hpNote" style="display:none;text-align:center;margin:.4rem 0"></p>
+      <p class="info" style="text-align:center;font-size:.78rem">Shortcuts: <strong>Ctrl+S</strong> save PNG · <strong>Ctrl+P</strong> save PDF · <strong>←/→</strong> change page. Your setup is remembered in this browser.</p>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Bachche ki handwriting improve karni hai? Ya khud ki? Tracing practice karo yahan. Letters, words, sentences — dotted lines pe trace karo. Roz 15 min — 1 month mein farak dikhega.</p>
@@ -410,25 +413,123 @@ function pageNav(d){
 
 function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(render,150)}
 
+function hpNote(msg,isErr){
+  var el=document.getElementById("hpNote");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--text2)";
+  el.textContent=msg||"";
+  if(!isErr)setTimeout(function(){if(el)el.textContent=""},2400);
+}
+
 function dlPng(){
-  if(!pageCanvases[curPage])render();
-  pageCanvases[curPage].toBlob(function(b){download(b,"worksheet-page-"+(curPage+1)+".png")},"image/png");
+  /* The old version assumed pageCanvases[curPage] existed after render(); with no
+     content chosen it threw on toBlob and nothing happened, with no message. */
+  try{
+    if(!pageCanvases[curPage])render();
+    var cv=pageCanvases[curPage];
+    if(!cv){hpNote("Nothing to export yet — choose a mode and some content first.",true);return}
+    cv.toBlob(function(b){
+      if(!b){hpNote("Could not create the image.",true);return}
+      download(b,"worksheet-page-"+(curPage+1)+".png");
+      hpNote("Saved page "+(curPage+1)+" as PNG.");
+    },"image/png");
+  }catch(e){ hpNote("Export failed: "+(e.message||"unknown"),true) }
 }
 
 async function dlPdf(){
-  window.showProcessing&&window.showProcessing("wsPages");
-  render();
-  var doc=await PDFLib.PDFDocument.create();
-  for(var i=0;i<pageCanvases.length;i++){
-    var dataUrl=pageCanvases[i].toDataURL("image/png");
-    var bytes=await (await fetch(dataUrl)).arrayBuffer();
-    var png=await doc.embedPng(bytes);
-    var page=doc.addPage([pageCanvases[i].width,pageCanvases[i].height]);
-    page.drawImage(png,{x:0,y:0,width:pageCanvases[i].width,height:pageCanvases[i].height});
+  if(typeof PDFLib==="undefined"){hpNote("PDF library is still loading, try again in a second.",true);return}
+  try{
+    render();
+    if(!pageCanvases.length){hpNote("Nothing to export yet.",true);return}
+    var doc=await PDFLib.PDFDocument.create();
+    for(var i=0;i<pageCanvases.length;i++){
+      hpNote("Adding page "+(i+1)+" of "+pageCanvases.length+"...");
+      var dataUrl=pageCanvases[i].toDataURL("image/png");
+      var bytes=await (await fetch(dataUrl)).arrayBuffer();
+      var png=await doc.embedPng(bytes);
+      var page=doc.addPage([pageCanvases[i].width,pageCanvases[i].height]);
+      page.drawImage(png,{x:0,y:0,width:pageCanvases[i].width,height:pageCanvases[i].height});
+      await new Promise(function(r){setTimeout(r,0)});
+    }
+    var pdfBytes=await doc.save();
+    download(new Blob([pdfBytes],{type:"application/pdf"}),"worksheet.pdf");
+    hpNote(pageCanvases.length+" page"+(pageCanvases.length>1?"s":"")+" saved as PDF.");
+  }catch(e){
+    hpNote("PDF export failed: "+(e.message||"unknown")+". Try fewer pages.",true);
   }
-  var pdfBytes=await doc.save();
-  download(new Blob([pdfBytes],{type:"application/pdf"}),"worksheet.pdf");
   render();
+}
+
+/* ---- copy the worksheet text, for pasting into a lesson plan ---- */
+function hpCopyText(){
+  try{
+    var content=getContent();
+    var text=Array.isArray(content)?content.join("\n"):String(content||"");
+    if(!text.trim()){hpNote("Nothing to copy yet.",true);return}
+    if(typeof copyText==="function"){copyText(text,null);hpNote("Worksheet text copied.");return}
+    navigator.clipboard.writeText(text).then(
+      function(){hpNote("Worksheet text copied.")},
+      function(){hpNote("Copy was blocked by the browser.",true)});
+  }catch(e){ hpNote("Copy failed: "+(e.message||"unknown"),true) }
+}
+
+/* ---- remember the last worksheet setup ----
+   Teachers print the same style repeatedly, so re-choosing every control each
+   visit was the main friction. */
+var HP_KEY="handwriting-practice-setup-v1";
+var HP_FIELDS=["mode","preset","guideFont","traceStyle","traceOpacity","ruling",
+               "lineCount","lineHeight","startDots","wsTitle","fName","fClass","fDate","customText"];
+function hpSave(){
+  try{
+    var d={};
+    HP_FIELDS.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      d[id]=(el.type==="checkbox")?el.checked:el.value;
+    });
+    localStorage.setItem(HP_KEY,JSON.stringify(d));
+  }catch(e){ /* private mode or quota */ }
+}
+function hpRestore(){
+  try{
+    var d=JSON.parse(localStorage.getItem(HP_KEY)||"null");
+    if(!d)return false;
+    Object.keys(d).forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(el.tagName==="SELECT"){
+        /* assigning a value the select does not offer silently blanks it */
+        var allowed=Array.prototype.some.call(el.options,function(o){return o.value===d[id]});
+        if(!allowed)return;
+      }
+      if(el.type==="checkbox")el.checked=!!d[id]; else el.value=d[id];
+    });
+    if(typeof onModeChange==="function")onModeChange();
+    return true;
+  }catch(e){ return false }
+}
+HP_FIELDS.forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener("change",hpSave);
+  if(el.tagName==="TEXTAREA"||el.type==="text"){
+    var t=null;
+    el.addEventListener("input",function(){clearTimeout(t);t=setTimeout(hpSave,900)});
+  }
+});
+
+document.addEventListener("keydown",function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"");
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();dlPng();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="p"){e.preventDefault();dlPdf();return}
+  if(typing)return;
+  if(e.key==="ArrowRight")pageNav(1);
+  else if(e.key==="ArrowLeft")pageNav(-1);
+});
+
+if(hpRestore()){
+  setTimeout(function(){hpNote("Restored your last worksheet setup.");scheduleRender()},200);
 }
 
 // wait for guide fonts then render

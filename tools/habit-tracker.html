@@ -47,6 +47,12 @@
 
       <div id="today" style="margin:.5rem 0;font-size:1.05rem;font-weight:600"></div>
       <div id="quickStats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin:.8rem 0"></div>
+      <p class="info" id="htNote" style="display:none;margin:.4rem 0"></p>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap;margin:.5rem 0">
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="htCopyToday()">📋 Copy today</button>
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="htExportCsv()">📊 Export CSV</button>
+      </div>
+      <p class="info" style="font-size:.78rem">Keyboard: <strong>1-9</strong> tick the habits due today · <strong>C</strong> copy today · <strong>Esc</strong> close a dialog</p>
 
       <div class="ht-tabs">
         <div class="ht-tab active" onclick="htSwitch('habits')">✅ Habits</div>
@@ -146,7 +152,98 @@ migrateOld();
 
 function loadHT(){var d=localStorage.getItem(HT_KEY);if(d){try{return JSON.parse(d);}catch(e){}}return{habits:[],version:2};}
 var H=loadHT();
-function saveHT(){localStorage.setItem(HT_KEY,JSON.stringify(H));}
+function saveHT(){
+  /* The bare setItem threw in private browsing and when the quota filled up,
+     which silently lost a tick the user had just made. */
+  try{ localStorage.setItem(HT_KEY,JSON.stringify(H)); }
+  catch(e){ htNote('Could not save — browser storage is full or blocked. Export a backup now.',true); }
+}
+
+/* Inline status line, replacing the four alert() calls. */
+function htNote(msg,isErr){
+  var el=document.getElementById('htNote');
+  if(!el)return;
+  el.style.display=msg?'block':'none';
+  el.style.color=isErr?'var(--danger)':'var(--ok)';
+  el.textContent=msg||'';
+  if(!isErr)setTimeout(function(){if(el)el.textContent=''},2400);
+}
+
+/* ---- copy today's progress, the thing people actually want to share ---- */
+function htCopyToday(){
+  if(!H.habits||!H.habits.length){htNote('Add a habit first.',true);return}
+  var due=H.habits.filter(function(h){return isScheduled(h,TODAY)});
+  if(!due.length){htNote('Nothing is scheduled for today.',true);return}
+  var done=due.filter(function(h){return isDone(h,TODAY)});
+  var lines=['HABITS — '+new Date().toLocaleDateString(),
+             done.length+'/'+due.length+' done',''];
+  due.forEach(function(h){
+    var streak=getStreak(h);
+    lines.push((isDone(h,TODAY)?'[x] ':'[ ] ')+h.name+
+      (streak>1?('  '+streak+'-day streak'):''));
+  });
+  var out=lines.join('\n');
+  try{
+    if(typeof copyText==='function'){copyText(out,null);htNote('Today\u2019s progress copied.');return}
+    navigator.clipboard.writeText(out).then(
+      function(){htNote('Today\u2019s progress copied.')},
+      function(){htNote('Copy was blocked by the browser.',true)});
+  }catch(e){ htNote('Copy failed: '+(e.message||'unknown'),true) }
+}
+
+/* ---- CSV of the full history, for a spreadsheet ---- */
+function htExportCsv(){
+  if(!H.habits||!H.habits.length){htNote('Add a habit first.',true);return}
+  try{
+    var dates={};
+    H.habits.forEach(function(h){
+      Object.keys(h.log||{}).forEach(function(d){dates[d]=true});
+    });
+    var days=Object.keys(dates).sort();
+    if(!days.length){htNote('No history to export yet — tick a habit first.',true);return}
+    var rows=[['Date'].concat(H.habits.map(function(h){return h.name}))];
+    days.forEach(function(d){
+      rows.push([d].concat(H.habits.map(function(h){
+        if(!isScheduled(h,d))return '';
+        return isDone(h,d)?'1':'0';
+      })));
+    });
+    rows.push([]);
+    rows.push(['Habit','Current streak','Longest streak','Completion rate %']);
+    H.habits.forEach(function(h){
+      rows.push([h.name,getStreak(h),getLongestStreak(h),getCompletionRate(h)]);
+    });
+    var csv=rows.map(function(r){
+      return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',');
+    }).join('\n');
+    var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+    if(typeof download==='function')download(blob,'habits-'+TODAY+'.csv');
+    else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+         a.download='habits-'+TODAY+'.csv';a.click();URL.revokeObjectURL(a.href)}
+    htNote('CSV downloaded with '+days.length+' day'+(days.length>1?'s':'')+' of history.');
+  }catch(e){ htNote('CSV export failed: '+(e.message||'unknown'),true) }
+}
+
+/* ---- keyboard: number keys tick today's habits, which is the whole daily ritual ---- */
+document.addEventListener('keydown',function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'');
+  if(e.key==='Escape'&&typeof closeHM==='function'){closeHM();return}
+  if(typing)return;
+  if(!H.habits||!H.habits.length)return;
+  if(e.key>='1'&&e.key<='9'){
+    /* toggleHabit() takes an index into H.habits, not an id, so map the visible
+       due-today position back to its real index. */
+    var due=[];
+    H.habits.forEach(function(h,idx){ if(isScheduled(h,TODAY)) due.push({h:h,idx:idx}) });
+    var hit=due[+e.key-1];
+    if(hit){
+      if(hit.h.type==='count'){ changeVal(hit.idx,1); htNote('+1 '+hit.h.name) }
+      else { toggleHabit(hit.idx); htNote((isDone(hit.h,TODAY)?'Ticked: ':'Unticked: ')+hit.h.name) }
+    }
+    return;
+  }
+  if(e.key==='c'||e.key==='C'){htCopyToday()}
+});
 function escH(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 function htSwitch(t){
@@ -261,7 +358,7 @@ function closeHM(){document.getElementById('htModal').innerHTML='';}
 function hmTypeChange(){var t=document.getElementById('hmType').value;document.getElementById('hmTargetRow').style.display=t==='yesno'?'none':'';}
 function hmSchedChange(){var s=document.getElementById('hmSchedule').value;document.getElementById('hmDaysRow').style.display=s==='weekdays'?'':'none';document.getElementById('hmWeeklyRow').style.display=s==='weekly'?'':'none';}
 function saveHabitModal(idx){
-  var name=document.getElementById('hmName').value.trim();if(!name){alert('Enter a name.');return;}
+  var name=document.getElementById('hmName').value.trim();if(!name){htNote('Enter a habit name.',true);return;}
   var days=[];document.querySelectorAll('.hm-day-cb:checked').forEach(function(cb){days.push(parseInt(cb.value));});
   var obj={id:idx>=0?H.habits[idx].id:Date.now().toString(36),name:name,emoji:document.getElementById('hmEmoji').value||'✅',color:document.getElementById('hmColor').value,type:document.getElementById('hmType').value,target:parseInt(document.getElementById('hmTarget').value)||1,schedule:document.getElementById('hmSchedule').value,days:days,timesPerWeek:parseInt(document.getElementById('hmTPW').value)||3,reminderTime:document.getElementById('hmReminder').value||'',log:idx>=0?H.habits[idx].log:{},created:idx>=0?H.habits[idx].created:TODAY};
   if(idx>=0)H.habits[idx]=obj;else H.habits.push(obj);
@@ -389,7 +486,7 @@ function exportHT(){
 function importHT(e){
   var file=e.target.files[0];if(!file)return;
   var reader=new FileReader();reader.onload=function(ev){
-    try{var data=JSON.parse(ev.target.result);if(data.habits){H=data;saveHT();alert('Imported successfully!');renderHabits();renderQuick();}else alert('Invalid file.');}catch(err){alert('Error: '+err.message);}
+    try{var data=JSON.parse(ev.target.result);if(data.habits){H=data;saveHT();htNote('Imported successfully.');renderHabits();renderQuick();}else htNote('That file is not a habit-tracker backup.',true);}catch(err){htNote('Could not read that file: '+err.message,true);}
   };reader.readAsText(file);e.target.value='';
 }
 function resetHT(){if(confirm('Delete ALL habit data? This cannot be undone.')){H={habits:[],version:2};saveHT();renderHabits();renderQuick();}}

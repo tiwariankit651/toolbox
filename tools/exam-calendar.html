@@ -85,10 +85,14 @@
       <div class="row" style="margin-bottom:1rem">
         <button class="btn" onclick="showAddCustom()" style="flex:none">+ Add Custom Exam</button>
         <button class="btn" onclick="exportICS()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent-text)">📥 Export .ics</button>
+        <button class="btn btn-outline" onclick="ecCopyMine()">📋 Copy my exams</button>
+        <button class="btn btn-outline" onclick="ecExportCsv()">📊 Export CSV</button>
         <button class="btn" onclick="exportJSON()" style="flex:none;background:transparent;border:2px solid var(--accent);color:var(--accent-text)">💾 JSON Backup</button>
       </div>
 
       <!-- Main Content Area -->
+      <p class="info" id="ecNote" style="display:none;margin:.4rem 0"></p>
+      <p class="info" style="font-size:.78rem">Keyboard: <strong>/</strong> search · <strong>←/→</strong> change month · <strong>Esc</strong> clear or close</p>
       <div id="mainContent"></div>
 
       <!-- Calendar Nav (hidden until calendar view) -->
@@ -242,14 +246,96 @@ var examDB = [
 ];
 
 /* ---------- STATE ---------- */
-var starred = JSON.parse(localStorage.getItem(EC_KEY) || '{}');
-var customExams = JSON.parse(localStorage.getItem(EC_CUSTOM_KEY) || '[]');
+var starred = (function(){try{return JSON.parse(localStorage.getItem(EC_KEY)||'{}')||{}}catch(e){return {}}})();
+var customExams = (function(){try{var v=JSON.parse(localStorage.getItem(EC_CUSTOM_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}})();
 var currentView = 'list';
 var calYear = new Date().getFullYear();
 var calMonth = new Date().getMonth();
 
-function saveStarred() { localStorage.setItem(EC_KEY, JSON.stringify(starred)); }
-function saveCustom() { localStorage.setItem(EC_CUSTOM_KEY, JSON.stringify(customExams)); }
+/* localStorage throws in private browsing and when the quota is full. These used
+   to be bare calls, so one failure took the whole page down mid-interaction. */
+function saveStarred() {
+  try { localStorage.setItem(EC_KEY, JSON.stringify(starred)); }
+  catch (e) { ecNote('Could not save your starred exams — browser storage is full or blocked.', true); }
+}
+function saveCustom() {
+  try { localStorage.setItem(EC_CUSTOM_KEY, JSON.stringify(customExams)); }
+  catch (e) { ecNote('Could not save your custom exam — browser storage is full or blocked.', true); }
+}
+
+/* Inline feedback replaces the two alert() calls, which interrupted the page for
+   the two commonest mistakes. */
+function ecNote(msg, isErr) {
+  var el = document.getElementById('ecNote');
+  if (!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = isErr ? 'var(--danger)' : 'var(--ok)';
+  el.textContent = msg || '';
+  if (!isErr) setTimeout(function () { if (el) el.textContent = '' }, 2400);
+}
+
+/* ---- copy the starred exams as plain text, for a WhatsApp group or notes app ---- */
+function ecCopyMine() {
+  var mine = getAllExams().filter(function (e) { return !!starred[e.id] });
+  if (!mine.length) { ecNote('Star some exams first.', true); return; }
+  mine.sort(function (a, b) { return (a.tentativeDate || '').localeCompare(b.tentativeDate || '') });
+  var out = 'MY EXAM CALENDAR (' + mine.length + ' exam' + (mine.length > 1 ? 's' : '') + ')\n' +
+    'Dates are tentative — always check the official notification.\n\n' +
+    mine.map(function (e) {
+      var d = getDaysLeft(e.tentativeDate);
+      var when = e.tentativeDate || 'date not announced';
+      var left = (typeof d === 'number' && d >= 0) ? ' (' + d + ' days left)' : '';
+      return '• ' + e.name + '\n  ' + when + left + (e.website ? '\n  ' + e.website : '');
+    }).join('\n\n');
+  try {
+    if (typeof copyText === 'function') { copyText(out, null); ecNote(mine.length + ' exams copied.'); return; }
+    navigator.clipboard.writeText(out).then(
+      function () { ecNote(mine.length + ' exams copied.') },
+      function () { ecNote('Copy was blocked by the browser.', true) });
+  } catch (e) { ecNote('Copy failed: ' + (e.message || 'unknown'), true) }
+}
+
+/* ---- CSV, because a lot of aspirants keep a spreadsheet ---- */
+function ecExportCsv() {
+  var mine = getAllExams().filter(function (e) { return !!starred[e.id] });
+  if (!mine.length) { ecNote('Star some exams first.', true); return; }
+  try {
+    mine.sort(function (a, b) { return (a.tentativeDate || '').localeCompare(b.tentativeDate || '') });
+    var rows = [['Exam', 'Category', 'Conducting body', 'Tentative date', 'Days left', 'Notification month', 'Eligibility', 'Website']];
+    mine.forEach(function (e) {
+      var d = getDaysLeft(e.tentativeDate);
+      rows.push([e.name, e.cat, e.body, e.tentativeDate || '',
+                 (typeof d === 'number' ? d : ''), e.notifyMonth, e.eligibility, e.website || '']);
+    });
+    var csv = rows.map(function (r) {
+      return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"' }).join(',');
+    }).join('\n');
+    var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    if (typeof download === 'function') download(blob, 'my-exam-calendar.csv');
+    else { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'my-exam-calendar.csv'; a.click() }
+    ecNote('CSV downloaded — opens in Excel or Google Sheets.');
+  } catch (e) { ecNote('CSV export failed: ' + (e.message || 'unknown'), true) }
+}
+
+/* ---- keyboard: / search, Esc clear or close, arrows move months ---- */
+document.addEventListener('keydown', function (e) {
+  var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '');
+  if (e.key === '/' && !typing) {
+    e.preventDefault();
+    var s = document.getElementById('searchBox');
+    if (s) { s.focus(); s.select() }
+    return;
+  }
+  if (e.key === 'Escape') {
+    var s2 = document.getElementById('searchBox');
+    if (s2 && s2.value) { s2.value = ''; renderView(); return }
+    if (typeof closeModal === 'function') closeModal();
+    return;
+  }
+  if (typing) return;
+  if (e.key === 'ArrowRight' && typeof changeMonth === 'function') changeMonth(1);
+  else if (e.key === 'ArrowLeft' && typeof changeMonth === 'function') changeMonth(-1);
+});
 
 function getAllExams() {
   var all = examDB.slice();
@@ -450,7 +536,7 @@ function showAddCustom() {
 function addCustomExam() {
   var name = document.getElementById('customName').value.trim();
   var date = document.getElementById('customDate').value;
-  if (!name || !date) { alert('Please enter both name and date.'); return; }
+  if (!name || !date) { ecNote('Enter both a name and a date.', true); return; }
   var id = Date.now().toString(36);
   customExams.push({id: id, name: name, date: date});
   starred['custom-' + id] = true;
@@ -481,7 +567,7 @@ function renderCountdownWidget() {
 function exportICS() {
   var all = getAllExams();
   var mine = all.filter(function(e) { return !!starred[e.id]; });
-  if (!mine.length) { alert('Star some exams first to export!'); return; }
+  if (!mine.length) { ecNote('Star some exams first.', true); return; }
   var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FreeToolHubs//ExamCalendar//EN', 'CALSCALE:GREGORIAN'];
   mine.forEach(function(e) {
     var dStr = e.tentativeDate.replace(/-/g, '');
