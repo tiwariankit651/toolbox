@@ -60,6 +60,16 @@
         </div>
         <div class="row">
           <label>Output:</label>
+          <select id="lgPreset" onchange="lgApplyPreset()" style="max-width:210px">
+            <option value="custom">Custom</option>
+            <option value="blogIntro">Blog intro (2 paragraphs)</option>
+            <option value="blogPost">Full blog post (Markdown)</option>
+            <option value="metaDesc">Meta description (25 words)</option>
+            <option value="productCard">Product card blurb</option>
+            <option value="htmlBlock">HTML block for a template</option>
+            <option value="listItems">List items (6 sentences)</option>
+            <option value="longPage">Long page filler (20 paragraphs)</option>
+          </select>
           <select id="format" onchange="gen()">
             <option value="plain">Plain text</option>
             <option value="html-p">HTML (&lt;p&gt; wrapped)</option>
@@ -79,6 +89,7 @@
           <button class="btn btn-outline" onclick="copyOut()">📋 Copy</button>
           <button class="btn btn-outline" onclick="downloadTxt()">💾 Download .txt</button>
         </div>
+      <p class="info" id="lgStatus" style="display:none;margin:.4rem 0"></p>
       </div>
 
       <!-- DUMMY DATA PANEL -->
@@ -233,8 +244,73 @@ function updateStats(txt){
   document.getElementById("stats").textContent="Characters: "+txt.length+" · Words: "+words;
 }
 
-function copyOut(){navigator.clipboard.writeText(document.getElementById("out").textContent);}
-function downloadTxt(){var b=new Blob([document.getElementById("out").textContent],{type:"text/plain"});download(b,"lorem.txt");}
+/* Clipboard writes reject on an insecure origin or when the page has lost focus,
+   and the old version swallowed that silently so nothing appeared to happen. */
+function lgNote(msg,isErr){
+  var el=document.getElementById("lgStatus");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--ok)";
+  el.textContent=msg||"";
+  if(!isErr)setTimeout(function(){if(el)el.textContent=""},2000);
+}
+
+function copyOut(){
+  var t=document.getElementById("out").textContent;
+  if(!t.trim()){lgNote("Generate something first.",true);return}
+  try{
+    if(typeof copyText==="function"){copyText(t,null);lgNote("Copied "+t.length+" characters.");return}
+    navigator.clipboard.writeText(t).then(
+      function(){lgNote("Copied "+t.length+" characters.")},
+      function(){lgNote("Copy was blocked. Select the text and copy manually.",true)});
+  }catch(e){ lgNote("Copy failed: "+(e.message||"unknown"),true) }
+}
+
+function downloadTxt(){
+  var t=document.getElementById("out").textContent;
+  if(!t.trim()){lgNote("Generate something first.",true);return}
+  try{
+    var b=new Blob([t],{type:"text/plain;charset=utf-8"});
+    download(b,"lorem.txt");
+    lgNote("Downloaded lorem.txt");
+  }catch(e){ lgNote("Download failed: "+(e.message||"unknown"),true) }
+}
+
+/* ---- presets ----
+   Most people arrive wanting filler for one specific slot, so these set the
+   type, count and format together instead of making them guess. */
+var LG_PRESETS={
+  blogIntro:  {type:"paragraphs", count:"2",  format:"plain",    varyPara:true,  varySent:true},
+  blogPost:   {type:"paragraphs", count:"8",  format:"markdown", varyPara:true,  varySent:true},
+  metaDesc:   {type:"words",      count:"25", format:"plain",    varyPara:false, varySent:false},
+  productCard:{type:"sentences",  count:"2",  format:"plain",    varyPara:false, varySent:true},
+  htmlBlock:  {type:"paragraphs", count:"4",  format:"html-block", varyPara:true, varySent:true},
+  listItems:  {type:"sentences",  count:"6",  format:"plain",    varyPara:false, varySent:true},
+  longPage:   {type:"paragraphs", count:"20", format:"plain",    varyPara:true,  varySent:true}
+};
+function lgApplyPreset(){
+  var k=document.getElementById("lgPreset").value;
+  var p=LG_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==="checkbox")el.checked=!!p[id]; else el.value=p[id];
+  });
+  gen();
+}
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener("keydown",function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"");
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="c"&&!typing&&!window.getSelection().toString()){
+    e.preventDefault();copyOut();return;
+  }
+  if(typing)return;
+  if(e.key==="g"||e.key==="G"){gen()}
+  else if(e.key==="c"||e.key==="C"){copyOut()}
+  else if(e.key==="d"||e.key==="D"){downloadTxt()}
+});
 
 /* ---------- Dummy Data ---------- */
 var IN_FIRST="Aarav Vivaan Aditya Arjun Reyansh Ishaan Kabir Ananya Diya Saanvi Aadhya Priya Riya Ishita Meera Rahul Amit Sneha Vikram Neha Rohan Pooja Kavya Aryan Tara".split(" ");

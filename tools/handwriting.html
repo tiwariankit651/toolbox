@@ -24,6 +24,26 @@
       <p class="info">Type your text, choose a handwriting style and paper, tweak the realism, and export as PNG, ZIP or multi-page PDF. Long text flows onto multiple pages automatically.</p>
       <div class="info" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:.7rem 1rem;margin:.6rem 0">ℹ️ This produces a handwriting-<strong>style</strong> image, not a scan of real handwriting. Please check whether your school or college accepts computer-generated handwriting before submitting — we don't encourage academic dishonesty.</div>
       <textarea id="text" rows="7" placeholder="Type your assignment text here..." oninput="scheduleRender()"></textarea>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin:.4rem 0">
+        <div class="row" style="gap:.5rem;margin:0;flex-wrap:wrap">
+          <label style="margin:0">Style preset:</label>
+          <select id="hwPreset" onchange="hwApplyPreset()" style="max-width:220px">
+            <option value="custom">Custom</option>
+            <option value="neat">Neat &amp; tidy (ruled)</option>
+            <option value="exam">Exam answer sheet</option>
+            <option value="rushed">Rushed / late night</option>
+            <option value="rough">Rough work (plain paper)</option>
+            <option value="neatPlain">Neat on plain paper</option>
+            <option value="fourline">Four-line (handwriting practice)</option>
+            <option value="graph">Graph paper (maths)</option>
+          </select>
+        </div>
+        <div class="row" style="gap:.4rem;margin:0;flex-wrap:wrap">
+          <button class="btn btn-outline" style="margin:0;padding:.45rem .8rem;font-size:.85rem" onclick="hwCopyText()">📋 Copy text</button>
+          <button class="btn btn-outline" style="margin:0;padding:.45rem .8rem;font-size:.85rem" onclick="hwClearDraft()">🗑️ Clear draft</button>
+          <span class="info" id="savedNote" style="font-size:.78rem;min-width:70px"></span>
+        </div>
+      </div>
 
       <div class="row" style="flex-wrap:wrap;margin:.8rem 0;gap:.6rem;align-items:flex-start">
         <div style="flex:1;min-width:150px"><label>Font</label><select id="font" onchange="reshuffleAndRender()">
@@ -93,7 +113,14 @@
         <button class="btn" onclick="dlPng()">💾 This page (PNG)</button>
         <button class="btn" onclick="dlZip()">🗜️ All pages (ZIP)</button>
         <button class="btn" onclick="dlPdf()">📄 All pages (PDF)</button>
+        <button class="btn btn-outline" onclick="hwCopyImage()">📋 Copy page</button>
       </div>
+      <p class="info" id="exportStatus" style="display:none;text-align:center;margin-top:.5rem"></p>
+      <p class="info" style="text-align:center;font-size:.78rem;margin-top:.4rem">
+        Shortcuts: <strong>Ctrl+S</strong> save PNG · <strong>Ctrl+P</strong> save PDF ·
+        <strong>Ctrl+R</strong> reshuffle the handwriting · <strong>←/→</strong> change page
+      </p>
+
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p>Assignment due tomorrow and you haven't written a single page? We've all been there 😂 This tool converts your typed text into handwriting-style pages. It looks surprisingly real — different letter sizes, slight rotations, ruled paper lines. Here's how:</p>
@@ -312,41 +339,225 @@ function renderToCanvas(pageIndex){
   return off;
 }
 
+/* ---- export helpers ----
+   Every export is wrapped: a long document can exhaust memory while rasterising,
+   and a silent failure left the user staring at an unchanged page with no idea
+   whether anything happened. */
+function hwStatus(msg,isErr){
+  var el=document.getElementById("exportStatus");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--text2)";
+  el.textContent=msg||"";
+}
+
 function dlPng(){
-  var off=renderToCanvas(curPage);
-  off.toBlob(function(b){download(b,"handwriting-page-"+(curPage+1)+".png")},"image/png");
+  try{
+    if(!document.getElementById("text").value.trim()){
+      hwStatus("Type some text first.",true);return;
+    }
+    var off=renderToCanvas(curPage);
+    off.toBlob(function(b){
+      if(!b){hwStatus("Could not create the image. Try a smaller page size.",true);return}
+      download(b,"handwriting-page-"+(curPage+1)+".png");
+      hwStatus("Saved page "+(curPage+1)+" as PNG.");
+      setTimeout(function(){hwStatus("")},2500);
+    },"image/png");
+  }catch(e){
+    hwStatus("Export failed: "+(e.message||"unknown")+". Try reducing the font size or page count.",true);
+  }
 }
 
 async function dlZip(){
-  window.showProcessing&&window.showProcessing("stats");
-  layout();
-  var zip=new JSZip();
-  for(var i=0;i<pages.length;i++){
-    var off=renderToCanvas(i);
-    var blob=await new Promise(function(res){off.toBlob(res,"image/png")});
-    zip.file("handwriting-page-"+(i+1)+".png",blob);
+  if(typeof JSZip==="undefined"){hwStatus("ZIP library is still loading, try again in a second.",true);return}
+  try{
+    if(!document.getElementById("text").value.trim()){
+      hwStatus("Type some text first.",true);return;
+    }
+    layout();
+    if(!pages.length){hwStatus("Type some text first.",true);return}
+    for(var i=0;i<pages.length;i++){
+      hwStatus("Rendering page "+(i+1)+" of "+pages.length+"...");
+      await new Promise(function(r){setTimeout(r,0)});
+    }
+    var zip=new JSZip();
+    for(var j=0;j<pages.length;j++){
+      hwStatus("Packing page "+(j+1)+" of "+pages.length+"...");
+      var off=renderToCanvas(j);
+      var blob=await new Promise(function(res){off.toBlob(res,"image/png")});
+      if(blob)zip.file("handwriting-page-"+(j+1)+".png",blob);
+      await new Promise(function(r){setTimeout(r,0)});
+    }
+    hwStatus("Building ZIP...");
+    var out=await zip.generateAsync({type:"blob"});
+    download(out,"handwriting-pages.zip");
+    hwStatus(pages.length+" page"+(pages.length>1?"s":"")+" saved as ZIP.");
+    setTimeout(function(){hwStatus("")},2500);
+  }catch(e){
+    hwStatus("ZIP export failed: "+(e.message||"unknown")+". Very long documents can run out of memory — try splitting the text.",true);
   }
-  var out=await zip.generateAsync({type:"blob"});
-  download(out,"handwriting-pages.zip");
   render();
 }
 
 async function dlPdf(){
-  window.showProcessing&&window.showProcessing("stats");
-  layout();
-  var doc=await PDFLib.PDFDocument.create();
-  for(var i=0;i<pages.length;i++){
-    var off=renderToCanvas(i);
-    var dataUrl=off.toDataURL("image/png");
-    var bytes=await (await fetch(dataUrl)).arrayBuffer();
-    var png=await doc.embedPng(bytes);
-    var page=doc.addPage([off.width,off.height]);
-    page.drawImage(png,{x:0,y:0,width:off.width,height:off.height});
+  if(typeof PDFLib==="undefined"){hwStatus("PDF library is still loading, try again in a second.",true);return}
+  try{
+    if(!document.getElementById("text").value.trim()){
+      hwStatus("Type some text first.",true);return;
+    }
+    layout();
+    if(!pages.length){hwStatus("Type some text first.",true);return}
+    var doc=await PDFLib.PDFDocument.create();
+    for(var i=0;i<pages.length;i++){
+      hwStatus("Adding page "+(i+1)+" of "+pages.length+" to the PDF...");
+      var off=renderToCanvas(i);
+      var dataUrl=off.toDataURL("image/png");
+      var bytes=await (await fetch(dataUrl)).arrayBuffer();
+      var png=await doc.embedPng(bytes);
+      var page=doc.addPage([off.width,off.height]);
+      page.drawImage(png,{x:0,y:0,width:off.width,height:off.height});
+      await new Promise(function(r){setTimeout(r,0)});
+    }
+    var pdfBytes=await doc.save();
+    download(new Blob([pdfBytes],{type:"application/pdf"}),"handwriting.pdf");
+    hwStatus(pages.length+" page"+(pages.length>1?"s":"")+" saved as PDF.");
+    setTimeout(function(){hwStatus("")},2500);
+  }catch(e){
+    hwStatus("PDF export failed: "+(e.message||"unknown")+". Try fewer pages or a smaller font.",true);
   }
-  var pdfBytes=await doc.save();
-  download(new Blob([pdfBytes],{type:"application/pdf"}),"handwriting.pdf");
   render();
 }
+
+/* ---- copy the rendered page to the clipboard ----
+   Handy for pasting straight into WhatsApp or a document. */
+async function hwCopyImage(){
+  try{
+    var off=renderToCanvas(curPage);
+    var blob=await new Promise(function(res){off.toBlob(res,"image/png")});
+    if(!blob)throw new Error("could not read the page");
+    if(!navigator.clipboard||!window.ClipboardItem)
+      throw new Error("this browser cannot copy images; use the PNG download instead");
+    await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+    hwStatus("Page "+(curPage+1)+" copied. Paste it anywhere.");
+    setTimeout(function(){hwStatus("")},2500);
+  }catch(e){
+    hwStatus("Copy failed: "+(e.message||"unknown"),true);
+  }
+}
+
+function hwCopyText(){
+  var t=document.getElementById("text").value;
+  if(!t.trim()){hwStatus("Nothing to copy yet.",true);return}
+  if(typeof copyText==="function")copyText(t,null);
+  hwStatus("Text copied.");
+  setTimeout(function(){hwStatus("")},2000);
+}
+
+/* ---- style presets ----
+   The individual sliders are useful but most people just want a believable look
+   for a specific situation, so these set the whole combination at once.
+   Every value here must be one the control actually accepts: ink and paper are
+   selects with a fixed option list, and assigning an unlisted value silently
+   blanks the select, which previously made the page render with no ink at all.
+   Ranges: realism 0-1.5, lineSpacing 1.2-3, fsize 16-40, margin 30-140. */
+var HW_PRESETS={
+  neat:      {font:"Patrick Hand",        fsize:"23", ink:"#12227a", paper:"ruled",    realism:"0.25", lineSpacing:"1.7", margin:"80"},
+  exam:      {font:"Kalam",               fsize:"24", ink:"#0d1b3e", paper:"ruled",    realism:"0.45", lineSpacing:"1.8", margin:"95"},
+  rushed:    {font:"Caveat",              fsize:"28", ink:"#12227a", paper:"ruled",    realism:"1.1",  lineSpacing:"1.5", margin:"55"},
+  rough:     {font:"Indie Flower",        fsize:"26", ink:"#111111", paper:"plain",    realism:"1.3",  lineSpacing:"1.9", margin:"40"},
+  neatPlain: {font:"Architects Daughter", fsize:"22", ink:"#0d1b3e", paper:"plain",    realism:"0.2",  lineSpacing:"2.0", margin:"90"},
+  fourline:  {font:"Kalam",               fsize:"26", ink:"#12227a", paper:"fourline", realism:"0.3",  lineSpacing:"2.2", margin:"80"},
+  graph:     {font:"Patrick Hand",        fsize:"20", ink:"#111111", paper:"grid",     realism:"0.35", lineSpacing:"1.6", margin:"50"}
+};
+function hwApplyPreset(){
+  var k=document.getElementById("hwPreset").value;
+  var p=HW_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.tagName==="SELECT"){
+      // refuse to assign a value the select does not offer
+      var allowed=Array.prototype.some.call(el.options,function(o){return o.value===p[id]});
+      if(!allowed)return;
+    }
+    el.value=p[id];
+  });
+  // keep any visible slider readouts in step
+  ["realism","lineSpacing","margin","fsize"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+  reshuffleAndRender();
+  hwSave();
+}
+
+/* ---- autosave ----
+   Losing a page of typed homework to an accidental refresh is the worst possible
+   failure for this tool, so everything is mirrored to localStorage. */
+var HW_KEY="handwriting-draft-v1";
+var HW_FIELDS=["text","font","fsize","ink","paper","realism","lineSpacing","margin",
+               "pageSize","orient","lineColor","marginLine","showPageNum"];
+function hwSave(){
+  try{
+    var d={};
+    HW_FIELDS.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      d[id]=(el.type==="checkbox")?el.checked:el.value;
+    });
+    localStorage.setItem(HW_KEY,JSON.stringify(d));
+    var el2=document.getElementById("savedNote");
+    if(el2){el2.textContent="Draft saved";setTimeout(function(){el2.textContent=""},1500)}
+  }catch(e){ /* private browsing or a full quota: not worth interrupting the user */ }
+}
+function hwRestore(){
+  try{
+    var raw=localStorage.getItem(HW_KEY);
+    if(!raw)return false;
+    var d=JSON.parse(raw);
+    Object.keys(d).forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(el.type==="checkbox")el.checked=!!d[id]; else el.value=d[id];
+    });
+    return !!(d.text&&d.text.trim());
+  }catch(e){ return false }
+}
+function hwClearDraft(){
+  try{localStorage.removeItem(HW_KEY)}catch(e){}
+  document.getElementById("text").value="";
+  scheduleRender();
+  hwStatus("Draft cleared.");
+  setTimeout(function(){hwStatus("")},2000);
+}
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener("keydown",function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"");
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();dlPng();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="p"){e.preventDefault();dlPdf();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="r"&&!typing){e.preventDefault();reshuffleAndRender();return}
+  if(typing)return;
+  if(e.key==="ArrowRight"){pageNav(1)}
+  else if(e.key==="ArrowLeft"){pageNav(-1)}
+});
+
+/* mirror every control change into the draft */
+HW_FIELDS.forEach(function(id){
+  var el=document.getElementById(id);
+  if(el)el.addEventListener("change",hwSave);
+});
+var _hwTextEl=document.getElementById("text");
+if(_hwTextEl){
+  var hwT=null;
+  _hwTextEl.addEventListener("input",function(){clearTimeout(hwT);hwT=setTimeout(hwSave,800)});
+}
+if(hwRestore()){
+  hwStatus("Restored your last draft.");
+  setTimeout(function(){hwStatus("")},2500);
+}
+
 
 // Wait for fonts, then render.
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(render);setTimeout(render,600)}else{setTimeout(render,600)}

@@ -80,6 +80,16 @@
         <div style="margin-top:.3rem;font-size:.85rem" id="totalHours"></div>
       </div>
       <div id="circProgress" class="st-circles"></div>
+      <div class="row" style="gap:.5rem;flex-wrap:wrap;margin:.6rem 0">
+        <input type="text" id="topicFilter" placeholder="🔍 Filter topics... (press / to jump here)" oninput="stFilterTopics()" style="flex:2;min-width:200px">
+        <span class="info" id="filterCount" style="font-size:.8rem"></span>
+      </div>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap;margin:.5rem 0">
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="stCopyReport()">📋 Copy report</button>
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="stExportCsv()">📊 Export CSV</button>
+        <button class="btn btn-outline" style="margin:0;padding:.45rem .85rem;font-size:.85rem" onclick="stReset()">🗑️ Reset progress</button>
+      </div>
+      <p class="info" id="stStatus" style="display:none;margin:.4rem 0"></p>
       <div id="topicList"></div>
       <div id="chartArea" style="display:none"><h3>📊 Weekly Progress</h3><div id="weekChart" class="st-chart"></div></div>
       <div id="revArea" style="display:none"><h3>🔁 Revision Due</h3><div id="revList"></div></div>
@@ -202,8 +212,41 @@ var currentExam="",structure=[],data={};
 
 function getKey(sec,topic){return sec+"|"+topic}
 function allTopics(){var t=[];structure.forEach(function(s){s.sub.forEach(function(st){t.push(getKey(s.name,st))})});return t}
-function loadData(){data=JSON.parse(localStorage.getItem("syl2_"+currentExam)||'{"checked":{},"hours":{},"notes":{},"revision":{}}');if(!data.checked)data={checked:{},hours:{},notes:{},revision:{}};}
-function saveData(){localStorage.setItem("syl2_"+currentExam,JSON.stringify(data))}
+function loadData(){
+  /* Private browsing and a full quota both make localStorage throw, and a half
+     written entry makes JSON.parse throw. Either one used to kill the whole page
+     on load, leaving an empty topic list with no explanation. */
+  var fresh={checked:{},hours:{},notes:{},revision:{}};
+  try{
+    var raw=localStorage.getItem("syl2_"+currentExam);
+    data=raw?JSON.parse(raw):fresh;
+    if(!data||typeof data!=="object"||!data.checked)data=fresh;
+    ["checked","hours","notes","revision"].forEach(function(k){
+      if(!data[k]||typeof data[k]!=="object")data[k]={};
+    });
+  }catch(e){
+    data=fresh;
+    stStatus("Could not read your saved progress, starting fresh.",true);
+  }
+}
+function saveData(){
+  try{
+    localStorage.setItem("syl2_"+currentExam,JSON.stringify(data));
+  }catch(e){
+    stStatus("Progress could not be saved — browser storage is full or blocked. "+
+             "Export a report so you do not lose this.",true);
+  }
+}
+
+/* small inline status line, so failures and confirmations are visible */
+function stStatus(msg,isErr){
+  var el=document.getElementById("stStatus");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--ok)";
+  el.textContent=msg||"";
+  if(!isErr)setTimeout(function(){if(el)el.textContent=""},2200);
+}
 
 function loadExam(){
   var exam=document.getElementById("examSelect").value;
@@ -357,25 +400,124 @@ function showChart(){
 
 // Export as text report
 function exportReport(){
-  if(!currentExam)return alert("Select an exam first");
+  if(!currentExam){stStatus("Select an exam first.",true);return}
+  try{
+    var text=stBuildReport();
+    var blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+    if(typeof download==="function")download(blob,"syllabus_report_"+currentExam+".txt");
+    else{var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+         a.download="syllabus_report_"+currentExam+".txt";a.click()}
+    stStatus("Report downloaded.");
+  }catch(e){
+    stStatus("Could not build the report: "+(e.message||"unknown"),true);
+  }
+}
+
+/* The report body is shared by the download, the clipboard copy and the CSV
+   export, so it lives in one place. */
+function stBuildReport(){
   var all=allTopics(),done=all.filter(function(k){return data.checked[k]}).length;
-  var lines=["SYLLABUS PROGRESS REPORT","Exam: "+currentExam,"Date: "+new Date().toLocaleDateString(),"Overall: "+done+"/"+all.length+" ("+Math.round(done/all.length*100)+"%)\n"];
-  var totalH=Object.values(data.hours||{}).reduce(function(a,b){return a+b},0);
+  var pct=all.length?Math.round(done/all.length*100):0;
+  var lines=["SYLLABUS PROGRESS REPORT","Exam: "+currentExam,
+             "Date: "+new Date().toLocaleDateString(),
+             "Overall: "+done+"/"+all.length+" ("+pct+"%)\n"];
+  var totalH=Object.keys(data.hours||{}).reduce(function(a,k){return a+(+data.hours[k]||0)},0);
   lines.push("Total Study Hours: "+totalH+"\n");
   structure.forEach(function(sec){
     var secDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
     lines.push("\n"+sec.name+" ("+secDone+"/"+sec.sub.length+")");
     sec.sub.forEach(function(t){
-      var key=getKey(sec.name,t),mark=data.checked[key]?"✓":"✗",hrs=data.hours[key],note=data.notes[key];
+      var key=getKey(sec.name,t),mark=data.checked[key]?"\u2713":"\u2717",
+          hrs=data.hours[key],note=data.notes[key];
       var line="  ["+mark+"] "+t;
       if(hrs)line+=" ("+hrs+"h)";
-      if(note)line+=" — "+note;
+      if(note)line+=" \u2014 "+note;
       lines.push(line);
     });
   });
-  var blob=new Blob([lines.join("\n")],{type:"text/plain"});
-  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="syllabus_report_"+currentExam+".txt";a.click();
+  return lines.join("\n");
 }
+
+function stCopyReport(){
+  if(!currentExam){stStatus("Select an exam first.",true);return}
+  try{
+    var text=stBuildReport();
+    if(typeof copyText==="function"){copyText(text,null);stStatus("Report copied.");return}
+    navigator.clipboard.writeText(text).then(function(){stStatus("Report copied.")},
+      function(){stStatus("Copy was blocked by the browser.",true)});
+  }catch(e){ stStatus("Copy failed: "+(e.message||"unknown"),true) }
+}
+
+function stExportCsv(){
+  if(!currentExam){stStatus("Select an exam first.",true);return}
+  try{
+    var rows=[["Section","Topic","Done","Hours","Revision due","Notes"]];
+    structure.forEach(function(sec){
+      sec.sub.forEach(function(t){
+        var k=getKey(sec.name,t);
+        rows.push([sec.name,t,data.checked[k]?"yes":"no",
+                   data.hours[k]||"", data.revision[k]||"",
+                   (data.notes[k]||"").replace(/\s+/g," ")]);
+      });
+    });
+    var csv=rows.map(function(r){
+      return r.map(function(cell){return '"'+String(cell).replace(/"/g,'""')+'"'}).join(",");
+    }).join("\n");
+    var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+    if(typeof download==="function")download(blob,"syllabus_"+currentExam+".csv");
+    else{var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+         a.download="syllabus_"+currentExam+".csv";a.click()}
+    stStatus("CSV downloaded — opens in Excel or Google Sheets.");
+  }catch(e){ stStatus("CSV export failed: "+(e.message||"unknown"),true) }
+}
+
+/* ---- live topic filter ----
+   A full UPSC syllabus runs to hundreds of rows, so scrolling to find one topic
+   was the slowest part of using this. */
+function stFilterTopics(){
+  var q=(document.getElementById("topicFilter").value||"").toLowerCase().trim();
+  var shownTopics=0, shownSections=0;
+  document.querySelectorAll("#topicList .st-section").forEach(function(sec){
+    var any=false;
+    sec.querySelectorAll(".st-topic").forEach(function(row){
+      var hit=!q||(row.textContent||"").toLowerCase().indexOf(q)>-1;
+      row.style.display=hit?"":"none";
+      if(hit){any=true;shownTopics++}
+    });
+    sec.style.display=any?"":"none";
+    /* a filtered hit is useless if its section is still collapsed */
+    var body=sec.querySelector(".st-section-body");
+    if(body&&q)body.style.display=any?"block":"none";
+    if(any)shownSections++;
+  });
+  var note=document.getElementById("filterCount");
+  if(note)note.textContent=q?(shownTopics+" topic"+(shownTopics===1?"":"s")+" in "+shownSections+" section"+(shownSections===1?"":"s")):"";
+}
+
+/* ---- reset, with a confirmation because it throws away real work ---- */
+function stReset(){
+  if(!currentExam){stStatus("Select an exam first.",true);return}
+  if(!confirm("Clear all progress, hours and notes for "+currentExam+"? This cannot be undone."))return;
+  data={checked:{},hours:{},notes:{},revision:{}};
+  saveData();render();
+  stStatus("Progress cleared for "+currentExam+".");
+}
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener("keydown",function(e){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"");
+  if(e.key==="/"&&!typing){
+    e.preventDefault();
+    var f=document.getElementById("topicFilter");
+    if(f){f.focus();f.select()}
+    return;
+  }
+  if(e.key==="Escape"){
+    var f2=document.getElementById("topicFilter");
+    if(f2&&f2.value){f2.value="";stFilterTopics()}
+    if(typeof closeModal==="function")closeModal();
+  }
+});
   </script>
 </body>
 </html>

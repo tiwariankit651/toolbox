@@ -56,6 +56,9 @@
       <div id="suggestions" style="display:none;margin-top:1rem"></div>
       <div id="reportBar" style="display:none;margin-top:1rem" class="row">
         <button class="btn btn-outline" onclick="downloadReport()" style="flex:1">💾 Download Report (.txt)</button>
+        <button class="btn btn-outline" onclick="copyReport()">📋 Copy report</button>
+        <button class="btn btn-outline" onclick="copyMissing()">🔑 Copy missing keywords</button>
+        <button class="btn btn-outline" onclick="atsClear()">🗑️ Clear</button>
       </div>
 
       <div style="margin-top:1.5rem">
@@ -165,6 +168,7 @@ var weakVerbs={
 var STOPWORDS={'the':1,'and':1,'for':1,'with':1,'you':1,'your':1,'our':1,'are':1,'will':1,'that':1,'this':1,'have':1,'has':1,'from':1,'they':1,'their':1,'about':1,'into':1,'over':1,'than':1,'then':1,'them':1,'were':1,'been':1,'being':1,'able':1,'must':1,'should':1,'would':1,'could':1,'who':1,'what':1,'when':1,'where':1,'which':1,'while':1,'role':1,'work':1,'team':1,'company':1,'candidate':1,'job':1,'position':1,'looking':1,'strong':1,'good':1,'great':1,'plus':1,'etc':1,'per':1,'via':1};
 
 var lastReport='';
+var lastMissing=[];   /* keywords the JD wants that the resume lacks, for copyMissing() */
 
 // ---------- File handling ----------
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
@@ -296,6 +300,7 @@ function checkATS(){
   var keywordScore=totalWeight?Math.round((matchedWeight/totalWeight)*100):0;
   missingList.sort(function(a,b){return b.f-a.f});
   var topMissing=missingList.slice(0,15);
+  lastMissing=topMissing.map(function(m){return m.w});
   var kwFb=[];
   kwFb.push('Weighted keyword match: '+keywordScore+'% ('+matchedList.length+'/'+jdKeys.length+' distinct JD keywords).');
   if(topMissing.length)kwFb.push('Most important missing keywords (by frequency in the JD): '+topMissing.map(function(m){return m.w+(m.f>1?' ('+m.f+'×)':'')}).join(', ')+'.');
@@ -442,8 +447,92 @@ function buildReport(overall,words,cats,matched,missing,fixes,expLevel){
 }
 
 function downloadReport(){
-  if(!lastReport){alert('Run a check first.');return}
-  download(new Blob([lastReport],{type:'text/plain'}),'ats-report.txt');
+  if(!lastReport){atsNote('Run a check first.',true);return}
+  try{
+    download(new Blob([lastReport],{type:'text/plain;charset=utf-8'}),'ats-report.txt');
+    atsNote('Report downloaded.');
+  }catch(e){ atsNote('Download failed: '+(e.message||'unknown'),true) }
+}
+
+/* inline feedback: the old alert() interrupted the flow and said nothing on success */
+function atsNote(msg,isErr){
+  var el=document.getElementById('atsNote');
+  if(!el)return;
+  el.style.display=msg?'block':'none';
+  el.style.color=isErr?'var(--danger)':'var(--ok)';
+  el.textContent=msg||'';
+  if(!isErr)setTimeout(function(){if(el)el.textContent=''},2200);
+}
+
+function copyReport(){
+  if(!lastReport){atsNote('Run a check first.',true);return}
+  try{
+    if(typeof copyText==='function'){copyText(lastReport,null);atsNote('Report copied.');return}
+    navigator.clipboard.writeText(lastReport).then(
+      function(){atsNote('Report copied.')},
+      function(){atsNote('Copy was blocked by the browser.',true)});
+  }catch(e){ atsNote('Copy failed: '+(e.message||'unknown'),true) }
+}
+
+/* Copy just the keywords the job description wants but the resume is missing -
+   that is the single most useful thing to paste back into a resume draft. */
+function copyMissing(){
+  if(!lastMissing||!lastMissing.length){atsNote('Run a check first, or no keywords are missing.',true);return}
+  var out=lastMissing.join(', ');
+  try{
+    if(typeof copyText==='function'){copyText(out,null);atsNote(lastMissing.length+' missing keywords copied.');return}
+    navigator.clipboard.writeText(out).then(
+      function(){atsNote(lastMissing.length+' missing keywords copied.')},
+      function(){atsNote('Copy was blocked by the browser.',true)});
+  }catch(e){ atsNote('Copy failed: '+(e.message||'unknown'),true) }
+}
+
+/* ---- draft persistence ----
+   People paste a resume, tweak it, reload, and used to lose everything. */
+var ATS_KEY='ats-draft-v1';
+function atsSave(){
+  try{
+    localStorage.setItem(ATS_KEY,JSON.stringify({
+      resume:document.getElementById('resume').value,
+      jobdesc:document.getElementById('jobdesc').value,
+      expLevel:document.getElementById('expLevel').value
+    }));
+  }catch(e){ /* private mode or quota; silent by design */ }
+}
+function atsRestore(){
+  try{
+    var d=JSON.parse(localStorage.getItem(ATS_KEY)||'null');
+    if(!d)return false;
+    if(d.resume)document.getElementById('resume').value=d.resume;
+    if(d.jobdesc)document.getElementById('jobdesc').value=d.jobdesc;
+    if(d.expLevel)document.getElementById('expLevel').value=d.expLevel;
+    updateWordCount();
+    return !!(d.resume&&d.resume.trim());
+  }catch(e){ return false }
+}
+function atsClear(){
+  if(!confirm('Clear the resume and job description?'))return;
+  try{localStorage.removeItem(ATS_KEY)}catch(e){}
+  document.getElementById('resume').value='';
+  document.getElementById('jobdesc').value='';
+  updateWordCount();
+  atsNote('Cleared.');
+}
+
+['resume','jobdesc','expLevel'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var t=null;
+  el.addEventListener('input',function(){clearTimeout(t);t=setTimeout(atsSave,900)});
+  el.addEventListener('change',atsSave);
+});
+
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();checkATS()}
+});
+
+if(atsRestore()){
+  setTimeout(function(){atsNote('Restored your last draft.')},300);
 }
   </script>
 </body>

@@ -64,6 +64,12 @@
           <button class="btn btn-outline" onclick="selectPages('even')" style="font-size:.78rem;padding:.3rem .6rem">Select Even</button>
           <button class="btn btn-outline" onclick="selectPages('invert')" style="font-size:.78rem;padding:.3rem .6rem">Invert</button>
         </div>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap;margin:.4rem 0;align-items:center">
+        <span class="info" id="psSummary" style="font-size:.85rem"></span>
+        <button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="psCopyRange()">📋 Copy page range</button>
+      </div>
+      <p class="info" id="psNote" style="display:none;margin:.3rem 0"></p>
+      <p class="info" style="font-size:.78rem">Shortcuts: <strong>Ctrl+A</strong> all · <strong>N</strong> none · <strong>O</strong> odd · <strong>E</strong> even · <strong>I</strong> invert</p>
         <div id="thumbGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin:1rem 0"></div>
         <div id="outputInfo" class="info" style="margin:.5rem 0;font-weight:600"></div>
         <button class="btn" onclick="doSplit()" id="splitBtn" style="width:100%">Split / Extract</button>
@@ -191,6 +197,7 @@ async function renderThumbnails(arrayBuffer) {
 }
 
 function renderGrid() {
+  setTimeout(psSummary,0);   /* keep the selection summary in step with the grid */
   var grid = document.getElementById('thumbGrid');
   var html = '';
   for (var i = 0; i < totalPages; i++) {
@@ -230,8 +237,7 @@ function deletePage(idx) {
   renderGrid();
 }
 
-function selectPages(mode) {
-  for (var i = 0; i < pageStates.length; i++) {
+function selectPages(mode) {  for (var i = 0; i < pageStates.length; i++) {
     if (pageStates[i].deleted) continue;
     if (mode === 'all') pageStates[i].selected = true;
     else if (mode === 'none') pageStates[i].selected = false;
@@ -240,7 +246,69 @@ function selectPages(mode) {
     else if (mode === 'invert') pageStates[i].selected = !pageStates[i].selected;
   }
   renderGrid();
+  psSummary();
 }
+
+/* ---- a running summary, so you know what the split will produce before you run it ---- */
+function psSummary() {
+  var el = document.getElementById('psSummary');
+  if (!el) return;
+  if (!pageStates.length) { el.textContent = ''; return; }
+  var sel = 0, del = 0, rot = 0;
+  for (var i = 0; i < pageStates.length; i++) {
+    if (pageStates[i].deleted) { del++; continue; }
+    if (pageStates[i].selected) sel++;
+    if (pageStates[i].rotation) rot++;
+  }
+  var bits = [sel + ' of ' + pageStates.length + ' page' + (pageStates.length === 1 ? '' : 's') + ' selected'];
+  if (del) bits.push(del + ' deleted');
+  if (rot) bits.push(rot + ' rotated');
+  el.textContent = bits.join(' · ');
+}
+
+/* ---- copy the current selection as a page range, handy for other tools ---- */
+function psCopyRange() {
+  if (!pageStates.length) { psNote('Upload a PDF first.', true); return; }
+  var nums = [];
+  for (var i = 0; i < pageStates.length; i++) {
+    if (pageStates[i].selected && !pageStates[i].deleted) nums.push(i + 1);
+  }
+  if (!nums.length) { psNote('No pages selected.', true); return; }
+  // collapse runs into ranges: 1,2,3,7 becomes 1-3,7
+  var parts = [], start = nums[0], prev = nums[0];
+  for (var j = 1; j <= nums.length; j++) {
+    if (nums[j] === prev + 1) { prev = nums[j]; continue; }
+    parts.push(start === prev ? String(start) : (start + '-' + prev));
+    start = prev = nums[j];
+  }
+  var out = parts.join(',');
+  try {
+    if (typeof copyText === 'function') { copyText(out, null); psNote('Copied: ' + out); return; }
+    navigator.clipboard.writeText(out).then(
+      function(){ psNote('Copied: ' + out) },
+      function(){ psNote('Copy was blocked by the browser.', true) });
+  } catch (e) { psNote('Copy failed: ' + (e.message || 'unknown'), true) }
+}
+
+function psNote(msg, isErr) {
+  var el = document.getElementById('psNote');
+  if (!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = isErr ? 'var(--danger)' : 'var(--ok)';
+  el.textContent = msg || '';
+  if (!isErr) setTimeout(function(){ if (el) el.textContent = '' }, 2200);
+}
+
+/* ---- keyboard: select-all style shortcuts over the page grid ---- */
+document.addEventListener('keydown', function (e) {
+  var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '');
+  if (typing || !pageStates.length) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') { e.preventDefault(); selectPages('all'); }
+  else if (e.key === 'i' || e.key === 'I') { selectPages('invert'); }
+  else if (e.key === 'o' || e.key === 'O') { selectPages('odd'); }
+  else if (e.key === 'e' || e.key === 'E') { selectPages('even'); }
+  else if (e.key === 'n' || e.key === 'N') { selectPages('none'); }
+});
 
 function modeChanged() {
   var mode = document.getElementById('splitMode').value;
@@ -298,11 +366,22 @@ async function buildPdf(srcData, indices) {
 }
 
 async function doSplit() {
-  if (!file) return alert('Please upload a PDF first');
+  if (!file) {
+    var r0 = document.getElementById('result');
+    r0.innerHTML = '<p class="info" style="color:var(--danger)">Upload a PDF first.</p>';
+    return;
+  }
   var mode = document.getElementById('splitMode').value;
-  var srcData = await file.arrayBuffer();
   var resultEl = document.getElementById('result');
   resultEl.innerHTML = '<p class="info">Processing...</p>';
+  var srcData;
+  try {
+    srcData = await file.arrayBuffer();
+  } catch (readErr) {
+    resultEl.innerHTML = '<p class="info" style="color:var(--danger)">Could not read that file. ' +
+      'Try re-saving the PDF and uploading again.</p>';
+    return;
+  }
 
   try {
     var outputs = [];

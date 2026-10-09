@@ -54,6 +54,14 @@
         <input type="date" id="dob" style="flex:2">
         <button class="btn" onclick="calc()">Calculate</button>
       </div>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap;margin:.4rem 0;align-items:center">
+        <span class="info" style="font-size:.8rem">Try:</span>
+        <button class="btn btn-outline" style="margin:0;padding:.35rem .7rem;font-size:.8rem" onclick="acPreset('18')">Turning 18 today</button>
+        <button class="btn btn-outline" style="margin:0;padding:.35rem .7rem;font-size:.8rem" onclick="acPreset('21')">Turning 21 today</button>
+        <button class="btn btn-outline" style="margin:0;padding:.35rem .7rem;font-size:.8rem" onclick="acPreset('60')">Turning 60 today</button>
+        <button class="btn btn-outline" style="margin:0;padding:.35rem .7rem;font-size:.8rem" onclick="acPreset('y2k')">Born 1 Jan 2000</button>
+      </div>
+      <p class="info" id="acNote" style="display:none;margin:.3rem 0"></p>
       <div id="result" class="ac-grid"></div>
       <button id="copyBtn" class="ac-copy" style="display:none" onclick="copyAge()">Copy Summary</button>
 
@@ -177,10 +185,10 @@ function ageBetween(dob,target){
 
 function calc(){
   const dob=new Date(document.getElementById("dob").value);
-  if(isNaN(dob))return alert("Select a valid date");
+  if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
   const now=new Date();
-  if(dob>now)return alert("Date of birth cannot be in the future!");
-  localStorage.setItem(AC_DOB_KEY,document.getElementById("dob").value);
+  if(dob>now){acNote("Date of birth cannot be in the future.",true);return}
+  try{localStorage.setItem(AC_DOB_KEY,document.getElementById("dob").value)}catch(e){}
   const{y,m,d}=ageBetween(dob,now);
   const totalDays=Math.floor((now-dob)/864e5);
   const totalMonths=y*12+m;
@@ -219,8 +227,8 @@ function copyAge(){copyText(lastSummary,document.getElementById("copyBtn"));}
 function calcAt(){
   const dob=new Date(document.getElementById("dob").value);
   const target=new Date(document.getElementById("targetDate").value);
-  if(isNaN(dob))return alert("Select a date of birth first");
-  if(isNaN(target))return alert("Select a target date");
+  if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
+  if(isNaN(target)){acNote("Pick a target date.",true);return}
   let out="";
   const future=target>=dob;
   const a=future?dob:target,b=future?target:dob;
@@ -235,7 +243,7 @@ function calcAt(){
 function checkEligibility(){
   const dob=new Date(document.getElementById("dob").value);
   const cutoff=new Date(document.getElementById("cutoff").value);
-  if(isNaN(dob))return alert("Select a date of birth first");
+  if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
   if(isNaN(cutoff))return alert("Select a cutoff date");
   if(cutoff<dob)return alert("Cutoff date must be after date of birth");
   const{y,m,d}=ageBetween(dob,cutoff);
@@ -275,7 +283,7 @@ function ageDiff(){
 function retirement(){
   const dob=new Date(document.getElementById("dob").value);
   const retAge=parseFloat(document.getElementById("retAge").value);
-  if(isNaN(dob))return alert("Select a date of birth first");
+  if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
   if(isNaN(retAge)||retAge<=0)return alert("Enter a valid retirement age");
   const retDate=new Date(dob.getFullYear()+Math.floor(retAge),dob.getMonth(),dob.getDate());
   const now=new Date();
@@ -301,9 +309,69 @@ function saveHistory(dobStr,ageStr){
 
 // Restore last used DOB
 (function(){
-  const last=localStorage.getItem(AC_DOB_KEY);
-  if(last)document.getElementById("dob").value=last;
+  try{
+    const last=localStorage.getItem(AC_DOB_KEY);
+    if(last)document.getElementById("dob").value=last;
+  }catch(e){ /* private browsing: nothing to restore */ }
 })();
+
+/* ---- inline validation instead of alert() ----
+   The old alerts blocked the page for the single most common mistake (an empty or
+   future date), which is harsher than the mistake deserves. */
+function acNote(msg,isErr){
+  var el=document.getElementById("acNote");
+  if(!el)return;
+  el.style.display=msg?"block":"none";
+  el.style.color=isErr?"var(--danger)":"var(--ok)";
+  el.textContent=msg||"";
+  if(!isErr)setTimeout(function(){if(el)el.textContent=""},2200);
+}
+
+/* ---- live recalculation ----
+   A date picker fires change as soon as a date is chosen, so there is no reason to
+   make the user press a button as well. */
+(function(){
+  var dob=document.getElementById("dob");
+  if(!dob)return;
+  var run=function(){
+    var v=dob.value;
+    if(!v)return;
+    var d=new Date(v);
+    if(isNaN(d))return;
+    if(d>new Date()){acNote("That date is in the future.",true);return}
+    acNote("");
+    calc();
+  };
+  dob.addEventListener("change",run);
+  dob.addEventListener("input",run);
+  // if a date was restored from a previous visit, show the result straight away
+  if(dob.value)setTimeout(run,120);
+})();
+
+/* ---- quick presets for the dates people actually look up ---- */
+function acPreset(kind){
+  var dob=document.getElementById("dob");
+  var today=new Date();
+  var set=function(y,m,d){
+    var pad=function(n){return n<10?"0"+n:""+n};
+    dob.value=y+"-"+pad(m)+"-"+pad(d);
+    dob.dispatchEvent(new Event("change",{bubbles:true}));
+  };
+  if(kind==="18")      set(today.getFullYear()-18,today.getMonth()+1,today.getDate());
+  else if(kind==="21") set(today.getFullYear()-21,today.getMonth()+1,today.getDate());
+  else if(kind==="60") set(today.getFullYear()-60,today.getMonth()+1,today.getDate());
+  else if(kind==="y2k")set(2000,1,1);
+  acNote("Loaded an example date of birth — change it to your own.");
+}
+
+/* ---- keyboard: Enter anywhere recalculates ---- */
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){
+    var t=(e.target&&e.target.tagName)||"";
+    if(t==="TEXTAREA")return;
+    calc();
+  }
+});
   </script>
 </body>
 </html>

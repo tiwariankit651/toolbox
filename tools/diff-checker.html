@@ -110,6 +110,8 @@
         <span class="navcount" id="navCount"></span>
         <span style="flex:1"></span>
         <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="copyDiff()">📋 Copy patch</button>
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="dcCopySide('a')">📄 Copy A</button>
+        <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="dcCopySide('b')">📄 Copy B</button>
         <button class="btn btn-outline" style="padding:.4rem 1rem" onclick="downloadDiff()">⬇️ .diff</button>
       </div>
       <div id="output" class="diff-output" style="display:none"></div>
@@ -389,11 +391,39 @@ function buildPatch(){
 }
 function copyDiff(){
   var patch=buildPatch();
-  if(!patch)return;
-  navigator.clipboard.writeText(patch);
-  var t=document.createElement('div');t.textContent='📋 Patch copied';
-  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999';
-  document.body.appendChild(t);setTimeout(function(){t.remove();},1800);
+  if(!patch){dcToast('Nothing to copy — the texts are identical or empty.',true);return}
+  /* The old version assumed clipboard.writeText always resolves. It rejects on an
+     insecure origin or when the document is not focused, and the success toast
+     appeared anyway, so people thought they had copied something. */
+  try{
+    if(typeof copyText==='function'){copyText(patch,null);dcToast('Patch copied');return}
+    navigator.clipboard.writeText(patch).then(
+      function(){dcToast('Patch copied')},
+      function(){dcToast('Copy was blocked. Select the diff and copy manually.',true)});
+  }catch(e){ dcToast('Copy failed: '+(e.message||'unknown'),true) }
+}
+
+function dcToast(msg,isErr){
+  var t=document.createElement('div');
+  t.textContent=(isErr?'⚠️ ':'📋 ')+msg;
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:'+
+    (isErr?'#b91c1c':'#2e7d32')+';color:#fff;padding:.6rem 1.2rem;border-radius:8px;'+
+    'font-size:.9rem;font-weight:600;z-index:9999;max-width:90vw;text-align:center';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove()},isErr?3200:1800);
+}
+
+/* ---- copy just one side, which is what you want after reviewing a diff ---- */
+function dcCopySide(which){
+  var el=document.getElementById(which==='a'?'textA':'textB');
+  var v=el?el.value:'';
+  if(!v.trim()){dcToast('That side is empty.',true);return}
+  try{
+    if(typeof copyText==='function'){copyText(v,null);dcToast('Copied side '+which.toUpperCase());return}
+    navigator.clipboard.writeText(v).then(
+      function(){dcToast('Copied side '+which.toUpperCase())},
+      function(){dcToast('Copy was blocked by the browser.',true)});
+  }catch(e){ dcToast('Copy failed: '+(e.message||'unknown'),true) }
 }
 function downloadDiff(){
   var patch=buildPatch();
@@ -421,11 +451,71 @@ function wireFile(inputId,areaId){
   var inp=document.getElementById(inputId);
   inp.addEventListener('change',function(){
     var f=inp.files[0];if(!f)return;
+    /* A binary file read as text produces megabytes of replacement characters,
+       and a very large file froze the tab with no explanation. */
+    if(f.size>5*1024*1024){
+      dcToast('That file is '+(f.size/1048576).toFixed(1)+'MB. Files over 5MB are too slow to diff in a browser.',true);
+      inp.value='';return;
+    }
+    if(/\.(pdf|docx?|xlsx?|zip|png|jpe?g|gif|mp[34]|exe)$/i.test(f.name)){
+      dcToast('That looks like a binary file. Paste the text instead, or use a .txt / code file.',true);
+      inp.value='';return;
+    }
     var rdr=new FileReader();
-    rdr.onload=function(){document.getElementById(areaId).value=rdr.result;};
+    rdr.onload=function(){
+      var txt=String(rdr.result||'');
+      // a high proportion of U+FFFD means this was not really text
+      var junk=(txt.match(/\uFFFD/g)||[]).length;
+      if(junk>20&&junk/Math.max(1,txt.length)>0.01){
+        dcToast('That file does not look like plain text.',true);return;
+      }
+      document.getElementById(areaId).value=txt;
+      var other=areaId==='textA'?'textB':'textA';
+      dcToast('Loaded '+f.name+' into side '+(areaId==='textA'?'A':'B'));
+      if(document.getElementById(other).value.trim())compare();
+    };
+    rdr.onerror=function(){dcToast('Could not read that file.',true)};
     rdr.readAsText(f);
   });
 }
+
+/* ---- autosave, because losing a half-reviewed comparison is painful ---- */
+var DC_KEY='diff-draft-v1';
+function dcSave(){
+  try{
+    localStorage.setItem(DC_KEY,JSON.stringify({
+      a:document.getElementById('textA').value,
+      b:document.getElementById('textB').value
+    }));
+  }catch(e){ /* quota or private mode */ }
+}
+function dcRestore(){
+  try{
+    var d=JSON.parse(localStorage.getItem(DC_KEY)||'null');
+    if(!d)return false;
+    if(d.a)document.getElementById('textA').value=d.a;
+    if(d.b)document.getElementById('textB').value=d.b;
+    return !!(d.a||d.b);
+  }catch(e){ return false }
+}
+['textA','textB'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var t=null;
+  el.addEventListener('input',function(){clearTimeout(t);t=setTimeout(dcSave,900)});
+});
+
+/* ---- keyboard shortcuts ---- */
+document.addEventListener('keydown',function(e){
+  var typing=/^(INPUT|TEXTAREA)$/.test((e.target&&e.target.tagName)||'');
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();compare();return}
+  if(typing)return;
+  if(e.key==='n'||e.key==='N'){gotoChange(1)}
+  else if(e.key==='p'||e.key==='P'){gotoChange(-1)}
+  else if(e.key==='s'||e.key==='S'){swapTexts()}
+});
+
+if(dcRestore()){ setTimeout(function(){dcToast('Restored your last comparison')},400) }
 wireFile('fileA','textA');
 wireFile('fileB','textB');
   </script>

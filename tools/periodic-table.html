@@ -20,6 +20,7 @@
       <h1>🧪 Interactive Periodic Table</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polygon points="100,15 40,45 100,75 160,45" fill="none" stroke="#6366f1" stroke-width="3"/><line x1="160" y1="45" x2="160" y2="85" stroke="#6366f1" stroke-width="3"/><path d="M65,55 L65,85 Q100,105 135,85 L135,55" fill="none" stroke="#8b5cf6" stroke-width="3"/></svg></div>
       <p class="info">Click any element to see details. Hold Ctrl/Cmd+click two elements to compare. Use filters to explore.</p>
+      <p class="info" style="font-size:.78rem">Keyboard: <strong>/</strong> jump to search · <strong>Tab</strong> walk the table · <strong>Enter</strong> open · <strong>arrow keys</strong> move between elements · <strong>Esc</strong> close</p>
       <input type="text" id="search" placeholder="Search element... (e.g. Hydrogen, Fe, 26)" oninput="searchEl()">
       <div class="filters">
         <select id="filterCat" onchange="applyFilters()"><option value="">All Categories</option><option value="AM">Alkali Metal</option><option value="AEM">Alkaline Earth</option><option value="TM">Transition Metal</option><option value="PTM">Post-Transition</option><option value="ML">Metalloid</option><option value="NM">Nonmetal</option><option value="HL">Halogen</option><option value="NG">Noble Gas</option><option value="LN">Lanthanide</option><option value="AN">Actinide</option></select>
@@ -28,6 +29,7 @@
         <select id="filterBlock" onchange="applyFilters()"><option value="">Block (s/p/d/f)</option><option value="s">s-block</option><option value="p">p-block</option><option value="d">d-block</option><option value="f">f-block</option></select>
         <button class="compare-btn" onclick="clearCompare()">Clear Compare</button>
       </div>
+      <div id="ptSaved" style="margin:.5rem 0"></div>
       <div id="info" style="background:var(--card);padding:1rem;border-radius:12px;margin:1rem 0;display:none"></div>
       <div id="compare" class="compare-box"></div>
       <div id="table" style="display:grid;grid-template-columns:repeat(18,1fr);gap:2px;overflow-x:auto;margin:1rem 0;font-size:.75rem"></div>
@@ -228,6 +230,11 @@ function makeCell(el){
   d.className="el";d.style.background=colors[el[4]]||"#94a3b8";d.style.color="#fff";
   d.innerHTML='<span class="num">'+el[0]+'</span><span class="sym">'+el[1]+'</span>';
   d.dataset.idx=E.indexOf(el);
+  d.dataset.z=el[0];            /* lets ptJump() find a cell by atomic number */
+  d.tabIndex=0;                 /* reachable by keyboard */
+  d.setAttribute("role","button");
+  d.setAttribute("aria-label",el[2]+", atomic number "+el[0]);
+  d.onkeydown=function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();this.click()}};
   d.onclick=function(ev){handleClick(ev,E[this.dataset.idx])};
   grid.appendChild(d);elDoms.push({dom:d,el:el});
 }
@@ -287,9 +294,140 @@ function showCompare(){
 }
 
 function showInfo(e){
+  ptCurrent=e;
   var info=document.getElementById("info");info.style.display="block";
-  info.innerHTML='<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><div style="width:60px;height:60px;border-radius:12px;background:'+colors[e[4]]+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">'+e[1]+'</div><div><div style="font-size:1.3rem;font-weight:700">'+e[2]+'</div><div class="info">Atomic Number: '+e[0]+' | Mass: '+e[3]+' u</div><div class="info">Category: '+cats[e[4]]+' | '+metalTypes[e[4]]+'</div><div class="info">Period: '+e[5]+' | Group: '+e[6]+' | Block: '+e[12]+'</div><div class="info">State: '+e[11]+' | Density: '+e[7]+' g/cm³</div><div class="info">Melting: '+e[8]+'°C | Boiling: '+e[9]+'°C | EN: '+(e[10]||"N/A")+'</div><div class="info" style="margin-top:4px;font-family:monospace;font-size:.9rem">⚡ '+e[13]+'</div></div></div>';
+  info.innerHTML='<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><div style="width:60px;height:60px;border-radius:12px;background:'+colors[e[4]]+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">'+e[1]+'</div><div><div style="font-size:1.3rem;font-weight:700">'+e[2]+'</div><div class="info">Atomic Number: '+e[0]+' | Mass: '+e[3]+' u</div><div class="info">Category: '+cats[e[4]]+' | '+metalTypes[e[4]]+'</div><div class="info">Period: '+e[5]+' | Group: '+e[6]+' | Block: '+e[12]+'</div><div class="info">State: '+e[11]+' | Density: '+e[7]+' g/cm³</div><div class="info">Melting: '+e[8]+'°C | Boiling: '+e[9]+'°C | EN: '+(e[10]||"N/A")+'</div><div class="info" style="margin-top:4px;font-family:monospace;font-size:.9rem">⚡ '+e[13]+'</div></div></div>'+
+    '<div class="row" style="gap:.4rem;flex-wrap:wrap;margin-top:.7rem">'+
+      '<button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="ptCopy(\'text\')">📋 Copy details</button>'+
+      '<button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="ptCopy(\'csv\')">📋 Copy as CSV row</button>'+
+      '<button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="ptFav()" id="ptFavBtn">'+(ptIsFav(e[0])?"★ Saved":"☆ Save")+'</button>'+
+      '<span class="info" id="ptCopyNote" style="font-size:.78rem"></span>'+
+    '</div>';
+  ptRemember(e[0]);
 }
+
+/* ---- element currently shown, so the copy and save buttons have something to act on ---- */
+var ptCurrent=null;
+
+function ptNote(msg,isErr){
+  var n=document.getElementById("ptCopyNote");
+  if(!n)return;
+  n.style.color=isErr?"var(--danger)":"var(--ok)";
+  n.textContent=msg;
+  setTimeout(function(){if(n)n.textContent=""},2200);
+}
+
+function ptCopy(kind){
+  if(!ptCurrent){ptNote("Pick an element first.",true);return}
+  var e=ptCurrent, out;
+  if(kind==="csv"){
+    out=[e[0],e[1],e[2],e[3],cats[e[4]],metalTypes[e[4]],e[5],e[6],e[12],e[11],e[7],e[8],e[9],e[10]||"",e[13]].join(",");
+  }else{
+    out=e[2]+" ("+e[1]+")\n"+
+        "Atomic number: "+e[0]+"\n"+
+        "Atomic mass: "+e[3]+" u\n"+
+        "Category: "+cats[e[4]]+" ("+metalTypes[e[4]]+")\n"+
+        "Period "+e[5]+", group "+e[6]+", block "+e[12]+"\n"+
+        "State at room temperature: "+e[11]+"\n"+
+        "Density: "+e[7]+" g/cm3\n"+
+        "Melting point: "+e[8]+" C, boiling point: "+e[9]+" C\n"+
+        "Electronegativity: "+(e[10]||"not applicable")+"\n"+
+        "Electron configuration: "+e[13];
+  }
+  try{
+    if(typeof copyText==="function"){copyText(out,null);ptNote("Copied.");return}
+    navigator.clipboard.writeText(out).then(function(){ptNote("Copied.")},
+      function(){ptNote("Copy blocked by the browser.",true)});
+  }catch(err){
+    ptNote("Could not copy: "+(err.message||"unknown"),true);
+  }
+}
+
+/* ---- saved elements and recently viewed, kept across visits ---- */
+var PT_FAV_KEY="periodic-favs-v1", PT_RECENT_KEY="periodic-recent-v1";
+function ptRead(key){
+  try{var v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v:[]}catch(e){return []}
+}
+function ptWrite(key,arr){
+  try{localStorage.setItem(key,JSON.stringify(arr))}catch(e){ /* quota or private mode */ }
+}
+function ptIsFav(z){return ptRead(PT_FAV_KEY).indexOf(z)>-1}
+function ptFav(){
+  if(!ptCurrent)return;
+  var z=ptCurrent[0], favs=ptRead(PT_FAV_KEY), i=favs.indexOf(z);
+  if(i>-1)favs.splice(i,1); else favs.push(z);
+  ptWrite(PT_FAV_KEY,favs);
+  var b=document.getElementById("ptFavBtn");
+  if(b)b.textContent=ptIsFav(z)?"★ Saved":"☆ Save";
+  ptRenderSaved();
+  ptNote(i>-1?"Removed from saved.":"Saved.");
+}
+function ptRemember(z){
+  var r=ptRead(PT_RECENT_KEY).filter(function(x){return x!==z});
+  r.unshift(z);
+  ptWrite(PT_RECENT_KEY,r.slice(0,12));
+  ptRenderSaved();
+}
+function ptByZ(z){
+  for(var i=0;i<E.length;i++) if(E[i][0]===z) return E[i];
+  return null;
+}
+function ptRenderSaved(){
+  var host=document.getElementById("ptSaved");
+  if(!host)return;
+  var favs=ptRead(PT_FAV_KEY), recent=ptRead(PT_RECENT_KEY);
+  var chip=function(z){
+    var el=ptByZ(z); if(!el)return "";
+    return '<button class="btn btn-outline" style="margin:0;padding:.3rem .6rem;font-size:.8rem" '+
+           'onclick="ptJump('+z+')" title="'+el[2]+'">'+el[1]+'</button>';
+  };
+  var html="";
+  if(favs.length)   html+='<div class="row" style="gap:.35rem;flex-wrap:wrap;margin:.3rem 0"><span class="info" style="font-size:.8rem;min-width:70px">★ Saved:</span>'+favs.map(chip).join("")+'<button class="btn btn-outline" style="margin:0;padding:.3rem .6rem;font-size:.8rem" onclick="ptClearFavs()">Clear</button></div>';
+  if(recent.length) html+='<div class="row" style="gap:.35rem;flex-wrap:wrap;margin:.3rem 0"><span class="info" style="font-size:.8rem;min-width:70px">Recent:</span>'+recent.map(chip).join("")+'</div>';
+  host.innerHTML=html;
+}
+function ptClearFavs(){ ptWrite(PT_FAV_KEY,[]); ptRenderSaved(); }
+function ptJump(z){
+  var el=ptByZ(z);
+  if(!el)return;
+  showInfo(el);
+  var cell=document.querySelector('[data-z="'+z+'"]');
+  if(cell){
+    cell.scrollIntoView({behavior:"smooth",block:"center"});
+    cell.style.outline="3px solid var(--accent-text)";
+    setTimeout(function(){cell.style.outline=""},1400);
+  }
+}
+
+/* ---- keyboard: / focuses search, arrows walk the table, Esc clears ---- */
+document.addEventListener("keydown",function(ev){
+  var typing=/^(INPUT|TEXTAREA|SELECT)$/.test((ev.target&&ev.target.tagName)||"");
+  if(ev.key==="/"&&!typing){
+    ev.preventDefault();
+    var s=document.getElementById("search");
+    if(s){s.focus();s.select()}
+    return;
+  }
+  if(ev.key==="Escape"){
+    var s2=document.getElementById("search");
+    if(s2&&s2.value){s2.value="";searchEl()}
+    var inf=document.getElementById("info");
+    if(inf)inf.style.display="none";
+    ptCurrent=null;
+    return;
+  }
+  if(typing)return;
+  if(!ptCurrent)return;
+  var delta=0;
+  if(ev.key==="ArrowRight")delta=1;
+  else if(ev.key==="ArrowLeft")delta=-1;
+  else if(ev.key==="ArrowDown")delta=18;   // roughly one period down
+  else if(ev.key==="ArrowUp")delta=-18;
+  else return;
+  ev.preventDefault();
+  var z=Math.min(118,Math.max(1,ptCurrent[0]+delta));
+  ptJump(z);
+});
 function searchEl(){var q=document.getElementById("search").value.toLowerCase();if(!q){document.getElementById("info").style.display="none";return}var found=E.find(function(e){return e[2].toLowerCase().indexOf(q)>-1||e[1].toLowerCase()===q||String(e[0])===q});if(found)showInfo(found)}
 
 function applyFilters(){
@@ -309,6 +447,8 @@ function applyFilters(){
 }
 
 var leg=document.getElementById("legend");for(var k in cats){var s=document.createElement("span");s.innerHTML='<span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:'+colors[k]+';vertical-align:middle"></span> '+cats[k];leg.appendChild(s)}
-  </script>
+  
+ptRenderSaved();  /* restore saved and recent chips from a previous visit */
+</script>
 </body>
 </html>
