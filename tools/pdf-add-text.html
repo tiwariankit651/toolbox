@@ -137,6 +137,7 @@
 
         <div class="row" style="margin-top:1rem">
           <button class="btn" onclick="savePdf()">💾 Download Edited PDF</button>
+        <button class="btn btn-outline" onclick="patCopyAnnotations()">📋 Copy annotation list</button>
           <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All Annotations</button>
         </div>
 
@@ -416,6 +417,54 @@ function makeDraggable(el,it,idx,bottomLeft){
 }
 
 /* ---- tool switching ---- */
+/* The annotation style gets re-picked from scratch on every visit, which is the
+   most repetitive part of marking up a batch of documents the same way. */
+var PAT_KEY='pdf-add-text-style-v1';
+var PAT_FIELDS=['toolMode','fontFamily','fontSize','fontColor','textOpacity','textRotation',
+                'hlColor','shapeColor','shapeThickness','shapeOpacity','rectFill'];
+function patSaveStyle(){
+  var d={};
+  PAT_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(PAT_KEY,d,true);
+}
+function patRestoreStyle(){
+  var d=storeGet(PAT_KEY,null);
+  if(!d)return false;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+  });
+  return true;
+}
+
+/* Copy every annotation as text: useful for logging what was changed, or for
+   pasting a list of comments back to whoever asked for them. */
+function patCopyAnnotations(){
+  if(!items.length){notify('Add some annotations first.','warn');return}
+  var byPage={};
+  items.forEach(function(it){(byPage[it.page]=byPage[it.page]||[]).push(it)});
+  var L=['PDF ANNOTATIONS ('+items.length+')'];
+  Object.keys(byPage).sort(function(a,b){return a-b}).forEach(function(pg){
+    L.push('');
+    L.push('Page '+pg+':');
+    byPage[pg].forEach(function(it){
+      if(it.type==='text')L.push('  text: "'+it.text+'"');
+      else L.push('  '+it.type);
+    });
+  });
+  copyNow(L.join('\n'),items.length+' annotations copied.');
+}
+
 function onToolChange(){
   var m=document.getElementById("toolMode").value;
   document.getElementById("textCtrls").style.display=(m==="text")?"flex":"none";
@@ -736,6 +785,11 @@ async function savePdf(){
 }
 
 onToolChange();
-  </script>
+  
+patRestoreStyle();
+if(typeof onToolChange==='function')onToolChange();
+PAT_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',patSaveStyle)});
+</script>
 </body>
 </html>

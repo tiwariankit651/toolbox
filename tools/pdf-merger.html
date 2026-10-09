@@ -50,6 +50,7 @@
       </div>
       <div id="totalInfo" class="info" style="margin:.5rem 0;font-weight:600"></div>
       <button class="btn" onclick="merge()" id="mergeBtn" disabled style="width:100%">Merge All PDFs</button>
+        <button class="btn btn-outline" onclick="copyManifest()">📋 Copy merge order</button>
       <div id="result"></div>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How to merge PDF files?</summary><p>Click the upload area, select multiple PDF files, then click Merge. Your combined PDF will download automatically.</p></details>
@@ -117,6 +118,23 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 setupDrop("drop", "inp", function(f) { addFiles(f); });
 document.getElementById('inp2').addEventListener('change', function() { addFiles(this.files); this.value = ''; });
+
+/* A merged PDF cannot be put on the clipboard, so the useful copyable output here
+   is the ordered manifest: which files, in what order, how many pages each. People
+   paste this when checking an order with a colleague. */
+function copyManifest(){
+  if(!pdfItems.length){notify('Add some PDFs first.','warn');return}
+  var total=0;
+  var L=['MERGE ORDER ('+pdfItems.length+' file'+(pdfItems.length>1?'s':'')+')'];
+  pdfItems.forEach(function(it,i){
+    total+=it.pageCount||0;
+    L.push((i+1)+'. '+it.file.name+'  '+(it.pageCount||'?')+' page'+(it.pageCount===1?'':'s')+
+           (it.pageRange?('  pages '+it.pageRange):''));
+  });
+  L.push('');
+  L.push('Total: '+total+' pages');
+  copyNow(L.join('\n'),'Merge order copied.');
+}
 
 async function addFiles(fileList) {
   if (!checkFileSize(fileList)) return;

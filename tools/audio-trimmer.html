@@ -45,6 +45,17 @@
         </div>
 
         <h3 style="margin-top:1rem">Export Options</h3>
+        <div class="row">
+          <label>Export preset:</label>
+          <select id="atPreset" onchange="atApplyPreset()" style="flex:2">
+            <option value="custom">Custom</option>
+            <option value="voice">Voice note (mono, normalised)</option>
+            <option value="ringtone">Ringtone (stereo, fades)</option>
+            <option value="podcast">Podcast clip (mono, gentle fades)</option>
+            <option value="music">Music (stereo, 32-bit, no normalise)</option>
+            <option value="smallest">Smallest file (mono)</option>
+          </select>
+        </div>
         <div class="row" style="flex-wrap:wrap">
           <div><label>Sample Rate</label><select id="sr"><option value="0">Keep original</option><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
           <div><label>Bit Depth</label><select id="bits"><option value="16">16-bit PCM</option><option value="32">32-bit float</option></select></div>
@@ -54,6 +65,7 @@
         <p class="info">Export format is <strong>WAV</strong> (written manually in-browser). MP3 encoding is not available here because it requires an external encoder library — WAV is lossless and universally supported.</p>
         <div class="row" style="margin-top:.5rem;flex-wrap:wrap">
           <button class="btn" onclick="exportTrim()" id="trimBtn">✂️ Trim &amp; Download WAV</button>
+        <button class="btn btn-outline" onclick="atCopySelection()">📋 Copy timestamps</button>
         </div>
 
         <h3 style="margin-top:1rem">Split into Segments</h3>
@@ -338,6 +350,83 @@ function estimateSize(){
 }
 ["sr","bits","chOut"].forEach(function(id){document.addEventListener("change",function(e){if(e.target&&e.target.id===id)estimateSize()})});
 
+/* The export settings get reused for every clip in a batch, so remembering them
+   removes the most repetitive part of the job. */
+var AT_KEY='audio-trimmer-settings-v1';
+var AT_FIELDS=['bits','chOut','gain','fadeIn','fadeOut','normalize'];
+function atSave(){
+  var d={};
+  AT_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(AT_KEY,d,true);
+}
+function atRestore(){
+  var d=storeGet(AT_KEY,null);
+  if(!d)return false;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  return true;
+}
+
+/* Export presets, because the right bit depth and channel count depends entirely
+   on what the clip is for. */
+/* Values must exist in the selects: bits offers 16 and 32 only, and chOut uses
+   0 for "keep original". Assigning anything else silently blanks the control. */
+var AT_PRESETS={
+  voice:    {bits:'16', chOut:'1', normalize:true,  fadeIn:'0',   fadeOut:'0'},
+  ringtone: {bits:'16', chOut:'2', normalize:true,  fadeIn:'0.1', fadeOut:'0.3'},
+  podcast:  {bits:'16', chOut:'1', normalize:true,  fadeIn:'0.2', fadeOut:'0.2'},
+  music:    {bits:'32', chOut:'2', normalize:false, fadeIn:'0',   fadeOut:'0'},
+  smallest: {bits:'16', chOut:'1', normalize:true,  fadeIn:'0',   fadeOut:'0'}
+};
+function atApplyPreset(){
+  var k=document.getElementById('atPreset').value;
+  var p=AT_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!p[id]}
+    else{
+      if(el.tagName==='SELECT'){
+        var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(p[id])});
+        if(!okv)return;
+      }
+      el.value=p[id];
+    }
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  notify('Applied the '+k+' preset.','ok');
+  atSave();
+}
+
+/* Copy the selection as timestamps, which is what people note down when marking
+   edit points for a longer recording. */
+function atCopySelection(){
+  var s=document.getElementById('startT'), e=document.getElementById('endT');
+  if(!s||!e||!s.value){notify('Load an audio file and pick a range first.','warn');return}
+  var fmt=function(sec){
+    sec=Math.max(0,+sec||0);
+    var m=Math.floor(sec/60), r=(sec%60).toFixed(2).padStart(5,'0');
+    return m+':'+r;
+  };
+  var dur=(+e.value||0)-(+s.value||0);
+  copyNow(fmt(s.value)+' - '+fmt(e.value)+'  ('+dur.toFixed(2)+'s)','Selection copied.');
+}
+
 function exportTrim(){
   if(!audioBuffer)return notify("Load an audio file first", 'warn');
   if(selEnd<=selStart)return notify("End must be after start", 'warn');
@@ -398,6 +487,10 @@ function nudge(which,delta){
   updateSelUI();
 }
 window.addEventListener("resize",function(){if(audioBuffer)drawWaveform()});
-  </script>
+  
+atRestore();
+AT_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',atSave)});
+</script>
 </body>
 </html>

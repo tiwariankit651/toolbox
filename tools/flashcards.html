@@ -91,6 +91,8 @@
         <div class="row" style="margin-top:.5rem">
           <button class="btn" onclick="studyCustom()">📖 Study My Cards</button>
           <button class="btn btn-outline" onclick="exportCards()">📤 Export</button>
+        <button class="btn btn-outline" onclick="exportCardsCsv()">📊 Export CSV (Anki)</button>
+        <button class="btn btn-outline" onclick="copyDeck()">📋 Copy deck</button>
           <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCards(event)">
           <button class="btn btn-outline" onclick="document.getElementById('importCsv').click()">📥 Import CSV</button>
@@ -264,6 +266,37 @@ function studyCustom(){
   document.getElementById("deckInfo").textContent="Studying: My Cards ("+deck.length+" cards)";
   showTab("study");showCard();
 }
+/* CSV is what Anki and Quizlet import, so it is far more useful than the JSON
+   export for anyone moving a deck somewhere else. */
+function exportCardsCsv(){
+  var src=(deck&&deck.length)?deck:customCards.map(function(c){
+    return {front:c.front!==undefined?c.front:c[0], back:c.back!==undefined?c.back:c[1]};
+  });
+  if(!src.length){notify('No cards to export.','warn');return}
+  var rows=[['Front','Back']].concat(src.map(function(c){return [c.front,c.back]}));
+  var csv=rows.map(function(r){
+    return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',');
+  }).join('\n');
+  download(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'flashcards.csv');
+  notify(src.length+' cards exported as CSV - imports into Anki and Quizlet.','ok');
+}
+
+/* Copy the current deck as plain text for sharing in a study group. */
+function copyDeck(){
+  var src=(deck&&deck.length)?deck:customCards.map(function(c){
+    return {front:c.front!==undefined?c.front:c[0], back:c.back!==undefined?c.back:c[1]};
+  });
+  if(!src.length){notify('Load or create a deck first.','warn');return}
+  var L=src.map(function(c,i){return (i+1)+'. '+c.front+'\n   -> '+c.back});
+  copyNow(L.join('\n'),src.length+' cards copied.');
+}
+
+/* Copy just the card on screen, which is handy while revising with someone. */
+function copyCurrentCard(){
+  if(!deck||!deck.length||!deck[idx]){notify('No card on screen.','warn');return}
+  copyNow(deck[idx].front+'\n-> '+deck[idx].back,'Card copied.');
+}
+
 function exportCards(){
   if(!customCards.length)return notify("No cards to export", 'warn');
   download(new Blob([JSON.stringify(customCards)],{type:"application/json"}),"flashcards.json");

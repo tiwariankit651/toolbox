@@ -65,7 +65,9 @@
       </div>
 
       <div id="yt-single" class="yt-panel active">
-        <div class="row"><input type="text" id="urlInput" placeholder="Paste YouTube URL (e.g. https://www.youtube.com/watch?v=...)" style="flex:1;padding:.6rem;border-radius:8px;border:1px solid rgba(99,102,241,.4);background:var(--card);color:var(--text);font-size:1rem" onkeydown="if(event.key==='Enter')fetchThumbnails()"><button class="btn" onclick="fetchThumbnails()">Get Thumbnails</button></div>
+        <div class="row"><input type="text" id="urlInput" placeholder="Paste YouTube URL (e.g. https://www.youtube.com/watch?v=...)" style="flex:1;padding:.6rem;border-radius:8px;border:1px solid rgba(99,102,241,.4);background:var(--card);color:var(--text);font-size:1rem" onkeydown="if(event.key==='Enter')fetchThumbnails()" oninput="ytValidateLive()"><button class="btn" onclick="fetchThumbnails()">Get Thumbnails</button></div>
+      <p class="info" id="ytLiveNote" style="display:none;font-size:.82rem;margin:.3rem 0"></p>
+      <div id="ytRecent"></div>
         <div id="vidInfo"></div>
         <div id="result"></div>
       </div>
@@ -182,6 +184,61 @@ var YT_SIZE_LIST=[
 
 function thumbUrl(id,file){return "https://i.ytimg.com/vi/"+id+"/"+file+".jpg"}
 
+/* People check several videos in a row, so a short history of recent lookups
+   saves re-pasting URLs. */
+var YT_HIST_KEY='yt-thumb-recent-v1';
+function ytRemember(id,title){
+  var h=storeGet(YT_HIST_KEY,[]).filter(function(x){return x.id!==id});
+  h.unshift({id:id,title:title||'',t:Date.now()});
+  storeSet(YT_HIST_KEY,h.slice(0,8),true);
+  ytRenderRecent();
+}
+function ytRenderRecent(){
+  var host=document.getElementById('ytRecent');
+  if(!host)return;
+  var h=storeGet(YT_HIST_KEY,[]);
+  if(!h.length){host.innerHTML='';return}
+  host.innerHTML='<p class="info" style="font-size:.8rem;margin:.4rem 0">Recent:</p>'+
+    '<div class="row" style="gap:.35rem;flex-wrap:wrap">'+
+    h.map(function(x){
+      return '<button class="btn btn-outline" style="margin:0;padding:.3rem .6rem;font-size:.78rem" '+
+        'onclick="ytReopen(\''+x.id+'\')" title="'+(x.title||x.id).replace(/"/g,'&quot;')+'">'+
+        '<img src="https://i.ytimg.com/vi/'+x.id+'/default.jpg" alt="" '+
+        'style="width:34px;height:26px;object-fit:cover;border-radius:3px;vertical-align:middle">'+
+        '</button>';
+    }).join('')+
+    '<button class="btn btn-outline" style="margin:0;padding:.3rem .6rem;font-size:.78rem" '+
+    'onclick="ytClearRecent()">Clear</button></div>';
+}
+function ytReopen(id){
+  var inp=document.getElementById('urlInput');
+  if(inp){inp.value='https://www.youtube.com/watch?v='+id;inp.dispatchEvent(new Event('input',{bubbles:true}))}
+  fetchThumbnails();
+}
+function ytClearRecent(){ storeSet(YT_HIST_KEY,[],true); ytRenderRecent(); notify('Recent list cleared.','ok') }
+
+/* Live validation: the commonest mistake is pasting a channel or playlist link,
+   and saying so as they type beats failing after they press the button. */
+function ytValidateLive(){
+  var inp=document.getElementById('urlInput');
+  var note=document.getElementById('ytLiveNote');
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.textContent='';note.style.display='none';return}
+  note.style.display='block';
+  var id=getVideoId(v);
+  if(id){
+    note.style.color='var(--ok)';
+    note.textContent='Video ID detected: '+id;
+  }else if(/playlist\?list=|\/channel\/|\/@|\/c\//.test(v)){
+    note.style.color='var(--warn)';
+    note.textContent='That is a channel or playlist link. Paste a single video URL.';
+  }else{
+    note.style.color='var(--text2)';
+    note.textContent='Keep typing, or paste a full YouTube video URL.';
+  }
+}
+
 function fetchThumbnails(){
   var url=document.getElementById("urlInput").value;
   var id=getVideoId(url);
@@ -189,6 +246,7 @@ function fetchThumbnails(){
   var info=document.getElementById("vidInfo");
   if(!id){info.innerHTML="";result.innerHTML='<p style="color:#e74c3c;margin-top:1rem">❌ Invalid YouTube URL or video ID. Paste a watch, youtu.be, embed, shorts or live link — or a bare 11-character ID.</p>';return}
   renderVideoLinks(id,info);
+  ytRemember(id,'');   /* keep it in the recent list for quick re-checks */
   result.innerHTML='<p class="info" style="margin-top:1rem">Checking available sizes…</p>';
   var grid=document.createElement("div");grid.className="thumb-grid";
   var pending=YT_SIZE_LIST.length;
@@ -311,6 +369,8 @@ function downloadAllBatch(){
 }
 
 function escapeHtml(s){return s.replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+ytRenderRecent();
 </script>
 </body>
 </html>

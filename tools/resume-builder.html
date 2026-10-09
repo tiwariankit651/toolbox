@@ -84,6 +84,8 @@
 
       <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="genResume()" style="flex:1">📄 Generate & Download PDF</button>
+        <button class="btn btn-outline" onclick="copyResumeText()">📋 Copy as plain text</button>
+        <button class="btn btn-outline" onclick="downloadResumeText()">📄 Download .txt (ATS)</button>
         <button class="btn btn-outline" onclick="printResume()" style="flex:0">🖨️ Print</button>
         <button class="btn btn-outline" onclick="clearAll()" style="flex:0;color:#e55">🗑️ Clear All</button>
       </div>
@@ -207,6 +209,74 @@ function calcATS(){var score=0;var tips=[];var name=gv('name'),email=gv('email')
   score=Math.min(100,Math.max(0,score));
   document.getElementById('atsScoreNum').textContent=score;var bar=document.getElementById('atsBar');bar.style.width=score+'%';bar.style.background=score>=80?'#4caf50':score>=50?'#ff9800':'#e55';document.getElementById('atsScoreNum').style.color=score>=80?'#4caf50':score>=50?'#ff9800':'#e55';document.getElementById('atsTips').innerHTML=tips.map(function(t){return '<li>'+t+'</li>';}).join('');}
 function escH(s){if(!s)return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* ATS systems and most job portals want plain text, not a styled PDF. Building it
+   from the form fields rather than scraping the preview keeps the section order
+   predictable and drops the decorative markup. */
+function resumeAsText(){
+  var gvv=function(id){var e=document.getElementById(id);return e?e.value.trim():''};
+  var out=[];
+  var name=gvv('name')||'Your Name';
+  out.push(name.toUpperCase());
+  var title=gvv('title'); if(title)out.push(title);
+  var contact=[gvv('email'),gvv('phone'),gvv('location'),gvv('linkedin'),gvv('portfolio')]
+                .filter(Boolean).join(' | ');
+  if(contact)out.push(contact);
+
+  var summary=gvv('summary');
+  if(summary){out.push('','SUMMARY',summary)}
+
+  var exps=[];
+  document.querySelectorAll('#exp > div').forEach(function(e){
+    var inp=e.querySelectorAll('input'), ta=e.querySelector('textarea');
+    if(!inp[0]||!inp[0].value.trim())return;
+    var line=(inp[1]?inp[1].value:'')+(inp[0].value?' at '+inp[0].value:'');
+    if(inp[2]&&inp[2].value)line+=' ('+inp[2].value+')';
+    exps.push(line.trim());
+    if(ta&&ta.value.trim()){
+      ta.value.split(/\n+/).forEach(function(l){
+        if(l.trim())exps.push('- '+l.trim().replace(/^[-*\u2022]\s*/,''));
+      });
+    }
+    exps.push('');
+  });
+  if(exps.length){out.push('','EXPERIENCE');out=out.concat(exps)}
+
+  var edus=[];
+  document.querySelectorAll('#edu > div').forEach(function(e){
+    var inp=e.querySelectorAll('input');
+    if(!inp[0]||!inp[0].value.trim())return;
+    var line=(inp[1]?inp[1].value:'')+(inp[0].value?', '+inp[0].value:'');
+    if(inp[2]&&inp[2].value)line+=' ('+inp[2].value+')';
+    if(inp[3]&&inp[3].value)line+=' - '+inp[3].value;
+    edus.push(line.trim());
+  });
+  if(edus.length){out.push('','EDUCATION');out=out.concat(edus)}
+
+  var skills=(typeof ratedSkills!=='undefined'?ratedSkills.map(function(s){return s.name}):[]);
+  var free=gvv('skills');
+  if(free)free.split(',').forEach(function(s){if(s.trim())skills.push(s.trim())});
+  if(skills.length){out.push('','SKILLS',skills.join(', '))}
+
+  var langs=gvv('languages');
+  if(langs){out.push('','LANGUAGES',langs)}
+
+  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function copyResumeText(){
+  var t=resumeAsText();
+  if(!t||t==='YOUR NAME'){notify('Fill in your details first.','warn');return}
+  copyNow(t,'Resume copied as plain text - paste it into any job portal.');
+}
+
+function downloadResumeText(){
+  var t=resumeAsText();
+  if(!t||t==='YOUR NAME'){notify('Fill in your details first.','warn');return}
+  var nm=(document.getElementById('name').value||'resume').trim().replace(/\s+/g,'-').toLowerCase();
+  download(new Blob([t],{type:'text/plain;charset=utf-8'}),nm+'.txt');
+  notify('Plain-text resume downloaded.','ok');
+}
+
 function updatePreview(){var tmpl=document.getElementById('template').value;var ac=document.getElementById('accentColor').value;var name=gv('name')||'Your Name',title=gv('title')||'Job Title',email=gv('email'),phone=gv('phone'),loc=gv('location'),summary=gv('summary'),certs=gv('certs'),langs=gv('languages');var allSkills=ratedSkills.slice();var sk=gv('skills');if(sk)sk.split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});
   var expHTML='';document.querySelectorAll('#exp > div').forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');if(inp[0]&&inp[0].value.trim()){expHTML+='<div style="margin-bottom:.8rem"><strong>'+escH(inp[1]?inp[1].value:'')+'</strong> at '+escH(inp[0].value)+' <span style="color:#888;font-size:.85em">'+escH(inp[2]?inp[2].value:'')+'</span>'+(ta&&ta.value?'<p style="margin:.3rem 0;font-size:.9em;white-space:pre-wrap">'+escH(ta.value)+'</p>':'')+'</div>';}});
   var eduHTML='';document.querySelectorAll('#edu > div').forEach(function(e){var inp=e.querySelectorAll('input');if(inp[0]&&inp[0].value.trim()){eduHTML+='<div style="margin-bottom:.6rem"><strong>'+escH(inp[1]?inp[1].value:'')+'</strong> — '+escH(inp[0].value)+' <span style="color:#888;font-size:.85em">'+escH(inp[2]?inp[2].value:'')+(inp[3]&&inp[3].value?' | '+escH(inp[3].value):'')+'</span></div>';}});

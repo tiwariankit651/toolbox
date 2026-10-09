@@ -105,6 +105,8 @@
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
         <button class="btn btn-outline" onclick="printSheet()">🖨 Print / PDF Grade Sheet</button>
         <button class="btn btn-outline" onclick="exportTranscript()">📄 Export TXT Transcript</button>
+        <button class="btn btn-outline" onclick="copySheet()">📋 Copy grade sheet</button>
+        <button class="btn btn-outline" onclick="copySummary()">📋 Copy summary</button>
       </div>
     </div>
     <div style="min-height:90px">
@@ -405,6 +407,27 @@ function importJSON(ev){
 }
 
 /* ===== Grade sheet: print & text transcript ===== */
+/* The grade sheet is already assembled as plain text for the download, so copying
+   it costs nothing and is what students actually do with it - paste into a form,
+   a message to parents, or a scholarship application. */
+function copySheet(){
+  var lines=buildSheetLines();
+  if(!lines){notify("Calculate your CGPA first.","warn");return}
+  copyNow(lines.join("\n"),"Grade sheet copied.");
+}
+
+/* A compact one-line summary for a quick message. */
+function copySummary(){
+  if(!window._calcData){calcAll()}
+  var d=window._calcData;
+  if(!d){notify("Calculate your CGPA first.","warn");return}
+  /* field names come from window._calcData: cgpa, pct, totalC */
+  var parts=["CGPA "+d.cgpa+" / "+d.scale];
+  if(d.pct!=null)parts.push(d.pct+"%");
+  if(d.totalC)parts.push(d.totalC+" credits");
+  copyNow(parts.join(" \u00b7 "),"Summary copied.");
+}
+
 function buildSheetLines(){
   if(!window._calcData){calcAll();if(!window._calcData)return null;}
   var d=window._calcData;var lines=[];

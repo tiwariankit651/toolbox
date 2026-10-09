@@ -255,6 +255,34 @@ async function extractAllText(){
   ta.value=allText.trim();
 }
 
+/* The pen colour, width and font get re-chosen on every visit, which is the most
+   repetitive part of annotating several documents the same way. */
+var PE_KEY='pdf-editor-style-v1';
+/* brushSize is a <select> offering 2, 4 and 8; textSize and the colours are
+   free-form inputs. Restore verifies select values before assigning. */
+var PE_FIELDS=['color','brushSize','textSize','fontFamily','whiteoutColor'];
+function peSaveStyle(){
+  var d={};
+  PE_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)d[id]=el.value;
+  });
+  storeSet(PE_KEY,d,true);
+}
+function peRestoreStyle(){
+  var d=storeGet(PE_KEY,null);
+  if(!d)return;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+  });
+}
+
 function setTool(t){
   tool=t;
   document.querySelectorAll('.toolbar button').forEach(function(b){b.classList.remove('active')});
@@ -398,6 +426,10 @@ async function savePDF(){
   var out=await doc.save();
   download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
 }
-  </script>
+  
+peRestoreStyle();
+PE_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',peSaveStyle)});
+</script>
 </body>
 </html>

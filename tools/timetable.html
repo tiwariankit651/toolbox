@@ -115,6 +115,9 @@
           </div>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
             <button class="btn" onclick="exportPNG()">📷 Export PNG</button>
+        <button class="btn btn-outline" onclick="copyTimetable()">📋 Copy as text</button>
+        <button class="btn btn-outline" onclick="downloadTimetableText()">📄 Download .txt</button>
+        <button class="btn btn-outline" onclick="exportTimetableCsv()">📊 Export CSV</button>
             <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
             <button class="btn btn-outline" onclick="exportJSON()">📤 Export JSON</button>
             <button class="btn btn-outline" onclick="document.getElementById('jsonImp').click()">📥 Import JSON</button>
@@ -294,6 +297,65 @@ function updateHoursSummary(){
 }
 
 /* Grid */
+/* Students share a timetable in a WhatsApp group far more often than they print
+   it, so a plain-text version is a primary output rather than a nicety. */
+function timetableAsText(){
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  if(!filled.length)return null;
+  var byDay={};
+  filled.forEach(function(k){
+    var i=k.lastIndexOf('-');
+    var day=k.slice(0,i), hour=k.slice(i+1);
+    (byDay[day]=byDay[day]||[]).push({h:hour,v:grid[k]});
+  });
+  var L=['MY TIMETABLE'];
+  DAYS.forEach(function(d){
+    var rows=byDay[d];
+    if(!rows||!rows.length)return;
+    rows.sort(function(a,b){return (+a.h)-(+b.h)});
+    L.push('');
+    L.push(d.toUpperCase());
+    rows.forEach(function(r){
+      var hr=+r.h;
+      var label=(hr%12===0?12:hr%12)+(hr<12?' am':' pm');
+      L.push('  '+label+'  '+r.v);
+    });
+  });
+  /* getPlannedHours(name) is per-subject, so total the filled slots directly. */
+  L.push('','Total planned: '+filled.length+' hour'+(filled.length===1?'':'s'));
+  return L.join('\n');
+}
+
+function copyTimetable(){
+  var t=timetableAsText();
+  if(!t){notify('Fill in some slots first.','warn');return}
+  copyNow(t,'Timetable copied - paste it into a chat or notes app.');
+}
+
+function downloadTimetableText(){
+  var t=timetableAsText();
+  if(!t){notify('Fill in some slots first.','warn');return}
+  download(new Blob([t],{type:'text/plain;charset=utf-8'}),'timetable.txt');
+  notify('Timetable downloaded as text.','ok');
+}
+
+function exportTimetableCsv(){
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  if(!filled.length){notify('Fill in some slots first.','warn');return}
+  var hours={};
+  filled.forEach(function(k){hours[k.slice(k.lastIndexOf('-')+1)]=true});
+  var hrList=Object.keys(hours).sort(function(a,b){return (+a)-(+b)});
+  var rows=[['Time'].concat(DAYS)];
+  hrList.forEach(function(h){
+    rows.push([h+':00'].concat(DAYS.map(function(d){return grid[d+'-'+h]||''})));
+  });
+  var csv=rows.map(function(r){
+    return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',');
+  }).join('\n');
+  download(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'timetable.csv');
+  notify('CSV downloaded - opens in Excel or Google Sheets.','ok');
+}
+
 function buildTable(){
   var t=document.getElementById('ttTable');
   var html='<thead><tr><th class="time-col">Time</th>';

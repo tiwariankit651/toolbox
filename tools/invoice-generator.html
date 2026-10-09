@@ -96,6 +96,8 @@
       <!-- Actions -->
       <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="genInvoice()" style="flex:1">📄 Generate & Download PDF</button>
+        <button class="btn btn-outline" onclick="copyInvoiceText()">📋 Copy as text</button>
+        <button class="btn btn-outline" onclick="shareInvoiceWhatsApp()">💬 Send on WhatsApp</button>
         <button class="btn btn-outline" onclick="printInvoice()">🖨️ Print</button>
       </div>
       <div id="result"></div>
@@ -236,6 +238,80 @@ function calcTotalsRaw(){var isInter=false;var supState=document.getElementById(
   return{subtotal:netSubtotal,totalTax:totalTax,grandTotal:netSubtotal+totalTax,taxByRate:taxByRate,isInter:isInter,overallDiscAmt:overallDiscAmt};}
 
 function printInvoice(){updateInvPreview();window.print();}
+
+/* Many small businesses send the invoice over WhatsApp rather than as a PDF, so a
+   plain-text version is genuinely the primary output for them. Built from the same
+   calcTotalsRaw() the PDF uses, so the numbers cannot drift apart. */
+function invoiceAsText(){
+  var gv=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():''};
+  var calc=calcTotalsRaw();
+  var cur='\u20b9';
+  var L=[];
+  L.push(gv('bName')||'Your Business');
+  if(gv('bGstin'))L.push('GSTIN: '+gv('bGstin'));
+  if(gv('bAddress'))L.push(gv('bAddress'));
+  L.push('');
+  L.push('INVOICE '+(gv('invNo')||''));
+  L.push('Date: '+(gv('invDate')||new Date().toLocaleDateString()));
+  L.push('');
+  L.push('Bill to: '+(gv('cName')||'-'));
+  if(gv('cGstin'))L.push('Customer GSTIN: '+gv('cGstin'));
+  if(gv('cAddress'))L.push(gv('cAddress'));
+  L.push('');
+  L.push('ITEMS');
+  document.querySelectorAll('#items > div').forEach(function(r){
+    var inp=r.querySelectorAll('input'), sel=r.querySelector('select');
+    var desc=inp[0]?inp[0].value.trim():'';
+    if(!desc)return;
+    var qty=inp[2]?(+inp[2].value||0):0;
+    var rate=inp[3]?(+inp[3].value||0):0;
+    var gst=sel?(+sel.value||0):0;
+    L.push('- '+desc+'  '+qty+' x '+cur+rate.toFixed(2)+
+           (gst?('  GST '+gst+'%'):'')+'  = '+cur+(qty*rate).toFixed(2));
+  });
+  L.push('');
+  L.push('Subtotal: '+cur+calc.subtotal.toFixed(2));
+  if(calc.overallDiscAmt>0)L.push('Discount: -'+cur+calc.overallDiscAmt.toFixed(2));
+  Object.keys(calc.taxByRate).forEach(function(k){
+    var t=calc.taxByRate[k];
+    if(calc.isInter)L.push('IGST @'+k+'%: '+cur+t.tax.toFixed(2));
+    else{
+      L.push('CGST @'+(+k/2)+'%: '+cur+(t.tax/2).toFixed(2));
+      L.push('SGST @'+(+k/2)+'%: '+cur+(t.tax/2).toFixed(2));
+    }
+  });
+  L.push('GRAND TOTAL: '+cur+calc.grandTotal.toFixed(2));
+  if(gv('amtWords'))L.push('('+gv('amtWords')+')');
+  var pay=[];
+  if(gv('upiId'))pay.push('UPI: '+gv('upiId'));
+  if(gv('bankName'))pay.push('Bank: '+gv('bankName'));
+  if(gv('bankAcc'))pay.push('A/c: '+gv('bankAcc'));
+  if(gv('bankIfsc'))pay.push('IFSC: '+gv('bankIfsc'));
+  if(pay.length){L.push('');L.push('PAYMENT');L=L.concat(pay)}
+  if(gv('dueDate'))L.push('Due: '+gv('dueDate'));
+  return L.join('\n');
+}
+
+function copyInvoiceText(){
+  var items=document.querySelectorAll('#items > div');
+  var any=false;
+  items.forEach(function(r){var i=r.querySelector('input'); if(i&&i.value.trim())any=true});
+  if(!any){notify('Add at least one item first.','warn');return}
+  copyNow(invoiceAsText(),'Invoice copied - paste it into WhatsApp or email.');
+}
+
+function shareInvoiceWhatsApp(){
+  var items=document.querySelectorAll('#items > div');
+  var any=false;
+  items.forEach(function(r){var i=r.querySelector('input'); if(i&&i.value.trim())any=true});
+  if(!any){notify('Add at least one item first.','warn');return}
+  var txt=invoiceAsText();
+  if(navigator.share){
+    navigator.share({title:'Invoice',text:txt}).catch(function(){});
+    return;
+  }
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener');
+}
 
 // --- PDF Generation ---
 /* Standard PDF fonts only cover WinAnsi. Any rupee sign, emoji, smart quote or

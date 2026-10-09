@@ -53,6 +53,8 @@
         <span class="wb-sep"></span>
         <button onclick="setTool('text')" id="tbText" title="Text tool">Aa Text</button>
         <span class="wb-sep"></span>
+        <label style="font-size:.75rem">Preset:</label><select id="wbPreset" onchange="wbApplyPreset()" style="font-size:.75rem;padding:2px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text)"><option value="custom">Custom</option><option value="sketch">Sketch</option><option value="annotate">Annotate</option><option value="teach">Teach</option><option value="highlight">Highlighter</option><option value="fine">Fine</option></select>
+        <span class="wb-sep"></span>
         <input type="color" id="colorPick" value="#000000" title="Color">
         <label style="font-size:.75rem">Width:</label><input type="range" id="strokeWidth" min="1" max="30" value="3" title="Stroke width">
         <label style="font-size:.75rem"><input type="checkbox" id="fillToggle"> Fill</label>
@@ -63,6 +65,7 @@
         <button onclick="clearAll()" title="Clear all">🗑️ Clear</button>
         <span class="wb-sep"></span>
         <button onclick="exportPNG()" title="Download PNG">💾 PNG</button>
+        <button class="btn btn-outline" onclick="copyBoard()">📋 Copy board</button>
         <button onclick="exportPDF()" title="Download PDF">📄 PDF</button>
       </div>
 
@@ -377,6 +380,46 @@ document.addEventListener("keydown",function(e){
 });
 
 // Export PNG
+/* Copying the board straight to the clipboard is how people get it into a chat or
+   a document without a download step. */
+async function copyBoard(){
+  try{
+    var blob=await new Promise(function(res){mainCanvas.toBlob(res,'image/png')});
+    if(!blob)throw new Error('could not read the board');
+    if(!navigator.clipboard||!window.ClipboardItem)
+      throw new Error('this browser cannot copy images; use Download PNG instead');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    notify('Board copied - paste it anywhere.','ok');
+  }catch(err){
+    notify('Copy failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
+/* Pen presets: the stroke width and colour combination differs a lot between
+   sketching, annotating a screenshot and writing on a shared board. */
+/* strokeWidth is a range 1-30 and fontSize a number input 12-72, so every value
+   here sits inside its control's range. */
+var WB_PRESETS={
+  sketch:    {strokeWidth:'2',  colorPick:'#111111', fontSize:'18'},
+  annotate:  {strokeWidth:'4',  colorPick:'#e11d48', fontSize:'22'},
+  teach:     {strokeWidth:'8',  colorPick:'#2563eb', fontSize:'32'},
+  highlight: {strokeWidth:'18', colorPick:'#f59e0b', fontSize:'24'},
+  fine:      {strokeWidth:'1',  colorPick:'#334155', fontSize:'14'}
+};
+function wbApplyPreset(){
+  var k=document.getElementById('wbPreset').value;
+  var p=WB_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.value=p[id];
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  notify('Applied the '+k+' preset.','ok');
+}
+
 function exportPNG(){
   mainCanvas.toBlob(function(b){
     var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="whiteboard.png";a.click();

@@ -65,6 +65,17 @@
       <!-- Input Area -->
       <div id="srInputArea">
         <textarea id="srText" rows="4" placeholder="Paste your text here... (article, notes, current affairs)" oninput="srUpdateStats()"></textarea>
+        <div class="row">
+          <label>Reading preset:</label>
+          <select id="srPreset" onchange="srApplyPreset()" style="flex:2">
+            <option value="custom">Custom</option>
+            <option value="beginner">Beginner (180 wpm, large text)</option>
+            <option value="normal" selected>Normal (250 wpm)</option>
+            <option value="fast">Fast (400 wpm, 2 words)</option>
+            <option value="skim">Skim (650 wpm, 3 words)</option>
+            <option value="sprint">Sprint (900 wpm, 5 words)</option>
+          </select>
+        </div>
         <div class="row" style="margin:.4rem 0;gap:.4rem">
           <button class="btn btn-outline" onclick="document.getElementById('srFileInput').click()" style="font-size:.85rem">📁 Upload .txt</button>
           <input type="file" id="srFileInput" accept=".txt" style="display:none" onchange="srLoadFile(event)">
@@ -154,6 +165,7 @@
           <div class="sr-stat"><div class="sr-stat-val" id="shAvgComp">—</div><div class="sr-stat-label">Avg Comprehension</div></div>
         </div>
         <h3 style="margin:.8rem 0 .4rem">Past Sessions</h3>
+        <button class="btn btn-outline" style="margin:0 0 .5rem;padding:.4rem .8rem;font-size:.82rem" onclick="srCopyHistory()">📋 Copy session history</button>
         <div id="srHistoryList"></div>
         <button class="btn btn-outline" onclick="if(confirm('Clear all history?')){srHistory=[];saveJSON('sr_history',[]);srShowTab('history')}" style="margin-top:.5rem">Clear History</button>
       </div>
@@ -327,6 +339,79 @@ function renderRsvpWord(chunk) {
 }
 
 function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+/* Reading speed is the whole point of this tool, but the right combination of wpm,
+   chunk size and font differs a lot by purpose. These set all of it at once rather
+   than making people guess from three sliders. */
+var SR_PRESETS={
+  beginner: {srWpm:'180', srChunk:'1', srFsize:'52', srPausePunc:true,  srRampUp:true},
+  normal:   {srWpm:'250', srChunk:'1', srFsize:'42', srPausePunc:true,  srRampUp:false},
+  fast:     {srWpm:'400', srChunk:'2', srFsize:'38', srPausePunc:true,  srRampUp:false},
+  skim:     {srWpm:'650', srChunk:'3', srFsize:'34', srPausePunc:false, srRampUp:false},
+  sprint:   {srWpm:'900', srChunk:'5', srFsize:'30', srPausePunc:false, srRampUp:true}
+};
+function srApplyPreset(){
+  var k=document.getElementById('srPreset').value;
+  var p=SR_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!p[id];return}
+    if(el.tagName==='SELECT'){
+      /* assigning a value the select does not offer silently blanks it */
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(p[id])});
+      if(!okv)return;
+    }
+    el.value=p[id];
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  notify('Applied the '+k+' reading preset.','ok');
+  srSaveSettings();
+}
+
+/* Remember the reading setup; people return to this tool repeatedly. */
+var SR_SET_KEY='speed-reader-settings-v1';
+var SR_FIELDS=['srWpm','srChunk','srFsize','srPausePunc','srRampUp','srPreset'];
+function srSaveSettings(){
+  var d={};
+  SR_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(SR_SET_KEY,d,true);
+}
+function srRestoreSettings(){
+  var d=storeGet(SR_SET_KEY,null);
+  if(!d)return false;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  return true;
+}
+
+/* Copy the session history, which is what people want to log or compare. */
+function srCopyHistory(){
+  var h=storeGet('srHistory',[]);
+  if(!h.length){h=(typeof srHistory!=='undefined'&&srHistory)?srHistory:[]}
+  if(!h.length){notify('No reading sessions yet.','warn');return}
+  var L=['SPEED READING SESSIONS'];
+  h.slice(0,20).forEach(function(s){
+    L.push('- '+(s.date||'')+'  '+(s.wpm||'?')+' wpm  '+(s.words||'?')+' words'+
+           (s.comp!=null?('  comprehension '+s.comp+'%'):''));
+  });
+  copyNow(L.join('\n'),'Session history copied.');
+}
 
 function srGetDelay(wordChunk) {
   var wpm = parseInt(document.getElementById('srWpm').value) || 250;
@@ -674,5 +759,10 @@ document.addEventListener('keydown', function(e) {
 
 /* ===== INIT ===== */
 srUpdateStats();
+
+/* restore the reading setup and keep it in step with every control change */
+srRestoreSettings();
+SR_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',srSaveSettings)});
 </script>
 </body></html>
