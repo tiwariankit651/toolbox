@@ -299,3 +299,152 @@ function copyNow(text, okMsg) {
     return Promise.resolve(failed());
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Site-wide keyboard shortcuts
+
+   81 tools had no keyboard handling at all, so the same few actions had to be
+   reached by mouse on every one of them. Rather than hand-wiring each tool,
+   these bindings infer the primary action from the page itself:
+
+     Ctrl/Cmd + Enter   run the main action (the first primary-looking button)
+     Ctrl/Cmd + S       download the result, if the tool offers one
+     Ctrl/Cmd + K       focus the first text field (search-like tools)
+     /                  focus the first text field, when not already typing
+     Escape             close an open dialog, or clear the focused field
+     ?                  list the shortcuts available on this page
+
+   Anything a tool binds itself takes precedence: these run on the bubble phase
+   and bail out as soon as the event has been handled or default-prevented.
+   --------------------------------------------------------------------------- */
+(function () {
+  var PRIMARY = /^(generate|calculate|convert|compress|create|run|analy[sz]e|check|extract|build|make|plot|encode|decode|format|count|compare|split|merge|shorten|translate|summari[sz]e|remove|apply|search|start|go|submit|render|process|flip|roll|pick|draw)/i;
+  var DOWNLOADY = /(download|save|export|\.png|\.pdf|\.zip|\.csv|\.txt)/i;
+  var AVOID = /(reset|clear|delete|remove all|discard|logout|theme)/i;
+
+  function visible(el) {
+    if (!el) return false;
+    if (el.disabled) return false;
+    var s = getComputedStyle(el);
+    if (s.display === 'none' || s.visibility === 'hidden') return false;
+    return el.getBoundingClientRect().width > 0;
+  }
+  function buttons() {
+    return [].slice.call(document.querySelectorAll('button, a.btn, [role="button"]')).filter(visible);
+  }
+  function findButton(re) {
+    var all = buttons();
+    for (var i = 0; i < all.length; i++) {
+      var label = (all[i].innerText || all[i].getAttribute('aria-label') || '').trim();
+      if (!label || AVOID.test(label)) continue;
+      if (re.test(label)) return all[i];
+    }
+    return null;
+  }
+  function firstField() {
+    var sel = 'input[type=text], input[type=search], input[type=url], input[type=email], input:not([type]), textarea';
+    var all = [].slice.call(document.querySelectorAll(sel)).filter(visible);
+    return all[0] || null;
+  }
+  function typingIn(e) {
+    var t = e.target;
+    if (!t) return false;
+    if (t.isContentEditable) return true;
+    return /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+  }
+
+  function shortcutList() {
+    var items = [];
+    var run = findButton(PRIMARY);
+    var dl = findButton(DOWNLOADY);
+    var f = firstField();
+    if (run) items.push(['Ctrl + Enter', 'Run: ' + (run.innerText || '').trim().slice(0, 28)]);
+    if (dl) items.push(['Ctrl + S', (dl.innerText || '').trim().slice(0, 28)]);
+    if (f) items.push(['/ or Ctrl + K', 'Jump to the first field']);
+    items.push(['Esc', 'Close a dialog or clear the field']);
+    items.push(['?', 'Show this list']);
+    return items;
+  }
+
+  function showHelp() {
+    var existing = document.getElementById('_kbdHelp');
+    if (existing) { existing.remove(); return; }
+    var items = shortcutList();
+    var box = document.createElement('div');
+    box.id = '_kbdHelp';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', 'Keyboard shortcuts');
+    box.style.cssText = 'position:fixed;inset:0;z-index:99998;display:flex;align-items:center;' +
+      'justify-content:center;background:rgba(0,0,0,.55);padding:1rem';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--surface,#15152a);color:var(--text,#f8f8ff);' +
+      'border:1px solid var(--border,rgba(148,148,184,.22));border-radius:14px;padding:1.2rem 1.4rem;' +
+      'max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);font-size:.92rem';
+    var rows = items.map(function (it) {
+      return '<div style="display:flex;gap:1rem;justify-content:space-between;padding:.35rem 0">' +
+        '<kbd style="font-family:inherit;font-weight:600;white-space:nowrap">' + it[0] + '</kbd>' +
+        '<span style="opacity:.85;text-align:right">' + it[1] + '</span></div>';
+    }).join('');
+    card.innerHTML = '<div style="font-weight:700;margin-bottom:.6rem">Keyboard shortcuts</div>' + rows +
+      '<div style="opacity:.7;font-size:.8rem;margin-top:.8rem">Press Esc or ? to close</div>';
+    box.appendChild(card);
+    box.addEventListener('click', function (ev) { if (ev.target === box) box.remove() });
+    document.body.appendChild(box);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented) return;          // the tool already handled it
+    var mod = e.ctrlKey || e.metaKey;
+    var k = (e.key || '').toLowerCase();
+
+    if (k === 'escape') {
+      var help = document.getElementById('_kbdHelp');
+      if (help) { help.remove(); return }
+      // a visible modal-ish overlay the tool rendered
+      var modal = document.querySelector('[id*="odal"]:not([style*="display: none"]), [id*="odal"]:not([style*="display:none"])');
+      if (modal && visible(modal) && typeof window.closeModal === 'function') { window.closeModal(); return }
+      if (typingIn(e) && e.target.value) { e.target.value = ''; e.target.dispatchEvent(new Event('input', { bubbles: true })); return }
+      return;
+    }
+
+    if (mod && k === 'enter') {
+      var run = findButton(PRIMARY);
+      if (run) { e.preventDefault(); run.click(); }
+      return;
+    }
+    if (mod && k === 's') {
+      var dl = findButton(DOWNLOADY);
+      if (dl) { e.preventDefault(); dl.click(); }
+      return;
+    }
+    if (mod && k === 'k') {
+      var f1 = firstField();
+      if (f1) { e.preventDefault(); f1.focus(); if (f1.select) f1.select(); }
+      return;
+    }
+    if (typingIn(e)) return;                 // plain keys are for the page, not us
+
+    if (e.key === '/') {
+      var f2 = firstField();
+      if (f2) { e.preventDefault(); f2.focus(); if (f2.select) f2.select(); }
+      return;
+    }
+    if (e.key === '?') { e.preventDefault(); showHelp(); return; }
+  });
+
+  /* A small, unobtrusive hint so the shortcuts are discoverable at all. */
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      if (!document.querySelector('.tool-section')) return;      // tool pages only
+      if (storeGetRaw('kbdHintShown', null)) return;
+      var f = document.querySelector('footer');
+      if (!f) return;
+      var tip = document.createElement('p');
+      tip.className = 'info';
+      tip.style.cssText = 'text-align:center;font-size:.78rem;margin:.6rem 0';
+      tip.innerHTML = 'Tip: press <strong>?</strong> for keyboard shortcuts on any tool.';
+      f.parentNode.insertBefore(tip, f);
+      storeSetRaw('kbdHintShown', '1', true);
+    }, 3000);
+  });
+})();
