@@ -524,7 +524,7 @@ function downloadCard(s){
   a.download='business-card-'+s+'.png'; a.href=sideDataURL(s); a.click();
 }
 async function downloadZip(){
-  if(typeof JSZip==='undefined'){alert('ZIP library still loading, please try again in a moment.');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library still loading, please try again in a moment.', 'warn');return}
   var zip=new JSZip();
   zip.file('business-card-front.png', sideDataURL('front').split(',')[1], {base64:true});
   zip.file('business-card-back.png', sideDataURL('back').split(',')[1], {base64:true});
@@ -533,7 +533,7 @@ async function downloadZip(){
   a.download='business-card.zip'; a.click();
 }
 async function downloadPDF(){
-  if(typeof PDFLib==='undefined'){alert('PDF library still loading, please try again in a moment.');return}
+  if(typeof PDFLib==='undefined'){notify('PDF library still loading, please try again in a moment.', 'warn');return}
   var doc=await PDFLib.PDFDocument.create();
   var W=canvas.width, H=canvas.height;
   for(const s of ['front','back']){
@@ -547,7 +547,7 @@ async function downloadPDF(){
   a.download='business-card.pdf'; a.click();
 }
 async function downloadSheetPDF(){
-  if(typeof PDFLib==='undefined'){alert('PDF library still loading, please try again in a moment.');return}
+  if(typeof PDFLib==='undefined'){notify('PDF library still loading, please try again in a moment.', 'warn');return}
   // A4 portrait at 72pt/inch = 595 x 842
   var A4W=595, A4H=842;
   var doc=await PDFLib.PDFDocument.create();
@@ -577,7 +577,7 @@ async function downloadSheetPDF(){
 function printCard(){
   var f=sideDataURL('front'), b=sideDataURL('back');
   var w=window.open('','_blank');
-  if(!w){alert('Popup blocked. Please allow popups to print.');return}
+  if(!w){notify('Popup blocked. Please allow popups to print.', 'warn');return}
   var html='<html><head><title>Print Business Card</title><style>'+
     'body{display:flex;flex-direction:column;align-items:center;gap:20px;padding:20px;font-family:sans-serif}'+
     'img{max-width:3.5in;border:1px solid #ccc}@media print{body{gap:10px;padding:0}h3{display:none}}'+
@@ -594,15 +594,15 @@ var BC_FIELDS=['cardName','cardTitle','cardCompany','cardTagline','cardPhone','c
 function saveCard(){
   var d={template:template,sizeKey:sizeKey};
   BC_FIELDS.forEach(function(k){var e=document.getElementById(k);if(e)d[k]=e.value});
-  try{localStorage.setItem(BC_KEY,JSON.stringify(d));alert('Card details saved in this browser.')}
-  catch(e){alert('Could not save: '+e.message)}
+  try{storeSet(BC_KEY, d);notify('Card details saved in this browser.', 'ok')}
+  catch(e){notify('Could not save: '+e.message, 'warn')}
 }
 function loadCard(){
   var raw=null;
-  try{raw=localStorage.getItem(BC_KEY)}catch(e){}
-  if(!raw){alert('No saved card found yet. Click Save first.');return}
+  try{raw=storeGetRaw(BC_KEY, null)}catch(e){}
+  if(!raw){notify('No saved card found yet. Click Save first.', 'warn');return}
   var d;
-  try{d=JSON.parse(raw)}catch(e){alert('Saved data looks corrupted.');return}
+  try{d=JSON.parse(raw)}catch(e){notify('Saved data looks corrupted.', 'ok');return}
   BC_FIELDS.forEach(function(k){var e=document.getElementById(k);if(e&&d[k]!==undefined)e.value=d[k]});
   if(d.sizeKey&&SIZES[d.sizeKey]){
     sizeKey=d.sizeKey; canvas.width=SIZES[sizeKey].w; canvas.height=SIZES[sizeKey].h;

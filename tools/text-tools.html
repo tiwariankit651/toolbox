@@ -324,13 +324,13 @@ function updateStats() {
 function autoSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(function() {
-    try { localStorage.setItem("tt_autosave", document.getElementById("t").value); } catch(e) {}
+    try { storeSetRaw("tt_autosave", document.getElementById("t").value); } catch(e) {}
   }, 500);
 }
 
 function loadSaved() {
   try {
-    var saved = localStorage.getItem("tt_autosave");
+    var saved = storeGetRaw("tt_autosave", null);
     if (saved) {
       document.getElementById("t").value = saved;
       pushHistory();

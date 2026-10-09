@@ -112,7 +112,7 @@ function countSyllables(w){w=w.toLowerCase().replace(/[^a-z]/g,'');if(!w)return 
 function analyze(){
   var el=document.getElementById("txt");
   var t=el?el.value:"";
-  try{localStorage.setItem(STORAGE_KEY,t);}catch(e){}
+  try{storeSet(STORAGE_KEY, t);}catch(e){}
   var wordArr=t.trim()?t.trim().split(/\s+/):[];
   var words=wordArr.length;
   var chars=t.length;
@@ -259,7 +259,7 @@ function toCase(mode){
   el.value=t;analyze();
 }
 function cleanSpaces(){var el=document.getElementById("txt");el.value=el.value.replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{3,}/g,'\n\n').trim();analyze();}
-function copyText(){var t=document.getElementById("txt").value;navigator.clipboard.writeText(t);showToast("Copied!");}
+function copyText(){var t=document.getElementById("txt").value;copyNow(t);showToast("Copied!");}
 function downloadTxt(){var blob=new Blob([document.getElementById("txt").value],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='text.txt';a.click();}
 function clearText(){document.getElementById("txt").value='';try{localStorage.removeItem(STORAGE_KEY);}catch(e){}analyze();}
 function showToast(msg){var d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(function(){d.remove()},1500);}
@@ -285,7 +285,7 @@ function exportCSV(){
   var blob=new Blob([csv],{type:'text/csv'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='word-frequency.csv';a.click();
 }
-(function(){try{var saved=localStorage.getItem(STORAGE_KEY);if(saved)document.getElementById("txt").value=saved;}catch(e){}analyze();})();
+(function(){try{var saved=storeGetRaw(STORAGE_KEY, null);if(saved)document.getElementById("txt").value=saved;}catch(e){}analyze();})();
   </script>
 </body>
 </html>

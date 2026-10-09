@@ -370,8 +370,8 @@ function tpl(name){$("input").value=templates[name];fmt()}
 function loadExample(){$("input").value="SELECT u.name, u.email, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 AND u.status = 'active' ORDER BY o.total DESC LIMIT 20";fmt()}
 function uploadFile(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){$("input").value=r.result;fmt()};r.readAsText(f)}
 function dlSql(){var b=new Blob([$("output").value||$("input").value],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="query.sql";a.click();URL.revokeObjectURL(a.href)}
-function autosave(){localStorage.setItem(STORE,JSON.stringify({input:$("input").value,indent:$("indentSize").value,kwCase:$("kwCase").value,comma:$("commaStyle").value,maxWidth:$("maxWidth").value,dialect:$("dialect").value}))}
-function restore(){var d=localStorage.getItem(STORE);if(d){try{var p=JSON.parse(d);$("input").value=p.input||"";if(p.indent)$("indentSize").value=p.indent;if(p.kwCase)$("kwCase").value=p.kwCase;if(p.comma)$("commaStyle").value=p.comma;if(p.maxWidth)$("maxWidth").value=p.maxWidth;if(p.dialect)$("dialect").value=p.dialect}catch(e){}}}
+function autosave(){storeSet(STORE, {input:$("input").value,indent:$("indentSize").value,kwCase:$("kwCase").value,comma:$("commaStyle").value,maxWidth:$("maxWidth").value,dialect:$("dialect").value})}
+function restore(){var d=storeGetRaw(STORE, null);if(d){try{var p=JSON.parse(d);$("input").value=p.input||"";if(p.indent)$("indentSize").value=p.indent;if(p.kwCase)$("kwCase").value=p.kwCase;if(p.comma)$("commaStyle").value=p.comma;if(p.maxWidth)$("maxWidth").value=p.maxWidth;if(p.dialect)$("dialect").value=p.dialect}catch(e){}}}
 restore();updateDialectNote();if($("input").value.trim())fmt();
 </script>
 </body>

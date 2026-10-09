@@ -483,15 +483,15 @@ function wireFile(inputId,areaId){
 var DC_KEY='diff-draft-v1';
 function dcSave(){
   try{
-    localStorage.setItem(DC_KEY,JSON.stringify({
+    storeSet(DC_KEY, {
       a:document.getElementById('textA').value,
       b:document.getElementById('textB').value
-    }));
+    });
   }catch(e){ /* quota or private mode */ }
 }
 function dcRestore(){
   try{
-    var d=JSON.parse(localStorage.getItem(DC_KEY)||'null');
+    var d=storeGet(DC_KEY, null);
     if(!d)return false;
     if(d.a)document.getElementById('textA').value=d.a;
     if(d.b)document.getElementById('textB').value=d.b;

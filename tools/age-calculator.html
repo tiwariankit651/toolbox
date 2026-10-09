@@ -188,7 +188,7 @@ function calc(){
   if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
   const now=new Date();
   if(dob>now){acNote("Date of birth cannot be in the future.",true);return}
-  try{localStorage.setItem(AC_DOB_KEY,document.getElementById("dob").value)}catch(e){}
+  try{storeSetRaw(AC_DOB_KEY, document.getElementById("dob").value)}catch(e){}
   const{y,m,d}=ageBetween(dob,now);
   const totalDays=Math.floor((now-dob)/864e5);
   const totalMonths=y*12+m;
@@ -244,8 +244,8 @@ function checkEligibility(){
   const dob=new Date(document.getElementById("dob").value);
   const cutoff=new Date(document.getElementById("cutoff").value);
   if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
-  if(isNaN(cutoff))return alert("Select a cutoff date");
-  if(cutoff<dob)return alert("Cutoff date must be after date of birth");
+  if(isNaN(cutoff))return notify("Select a cutoff date", 'warn');
+  if(cutoff<dob)return notify("Cutoff date must be after date of birth", 'warn');
   const{y,m,d}=ageBetween(dob,cutoff);
   const minAge=parseFloat(document.getElementById("minAge").value);
   const maxAge=parseFloat(document.getElementById("maxAge").value);
@@ -271,7 +271,7 @@ function checkEligibility(){
 function ageDiff(){
   const p1=new Date(document.getElementById("p1dob").value);
   const p2=new Date(document.getElementById("p2dob").value);
-  if(isNaN(p1)||isNaN(p2))return alert("Enter both dates of birth");
+  if(isNaN(p1)||isNaN(p2))return notify("Enter both dates of birth", 'warn');
   const older=p1<p2?p1:p2,younger=p1<p2?p2:p1;
   const{y,m,d}=ageBetween(older,younger);
   const totalDays=Math.floor((younger-older)/864e5);
@@ -284,7 +284,7 @@ function retirement(){
   const dob=new Date(document.getElementById("dob").value);
   const retAge=parseFloat(document.getElementById("retAge").value);
   if(isNaN(dob)){acNote("Pick your date of birth first.",true);return}
-  if(isNaN(retAge)||retAge<=0)return alert("Enter a valid retirement age");
+  if(isNaN(retAge)||retAge<=0)return notify("Enter a valid retirement age", 'warn');
   const retDate=new Date(dob.getFullYear()+Math.floor(retAge),dob.getMonth(),dob.getDate());
   const now=new Date();
   if(retDate<=now){
@@ -301,21 +301,21 @@ function retirement(){
 
 function saveHistory(dobStr,ageStr){
   let h=[];
-  try{h=JSON.parse(localStorage.getItem(AC_HIST_KEY))||[];}catch(e){h=[];}
+  try{h=storeGet(AC_HIST_KEY, null)||[];}catch(e){h=[];}
   h.unshift({dob:dobStr,age:ageStr,t:new Date().toLocaleString()});
   h=h.slice(0,10);
-  localStorage.setItem(AC_HIST_KEY,JSON.stringify(h));
+  storeSet(AC_HIST_KEY, h);
 }
 
 // Restore last used DOB
 (function(){
   try{
-    const last=localStorage.getItem(AC_DOB_KEY);
+    const last=storeGetRaw(AC_DOB_KEY, null);
     if(last)document.getElementById("dob").value=last;
   }catch(e){ /* private browsing: nothing to restore */ }
 })();
 
-/* ---- inline validation instead of alert() ----
+/* ---- inline validation instead of notify(, 'info') ----
    The old alerts blocked the page for the single most common mistake (an empty or
    future date), which is harsher than the mistake deserves. */
 function acNote(msg,isErr){

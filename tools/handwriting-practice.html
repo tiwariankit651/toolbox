@@ -488,12 +488,12 @@ function hpSave(){
       if(!el)return;
       d[id]=(el.type==="checkbox")?el.checked:el.value;
     });
-    localStorage.setItem(HP_KEY,JSON.stringify(d));
+    storeSet(HP_KEY, d);
   }catch(e){ /* private mode or quota */ }
 }
 function hpRestore(){
   try{
-    var d=JSON.parse(localStorage.getItem(HP_KEY)||"null");
+    var d=storeGet(HP_KEY, null);
     if(!d)return false;
     Object.keys(d).forEach(function(id){
       var el=document.getElementById(id);

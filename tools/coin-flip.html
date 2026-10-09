@@ -195,13 +195,13 @@ function randInt(max){ // 0..max-1 unbiased
 }
 
 // ---- session state ----
-var session=JSON.parse(localStorage.getItem("coinSession")||'{"coins":{"h":0,"t":0},"dice":{},"history":[]}');
+var session=storeGet("coinSession", {"coins":{"h":0,"t":0},"dice":{},"history":[]});
 if(!session.dice)session.dice={};
-function saveSession(){localStorage.setItem("coinSession",JSON.stringify(session));}
+function saveSession(){storeSet("coinSession", session);}
 function logHistory(text){session.history.unshift({t:text,ts:Date.now()});session.history=session.history.slice(0,50);saveSession();renderHistory();}
 
 // ---- sound (Web Audio) ----
-var muted=localStorage.getItem("coinMuted")==="1";
+var muted=storeGetRaw("coinMuted", null)==="1";
 var audioCtx=null;
 function beep(freq,dur,type){
   if(muted)return;
@@ -216,7 +216,7 @@ function beep(freq,dur,type){
   }catch(e){}
 }
 function toggleMute(){
-  muted=!muted;localStorage.setItem("coinMuted",muted?"1":"0");
+  muted=!muted;storeSetRaw("coinMuted", muted?"1":"0");
   document.getElementById("muteBtn").textContent=muted?"🔇 Sound: Off":"🔊 Sound: On";
 }
 document.getElementById("muteBtn").textContent=muted?"🔇 Sound: Off":"🔊 Sound: On";
@@ -284,9 +284,9 @@ function rollDice(){
 function rollNotation(){
   var s=document.getElementById("diceNotation").value.trim().toLowerCase();
   var m=s.match(/^(\d+)d(\d+)([+-]\d+)?$/);
-  if(!m)return alert("Use notation like 3d6+2");
+  if(!m)return notify("Use notation like 3d6+2", 'info');
   var n=+m[1],sides=+m[2],mod=m[3]?+m[3]:0;
-  if(n<1||n>100||sides<2||sides>1000)return alert("Keep dice 1-100 and sides 2-1000");
+  if(n<1||n>100||sides<2||sides>1000)return notify("Keep dice 1-100 and sides 2-1000", 'warn');
   displayDice(rollN(n,sides,mod),sides,mod,s);
 }
 
@@ -299,7 +299,7 @@ function genRng(){
   var range=max-min+1;
   var out=[];
   if(!dup){
-    if(count>range)return alert("Not enough unique numbers in that range for "+count+" values.");
+    if(count>range)return notify("Not enough unique numbers in that range for "+count+" values.", 'info');
     var pool=[];for(var i=min;i<=max;i++)pool.push(i);
     for(var k=0;k<count;k++){var idx=randInt(pool.length);out.push(pool.splice(idx,1)[0]);}
   }else{
@@ -324,7 +324,7 @@ var spinning=false;
 function spinWheel(){
   if(spinning)return;
   var entries=document.getElementById("wheelEntries").value.trim().split('\n').filter(function(e){return e.trim();});
-  if(entries.length<2)return alert('Add at least 2 entries');
+  if(entries.length<2)return notify('Add at least 2 entries', 'warn');
   spinning=true;
   var canvas=document.getElementById('wheelCanvas');var ctx=canvas.getContext('2d');
   var colors=['#6366f1','#8b5cf6','#ec4899','#06b6d4','#10b981','#f59e0b','#ef4444','#84cc16'];
@@ -393,7 +393,7 @@ function renderHistory(){
 }
 function copyHistory(btn){
   var txt=session.history.map(function(h){return h.t;}).join("\n");
-  navigator.clipboard.writeText(txt);btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy results";},1000);
+  copyNow(txt);btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy results";},1000);
 }
 function clearAllHistory(){
   session={coins:{h:0,t:0},dice:{},history:[]};saveSession();

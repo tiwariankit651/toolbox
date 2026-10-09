@@ -378,7 +378,7 @@ var lastCite=null;
 function generate(){
   var fmt=document.getElementById('fmt').value;
   var src=document.getElementById('srcType').value;
-  if(!fv('author')&&!fv('channel')&&!fv('institution')&&!fv('title')){return alert('Please fill in at least an author/organisation and a title.');}
+  if(!fv('author')&&!fv('channel')&&!fv('institution')&&!fv('title')){return notify('Please fill in at least an author/organisation and a title.', 'warn');}
   var c=buildCitation(fmt,src);
   lastCite=c;
   var plain=htmlToPlain(c.html);
@@ -389,7 +389,7 @@ function generate(){
     '<button class="btn btn-outline" style="padding:.2rem .6rem;font-size:.75rem" onclick="copyText('+JSON.stringify(c.intext).replace(/"/g,'&quot;')+')">Copy</button></div>';
 }
 function htmlToPlain(html){var d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
-function copyText(t){navigator.clipboard.writeText(t);}
+function copyText(t){copyNow(t);}
 // ---------- DOI / ISBN helper ----------
 function doiHint(){
   var v=document.getElementById('doiIsbn').value.trim();
@@ -407,10 +407,10 @@ function doiHint(){
 }
 // ---------- Bibliography ----------
 var bibItems=[];
-function loadBib(){try{var s=localStorage.getItem('citeBib');if(s)bibItems=JSON.parse(s);}catch(e){bibItems=[];}renderBib();}
-function saveBib(){try{localStorage.setItem('citeBib',JSON.stringify(bibItems));}catch(e){}}
+function loadBib(){try{var s=storeGetRaw('citeBib', null);if(s)bibItems=JSON.parse(s);}catch(e){bibItems=[];}renderBib();}
+function saveBib(){try{storeSet('citeBib', bibItems);}catch(e){}}
 function addToBib(){
-  if(!lastCite)return alert('Generate a citation first.');
+  if(!lastCite)return notify('Generate a citation first.', 'warn');
   bibItems.push({html:lastCite.html,plain:htmlToPlain(lastCite.html),fmt:document.getElementById('fmt').value});
   saveBib();renderBib();
 }
@@ -447,7 +447,7 @@ function bibPlainList(){
   if(!numbered)arr.sort(function(a,b){return a.plain.toLowerCase().localeCompare(b.plain.toLowerCase());});
   return arr.map(function(b,i){return (numbered?'['+(i+1)+'] ':'')+b.plain;}).join('\n\n');
 }
-function copyBib(){navigator.clipboard.writeText(bibPlainList());}
+function copyBib(){copyNow(bibPlainList());}
 function downloadBib(){download(new Blob([bibPlainList()],{type:'text/plain'}),'bibliography.txt');}
 function downloadBibTeX(){
   var out=bibItems.map(function(b,i){

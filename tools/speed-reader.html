@@ -240,8 +240,8 @@ var PASSAGES = [
 ];
 
 /* ===== STATE ===== */
-function loadJSON(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } }
-function saveJSON(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function loadJSON(k, d) { try { return storeGet(k, null) || d; } catch(e) { return d; } }
+function saveJSON(k, v) { storeSet(k, v); }
 
 var srHistory = loadJSON('sr_history', []);
 var srWords = [], srIdx = 0, srInterval = null, srPlaying = false, srStartTime = 0, srWordsRead = 0;
@@ -352,7 +352,7 @@ function srPlay() {
   if (srPlaying) return;
   if (!srWords.length) {
     var text = (document.getElementById('srText').value || '').trim();
-    if (!text) { alert('Paste some text first!'); return; }
+    if (!text) { notify('Paste some text first!', 'warn'); return; }
     srWords = text.split(/\s+/);
     srIdx = 0;
     srWordsRead = 0;

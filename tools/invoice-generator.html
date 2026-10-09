@@ -156,7 +156,7 @@ function populateStates(){['bState','cState','placeOfSupply'].forEach(function(i
 populateStates();
 
 // --- Auto-increment invoice number ---
-function getNextInvNo(){var n=+(localStorage.getItem('invAutoNum')||0)+1;localStorage.setItem('invAutoNum',n);return 'INV-'+String(n).padStart(4,'0');}
+function getNextInvNo(){var n=+(storeGetRaw('invAutoNum', null)||0)+1;storeSet('invAutoNum', n);return 'INV-'+String(n).padStart(4,'0');}
 document.getElementById('invNo').value=getNextInvNo();
 document.getElementById('invDate').value=new Date().toISOString().split('T')[0];
 
@@ -206,8 +206,8 @@ function numToWordsIndian(n){if(n===0)return 'Zero';var ones=['','One','Two','Th
   return threeDigit(n)+' Rupees Only';}
 
 // --- localStorage auto-save supplier details & invoice number ---
-function autoSaveInv(){var data={bName:document.getElementById('bName').value,bAddress:document.getElementById('bAddress').value,bGstin:document.getElementById('bGstin').value,bState:document.getElementById('bState').value,bPhone:document.getElementById('bPhone').value,bankName:document.getElementById('bankName').value,bankAcc:document.getElementById('bankAcc').value,bankIfsc:document.getElementById('bankIfsc').value,upiId:document.getElementById('upiId').value,lastInvNum:localStorage.getItem('invAutoNum')};localStorage.setItem('invSupplierData',JSON.stringify(data));}
-function loadSupplierData(){var raw=localStorage.getItem('invSupplierData');if(!raw)return;try{var d=JSON.parse(raw);if(d.bName)document.getElementById('bName').value=d.bName;if(d.bAddress)document.getElementById('bAddress').value=d.bAddress;if(d.bGstin)document.getElementById('bGstin').value=d.bGstin;if(d.bState)document.getElementById('bState').value=d.bState;if(d.bPhone)document.getElementById('bPhone').value=d.bPhone;if(d.bankName)document.getElementById('bankName').value=d.bankName;if(d.bankAcc)document.getElementById('bankAcc').value=d.bankAcc;if(d.bankIfsc)document.getElementById('bankIfsc').value=d.bankIfsc;if(d.upiId)document.getElementById('upiId').value=d.upiId;}catch(e){}}
+function autoSaveInv(){var data={bName:document.getElementById('bName').value,bAddress:document.getElementById('bAddress').value,bGstin:document.getElementById('bGstin').value,bState:document.getElementById('bState').value,bPhone:document.getElementById('bPhone').value,bankName:document.getElementById('bankName').value,bankAcc:document.getElementById('bankAcc').value,bankIfsc:document.getElementById('bankIfsc').value,upiId:document.getElementById('upiId').value,lastInvNum:storeGetRaw('invAutoNum', null)};storeSet('invSupplierData', data);}
+function loadSupplierData(){var raw=storeGetRaw('invSupplierData', null);if(!raw)return;try{var d=JSON.parse(raw);if(d.bName)document.getElementById('bName').value=d.bName;if(d.bAddress)document.getElementById('bAddress').value=d.bAddress;if(d.bGstin)document.getElementById('bGstin').value=d.bGstin;if(d.bState)document.getElementById('bState').value=d.bState;if(d.bPhone)document.getElementById('bPhone').value=d.bPhone;if(d.bankName)document.getElementById('bankName').value=d.bankName;if(d.bankAcc)document.getElementById('bankAcc').value=d.bankAcc;if(d.bankIfsc)document.getElementById('bankIfsc').value=d.bankIfsc;if(d.upiId)document.getElementById('upiId').value=d.upiId;}catch(e){}}
 loadSupplierData();
 
 // --- Invoice Preview ---

@@ -187,14 +187,14 @@ function calc(){
   var rate=+document.getElementById("rate").value;
   var years=+document.getElementById("years").value;
   var inflation=+document.getElementById("inflation").value||0;
-  if(!years||years<=0)return alert("Enter time period in years");
+  if(!years||years<=0)return notify("Enter time period in years", 'warn');
   var p={rate:rate,years:years};
   var invLbl="Invested",retLbl="Returns",totLbl="Total Value";
   var data;
 
   if(calcMode==="goal"){
     var target=+document.getElementById("goal").value;
-    if(!target)return alert("Enter target amount");
+    if(!target)return notify("Enter target amount", 'warn');
     var needed=goalSip(target,rate,years);
     p.sip=needed;data=simulate("sip",p);
     document.getElementById("invested").textContent=fmt(needed)+"/mo";
@@ -204,16 +204,16 @@ function calc(){
   } else if(calcMode==="swp"){
     p.corpus=+document.getElementById("swpCorpus").value;
     p.withdraw=+document.getElementById("swpWithdraw").value;
-    if(!p.corpus)return alert("Enter initial corpus");
+    if(!p.corpus)return notify("Enter initial corpus", 'warn');
     data=simulate("swp",p);
     invLbl="Initial Corpus";retLbl="Total Withdrawn";totLbl="Remaining Corpus";
     document.getElementById("invested").textContent=fmt(p.corpus);
     document.getElementById("returns").textContent=fmt(data.withdrawn);
     document.getElementById("total").textContent=fmt(data.fv);
   } else {
-    if(calcMode==="sip"){p.sip=+document.getElementById("sip").value;if(!p.sip)return alert("Enter monthly SIP")}
-    else if(calcMode==="lump"){p.lump=+document.getElementById("lump").value;if(!p.lump)return alert("Enter lumpsum amount")}
-    else if(calcMode==="stepup"){p.sip=+document.getElementById("stepupSip").value;p.step=+document.getElementById("stepupPct").value||0;if(!p.sip)return alert("Enter starting SIP")}
+    if(calcMode==="sip"){p.sip=+document.getElementById("sip").value;if(!p.sip)return notify("Enter monthly SIP", 'warn')}
+    else if(calcMode==="lump"){p.lump=+document.getElementById("lump").value;if(!p.lump)return notify("Enter lumpsum amount", 'warn')}
+    else if(calcMode==="stepup"){p.sip=+document.getElementById("stepupSip").value;p.step=+document.getElementById("stepupPct").value||0;if(!p.sip)return notify("Enter starting SIP", 'warn')}
     data=simulate(calcMode,p);
     document.getElementById("invested").textContent=fmt(data.invested);
     document.getElementById("returns").textContent=fmt(data.returns);
@@ -302,8 +302,8 @@ function clearCompare(){compares=[];renderCompare()}
 function renderCompare(){var box=document.getElementById("compareBox");if(!compares.length){box.innerHTML="";return}var h='<h3 style="margin:.4rem 0">Comparison ('+compares.length+')</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:.85rem"><tr style="background:rgba(139,92,246,.15)"><th style="padding:.5rem;text-align:left">Assumption</th><th style="padding:.5rem;text-align:right">Invested</th><th style="padding:.5rem;text-align:right">Returns</th><th style="padding:.5rem;text-align:right">Value</th></tr>';compares.forEach(function(c){h+='<tr style="border-top:1px solid rgba(148,148,184,.15)"><td style="padding:.4rem">'+c.mode+' @ '+c.rate+'%</td><td style="padding:.4rem;text-align:right">'+fmt(c.invested)+'</td><td style="padding:.4rem;text-align:right">'+fmt(c.returns)+'</td><td style="padding:.4rem;text-align:right">'+fmt(c.fv)+'</td></tr>'});h+='</table></div>';box.innerHTML=h}
 
 var FIELDS=["sip","lump","stepupSip","stepupPct","swpCorpus","swpWithdraw","goal","rate","years","inflation"];
-function save(){try{var o={mode:calcMode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});localStorage.setItem("sipCalc",JSON.stringify(o))}catch(e){}}
-function load(){try{var o=JSON.parse(localStorage.getItem("sipCalc")||"{}");FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setCalcMode(o.mode)}catch(e){}}
+function save(){try{var o={mode:calcMode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});storeSet("sipCalc", o)}catch(e){}}
+function load(){try{var o=storeGet("sipCalc", {});FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setCalcMode(o.mode)}catch(e){}}
 document.addEventListener("DOMContentLoaded",function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener("input",save)})});
   </script>
 </body></html>

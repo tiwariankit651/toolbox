@@ -327,10 +327,10 @@ function ceCopyExport(){
    main reason to re-upload the same image twice. */
 var CE_KEY="color-extractor-saved-v1";
 function ceRead(){
-  try{var v=JSON.parse(localStorage.getItem(CE_KEY)||"[]");return Array.isArray(v)?v:[]}catch(e){return []}
+  try{var v=storeGet(CE_KEY, []);return Array.isArray(v)?v:[]}catch(e){return []}
 }
 function ceWrite(a){
-  try{localStorage.setItem(CE_KEY,JSON.stringify(a.slice(0,12)))}
+  try{storeSet(CE_KEY, a.slice(0,12))}
   catch(e){ceNote("Could not save — browser storage is full or blocked.",true)}
 }
 function ceSavePalette(){

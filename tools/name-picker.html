@@ -208,12 +208,12 @@ function doPick(){
   var mode=document.getElementById("mode").value;
   var n=Math.max(1,+document.getElementById("pickCount").value||1);
   if(mode==="weighted"){
-    var w=getWeighted();if(!w.length)return alert("Enter some names first!");
+    var w=getWeighted();if(!w.length)return notify("Enter some names first!", 'warn');
     var pool=[];w.forEach(function(e){for(var i=0;i<e.weight;i++)pool.push(e.name);});
     var pick=pool[secureRandom(pool.length)];
     addHistory(pick);showWinner(pick);return;
   }
-  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  var names=getNames();if(!names.length)return notify("Enter some names first!", 'warn');
   if(mode==="single"){var p=names[secureRandom(names.length)];addHistory(p);showWinner(p);return;}
   if(mode==="multiN"){var c=Math.min(n,names.length);var picked=shuffle(names).slice(0,c);addHistory(picked.join(", "));showList("🎯 Picked "+c+":",picked);return;}
   if(mode==="multiRep"){var out=[];for(var i=0;i<n;i++)out.push(names[secureRandom(names.length)]);addHistory(out.join(", "));showList("🎯 Picked "+n+" (with repeats):",out);return;}
@@ -252,7 +252,7 @@ function drawWheel(names,angle){
   wctx.fillStyle="#f8f8ff";wctx.font="18px Arial";wctx.textAlign="center";wctx.fillText("🎯",cx,cy+6);
 }
 function spinWheel(){
-  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  var names=getNames();if(!names.length)return notify("Enter some names first!", 'warn');
   if(spinning)return;
   if(names.length>60){shuffleAnimation(names);return;}
   spinning=true;
@@ -298,7 +298,7 @@ function launchConfetti(){
 
 /* ---------- Teams ---------- */
 function makeTeams(){
-  var names=getNames();if(!names.length)return alert("Enter some names first!");
+  var names=getNames();if(!names.length)return notify("Enter some names first!", 'warn');
   var shuffled=shuffle(names);var teams=[];
   var mode=document.getElementById("teamMode").value;var v=Math.max(1,+document.getElementById("teamCount").value||1);
   if(mode==="count"){var tc=Math.min(v,shuffled.length);for(var i=0;i<tc;i++)teams.push([]);shuffled.forEach(function(n,i){teams[i%tc].push(n);});}
@@ -313,28 +313,28 @@ function shuffleNames(){var names=getNames();if(!names.length)return;document.ge
 
 /* ---------- Share ---------- */
 function shareResult(){
-  if(!lastResultText)return alert("Pick something first!");
+  if(!lastResultText)return notify("Pick something first!", 'warn');
   var text="🎯 Result: "+lastResultText+" — via freetoolhubs.com";
   if(navigator.share){navigator.share({text:text}).catch(function(){});}
-  else{navigator.clipboard.writeText(text);alert("Result copied to clipboard!");}
+  else{copyNow(text);notify("Result copied to clipboard!", 'ok');}
 }
 
 /* ---------- History + Saved lists (localStorage) ---------- */
 var HKEY="npHistory",LKEY="npLists";
-var hist=JSON.parse(localStorage.getItem(HKEY)||"[]");
-function addHistory(entry){hist.unshift({v:entry,t:new Date().toLocaleString()});hist=hist.slice(0,50);localStorage.setItem(HKEY,JSON.stringify(hist));renderHistory();}
+var hist=storeGet(HKEY, []);
+function addHistory(entry){hist.unshift({v:entry,t:new Date().toLocaleString()});hist=hist.slice(0,50);storeSetRaw(HKEY, hist);renderHistory();}
 function renderHistory(){
   if(!hist.length){document.getElementById("history").innerHTML="";return;}
   document.getElementById("history").innerHTML='<h4>History</h4>'+hist.slice(0,15).map(function(h,i){return '<div style="padding:.15rem .5rem;color:var(--text2);font-size:.82rem">'+(i+1)+'. '+esc(h.v)+' <span style="opacity:.6">· '+esc(h.t)+'</span></div>';}).join("")+'<button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .8rem" onclick="clearHistory()">Clear History</button>';
 }
-function clearHistory(){hist=[];localStorage.setItem(HKEY,"[]");renderHistory();}
-function getLists(){return JSON.parse(localStorage.getItem(LKEY)||"{}");}
+function clearHistory(){hist=[];storeSetRaw(HKEY, "[]");renderHistory();}
+function getLists(){return storeGet(LKEY, {});}
 function saveList(){
-  var name=document.getElementById("listName").value.trim();if(!name)return alert("Enter a list name.");
-  var lists=getLists();lists[name]=getNames();localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();
+  var name=document.getElementById("listName").value.trim();if(!name)return notify("Enter a list name.", 'warn');
+  var lists=getLists();lists[name]=getNames();storeSet(LKEY, lists);renderSaved();
 }
 function loadList(name){var lists=getLists();if(lists[name]){document.getElementById("names").value=lists[name].join("\n");updateCount();}}
-function deleteList(name){var lists=getLists();delete lists[name];localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();}
+function deleteList(name){var lists=getLists();delete lists[name];storeSet(LKEY, lists);renderSaved();}
 function renderSaved(){
   var lists=getLists();var keys=Object.keys(lists);
   if(!keys.length){document.getElementById("savedLists").innerHTML='<p class="info">No saved lists yet.</p>';return;}
@@ -343,7 +343,7 @@ function renderSaved(){
 function exportLists(){var b=new Blob([JSON.stringify(getLists(),null,2)],{type:"application/json"});download(b,"name-lists.json");}
 function importLists(ev){
   var f=ev.target.files[0];if(!f)return;var r=new FileReader();
-  r.onload=function(){try{var data=JSON.parse(r.result);var lists=getLists();for(var k in data)if(Array.isArray(data[k]))lists[k]=data[k];localStorage.setItem(LKEY,JSON.stringify(lists));renderSaved();alert("Lists imported!");}catch(e){alert("Invalid JSON file.");}};
+  r.onload=function(){try{var data=JSON.parse(r.result);var lists=getLists();for(var k in data)if(Array.isArray(data[k]))lists[k]=data[k];storeSet(LKEY, lists);renderSaved();notify("Lists imported!", 'ok');}catch(e){notify("Invalid JSON file.", 'warn');}};
   r.readAsText(f);ev.target.value="";
 }
 

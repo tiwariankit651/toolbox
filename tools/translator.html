@@ -280,15 +280,15 @@ async function translate(){
 }
 
 function saveHistory(src,out,fromLang,toLang,detected){
-  var history=JSON.parse(localStorage.getItem("translator_history")||"[]");
+  var history=storeGet("translator_history", []);
   history.unshift({src:src.substring(0,200),out:out.substring(0,200),from:fromLang,to:toLang,detected:detected||"",time:Date.now()});
   if(history.length>10)history=history.slice(0,10);
-  localStorage.setItem("translator_history",JSON.stringify(history));
+  storeSet("translator_history", history);
   renderHistory();
 }
 
 function renderHistory(){
-  var history=JSON.parse(localStorage.getItem("translator_history")||"[]");
+  var history=storeGet("translator_history", []);
   var panel=document.getElementById("historyPanel");
   var list=document.getElementById("historyList");
   if(!history.length){panel.style.display="none";return}
@@ -305,7 +305,7 @@ function renderHistory(){
 }
 
 function restoreHistory(idx){
-  var history=JSON.parse(localStorage.getItem("translator_history")||"[]");
+  var history=storeGet("translator_history", []);
   var item=history[idx];if(!item)return;
   document.getElementById("src").value=item.src;
   document.getElementById("out").value=item.out;

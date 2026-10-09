@@ -851,8 +851,8 @@ var DB = [
 var bookmarks = new Set(loadJSON('fs_bookmarks', []));
 var currentSub = 'all';
 var collapsedSections = {};
-function loadJSON(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } }
-function saveBookmarks() { localStorage.setItem('fs_bookmarks', JSON.stringify(Array.from(bookmarks))); }
+function loadJSON(k, d) { try { return storeGet(k, null) || d; } catch(e) { return d; } }
+function saveBookmarks() { storeSet('fs_bookmarks', Array.from(bookmarks)); }
 function fKey(item) { return (item.s + '|' + item.t + '|' + item.n).toLowerCase(); }
 
 /* ===== TAB SWITCHING ===== */
@@ -982,7 +982,7 @@ function highlight(text, q) {
 
 /* ===== PRINT BOOKMARKS ONLY ===== */
 function fsPrintBookmarks() {
-  if (!bookmarks.size) { alert('No bookmarks saved yet!'); return; }
+  if (!bookmarks.size) { notify('No bookmarks saved yet!', 'warn'); return; }
   // Temporarily switch to bookmarks view and print
   var prevSub = currentSub;
   fsShowSub('bookmarks');

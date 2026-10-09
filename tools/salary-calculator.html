@@ -324,8 +324,8 @@ function copySummary(){if(!lastSummary){document.getElementById('copyMsg').textC
 function fallbackCopy(t,cb){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb()}
 
 var FIELDS=['basicPct','hraPct','pfPct','gratPct','lta','ptState','esi','otherDed','regime','taxOverride','inputType','ctc','targetInhand','curCtc','hikePct','offerA','offerB'];
-function save(){try{var o={mode:mode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});localStorage.setItem('salaryCalc',JSON.stringify(o))}catch(e){}}
-function load(){try{var o=JSON.parse(localStorage.getItem('salaryCalc')||'{}');FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setMode(o.mode)}catch(e){}}
+function save(){try{var o={mode:mode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});storeSet('salaryCalc', o)}catch(e){}}
+function load(){try{var o=storeGet('salaryCalc', {});FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setMode(o.mode)}catch(e){}}
 document.addEventListener('DOMContentLoaded',function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',save)})});
 </script>
 </body></html>

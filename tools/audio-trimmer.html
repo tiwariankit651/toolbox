@@ -155,7 +155,7 @@ setupDrop("drop","inp",function(f){
       document.getElementById("fileInfo").textContent=
         "File: "+audioFile.name+" | Duration: "+duration.toFixed(3)+"s | Sample rate: "+buf.sampleRate+"Hz | Channels: "+buf.numberOfChannels+" | Size: "+formatSize(audioFile.size);
       drawWaveform();updateSelUI();
-    },function(){alert("Could not decode this audio file. Try a different format.")});
+    },function(){notify("Could not decode this audio file. Try a different format.", 'warn')});
   };
   reader.readAsArrayBuffer(audioFile);
 });
@@ -339,8 +339,8 @@ function estimateSize(){
 ["sr","bits","chOut"].forEach(function(id){document.addEventListener("change",function(e){if(e.target&&e.target.id===id)estimateSize()})});
 
 function exportTrim(){
-  if(!audioBuffer)return alert("Load an audio file first");
-  if(selEnd<=selStart)return alert("End must be after start");
+  if(!audioBuffer)return notify("Load an audio file first", 'warn');
+  if(selEnd<=selStart)return notify("End must be after start", 'warn');
   showProcessing("progress");
   setTimeout(function(){
     var out=buildProcessedBuffer(selStart,selEnd);
@@ -351,9 +351,9 @@ function exportTrim(){
 }
 
 function exportSegments(){
-  if(!audioBuffer)return alert("Load an audio file first");
+  if(!audioBuffer)return notify("Load an audio file first", 'warn');
   var raw=document.getElementById("splitPoints").value.trim();
-  if(!raw)return alert("Enter at least one split point in seconds");
+  if(!raw)return notify("Enter at least one split point in seconds", 'warn');
   var pts=raw.split(",").map(function(x){return parseFloat(x)}).filter(function(x){return !isNaN(x)&&x>0&&x<duration}).sort(function(a,b){return a-b});
   var bounds=[0].concat(pts,[duration]);
   var zip=new JSZip();
@@ -371,7 +371,7 @@ function exportSegments(){
 }
 
 function autoTrimSilence(){
-  if(!audioBuffer)return alert("Load an audio file first");
+  if(!audioBuffer)return notify("Load an audio file first", 'warn');
   var data=audioBuffer.getChannelData(0);var sr=audioBuffer.sampleRate;
   var peak=0;for(var i=0;i<data.length;i++){var v=Math.abs(data[i]);if(v>peak)peak=v}
   var thresh=peak*(+document.getElementById("silence").value/100);

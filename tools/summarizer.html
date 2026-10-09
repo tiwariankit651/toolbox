@@ -127,7 +127,7 @@
   <script>
 var SUM_KEY="summarizerText";
 var stopWords=new Set(["the","a","an","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","may","might","shall","can","need","dare","ought","used","to","of","in","for","on","with","at","by","from","as","into","through","during","before","after","above","below","between","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","because","but","and","or","if","while","that","this","it","i","me","my","we","our","you","your","he","him","his","she","her","they","them","their","which","what","who","whom","whose","aur","hai","ka","ki","ke","ko","se","mein","par","ye","wo","ek","nahi","ho","tha","thi","hain","kya","bhi","ne","us","un","jab","tab","ab","hi","ya"]);
-function autosave(){try{localStorage.setItem(SUM_KEY,document.getElementById("input").value);}catch(e){}}
+function autosave(){try{storeSetRaw(SUM_KEY, document.getElementById("input").value);}catch(e){}}
 function toggleLengthUI(){
   var mode=document.getElementById("lengthMode").value;
   document.getElementById("percentWrap").style.display=mode==="percent"?"block":"none";
@@ -135,7 +135,7 @@ function toggleLengthUI(){
 }
 function updateSliderLabel(){document.getElementById("sliderLabel").textContent="Summary: "+document.getElementById("percentSlider").value+"%";}
 function setPercent(v){document.getElementById("percentSlider").value=v;updateSliderLabel();}
-function copySummary(btn){navigator.clipboard.writeText(document.getElementById('summary').innerText);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
+function copySummary(btn){copyNow(document.getElementById('summary').innerText);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
 function loadFile(e){
   var f=e.target.files[0];if(!f)return;
   var r=new FileReader();
@@ -151,7 +151,7 @@ function tokenize(s){return s.toLowerCase().replace(/[^a-z0-9\u0900-\u097f\s]/g,
 function summarize(){
   var text=document.getElementById("input").value.trim();
   var resultEl=document.getElementById("result"),statsEl=document.getElementById("stats"),kpEl=document.getElementById("keypoints");
-  if(!text){resultEl.style.display="none";statsEl.style.display="none";kpEl.style.display="none";alert("Paste some text first!");return;}
+  if(!text){resultEl.style.display="none";statsEl.style.display="none";kpEl.style.display="none";notify("Paste some text first!", 'warn');return;}
   var sentences=splitSentences(text);
   if(sentences.length<2){
     statsEl.style.display="none";kpEl.style.display="none";
@@ -245,7 +245,7 @@ function summarize(){
   document.getElementById("summary").innerHTML=out;
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-(function(){try{var saved=localStorage.getItem(SUM_KEY);if(saved)document.getElementById("input").value=saved;}catch(e){}toggleLengthUI();updateSliderLabel();})();
+(function(){try{var saved=storeGetRaw(SUM_KEY, null);if(saved)document.getElementById("input").value=saved;}catch(e){}toggleLengthUI();updateSliderLabel();})();
   </script>
 </body>
 </html>

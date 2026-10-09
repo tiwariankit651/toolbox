@@ -346,10 +346,10 @@ function ptCopy(kind){
 /* ---- saved elements and recently viewed, kept across visits ---- */
 var PT_FAV_KEY="periodic-favs-v1", PT_RECENT_KEY="periodic-recent-v1";
 function ptRead(key){
-  try{var v=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(v)?v:[]}catch(e){return []}
+  try{var v=storeGet(key, []);return Array.isArray(v)?v:[]}catch(e){return []}
 }
 function ptWrite(key,arr){
-  try{localStorage.setItem(key,JSON.stringify(arr))}catch(e){ /* quota or private mode */ }
+  try{storeSet(key, arr)}catch(e){ /* quota or private mode */ }
 }
 function ptIsFav(z){return ptRead(PT_FAV_KEY).indexOf(z)>-1}
 function ptFav(){

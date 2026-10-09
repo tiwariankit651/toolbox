@@ -368,15 +368,15 @@ function applyPreset(name){
 }
 
 // ---------- Custom mixes ----------
-function getMixes(){return JSON.parse(localStorage.getItem('amb_mixes')||'{}')}
+function getMixes(){return storeGet('amb_mixes', {})}
 function saveMix(){
   var name=(document.getElementById('mixName').value||'').trim();
-  if(!name)return alert('Give your mix a name first');
+  if(!name)return notify('Give your mix a name first', 'warn');
   var mix={};
   for(var id in active)mix[id]=Math.round(active[id].targetVol*100);
-  if(!Object.keys(mix).length)return alert('Play at least one sound to save a mix');
+  if(!Object.keys(mix).length)return notify('Play at least one sound to save a mix', 'warn');
   var mixes=getMixes();mixes[name]=mix;
-  localStorage.setItem('amb_mixes',JSON.stringify(mixes));
+  storeSet('amb_mixes', mixes);
   document.getElementById('mixName').value='';
   renderMixes();
 }
@@ -392,7 +392,7 @@ function loadMix(name){
 }
 function deleteMix(name){
   var mixes=getMixes();delete mixes[name];
-  localStorage.setItem('amb_mixes',JSON.stringify(mixes));
+  storeSet('amb_mixes', mixes);
   renderMixes();
 }
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}

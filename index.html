@@ -455,15 +455,15 @@ function filterTools(){
 }
 function setView(v){
   var grids=document.querySelectorAll(".tools-grid");
-  if(v==="compact"){grids.forEach(function(g){g.style.gridTemplateColumns="repeat(auto-fill,minmax(130px,1fr))";g.style.gap=".5rem"});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding=".8rem .5rem";c.style.fontSize=".9rem";c.style.minHeight="48px"});document.getElementById("viewCompact").className="btn";document.getElementById("viewNormal").className="btn btn-outline";localStorage.setItem("toolView","compact")}
-  else{grids.forEach(function(g){g.style.gridTemplateColumns="";g.style.gap="1rem"});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding="";c.style.fontSize="";c.style.minHeight=""});document.getElementById("viewNormal").className="btn";document.getElementById("viewCompact").className="btn btn-outline";localStorage.setItem("toolView","normal")}
+  if(v==="compact"){grids.forEach(function(g){g.style.gridTemplateColumns="repeat(auto-fill,minmax(130px,1fr))";g.style.gap=".5rem"});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding=".8rem .5rem";c.style.fontSize=".9rem";c.style.minHeight="48px"});document.getElementById("viewCompact").className="btn";document.getElementById("viewNormal").className="btn btn-outline";storeSetRaw("toolView", "compact")}
+  else{grids.forEach(function(g){g.style.gridTemplateColumns="";g.style.gap="1rem"});document.querySelectorAll(".tool-card").forEach(function(c){c.style.padding="";c.style.fontSize="";c.style.minHeight=""});document.getElementById("viewNormal").className="btn";document.getElementById("viewCompact").className="btn btn-outline";storeSetRaw("toolView", "normal")}
 }
-if(localStorage.getItem("toolView")==="compact")setTimeout(function(){setView("compact")},500);
+if(storeGetRaw("toolView", null)==="compact")setTimeout(function(){setView("compact")},500);
 // Show favorites section
-var favs=JSON.parse(localStorage.getItem("favTools")||"[]");
+var favs=storeGet("favTools", []);
 if(favs.length>0){document.getElementById("favSection").style.display="block";var favGrid=document.getElementById("favGrid");var allCards=document.querySelectorAll(".tool-card[href]");allCards.forEach(function(card){var href=card.getAttribute("href");if(!href)return;var name=href.replace("tools/","").replace(".html","");if(favs.indexOf(name)>-1){var clone=card.cloneNode(true);favGrid.appendChild(clone)}})}
 // Show recently used section
-var recent=JSON.parse(localStorage.getItem("recentTools")||"[]");
+var recent=storeGet("recentTools", []);
 if(recent.length>0){document.getElementById("recentSection").style.display="block";var recentGrid=document.getElementById("recentGrid");var allCards2=document.querySelectorAll(".tool-card[href]");recent.slice(0,6).forEach(function(name){allCards2.forEach(function(card){var href=card.getAttribute("href");if(href&&href.indexOf(name)>-1){var clone=card.cloneNode(true);recentGrid.appendChild(clone)}})})}
 if(window.innerWidth<600&&document.getElementById("mobileSearch"))document.getElementById("mobileSearch").style.display="block";
   </script>

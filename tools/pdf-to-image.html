@@ -374,7 +374,7 @@ async function convertPDF(){
 }
 
 async function downloadZip(){
-  if(typeof JSZip==='undefined'){alert('ZIP library is still loading — try again in a moment.');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.', 'info');return}
   var zip=new JSZip();
   p2iOut.forEach(function(o){zip.file(o.name,o.blob)});
   var blob=await zip.generateAsync({type:'blob'});

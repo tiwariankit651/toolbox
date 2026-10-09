@@ -178,18 +178,18 @@ function updSec(i,key,val){sections[i][key]=key==='minutes'?(+val||0):val;
   if(key!=='notes'||true){var tot=sections.reduce(function(a,s){return a+(+s.minutes||0)},0);document.getElementById('totalInfo').textContent='Total talk time: '+tot+' min across '+sections.length+' section(s).'}
   saveNotes();
 }
-function saveNotes(){try{localStorage.setItem('pt_sections',JSON.stringify(sections))}catch(e){}}
-function loadNotes(){try{var s=JSON.parse(localStorage.getItem('pt_sections')||'null');if(s&&s.length)sections=s}catch(e){}}
+function saveNotes(){try{storeSet('pt_sections', sections)}catch(e){}}
+function loadNotes(){try{var s=storeGet('pt_sections', null);if(s&&s.length)sections=s}catch(e){}}
 
 /* ---------- Timer state ---------- */
 var timer,totalSec,elapsedSec=0,paused=false,curSection=0,warnSec=0,showMode='both',overtime=false;
 var sectionBounds=[]; // cumulative end second for each section
 
 function startTimer(){
-  if(!sections.length){alert('Add at least one section.');return}
+  if(!sections.length){notify('Add at least one section.', 'warn');return}
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();else{try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}
   totalSec=Math.round(sections.reduce(function(a,s){return a+(+s.minutes||0)},0)*60);
-  if(totalSec<=0){alert('Total time must be greater than 0.');return}
+  if(totalSec<=0){notify('Total time must be greater than 0.', 'warn');return}
   warnSec=Math.round((+document.getElementById('warnMin').value||0)*60);
   showMode=document.getElementById('showMode').value;
   elapsedSec=0;paused=false;curSection=0;overtime=false;

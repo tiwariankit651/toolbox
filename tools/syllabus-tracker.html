@@ -218,7 +218,7 @@ function loadData(){
      on load, leaving an empty topic list with no explanation. */
   var fresh={checked:{},hours:{},notes:{},revision:{}};
   try{
-    var raw=localStorage.getItem("syl2_"+currentExam);
+    var raw=storeGetRaw("syl2_"+currentExam, null);
     data=raw?JSON.parse(raw):fresh;
     if(!data||typeof data!=="object"||!data.checked)data=fresh;
     ["checked","hours","notes","revision"].forEach(function(k){
@@ -231,7 +231,7 @@ function loadData(){
 }
 function saveData(){
   try{
-    localStorage.setItem("syl2_"+currentExam,JSON.stringify(data));
+    storeSet("syl2_"+currentExam, data);
   }catch(e){
     stStatus("Progress could not be saved — browser storage is full or blocked. "+
              "Export a report so you do not lose this.",true);
@@ -259,7 +259,7 @@ function loadExam(){
 }
 function loadCustom(){
   var text=document.getElementById("customTopics").value.trim();
-  if(!text)return alert("Enter topics");
+  if(!text)return notify("Enter topics", 'warn');
   currentExam="custom";
   var sections={};
   text.split("\n").forEach(function(line){
@@ -361,7 +361,7 @@ function isRevDue(key){
   return elapsed>=1&&elapsed<2||elapsed>=3&&elapsed<4||elapsed>=7&&elapsed<8||elapsed>=14&&elapsed<15;
 }
 function showRevisionDue(){
-  if(!currentExam)return alert("Select an exam first");
+  if(!currentExam)return notify("Select an exam first", 'warn');
   var area=document.getElementById("revArea");
   area.style.display=area.style.display==="none"?"block":"none";
   var all=allTopics(),due=[];
@@ -379,7 +379,7 @@ function showRevisionDue(){
 
 // Weekly progress chart
 function showChart(){
-  if(!currentExam)return alert("Select an exam first");
+  if(!currentExam)return notify("Select an exam first", 'warn');
   var area=document.getElementById("chartArea");
   area.style.display=area.style.display==="none"?"block":"none";
   var weeks={},now=Date.now();

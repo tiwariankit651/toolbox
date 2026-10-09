@@ -349,27 +349,27 @@ function quoteOfDay(){
 
 /* ---------- Copy / Share ---------- */
 function quoteText(q){return '"'+q[0]+'" — '+q[1];}
-function copyQuote(){navigator.clipboard.writeText(quoteText(current));}
+function copyQuote(){copyNow(quoteText(current));}
 function shareQuote(){
   var text=quoteText(current)+" · via freetoolhubs.com";
   if(navigator.share)navigator.share({text:text}).catch(function(){});
-  else{navigator.clipboard.writeText(text);alert("Quote copied to clipboard!");}
+  else{copyNow(text);notify("Quote copied to clipboard!", 'ok');}
 }
 
 /* ---------- Favourites ---------- */
 var FKEY="qgFavs";
-var favs=JSON.parse(localStorage.getItem(FKEY)||"[]");
+var favs=storeGet(FKEY, []);
 function favCurrent(){
   var t=quoteText(current);
-  if(favs.indexOf(t)<0){favs.push(t);localStorage.setItem(FKEY,JSON.stringify(favs));renderFavs();}
+  if(favs.indexOf(t)<0){favs.push(t);storeSetRaw(FKEY, favs);renderFavs();}
 }
-function removeFav(i){favs.splice(i,1);localStorage.setItem(FKEY,JSON.stringify(favs));renderFavs();}
+function removeFav(i){favs.splice(i,1);storeSetRaw(FKEY, favs);renderFavs();}
 function renderFavs(){
   if(!favs.length){document.getElementById("favList").innerHTML='<p class="info">No favourites yet. Click ⭐ Favourite on any quote.</p>';return;}
   document.getElementById("favList").innerHTML=favs.map(function(f,i){return '<div style="padding:.4rem .5rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem">'+esc(f)+' <a href="#" onclick="removeFav('+i+');return false" style="color:var(--danger);margin-left:.3rem">×</a></div>';}).join("");
 }
-function clearFavs(){favs=[];localStorage.setItem(FKEY,"[]");renderFavs();}
-function exportFavs(){if(!favs.length)return alert("No favourites to export.");var b=new Blob([favs.join("\n\n")],{type:"text/plain"});download(b,"favourite-quotes.txt");}
+function clearFavs(){favs=[];storeSetRaw(FKEY, "[]");renderFavs();}
+function exportFavs(){if(!favs.length)return notify("No favourites to export.", 'warn');var b=new Blob([favs.join("\n\n")],{type:"text/plain"});download(b,"favourite-quotes.txt");}
 
 /* ---------- Image maker ---------- */
 var c=document.getElementById("canvas"),ctx=c.getContext("2d");

@@ -274,7 +274,7 @@ function composed(){
 function updatePreview(){
   document.getElementById('preview').textContent=composed().body;
 }
-function copyEmail(){navigator.clipboard.writeText(composed().body);}
+function copyEmail(){copyNow(composed().body);}
 function downloadEmail(){download(new Blob([composed().body],{type:'text/plain'}),'email.txt');}
 function mailtoEmail(){
   var c=composed();
@@ -284,8 +284,8 @@ function mailtoEmail(){
   window.location.href=link;
 }
 // ---------- Drafts ----------
-function getDrafts(){try{return JSON.parse(localStorage.getItem('emailDrafts'))||[];}catch(e){return [];}}
-function setDrafts(d){try{localStorage.setItem('emailDrafts',JSON.stringify(d));}catch(e){}}
+function getDrafts(){try{return storeGet('emailDrafts', null)||[];}catch(e){return [];}}
+function setDrafts(d){try{storeSet('emailDrafts', d);}catch(e){}}
 function saveDraft(){
   var c=composed();
   var drafts=getDrafts();

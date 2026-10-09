@@ -371,10 +371,10 @@ function processFile(file,i,result){
 }
 
 function downloadAllZip(){
-  if(!window._exifBlobs||!window._exifBlobs.length)return alert("Process images first");
+  if(!window._exifBlobs||!window._exifBlobs.length)return notify("Process images first", 'warn');
   var zip=new JSZip();var added=0;
   window._exifBlobs.forEach(function(b,i){if(b){zip.file(window._exifNames[i]||("clean_"+i+".jpg"),b);added++}});
-  if(!added)return alert("No processed files yet");
+  if(!added)return notify("No processed files yet", 'warn');
   zip.generateAsync({type:"blob"}).then(function(z){download(z,"clean-images.zip")});
 }
   </script>

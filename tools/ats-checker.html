@@ -228,8 +228,8 @@ function updateWordCount(){document.getElementById('liveWords').textContent=word
 function checkATS(){
   var resume=document.getElementById('resume').value.trim();
   var job=document.getElementById('jobdesc').value.trim();
-  if(!resume){alert('Please paste or upload your resume text.');return}
-  if(!job){alert('Please paste the job description.');return}
+  if(!resume){notify('Please paste or upload your resume text.', 'warn');return}
+  if(!job){notify('Please paste the job description.', 'warn');return}
 
   var resumeLower=resume.toLowerCase();
   var words=wordCount(resume);
@@ -454,7 +454,7 @@ function downloadReport(){
   }catch(e){ atsNote('Download failed: '+(e.message||'unknown'),true) }
 }
 
-/* inline feedback: the old alert() interrupted the flow and said nothing on success */
+/* inline feedback: the old notify(, 'info') interrupted the flow and said nothing on success */
 function atsNote(msg,isErr){
   var el=document.getElementById('atsNote');
   if(!el)return;
@@ -492,16 +492,16 @@ function copyMissing(){
 var ATS_KEY='ats-draft-v1';
 function atsSave(){
   try{
-    localStorage.setItem(ATS_KEY,JSON.stringify({
+    storeSet(ATS_KEY, {
       resume:document.getElementById('resume').value,
       jobdesc:document.getElementById('jobdesc').value,
       expLevel:document.getElementById('expLevel').value
-    }));
+    });
   }catch(e){ /* private mode or quota; silent by design */ }
 }
 function atsRestore(){
   try{
-    var d=JSON.parse(localStorage.getItem(ATS_KEY)||'null');
+    var d=storeGet(ATS_KEY, null);
     if(!d)return false;
     if(d.resume)document.getElementById('resume').value=d.resume;
     if(d.jobdesc)document.getElementById('jobdesc').value=d.jobdesc;

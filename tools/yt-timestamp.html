@@ -192,9 +192,9 @@ function syncFromTimeText(){
 
 function gen(){
   var url=document.getElementById("url").value.trim();
-  if(!url)return alert("Enter a YouTube URL");
+  if(!url)return notify("Enter a YouTube URL", 'warn');
   var vid=extractVid(url);
-  if(!vid)return alert("Invalid YouTube URL");
+  if(!vid)return notify("Invalid YouTube URL", 'warn');
   var h=+document.getElementById("h").value||0,m=+document.getElementById("m").value||0,s=+document.getElementById("s").value||0;
   var total=h*3600+m*60+s;
   var compact=secToCompact(total);
@@ -218,7 +218,7 @@ function gen(){
   document.getElementById("result").innerHTML=html;
 }
 
-function copyBtn(text,btn){navigator.clipboard.writeText(text);var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200)}
+function copyBtn(text,btn){copyNow(text);var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200)}
 
 // ---- Chapter Builder ----
 function addRow(time,label){
@@ -299,14 +299,14 @@ function applyOffset(){
 
 function copyChapters(btn){
   var text=getChapterText();
-  if(!text)return alert("Add at least one chapter");
-  navigator.clipboard.writeText(text);
+  if(!text)return notify("Add at least one chapter", 'warn');
+  copyNow(text);
   var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200);
 }
 
 function downloadChapters(){
   var text=getChapterText();
-  if(!text)return alert("Add at least one chapter");
+  if(!text)return notify("Add at least one chapter", 'warn');
   download(new Blob([text],{type:"text/plain"}),"youtube-chapters.txt");
 }
 
@@ -332,7 +332,7 @@ function saveChapters(){
 }
 function loadChapters(){
   try{
-    var data=JSON.parse(localStorage.getItem(CH_STORE)||"null");
+    var data=storeGet(CH_STORE, null);
     if(data&&data.length){data.forEach(function(c){addRow(c.time,c.label)});return true}
   }catch(e){}
   return false;

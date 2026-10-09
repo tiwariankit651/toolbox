@@ -413,7 +413,7 @@ function refresh(){
 /* --- handlers wired to the HTML --- */
 function humanize(){
   var original=document.getElementById("input").value.trim();
-  if(!original){alert("Paste some text to refine first.");return;}
+  if(!original){notify("Paste some text to refine first.", 'warn');return;}
   var tone=document.getElementById("tone").value;
   var wantContractions=document.getElementById("useContractions").checked;
   var wantVary=document.getElementById("varySentence").checked;
@@ -431,7 +431,7 @@ function acceptAll(){ suggestions.forEach(function(s){s.accepted=true;}); refres
 function rejectAll(){ suggestions.forEach(function(s){s.accepted=false;}); refresh(); }
 function copyOut(btn){
   var val=document.getElementById("output").value;
-  if(!val){alert("Nothing to copy yet — refine some text first.");return;}
+  if(!val){notify("Nothing to copy yet — refine some text first.", 'warn');return;}
   navigator.clipboard.writeText(val).then(function(){
     var old=btn.textContent; btn.textContent="✅ Copied!"; setTimeout(function(){btn.textContent=old;},1200);
   });
@@ -439,11 +439,11 @@ function copyOut(btn){
 
 /* --- localStorage autosave --- */
 function autosave(){
-  try{localStorage.setItem("textHumanizerDraft", document.getElementById("input").value);}catch(e){}
+  try{storeSetRaw("textHumanizerDraft", document.getElementById("input").value);}catch(e){}
 }
 (function restore(){
   try{
-    var saved=localStorage.getItem("textHumanizerDraft");
+    var saved=storeGetRaw("textHumanizerDraft", null);
     if(saved){document.getElementById("input").value=saved;}
   }catch(e){}
 })();

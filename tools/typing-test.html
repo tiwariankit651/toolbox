@@ -350,10 +350,10 @@ function finish(){
   }
 
   // Save to history
-  var lb=JSON.parse(localStorage.getItem("typingLB")||"[]");
+  var lb=storeGet("typingLB", []);
   lb.push({wpm:netWpm,grossWpm:grossWpm,acc:acc,kdph:kdph,date:new Date().toLocaleDateString("en-IN"),lang:lang,diff:document.getElementById("difficulty").value,preset:preset!=="none"?presets[preset].label:""});
   lb.sort(function(a,b){return b.wpm-a.wpm});lb=lb.slice(0,15);
-  localStorage.setItem("typingLB",JSON.stringify(lb));
+  storeSet("typingLB", lb);
 
   // History list
   html+='<div style="background:var(--card);padding:1rem;border-radius:12px;margin-bottom:1rem"><h3 style="margin-bottom:.5rem">🏆 Best Scores</h3>';
@@ -427,7 +427,7 @@ function genCert(wpm,grossWpm,acc,kdph){
 
 function useCustom(){
   var ct=document.getElementById("customText").value.trim();
-  if(!ct)return alert("Paste some text first");
+  if(!ct)return notify("Paste some text first", 'warn');
   text=ct;renderText();
   document.getElementById("typingInput").value="";
   document.getElementById("typingInput").disabled=false;

@@ -232,7 +232,7 @@ function highlight(sentences,matchedSet,cls){
 
 function checkPlagiarism(){
   var t1=document.getElementById('text1').value,t2=document.getElementById('text2').value;
-  if(!t1.trim()||!t2.trim())return alert('Please enter both texts.');
+  if(!t1.trim()||!t2.trim())return notify('Please enter both texts.', 'warn');
   var w1=getWords(t1),w2=getWords(t2);
   var jac=jaccard(w1,w2);
   var cos=cosine(w1,w2);
@@ -290,7 +290,7 @@ function checkPlagiarism(){
 
 function selfCheck(){
   var t=document.getElementById('selfText').value;
-  if(!t.trim())return alert('Please paste a document.');
+  if(!t.trim())return notify('Please paste a document.', 'warn');
   var thr=document.getElementById('selfThr').value/100;
   var sentences=getSentences(t);
   var exactMap={},dupExact=[];

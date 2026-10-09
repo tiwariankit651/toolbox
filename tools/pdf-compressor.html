@@ -444,7 +444,7 @@ function renderResults(){
 }
 
 async function downloadAllZip(){
-  if(typeof JSZip==='undefined'){alert('ZIP library is still loading — please try again in a moment.');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — please try again in a moment.', 'warn');return}
   var zip=new JSZip();
   pcResults.forEach(function(r){zip.file(r.name,r.blob)});
   var blob=await zip.generateAsync({type:'blob'});

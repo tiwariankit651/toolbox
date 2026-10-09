@@ -232,10 +232,10 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&
 
 /* ---- persistence + migration ---- */
 function load(){
-  try{var d=JSON.parse(localStorage.getItem(STORE_KEY)||'null');if(d)data=Object.assign(data,d);}catch(e){}
+  try{var d=storeGet(STORE_KEY, null);if(d)data=Object.assign(data,d);}catch(e){}
   // migrate old "budget" array of {desc,amt,type,cat,date}
   if((!data.txns||!data.txns.length)){
-    try{var old=JSON.parse(localStorage.getItem('budget')||'[]');
+    try{var old=storeGet('budget', []);
       if(old.length){
         data.txns=old.map(function(e){
           var dt=parseOldDate(e.date);
@@ -255,7 +255,7 @@ function parseOldDate(s){
   if(m)return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
   var d=new Date(s);return isNaN(d)?new Date().toISOString().slice(0,10):d.toISOString().slice(0,10);
 }
-function save(){localStorage.setItem(STORE_KEY,JSON.stringify(data));}
+function save(){storeSet(STORE_KEY, data);}
 
 /* ---- Indian number formatting ---- */
 function inr(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
@@ -293,7 +293,7 @@ function onTypeChange(){/* keep same category list; salary category serves incom
 function addTxn(){
   var desc=document.getElementById('desc').value.trim();
   var amt=+document.getElementById('amt').value;
-  if(!desc||!amt||amt<=0){alert('Please enter a description and a positive amount.');return;}
+  if(!desc||!amt||amt<=0){notify('Please enter a description and a positive amount.', 'warn');return;}
   var t={
     id:uid(),desc:desc,amt:amt,
     type:document.getElementById('type').value,
@@ -310,13 +310,13 @@ function removeTxn(id){data.txns=data.txns.filter(function(t){return t.id!==id;}
 function addCustomCategory(){
   var name=document.getElementById('newCatName').value.trim();
   var icon=document.getElementById('newCatIcon').value.trim()||'📦';
-  if(!name){alert('Enter a category name.');return;}
+  if(!name){notify('Enter a category name.', 'warn');return;}
   var id='cust-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Math.floor(Math.random()*1000);
   data.customCats.push({id:id,name:name,icon:icon});
   CAT_GROUP[id]='wants';
   save();fillCategorySelects();
   document.getElementById('newCatName').value='';document.getElementById('newCatIcon').value='';
-  alert('Category added.');
+  notify('Category added.', 'ok');
 }
 
 /* ---- tabs ---- */
@@ -473,7 +473,7 @@ function renderBudgets(){
 function addRecurring(){
   var desc=document.getElementById('recDesc').value.trim();
   var amt=+document.getElementById('recAmt').value;
-  if(!desc||!amt||amt<=0){alert('Enter description and amount.');return;}
+  if(!desc||!amt||amt<=0){notify('Enter description and amount.', 'warn');return;}
   data.recurring.push({id:uid(),desc:desc,amt:amt,cat:document.getElementById('recCat').value,method:'other',type:'expense'});
   save();
   document.getElementById('recDesc').value='';document.getElementById('recAmt').value='';
@@ -485,7 +485,7 @@ function applyRecurring(id){
   var m=curMonth();
   data.txns.push({id:uid(),desc:r.desc,amt:r.amt,type:r.type,cat:r.cat,method:r.method,date:m+'-01',note:'(recurring)'});
   save();renderAll();
-  alert('Added "'+r.desc+'" to '+m+'.');
+  notify('Added "'+r.desc+'" to '+m+'.', 'ok');
 }
 function renderRecurring(){
   document.getElementById('recurringList').innerHTML=data.recurring.length?data.recurring.map(function(r){var c=catById(r.cat);
@@ -533,7 +533,7 @@ function renderInsights(){
 
 /* ---- export / import ---- */
 function exportCSV(){
-  if(!data.txns.length){alert('No transactions to export.');return;}
+  if(!data.txns.length){notify('No transactions to export.', 'warn');return;}
   var csv='Date,Description,Type,Category,Method,Amount,Note\n';
   data.txns.slice().sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
     var c=catById(t.cat);
@@ -551,8 +551,8 @@ function importJSON(ev){
       if(!d||!Array.isArray(d.txns))throw 0;
       if(!confirm('Import will replace current data. Continue?')){ev.target.value='';return;}
       data=Object.assign({version:2,txns:[],customCats:[],budgets:{},totalBudgets:{},recurring:[]},d);
-      save();renderAll();alert('Imported successfully.');
-    }catch(e){alert('Invalid backup file.');}
+      save();renderAll();notify('Imported successfully.', 'ok');
+    }catch(e){notify('Invalid backup file.', 'warn');}
     ev.target.value='';
   };
   r.readAsText(f);

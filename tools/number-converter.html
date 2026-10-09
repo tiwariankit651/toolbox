@@ -323,7 +323,7 @@ function toBase(val,base){
   while(v>0n){var r=v%b;out=DIGITS[Number(r)]+out;v=v/b;}
   return (neg?'-':'')+out;
 }
-function copyText(t){if(t&&t!=='—'&&t!=='Invalid'&&t!=='')navigator.clipboard&&navigator.clipboard.writeText(t);}
+function copyText(t){if(t&&t!=='—'&&t!=='Invalid'&&t!=='')navigator.clipboard&&copyNow(t);}
 function copyField(id){var el=document.getElementById(id);copyText(el.value!==undefined?el.value:el.textContent);}
 
 // ---------- tabs ----------
@@ -560,8 +560,8 @@ function romanFrom(src){
 }
 
 // ---------- history ----------
-function getHist(){try{return JSON.parse(localStorage.getItem('ncHistory')||'[]');}catch(e){return [];}}
-function addHistory(entry){var h=getHist();if(h[0]===entry)return;h.unshift(entry);h=h.slice(0,20);localStorage.setItem('ncHistory',JSON.stringify(h));renderHistory();}
+function getHist(){try{return storeGet('ncHistory', []);}catch(e){return [];}}
+function addHistory(entry){var h=getHist();if(h[0]===entry)return;h.unshift(entry);h=h.slice(0,20);storeSet('ncHistory', h);renderHistory();}
 function clearHistory(){localStorage.removeItem('ncHistory');renderHistory();}
 function renderHistory(){
   var h=getHist();var el=document.getElementById('ncHistory');

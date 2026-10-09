@@ -316,11 +316,11 @@ function shareSummary(){
 /* ===== Autosave ===== */
 function save(){
   var s={amt:document.getElementById("amt").value,rate:document.getElementById("rate").value,tenure:document.getElementById("tenure").value,unit:document.getElementById("tenureUnit").value,income:document.getElementById("income").value,existing:document.getElementById("existingEmi").value};
-  localStorage.setItem("emiState",JSON.stringify(s));
+  storeSet("emiState", s);
 }
 function load(){
   try{
-    var s=JSON.parse(localStorage.getItem("emiState")||"null");
+    var s=storeGet("emiState", null);
     if(!s)return;
     setVal("amt",s.amt);setVal("amtR",Math.min(+s.amt||0,20000000));
     setVal("rate",s.rate);setVal("rateR",Math.min(+s.rate||0,40));

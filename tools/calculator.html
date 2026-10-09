@@ -353,7 +353,7 @@ function evaluate(str){
 
 /* ===== UI state ===== */
 var expr='',display='',lastAns=0,secondFn=false;
-var hist=JSON.parse(localStorage.getItem('calcHistV2')||'[]');
+var hist=storeGet('calcHistV2', []);
 var mode='standard';
 
 /* map display tokens -> parser tokens */
@@ -454,7 +454,7 @@ function calc(){
     document.getElementById('result').textContent='= '+out;
     hist.unshift({e:display,r:out});
     if(hist.length>30)hist.length=30;
-    localStorage.setItem('calcHistV2',JSON.stringify(hist));
+    storeSet('calcHistV2', hist);
     renderHistory();
     // continue from result
     expr=out;display=out;sync();

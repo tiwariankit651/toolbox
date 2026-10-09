@@ -290,7 +290,7 @@ function copyResult(){
   var w=+$('w').value,h=+$('h').value;
   if(!w||!h)return;
   var txt=w+' × '+h+' px ('+simplifyRatio(w,h)+', '+(w*h/1e6).toFixed(2)+' MP)';
-  navigator.clipboard.writeText(txt);toast('📋 Copied: '+txt);
+  copyNow(txt);toast('📋 Copied: '+txt);
 }
 
 /* ---- scale ---- */
@@ -307,7 +307,7 @@ function doScale(){
     '<div class="info">Scale factor '+factor.toFixed(3)+' &nbsp;·&nbsp; ratio preserved ('+simplifyRatio(ow,oh)+')<br>Estimated file size: '+note+'</div>';
   window._scaleTxt=nw+' × '+nh+' px';
 }
-function copyScale(){if(window._scaleTxt){navigator.clipboard.writeText(window._scaleTxt);toast('📋 Copied: '+window._scaleTxt);}}
+function copyScale(){if(window._scaleTxt){copyNow(window._scaleTxt);toast('📋 Copied: '+window._scaleTxt);}}
 
 /* ---- crop planner ---- */
 function setCropRatio(rw,rh){$('cropRW').value=rw;$('cropRH').value=rh;doCrop();}

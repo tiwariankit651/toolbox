@@ -89,7 +89,7 @@
   <script src="../js/common.js"></script>
   <script>
 var GC_KEY="grammarCheckerText";
-function autosave(){try{localStorage.setItem(GC_KEY,document.getElementById("input").value);}catch(e){}}
+function autosave(){try{storeSetRaw(GC_KEY, document.getElementById("input").value);}catch(e){}}
 // High-confidence common misspellings -> correction (word-boundary, case-insensitive)
 var MISSPELL={recieve:"receive",seperate:"separate",occured:"occurred",definately:"definitely",accomodate:"accommodate",neccessary:"necessary",untill:"until",alot:"a lot",becuase:"because",thier:"their",teh:"the",adn:"and",wiht:"with",goverment:"government",enviroment:"environment",acheive:"achieve",beleive:"believe",begining:"beginning",tommorow:"tomorrow",wierd:"weird",arguement:"argument",publically:"publicly",occurence:"occurrence"};
 // Indian-English specific phrase fixes
@@ -224,7 +224,7 @@ function sentenceContext(text,pos,len){
 }
 function check(){
   var text=document.getElementById("input").value;
-  if(!text.trim()){document.getElementById("result").innerHTML='';document.getElementById("stats").style.display="none";document.getElementById("typeCounts").innerHTML='';return alert("Paste some text first");}
+  if(!text.trim()){document.getElementById("result").innerHTML='';document.getElementById("stats").style.display="none";document.getElementById("typeCounts").innerHTML='';return notify("Paste some text first", 'warn');}
   currentText=text;
   currentIssues=collectIssues(text);
   render();
@@ -270,8 +270,8 @@ function applyFix(idx){
   render();
 }
 function ignoreIssue(idx){currentIssues[idx].ignored=true;render();}
-function copyCorrected(btn){navigator.clipboard.writeText(document.getElementById("input").value);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
+function copyCorrected(btn){copyNow(document.getElementById("input").value);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
 function downloadCorrected(){var blob=new Blob([document.getElementById("input").value],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='corrected.txt';a.click();}
-(function(){try{var s=localStorage.getItem(GC_KEY);if(s)document.getElementById("input").value=s;}catch(e){}})();
+(function(){try{var s=storeGetRaw(GC_KEY, null);if(s)document.getElementById("input").value=s;}catch(e){}})();
   </script>
 </body></html>

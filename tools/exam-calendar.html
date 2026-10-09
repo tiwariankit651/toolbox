@@ -246,8 +246,8 @@ var examDB = [
 ];
 
 /* ---------- STATE ---------- */
-var starred = (function(){try{return JSON.parse(localStorage.getItem(EC_KEY)||'{}')||{}}catch(e){return {}}})();
-var customExams = (function(){try{var v=JSON.parse(localStorage.getItem(EC_CUSTOM_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}})();
+var starred = (function(){try{return storeGet(EC_KEY, {})||{}}catch(e){return {}}})();
+var customExams = (function(){try{var v=storeGet(EC_CUSTOM_KEY, []);return Array.isArray(v)?v:[]}catch(e){return []}})();
 var currentView = 'list';
 var calYear = new Date().getFullYear();
 var calMonth = new Date().getMonth();
@@ -255,15 +255,15 @@ var calMonth = new Date().getMonth();
 /* localStorage throws in private browsing and when the quota is full. These used
    to be bare calls, so one failure took the whole page down mid-interaction. */
 function saveStarred() {
-  try { localStorage.setItem(EC_KEY, JSON.stringify(starred)); }
+  try { storeSet(EC_KEY, starred); }
   catch (e) { ecNote('Could not save your starred exams — browser storage is full or blocked.', true); }
 }
 function saveCustom() {
-  try { localStorage.setItem(EC_CUSTOM_KEY, JSON.stringify(customExams)); }
+  try { storeSet(EC_CUSTOM_KEY, customExams); }
   catch (e) { ecNote('Could not save your custom exam — browser storage is full or blocked.', true); }
 }
 
-/* Inline feedback replaces the two alert() calls, which interrupted the page for
+/* Inline feedback replaces the two notify(, 'info') calls, which interrupted the page for
    the two commonest mistakes. */
 function ecNote(msg, isErr) {
   var el = document.getElementById('ecNote');

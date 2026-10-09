@@ -159,8 +159,8 @@ function copyOut(){copyText(document.getElementById("j").value);showResult("📋
 function downloadJson(){var r=parseJSON(document.getElementById("j").value);if(!r.ok){showResult(errMsg(r),R);return}download(new Blob([document.getElementById("j").value],{type:"application/json"}),"data.json")}
 
 // Autosave
-function autosave(){try{localStorage.setItem("jsonFmtSave",document.getElementById("j").value)}catch(e){}}
-window.addEventListener("load",function(){var s=localStorage.getItem("jsonFmtSave");if(s&&!document.getElementById("j").value){document.getElementById("j").value=s}});
+function autosave(){try{storeSetRaw("jsonFmtSave", document.getElementById("j").value)}catch(e){}}
+window.addEventListener("load",function(){var s=storeGetRaw("jsonFmtSave", null);if(s&&!document.getElementById("j").value){document.getElementById("j").value=s}});
 // File upload
 document.getElementById("jsonFile").addEventListener("change",function(){var f=this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){document.getElementById("j").value=rd.result;autosave();validateOnly()};rd.readAsText(f)});
 

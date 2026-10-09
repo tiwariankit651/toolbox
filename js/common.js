@@ -1,6 +1,6 @@
 // Shared utilities
-function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark');document.querySelectorAll('canvas').forEach(function(c){if(c.style.background==='#fff'||c.style.background==='white')c.style.background=document.body.classList.contains('light')?'#fff':'#fff'})}
-if(localStorage.getItem('theme')==='light')document.body.classList.add('light');
+function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';try{localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark')}catch(e){}document.querySelectorAll('canvas').forEach(function(c){if(c.style.background==='#fff'||c.style.background==='white')c.style.background=document.body.classList.contains('light')?'#fff':'#fff'})}
+try{if(localStorage.getItem('theme')==='light')document.body.classList.add('light')}catch(e){}
 function copyText(t,btn){navigator.clipboard.writeText(t);if(btn){btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1000)}}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();var t=document.createElement('div');t.textContent='🎉 Downloaded: '+name;t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999;animation:fadeUp .3s ease';document.body.appendChild(t);setTimeout(function(){t.remove()},2500);if(!document.getElementById('toastCSS')){var s=document.createElement('style');s.id='toastCSS';s.textContent='@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';document.head.appendChild(s)}}
 function loadImage(file){return new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=URL.createObjectURL(file)})}
@@ -15,11 +15,11 @@ window.addEventListener('online',function(){var ob=document.getElementById('offl
 window.addEventListener('offline',function(){if(!document.getElementById('offlineBanner')){var b=document.createElement('div');b.id='offlineBanner';b.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff9800;color:#fff;text-align:center;padding:8px;font-size:.85rem;font-weight:600;z-index:9999';b.textContent='📴 You are offline — this tool still works! Your files stay on your device.';document.body.appendChild(b)}});
 // Show offline tip once (lazy loaded)
 setTimeout(function(){
-if(!localStorage.getItem('offlineTipShown')&&document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){setTimeout(function(){var tip=document.createElement('div');tip.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--accent);padding:1rem;border-radius:12px;max-width:280px;z-index:9998;box-shadow:0 4px 20px rgba(0,0,0,.3)';tip.innerHTML='<div style="font-weight:600;margin-bottom:.3rem">💡 Did you know?</div><div style="font-size:.85rem;color:var(--muted)">This tool works offline! Bookmark it for use without internet.</div><button onclick="this.parentElement.remove();localStorage.setItem(\'offlineTipShown\',\'1\')" style="margin-top:.5rem;padding:.3rem .8rem;border:none;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem">Got it!</button>';document.body.appendChild(tip)},3000)}
+if(!storeGetRaw('offlineTipShown', null)&&document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){setTimeout(function(){var tip=document.createElement('div');tip.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--accent);padding:1rem;border-radius:12px;max-width:280px;z-index:9998;box-shadow:0 4px 20px rgba(0,0,0,.3)';tip.innerHTML='<div style="font-weight:600;margin-bottom:.3rem">💡 Did you know?</div><div style="font-size:.85rem;color:var(--muted)">This tool works offline! Bookmark it for use without internet.</div><button onclick="this.parentElement.remove();storeSetRaw(\'offlineTipShown\', \'1\', true)" style="margin-top:.5rem;padding:.3rem .8rem;border:none;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem">Got it!</button>';document.body.appendChild(tip)},3000)}
 },2000);
 
 // Track recently used tools
-if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){var path=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');if(path&&path!==''){var _recentList=JSON.parse(localStorage.getItem('recentTools')||'[]');_recentList=_recentList.filter(function(r){return r!==path});_recentList.unshift(path);_recentList=_recentList.slice(0,8);localStorage.setItem('recentTools',JSON.stringify(_recentList))}}
+if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){var path=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');if(path&&path!==''){var _recentList=storeGet('recentTools', []);_recentList=_recentList.filter(function(r){return r!==path});_recentList.unshift(path);_recentList=_recentList.slice(0,8);storeSet('recentTools', _recentList, true)}}
 
 // Privacy badge + Share button on tool pages
 if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-grid')){
@@ -49,9 +49,9 @@ if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-g
     if(relatedTools.length){var relDiv=document.createElement('div');relDiv.style.cssText='margin-top:1.5rem;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px';relDiv.innerHTML='<div style="font-weight:600;margin-bottom:.5rem;font-size:.9rem">🔗 Related Tools</div><div style="display:flex;flex-wrap:wrap;gap:8px">'+relatedTools.map(function(t){return'<a href="/tools/'+t+'.html" style="padding:.4rem .8rem;background:rgba(79,140,255,.1);color:var(--accent);border-radius:6px;font-size:.8rem;text-decoration:none">'+t.replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()})+'</a>'}).join('')+'</div>';shareDiv.parentNode.insertBefore(relDiv,shareDiv.nextSibling);
 
       // Feedback button
-      var fbDiv=document.createElement('div');fbDiv.style.cssText='margin-top:.8rem;display:flex;align-items:center;gap:10px;font-size:.85rem';var fbKey='feedback_'+curPath;var stored=JSON.parse(localStorage.getItem(fbKey)||'{"up":0,"down":0}');fbDiv.innerHTML='<span>Was this helpful?</span><button id="fbUp" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👍</button><span id="fbUpC">'+stored.up+'</span><button id="fbDown" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👎</button><span id="fbDownC">'+stored.down+'</span>';relDiv.parentNode.insertBefore(fbDiv,relDiv.nextSibling);
-      document.getElementById('fbUp').onclick=function(){stored.up++;localStorage.setItem(fbKey,JSON.stringify(stored));document.getElementById('fbUpC').textContent=stored.up};
-      document.getElementById('fbDown').onclick=function(){stored.down++;localStorage.setItem(fbKey,JSON.stringify(stored));document.getElementById('fbDownC').textContent=stored.down};
+      var fbDiv=document.createElement('div');fbDiv.style.cssText='margin-top:.8rem;display:flex;align-items:center;gap:10px;font-size:.85rem';var fbKey='feedback_'+curPath;var stored=storeGet(fbKey, {up:0,down:0});fbDiv.innerHTML='<span>Was this helpful?</span><button id="fbUp" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👍</button><span id="fbUpC">'+stored.up+'</span><button id="fbDown" style="border:none;background:none;cursor:pointer;font-size:1.1rem">👎</button><span id="fbDownC">'+stored.down+'</span>';relDiv.parentNode.insertBefore(fbDiv,relDiv.nextSibling);
+      document.getElementById('fbUp').onclick=function(){stored.up++;storeSet(fbKey, stored, true);document.getElementById('fbUpC').textContent=stored.up};
+      document.getElementById('fbDown').onclick=function(){stored.down++;storeSet(fbKey, stored, true);document.getElementById('fbDownC').textContent=stored.down};
     }
   }
 }
@@ -72,17 +72,17 @@ window.addEventListener('unhandledrejection',function(e){console.error('Async er
 
 // Cookie Consent Banner (lazy loaded)
 setTimeout(function(){
-if(!localStorage.getItem('cookieConsent')){const d=document.createElement('div');d.id='cookieConsent';d.innerHTML='<p>We use cookies and third-party services (Google Analytics, AdSense) to improve your experience and show relevant ads. By continuing, you agree to our <a href="/privacy.html" style="color:#4fc3f7">Privacy Policy</a>.</p><button id="acceptCookies">Accept</button><button id="rejectCookies" style="background:transparent;color:#fff;border:1px solid #fff;margin-left:8px">Reject</button>';d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;padding:16px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;font-size:14px';d.querySelector('#acceptCookies').style.cssText='background:#4fc3f7;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:bold';document.body.appendChild(d);d.querySelector('#acceptCookies').onclick=()=>{localStorage.setItem('cookieConsent','accepted');d.remove()};d.querySelector('#rejectCookies').onclick=()=>{localStorage.setItem('cookieConsent','rejected');d.remove()}}
+if(!storeGetRaw('cookieConsent', null)){const d=document.createElement('div');d.id='cookieConsent';d.innerHTML='<p>We use cookies and third-party services (Google Analytics, AdSense) to improve your experience and show relevant ads. By continuing, you agree to our <a href="/privacy.html" style="color:#4fc3f7">Privacy Policy</a>.</p><button id="acceptCookies">Accept</button><button id="rejectCookies" style="background:transparent;color:#fff;border:1px solid #fff;margin-left:8px">Reject</button>';d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;padding:16px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999;font-size:14px';d.querySelector('#acceptCookies').style.cssText='background:#4fc3f7;color:#000;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-weight:bold';document.body.appendChild(d);d.querySelector('#acceptCookies').onclick=()=>{storeSetRaw('cookieConsent', 'accepted', true);d.remove()};d.querySelector('#rejectCookies').onclick=()=>{storeSetRaw('cookieConsent', 'rejected', true);d.remove()}}
 },2000);
 
 // Favorites feature (lazy loaded)
 setTimeout(function(){
-function toggleFav(toolName){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var idx=favs.indexOf(toolName);if(idx>-1)favs.splice(idx,1);else favs.push(toolName);localStorage.setItem('favTools',JSON.stringify(favs));updateAllHearts();refreshFavSection()}
-function updateAllHearts(){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');document.querySelectorAll('[data-fav]').forEach(function(btn){btn.textContent=favs.indexOf(btn.getAttribute('data-fav'))>-1?'❤️':'🤍'})}
-function refreshFavSection(){var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var sec=document.getElementById('favSection');var grid=document.getElementById('favGrid');if(!sec||!grid)return;if(!favs.length){sec.style.display='none';return}sec.style.display='block';grid.innerHTML='';document.querySelectorAll('.tool-card[href]').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');if(favs.indexOf(name)>-1){var clone=card.cloneNode(true);var heart=clone.querySelector('[data-fav]');if(heart)heart.remove();grid.appendChild(clone)}})}
+function toggleFav(toolName){var favs=storeGet('favTools', []);var idx=favs.indexOf(toolName);if(idx>-1)favs.splice(idx,1);else favs.push(toolName);storeSet('favTools', favs, true);updateAllHearts();refreshFavSection()}
+function updateAllHearts(){var favs=storeGet('favTools', []);document.querySelectorAll('[data-fav]').forEach(function(btn){btn.textContent=favs.indexOf(btn.getAttribute('data-fav'))>-1?'❤️':'🤍'})}
+function refreshFavSection(){var favs=storeGet('favTools', []);var sec=document.getElementById('favSection');var grid=document.getElementById('favGrid');if(!sec||!grid)return;if(!favs.length){sec.style.display='none';return}sec.style.display='block';grid.innerHTML='';document.querySelectorAll('.tool-card[href]').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');if(favs.indexOf(name)>-1){var clone=card.cloneNode(true);var heart=clone.querySelector('[data-fav]');if(heart)heart.remove();grid.appendChild(clone)}})}
 window.toggleFav=toggleFav;window.updateAllHearts=updateAllHearts;window.refreshFavSection=refreshFavSection;
 // Add heart buttons
-if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('.tool-card').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');var favs=JSON.parse(localStorage.getItem('favTools')||'[]');var btn=document.createElement('span');btn.setAttribute('data-fav',name);btn.textContent=favs.indexOf(name)>-1?'❤️':'🤍';btn.style.cssText='position:absolute;top:4px;right:4px;cursor:pointer;font-size:.8rem;z-index:2';btn.onclick=function(e){e.preventDefault();e.stopPropagation();toggleFav(name)};card.style.position='relative';card.appendChild(btn)})}
+if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('.tool-card').forEach(function(card){var href=card.getAttribute('href');if(!href)return;var name=href.replace('tools/','').replace('.html','');var favs=storeGet('favTools', []);var btn=document.createElement('span');btn.setAttribute('data-fav',name);btn.textContent=favs.indexOf(name)>-1?'❤️':'🤍';btn.style.cssText='position:absolute;top:4px;right:4px;cursor:pointer;font-size:.8rem;z-index:2';btn.onclick=function(e){e.preventDefault();e.stopPropagation();toggleFav(name)};card.style.position='relative';card.appendChild(btn)})}
 },2000);
 
 // Ctrl+K search shortcut
@@ -156,4 +156,146 @@ function uniSafe(s,font){
   try{ font.widthOfTextAtSize(out,10); canDraw=true }catch(e){ canDraw=false }
   if(canDraw)return out;
   return out.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"");
+}
+
+/* ---------------------------------------------------------------------------
+   Shared feedback and storage helpers
+
+   Three patterns were repeated unsafely across the tools:
+
+   1. alert() for ordinary validation. It blocks the page, looks dated, and on
+      mobile it covers the very field the user needs to fix. notify() shows the
+      same message as a dismissible toast instead.
+
+   2. Bare localStorage calls. Both setItem and getItem throw in private
+      browsing and when the quota is full, and a corrupt entry makes JSON.parse
+      throw. An unguarded call took whole pages down mid-interaction, or silently
+      lost the thing the user had just done.
+
+   3. clipboard.writeText() with no rejection handler. It rejects on an insecure
+      origin and when the document is not focused, so a blocked copy looked
+      successful and people pasted stale content.
+   --------------------------------------------------------------------------- */
+
+/* Toast feedback. kind: 'info' | 'ok' | 'warn' | 'error' */
+function notify(msg, kind) {
+  if (!msg) return;
+  kind = kind || 'info';
+  var host = document.getElementById('_toastHost');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = '_toastHost';
+    host.setAttribute('role', 'status');
+    host.setAttribute('aria-live', 'polite');
+    host.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);' +
+      'z-index:99999;display:flex;flex-direction:column;gap:.4rem;align-items:center;' +
+      'pointer-events:none;max-width:92vw';
+    document.body.appendChild(host);
+  }
+  var colors = {
+    info:  { bg: '#1e1e3a', fg: '#f8f8ff', icon: 'i' },
+    ok:    { bg: '#1b5e20', fg: '#ffffff', icon: '\u2713' },
+    warn:  { bg: '#8a5300', fg: '#ffffff', icon: '!' },
+    error: { bg: '#a01b1b', fg: '#ffffff', icon: '\u00d7' }
+  };
+  var c = colors[kind] || colors.info;
+  var t = document.createElement('div');
+  t.style.cssText = 'background:' + c.bg + ';color:' + c.fg + ';padding:.65rem 1.1rem;' +
+    'border-radius:10px;font-size:.9rem;font-weight:500;line-height:1.4;text-align:center;' +
+    'box-shadow:0 8px 28px rgba(0,0,0,.35);pointer-events:auto;cursor:pointer;' +
+    'max-width:92vw;opacity:0;transition:opacity .18s ease,transform .18s ease;' +
+    'transform:translateY(6px)';
+  t.textContent = String(msg);
+  t.addEventListener('click', function () { remove() });
+  host.appendChild(t);
+  requestAnimationFrame(function () { t.style.opacity = '1'; t.style.transform = 'translateY(0)' });
+  var timer = setTimeout(remove, kind === 'error' ? 5000 : kind === 'warn' ? 4000 : 2600);
+  function remove() {
+    clearTimeout(timer);
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(6px)';
+    setTimeout(function () { if (t.parentNode) t.remove() }, 200);
+  }
+  return t;
+}
+
+/* Storage that never throws. storeGet returns the fallback on any failure. */
+function storeGet(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw === null || raw === undefined) return fallback;
+    return JSON.parse(raw);
+  } catch (e) {
+    return fallback;
+  }
+}
+function storeSet(key, value, quiet) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    if (!quiet) {
+      notify('Could not save — browser storage is full or blocked (private browsing?).', 'warn');
+    }
+    return false;
+  }
+}
+function storeDel(key) {
+  try { localStorage.removeItem(key); return true } catch (e) { return false }
+}
+
+/* Raw string variants. storeSet JSON-encodes its value, which is wrong for data
+   that is already a string: a canvas dataURL would gain escaped quotes and grow,
+   and reading it back would need a parse step the caller does not expect. */
+function storeGetRaw(key, fallback) {
+  try {
+    var v = localStorage.getItem(key);
+    return (v === null || v === undefined) ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+function storeSetRaw(key, value, quiet) {
+  try {
+    localStorage.setItem(key, String(value));
+    return true;
+  } catch (e) {
+    if (!quiet) {
+      notify('Could not save — browser storage is full or blocked (private browsing?).', 'warn');
+    }
+    return false;
+  }
+}
+
+/* Clipboard with real success and failure reporting. */
+function copyNow(text, okMsg) {
+  text = String(text == null ? '' : text);
+  if (!text) { notify('Nothing to copy yet.', 'warn'); return Promise.resolve(false) }
+  var done = function () { notify(okMsg || 'Copied to clipboard.', 'ok'); return true };
+  var failed = function () {
+    /* Fall back to a hidden textarea plus execCommand, which still works on
+       older mobile browsers and on pages served without HTTPS. */
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      var okExec = document.execCommand && document.execCommand('copy');
+      ta.remove();
+      if (okExec) return done();
+    } catch (e) { /* fall through to the message below */ }
+    notify('Copy was blocked by the browser. Select the text and copy manually.', 'error');
+    return false;
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(done, failed);
+    }
+    return Promise.resolve(failed());
+  } catch (e) {
+    return Promise.resolve(failed());
+  }
 }

@@ -506,14 +506,14 @@ function hwSave(){
       if(!el)return;
       d[id]=(el.type==="checkbox")?el.checked:el.value;
     });
-    localStorage.setItem(HW_KEY,JSON.stringify(d));
+    storeSet(HW_KEY, d);
     var el2=document.getElementById("savedNote");
     if(el2){el2.textContent="Draft saved";setTimeout(function(){el2.textContent=""},1500)}
   }catch(e){ /* private browsing or a full quota: not worth interrupting the user */ }
 }
 function hwRestore(){
   try{
-    var raw=localStorage.getItem(HW_KEY);
+    var raw=storeGetRaw(HW_KEY, null);
     if(!raw)return false;
     var d=JSON.parse(raw);
     Object.keys(d).forEach(function(id){

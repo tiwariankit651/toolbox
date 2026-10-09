@@ -333,9 +333,9 @@ function updateSize(){
 // Binary search JPEG/WEBP quality to hit KB target
 function hitTarget(){
   var target=+document.getElementById("targetKB").value;
-  if(!target){alert("Enter a target KB limit first.");return}
+  if(!target){notify("Enter a target KB limit first.", 'warn');return}
   var fmt=document.getElementById("fmt").value;
-  if(fmt==="image/png"){alert("PNG has no quality slider. Switch to JPEG or WEBP to hit a KB target.");return}
+  if(fmt==="image/png"){notify("PNG has no quality slider. Switch to JPEG or WEBP to hit a KB target.", 'warn');return}
   var c=document.getElementById("canvas");
   var lo=0.1,hi=1,best=null,bestQ=0.1;
   var iter=0;

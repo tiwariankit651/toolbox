@@ -351,7 +351,7 @@ function synonymsFor(word,mode){
 
 function paraphrase(){
   var text=document.getElementById("input").value.trim();
-  if(!text)return alert("Paste some text first!");
+  if(!text)return notify("Paste some text first!", 'warn');
   var mode=document.getElementById("mode").value;
   var strength=STRENGTH[document.getElementById("strength").value];
   var protect=protectedSet();
@@ -486,17 +486,17 @@ function copyOut(btn){copyText(document.getElementById('output').value,btn)}
 
 // localStorage autosave
 function saveState(){
-  try{localStorage.setItem('paraphraser_state',JSON.stringify({
+  try{storeSet('paraphraser_state', {
     input:document.getElementById('input').value,
     output:document.getElementById('output').value,
     mode:document.getElementById('mode').value,
     strength:document.getElementById('strength').value,
     protect:document.getElementById('protect').value
-  }))}catch(e){}
+  })}catch(e){}
 }
 (function restore(){
   try{
-    var st=JSON.parse(localStorage.getItem('paraphraser_state')||'null');
+    var st=storeGet('paraphraser_state', null);
     if(st){
       document.getElementById('input').value=st.input||'';
       document.getElementById('mode').value=st.mode||'standard';

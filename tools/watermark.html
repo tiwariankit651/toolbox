@@ -454,10 +454,10 @@ function processAll(){
 }
 
 function downloadZip(){
-  if(typeof JSZip==='undefined'){alert('ZIP library failed to load. Please download files individually.');return;}
+  if(typeof JSZip==='undefined'){notify('ZIP library failed to load. Please download files individually.', 'warn');return;}
   var zip=new JSZip();var any=false;
   results.forEach(function(r){if(r){zip.file(r.name,r.blob);any=true}});
-  if(!any){alert('Run "Apply to All" first.');return;}
+  if(!any){notify('Run "Apply to All" first.', 'warn');return;}
   zip.generateAsync({type:'blob'}).then(function(blob){download(blob,'watermarked-images.zip')});
 }
 

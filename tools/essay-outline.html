@@ -120,7 +120,7 @@ function renderBank(){
     return '<button class="btn btn-outline" style="margin:.2rem;font-size:.8rem;padding:.35rem .7rem" onclick="copyPhrase('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>';
   }).join('');
 }
-function copyPhrase(t){navigator.clipboard.writeText(t);}
+function copyPhrase(t){copyNow(t);}
 // ---------- Word budget ----------
 function allocate(total,parts){
   // parts: array of weights; returns integer words summing to total
@@ -211,7 +211,7 @@ function structure(type,topic,thesis,bodyN,audience){
 var currentSections=[];
 function gen(){
   var topic=document.getElementById('topic').value.trim();
-  if(!topic)return alert('Enter a topic.');
+  if(!topic)return notify('Enter a topic.', 'warn');
   var thesis=document.getElementById('thesis').value.trim();
   var type=document.getElementById('type').value;
   var words=parseInt(document.getElementById('words').value,10)||1000;
@@ -260,7 +260,7 @@ function renderOutline(topic,type,words,audience){
 function saveNote(i){var el=document.getElementById('note_'+i);if(el&&currentSections[i]){currentSections[i].notes=el.value;saveState();}}
 function moveSec(i,d){var j=i+d;if(j<0||j>=currentSections.length)return;var t=currentSections[i];currentSections[i]=currentSections[j];currentSections[j]=t;reRender();}
 function renameSec(i){var v=prompt('Rename section:',currentSections[i].title);if(v!==null){currentSections[i].title=v.trim();reRender();}}
-function delSec(i){if(currentSections.length<=1)return alert('Keep at least one section.');currentSections.splice(i,1);reRender();}
+function delSec(i){if(currentSections.length<=1)return notify('Keep at least one section.', 'warn');currentSections.splice(i,1);reRender();}
 function addSec(){var v=prompt('New section title:','New Section');if(v===null)return;currentSections.push({title:v.trim()||'New Section',weight:1,words:100,points:['[Add your points here]'],notes:''});reRender();}
 function reRender(){
   var topic=document.getElementById('topic').value.trim();
@@ -281,18 +281,18 @@ function outlineToText(){
   });
   return lines.join('\n');
 }
-function copyOutline(){navigator.clipboard.writeText(outlineToText());}
+function copyOutline(){copyNow(outlineToText());}
 function exportDoc(){download(new Blob([outlineToText()],{type:'text/plain'}),'essay-outline.txt');}
 function printOutline(){
   var w=window.open('','_blank');
-  if(!w)return alert('Please allow pop-ups to print.');
+  if(!w)return notify('Please allow pop-ups to print.', 'warn');
   var body=outlineToText().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
   w.document.write('<html><head><title>Essay Outline</title><style>body{font-family:Georgia,serif;line-height:1.7;max-width:720px;margin:2rem auto;padding:0 1rem;color:#111}</style></head><body>'+body+'</body></html>');
   w.document.close();w.focus();w.print();
 }
 // ---------- persistence ----------
 function saveState(){
-  try{localStorage.setItem('essayOutline',JSON.stringify({
+  try{storeSet('essayOutline', {
     topic:document.getElementById('topic').value,
     thesis:document.getElementById('thesis').value,
     type:document.getElementById('type').value,
@@ -300,10 +300,10 @@ function saveState(){
     bodyCount:document.getElementById('bodyCount').value,
     audience:document.getElementById('audience').value,
     sections:currentSections
-  }));}catch(e){}
+  });}catch(e){}
 }
 function loadState(){
-  try{var s=JSON.parse(localStorage.getItem('essayOutline'));
+  try{var s=storeGet('essayOutline', null);
     if(!s)return;
     document.getElementById('topic').value=s.topic||'';
     document.getElementById('thesis').value=s.thesis||'';

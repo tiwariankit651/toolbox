@@ -421,7 +421,7 @@ function inlineFormat(text){
 function render(){
   preview.innerHTML=renderMarkdown(ta.value);
   updateStats();
-  localStorage.setItem('toolbox-md',ta.value);
+  storeSetRaw('toolbox-md', ta.value);
 }
 window.render=render;
 
@@ -488,7 +488,7 @@ function showToast(msg){
 window.showToast=showToast;
 
 /* --- Init --- */
-var saved=localStorage.getItem('toolbox-md');
+var saved=storeGetRaw('toolbox-md', null);
 if(saved)ta.value=saved;
 render();
 })();

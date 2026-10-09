@@ -252,7 +252,7 @@ function phaseLabel(){return phase==='focus'?'🎯 Focus':phase==='short'?'☕ S
 function phaseClass(){return phase==='focus'?'phase-focus':phase==='short'?'phase-short':'phase-long';}
 
 function loadSettings(){
-  try{var s=JSON.parse(localStorage.getItem('pomCfg')||'null');if(s)cfg=Object.assign(cfg,s);}catch(e){}
+  try{var s=storeGet('pomCfg', null);if(s)cfg=Object.assign(cfg,s);}catch(e){}
   document.getElementById('cfgFocus').value=cfg.focus;
   document.getElementById('cfgShort').value=cfg.short;
   document.getElementById('cfgLong').value=cfg.long;
@@ -268,7 +268,7 @@ function saveSettings(){
   cfg.autoStart=document.getElementById('autoStart').checked;
   cfg.mute=document.getElementById('muteChk').checked;
   cfg.vol=+document.getElementById('volRange').value;
-  localStorage.setItem('pomCfg',JSON.stringify(cfg));
+  storeSet('pomCfg', cfg);
 }
 function applyPreset(p,btn){
   document.querySelectorAll('#presetBtns button').forEach(function(b){b.classList.remove('active')});
@@ -362,8 +362,8 @@ function advancePhase(auto){
 }
 
 function todayKey(){return new Date().toISOString().slice(0,10)}
-function getStats(){try{return JSON.parse(localStorage.getItem('pomStats')||'{}')}catch(e){return{}}}
-function saveStats(s){localStorage.setItem('pomStats',JSON.stringify(s))}
+function getStats(){try{return storeGet('pomStats', {})}catch(e){return{}}}
+function saveStats(s){storeSet('pomStats', s)}
 function recordFocusComplete(){
   var s=getStats();var k=todayKey();
   s[k]=s[k]||{count:0,min:0};
@@ -454,18 +454,18 @@ function testSound(){initAudio();playSound(phase==='focus'?'focus':'break');}
 function toggleNotify(){
   var chk=document.getElementById('notifyChk');
   if(chk.checked){
-    if(!('Notification' in window)){alert('Notifications are not supported in this browser.');chk.checked=false;cfg.notify=false;saveSettings();return;}
-    Notification.requestPermission().then(function(p){cfg.notify=(p==='granted');chk.checked=cfg.notify;if(p==='denied')alert('Notifications were blocked. You can re-enable them in your browser settings.');saveSettings();});
+    if(!('Notification' in window)){notify('Notifications are not supported in this browser.', 'warn');chk.checked=false;cfg.notify=false;saveSettings();return;}
+    Notification.requestPermission().then(function(p){cfg.notify=(p==='granted');chk.checked=cfg.notify;if(p==='denied')notify('Notifications were blocked. You can re-enable them in your browser settings.', 'warn');saveSettings();});
   } else {cfg.notify=false;saveSettings();}
 }
 function notify(title,body){
   if(cfg.notify&&('Notification' in window)&&Notification.permission==='granted'){try{new Notification(title,{body:body});}catch(e){}}
 }
 
-function loadPomTasks(){try{pomTasks=JSON.parse(localStorage.getItem('pomTasksV2')||'null')||[];}catch(e){pomTasks=[];}
-  if(!pomTasks.length){try{var old=JSON.parse(localStorage.getItem('pomTasks')||'[]');if(old.length){pomTasks=old.map(function(t){return{id:Date.now()+Math.random(),text:t.text,done:!!t.done,poms:0}});savePomTasks();}}catch(e){}}
+function loadPomTasks(){try{pomTasks=storeGet('pomTasksV2', null)||[];}catch(e){pomTasks=[];}
+  if(!pomTasks.length){try{var old=storeGet('pomTasks', []);if(old.length){pomTasks=old.map(function(t){return{id:Date.now()+Math.random(),text:t.text,done:!!t.done,poms:0}});savePomTasks();}}catch(e){}}
 }
-function savePomTasks(){localStorage.setItem('pomTasksV2',JSON.stringify(pomTasks))}
+function savePomTasks(){storeSet('pomTasksV2', pomTasks)}
 function addPomTask(){var i=document.getElementById('pomTask');var t=i.value.trim();if(!t)return;pomTasks.push({id:Date.now()+Math.random(),text:t,done:false,poms:0});i.value='';savePomTasks();renderPomTasks();renderStats();}
 function togglePomTask(id){var t=pomTasks.find(function(x){return x.id===id});if(t){t.done=!t.done;savePomTasks();renderPomTasks();renderStats();}}
 function removePomTask(id){pomTasks=pomTasks.filter(function(x){return x.id!==id});if(currentTaskId===id)currentTaskId=null;savePomTasks();renderPomTasks();showCurrentTask();}
@@ -489,8 +489,8 @@ function showCurrentTask(){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
-function loadDistractions(){try{distractions=JSON.parse(localStorage.getItem('pomDistractions')||'[]');}catch(e){distractions=[];}}
-function saveDistractions(){localStorage.setItem('pomDistractions',JSON.stringify(distractions))}
+function loadDistractions(){try{distractions=storeGet('pomDistractions', []);}catch(e){distractions=[];}}
+function saveDistractions(){storeSet('pomDistractions', distractions)}
 function logDistraction(){var note=prompt('Note the interruption (optional):','');if(note===null)return;distractions.unshift({t:Date.now(),note:note||'(interruption)'});saveDistractions();renderDistractions();}
 function clearDistractions(){if(confirm('Clear distraction log?')){distractions=[];saveDistractions();renderDistractions();}}
 function renderDistractions(){

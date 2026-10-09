@@ -231,7 +231,7 @@ function buildSingle(){
 }
 function openSingle(){
   var url=document.getElementById('waMe').textContent;
-  if(!url||url==='—'){alert('Enter a valid phone number first');return;}
+  if(!url||url==='—'){notify('Enter a valid phone number first', 'warn');return;}
   saveContact();
   window.open(url,'_blank','noopener');
 }
@@ -254,15 +254,15 @@ function downloadQR(){
 }
 
 // ---------- saved contacts ----------
-function getContacts(){try{return JSON.parse(localStorage.getItem('waHistory')||'[]');}catch(e){return [];}}
+function getContacts(){try{return storeGet('waHistory', []);}catch(e){return [];}}
 function saveContact(){
   var code=document.getElementById('country').value;var phone=sanitize(code,document.getElementById('phone').value);
   if(!phone)return;
   var h=getContacts();var entry='+'+code+' '+phone;
   h=h.filter(function(x){return x!==entry;});h.unshift(entry);h=h.slice(0,15);
-  localStorage.setItem('waHistory',JSON.stringify(h));renderHistory();
+  storeSet('waHistory', h);renderHistory();
 }
-function delContact(entry){var h=getContacts().filter(function(x){return x!==entry;});localStorage.setItem('waHistory',JSON.stringify(h));renderHistory();}
+function delContact(entry){var h=getContacts().filter(function(x){return x!==entry;});storeSet('waHistory', h);renderHistory();}
 function renderHistory(){
   var h=getContacts();var el=document.getElementById('history');
   if(!h.length){el.innerHTML='<p class="info">No saved contacts yet.</p>';return;}

@@ -182,16 +182,16 @@ function uid(){return Date.now()+'-'+Math.floor(Math.random()*100000)}
 function pad(n){return n<10?'0'+n:''+n}
 
 function loadCountdowns(){
-  try{countdowns=JSON.parse(localStorage.getItem(CD_KEY)||'null')||[];}catch(e){countdowns=[];}
+  try{countdowns=storeGet(CD_KEY, null)||[];}catch(e){countdowns=[];}
   if(!countdowns.length){
     // migrate old {name,date} array
-    try{var old=JSON.parse(localStorage.getItem('countdowns')||'[]');
+    try{var old=storeGet('countdowns', []);
       if(old.length){countdowns=old.map(function(c){return{id:uid(),name:c.name,target:new Date(c.date).getTime(),start:null,recurring:'none',emoji:'⏳',color:'#6366f1',note:'',celebrated:false};});save();}
     }catch(e){}
   }
-  displayMode=localStorage.getItem('cd_dispmode')||'full';
+  displayMode=storeGetRaw('cd_dispmode', null)||'full';
 }
-function save(){localStorage.setItem(CD_KEY,JSON.stringify(countdowns))}
+function save(){storeSet(CD_KEY, countdowns)}
 
 function applyCdPreset(kind){
   var now=new Date();
@@ -213,7 +213,7 @@ function toLocalInput(dt){return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+p
 function addCountdown(){
   var name=document.getElementById('eventName').value.trim();
   var date=document.getElementById('eventDate').value;
-  if(!name||!date){alert('Please enter an event name and target date.');return;}
+  if(!name||!date){notify('Please enter an event name and target date.', 'warn');return;}
   var start=document.getElementById('startDate').value;
   var c={
     id:uid(),name:name,target:new Date(date).getTime(),
@@ -345,7 +345,7 @@ function setMilestones(id){
   });
   save();
   requestNotify();
-  alert('Milestone alerts set. Keep this tab open to receive them.');
+  notify('Milestone alerts set. Keep this tab open to receive them.', 'warn');
 }
 function requestNotify(){
   if(!('Notification' in window))return;
@@ -376,20 +376,20 @@ function checkMilestones(){
 /* ---- display mode ---- */
 function toggleDisplayMode(){
   displayMode=(displayMode==='full'?'compact':'full');
-  localStorage.setItem('cd_dispmode',displayMode);
+  storeSet('cd_dispmode', displayMode);
   document.getElementById('dispModeBtn').textContent=displayMode==='full'?'🔎 Compact Mode':'🔎 Large Mode';
   renderCards();
 }
 
 /* ---- share / export / import ---- */
 function copySummary(){
-  if(!countdowns.length){alert('No countdowns to copy.');return;}
+  if(!countdowns.length){notify('No countdowns to copy.', 'warn');return;}
   var lines=countdowns.slice().sort(function(a,b){return a.target-b.target;}).map(function(c){
     var ms=c.target-Date.now();var p=diffParts(ms);
     return c.emoji+' '+c.name+': '+(ms<0?(p.days+' days ago'):(p.days+'d '+p.hours+'h '+p.mins+'m left'))+' ('+new Date(c.target).toLocaleString()+')';
   });
   var text=lines.join('\n');
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){alert('Summary copied!');},function(){prompt('Copy:',text);});}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){notify('Summary copied!', 'ok');},function(){prompt('Copy:',text);});}
   else prompt('Copy:',text);
 }
 function exportCountdowns(){
@@ -403,8 +403,8 @@ function importCountdowns(ev){
     try{var data=JSON.parse(r.result);
       if(!Array.isArray(data))throw 0;
       data.forEach(function(c){if(c.name&&c.target){countdowns.push({id:uid(),name:c.name,target:c.target,start:c.start||null,recurring:c.recurring||'none',emoji:c.emoji||'⏳',color:c.color||'#6366f1',note:c.note||'',celebrated:false,milestones:c.milestones||{}});}});
-      save();renderCards();renderPlannerSelect();alert('Imported '+data.length+' countdown(s).');
-    }catch(e){alert('Invalid JSON file.');}
+      save();renderCards();renderPlannerSelect();notify('Imported '+data.length+' countdown(s).', 'ok');
+    }catch(e){notify('Invalid JSON file.', 'warn');}
     ev.target.value='';
   };
   r.readAsText(f);

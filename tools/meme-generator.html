@@ -761,10 +761,10 @@ document.addEventListener("keydown",function(ev){
 // ---------- localStorage autosave + gallery ----------
 function saveStateDebounced(){clearTimeout(saveTimer);saveTimer=setTimeout(persistState,600)}
 function persistState(){
-  try{localStorage.setItem(SKEY,serialize())}catch(e){}
+  try{storeSet(SKEY, serialize())}catch(e){}
 }
 function loadSavedState(){
-  var json;try{json=localStorage.getItem(SKEY)}catch(e){return}
+  var json;try{json=storeGetRaw(SKEY, null)}catch(e){return}
   if(!json)return;
   var s;try{s=JSON.parse(json)}catch(e){return}
   if(!s||(!s.imgSrc&&!(s.panels&&s.panels.some(function(p){return p.src}))&&!(s.layers&&s.layers.length)))return;
@@ -772,7 +772,7 @@ function loadSavedState(){
 }
 
 function loadGallery(){
-  var arr;try{arr=JSON.parse(localStorage.getItem(GKEY)||"[]")}catch(e){arr=[]}
+  var arr;try{arr=storeGet(GKEY, [])}catch(e){arr=[]}
   var g=document.getElementById("gallery");g.innerHTML="";
   if(!arr.length){g.innerHTML='<span class="info" style="margin:0;font-size:.78rem;grid-column:1/-1">No saved memes yet. Download one to add it here.</span>';return}
   arr.forEach(function(item,i){
@@ -788,21 +788,21 @@ function loadGallery(){
   });
 }
 function addToGallery(){
-  var arr;try{arr=JSON.parse(localStorage.getItem(GKEY)||"[]")}catch(e){arr=[]}
+  var arr;try{arr=storeGet(GKEY, [])}catch(e){arr=[]}
   var tc=document.createElement("canvas");var tw=120,d=outDims();tc.width=tw;tc.height=Math.round(tw*d.h/d.w);
   tc.getContext("2d").drawImage(canvas,0,0,canvas.width,canvas.height,0,0,tc.width,tc.height);
   arr.unshift({thumb:tc.toDataURL("image/jpeg",0.6),state:serialize(),ts:Date.now()});
   arr=arr.slice(0,8);
-  try{localStorage.setItem(GKEY,JSON.stringify(arr))}catch(e){
+  try{storeSet(GKEY, arr)}catch(e){
     // quota: trim and retry
-    arr=arr.slice(0,4);try{localStorage.setItem(GKEY,JSON.stringify(arr))}catch(e2){}
+    arr=arr.slice(0,4);try{storeSet(GKEY, arr)}catch(e2){}
   }
   loadGallery();
 }
 function reloadGalleryItem(item){restore(item.state,function(){undoStack=[serialize()];redoStack=[]})}
 function removeGalleryItem(i){
-  var arr;try{arr=JSON.parse(localStorage.getItem(GKEY)||"[]")}catch(e){arr=[]}
-  arr.splice(i,1);try{localStorage.setItem(GKEY,JSON.stringify(arr))}catch(e){}
+  var arr;try{arr=storeGet(GKEY, [])}catch(e){arr=[]}
+  arr.splice(i,1);try{storeSet(GKEY, arr)}catch(e){}
   loadGallery();
 }
 

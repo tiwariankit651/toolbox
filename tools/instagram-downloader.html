@@ -208,7 +208,7 @@ function formatCap(btn){
   var text=document.getElementById('capInput').value;
   var out=text.split("\n").map(function(l){return l.trim()===""?ZW:l}).join("\n");
   document.getElementById('capOutput').value=out;
-  navigator.clipboard.writeText(out);
+  copyNow(out);
   var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200);
 }
 
@@ -255,7 +255,7 @@ function setTags(arr){
 function addHash(tag){
   var tags=currentTags();
   if(tags.indexOf(tag)!==-1)return;
-  if(tags.length>=30){alert('Instagram allows up to 30 hashtags.');return}
+  if(tags.length>=30){notify('Instagram allows up to 30 hashtags.', 'info');return}
   tags.push(tag);setTags(tags);
 }
 function updateHashCount(){
@@ -270,21 +270,21 @@ function dedupeHash(){
   setTags(out);
 }
 function copyHash(btn){
-  navigator.clipboard.writeText(document.getElementById('hashBox').value);
+  copyNow(document.getElementById('hashBox').value);
   var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200);
 }
 function saveHashSet(){
   var name=document.getElementById('setName').value.trim();
   var tags=currentTags();
-  if(!name||!tags.length){alert('Enter a set name and select some hashtags.');return}
-  var sets=JSON.parse(localStorage.getItem(HASH_SETS_KEY)||'{}');
+  if(!name||!tags.length){notify('Enter a set name and select some hashtags.', 'warn');return}
+  var sets=storeGet(HASH_SETS_KEY, {});
   sets[name]=tags;
-  localStorage.setItem(HASH_SETS_KEY,JSON.stringify(sets));
+  storeSet(HASH_SETS_KEY, sets);
   document.getElementById('setName').value='';
   renderSavedSets();
 }
 function renderSavedSets(){
-  var sets=JSON.parse(localStorage.getItem(HASH_SETS_KEY)||'{}');
+  var sets=storeGet(HASH_SETS_KEY, {});
   var el=document.getElementById('savedSets');
   var names=Object.keys(sets);
   if(!names.length){el.innerHTML='<p class="ig-count">No saved sets yet.</p>';return}
@@ -295,12 +295,12 @@ function renderSavedSets(){
   }).join('');
 }
 function loadHashSet(name){
-  var sets=JSON.parse(localStorage.getItem(HASH_SETS_KEY)||'{}');
+  var sets=storeGet(HASH_SETS_KEY, {});
   if(sets[name])setTags(sets[name]);
 }
 function delHashSet(name){
-  var sets=JSON.parse(localStorage.getItem(HASH_SETS_KEY)||'{}');
-  delete sets[name];localStorage.setItem(HASH_SETS_KEY,JSON.stringify(sets));renderSavedSets();
+  var sets=storeGet(HASH_SETS_KEY, {});
+  delete sets[name];storeSet(HASH_SETS_KEY, sets);renderSavedSets();
 }
 
 // ---------- Image resizer ----------
@@ -354,7 +354,7 @@ function drawResize(){
   }
 }
 function exportImg(){
-  if(!igImage){alert('Upload an image first.');return}
+  if(!igImage){notify('Upload an image first.', 'warn');return}
   var canvas=document.getElementById('igCanvas');
   var type=document.getElementById('igExportFmt').value;
   var q=parseFloat(document.getElementById('igQuality').value);
@@ -385,7 +385,7 @@ function updateBio(){
   }).join('');
 }
 function copyBio(btn){
-  navigator.clipboard.writeText(document.getElementById('bioOutput').value);
+  copyNow(document.getElementById('bioOutput').value);
   var o=btn.textContent;btn.textContent="✅ Copied!";setTimeout(function(){btn.textContent=o},1200);
 }
 

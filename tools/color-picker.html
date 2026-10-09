@@ -286,11 +286,11 @@ function pickEyedropper(){var msg=document.getElementById("eyeMsg");
   else{msg.textContent="EyeDropper API not supported in this browser. Try Chrome/Edge on desktop."}}
 
 /* ===== Saved / recent ===== */
-function getSaved(){try{return JSON.parse(localStorage.getItem("cpSaved")||"[]")}catch(e){return[]}}
-function getRecent(){try{return JSON.parse(localStorage.getItem("cpRecent")||"[]")}catch(e){return[]}}
-function saveColor(){var hx=curHex();var s=getSaved();if(s.indexOf(hx)===-1){s.unshift(hx);s=s.slice(0,30);localStorage.setItem("cpSaved",JSON.stringify(s))}renderSaved()}
+function getSaved(){try{return storeGet("cpSaved", [])}catch(e){return[]}}
+function getRecent(){try{return storeGet("cpRecent", [])}catch(e){return[]}}
+function saveColor(){var hx=curHex();var s=getSaved();if(s.indexOf(hx)===-1){s.unshift(hx);s=s.slice(0,30);storeSet("cpSaved", s)}renderSaved()}
 function clearSaved(){localStorage.removeItem("cpSaved");renderSaved()}
-function pushRecent(hx){var r=getRecent();r=r.filter(function(x){return x!==hx});r.unshift(hx);r=r.slice(0,16);localStorage.setItem("cpRecent",JSON.stringify(r))}
+function pushRecent(hx){var r=getRecent();r=r.filter(function(x){return x!==hx});r.unshift(hx);r=r.slice(0,16);storeSet("cpRecent", r)}
 function swatchStrip(hx){return'<div onclick="applyHex(\''+hx+'\')" title="'+hx+'" style="width:34px;height:34px;border-radius:8px;background:'+hx+';cursor:pointer;border:1px solid rgba(255,255,255,.15)"></div>'}
 function applyHex(hx){var v=parseColor(hx);if(v){state.h=v.h;state.s=v.s;state.v=v.v;render()}}
 function renderSaved(){document.getElementById("savedColors").innerHTML=getSaved().map(swatchStrip).join("")||'<span class="info">None saved yet.</span>';}

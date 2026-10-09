@@ -690,8 +690,8 @@ function generateBulk(){
 function safeName(s){return s.replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"")||"certificate"}
 
 function downloadBulkZip(){
-  if(!bulkCerts.length){alert("Generate the gallery first.");return}
-  if(typeof JSZip==="undefined"){alert("ZIP library failed to load. Check your connection.");return}
+  if(!bulkCerts.length){notify("Generate the gallery first.", 'warn');return}
+  if(typeof JSZip==="undefined"){notify("ZIP library failed to load. Check your connection.", 'warn');return}
   var zip=new JSZip();
   bulkCerts.forEach(function(c,i){
     var b64=c.url.split(",")[1];
@@ -709,7 +709,7 @@ function downloadPNG(){
 }
 
 function downloadPDF(){
-  if(typeof PDFLib==="undefined"){alert("PDF library failed to load. Check your connection.");return}
+  if(typeof PDFLib==="undefined"){notify("PDF library failed to load. Check your connection.", 'warn');return}
   var canvas=document.getElementById("cert-canvas");
   var portrait=document.getElementById("orientation").value==="portrait";
   var dataUrl=canvas.toDataURL("image/png");
@@ -757,12 +757,12 @@ function collectDesign(){
   };
 }
 function saveDesign(){
-  localStorage.setItem("certDesign",JSON.stringify(collectDesign()));
-  alert("Design saved! It will be available next time you open this tool.");
+  storeSet("certDesign", collectDesign());
+  notify("Design saved! It will be available next time you open this tool.", 'ok');
 }
 function loadDesign(){
-  var raw=localStorage.getItem("certDesign");
-  if(!raw){alert("No saved design found.");return}
+  var raw=storeGetRaw("certDesign", null);
+  if(!raw){notify("No saved design found.", 'warn');return}
   applyDesign(JSON.parse(raw));
 }
 function applyDesign(d){

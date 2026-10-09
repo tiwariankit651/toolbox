@@ -224,8 +224,8 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp
 function copyText(t){if(t&&t!=='—')navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){});}
 
 // ---------- SHORTEN (is.gd) ----------
-function getHistory(){try{return JSON.parse(localStorage.getItem('urlHistory')||'[]');}catch(e){return [];}}
-function saveHistory(h){localStorage.setItem('urlHistory',JSON.stringify(h.slice(0,5)));}
+function getHistory(){try{return storeGet('urlHistory', []);}catch(e){return [];}}
+function saveHistory(h){storeSet('urlHistory', h.slice(0,5));}
 function renderHistory(){var h=getHistory();if(!h.length){document.getElementById('history').innerHTML='';return;}
 var html='<h3>📋 Recent Links</h3><div style="display:flex;flex-direction:column;gap:.4rem">';
 h.forEach(function(item){html+='<div class="lt-saved"><span style="flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(item.long)+'">'+esc(item.long)+'</span><a href="'+esc(item.short)+'" target="_blank" rel="noopener" style="font-weight:bold">'+esc(item.short)+'</a><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="copyText(\''+item.short+'\')">📋</button></div>';});
@@ -266,9 +266,9 @@ function buildUtm(){
   var sep=base.indexOf('?')>=0?'&':'?';
   out.textContent=qs?base+sep+qs:base;
 }
-function getCampaigns(){try{return JSON.parse(localStorage.getItem('utmCampaigns')||'[]');}catch(e){return [];}}
-function saveCampaign(){var url=document.getElementById('utmOut').textContent;if(!url||url==='—')return;var c=getCampaigns();c.unshift({url:url,name:document.getElementById('utmCampaign').value.trim()||'campaign',ts:Date.now()});c=c.slice(0,20);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
-function delCampaign(i){var c=getCampaigns();c.splice(i,1);localStorage.setItem('utmCampaigns',JSON.stringify(c));renderCampaigns();}
+function getCampaigns(){try{return storeGet('utmCampaigns', []);}catch(e){return [];}}
+function saveCampaign(){var url=document.getElementById('utmOut').textContent;if(!url||url==='—')return;var c=getCampaigns();c.unshift({url:url,name:document.getElementById('utmCampaign').value.trim()||'campaign',ts:Date.now()});c=c.slice(0,20);storeSet('utmCampaigns', c);renderCampaigns();}
+function delCampaign(i){var c=getCampaigns();c.splice(i,1);storeSet('utmCampaigns', c);renderCampaigns();}
 function renderCampaigns(){var c=getCampaigns();var el=document.getElementById('utmSaved');if(!c.length){el.innerHTML='';return;}
 el.innerHTML='<h3>💾 Saved Campaigns</h3>'+c.map(function(x,i){return '<div class="lt-saved"><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+' — '+esc(x.url)+'</a><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="copyText(\''+x.url.replace(/'/g,"\\'")+'\')">📋</button><button class="btn btn-outline" style="font-size:.75rem;padding:.2rem .5rem" onclick="delCampaign('+i+')">✕</button></div>';}).join('');}
 

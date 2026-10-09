@@ -902,8 +902,8 @@ var LS_KEYS = {
   settings: 'vb_settings'
 };
 
-function loadJSON(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e) { return def; } }
-function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function loadJSON(key, def) { try { return storeGet(key, null) || def; } catch(e) { return def; } }
+function saveJSON(key, val) { storeSet(key, val); }
 
 // SRS state: { wordKey: { box: 0-4, nextReview: timestamp, lastSeen: timestamp } }
 var srsState = loadJSON(LS_KEYS.srs, {});
@@ -1361,7 +1361,7 @@ function renderCustom() {
 function addCustomWord() {
   var w = (document.getElementById('cwWord').value || '').trim();
   var m = (document.getElementById('cwMeaning').value || '').trim();
-  if (!w || !m) { alert('Fill word and meaning'); return; }
+  if (!w || !m) { notify('Fill word and meaning', 'info'); return; }
   customWords.push({
     w: w, m: m,
     pos: (document.getElementById('cwPos').value || '').trim(),
@@ -1401,8 +1401,8 @@ function importCustom(e) {
       });
       saveCustom();
       renderCustom();
-      alert('Imported ' + arr.length + ' words!');
-    } catch(err) { alert('Invalid JSON file'); }
+      notify('Imported ' + arr.length + ' words!', 'ok');
+    } catch(err) { notify('Invalid JSON file', 'warn'); }
   };
   reader.readAsText(file);
   e.target.value = '';
@@ -1413,7 +1413,7 @@ function renderSettings() {
   var html = '<h3 style="margin-bottom:.8rem">⚙️ Settings</h3>';
   html += '<div class="vb-card"><label>Daily Goal (words per day)</label>';
   html += '<input type="number" id="goalInput" min="1" max="100" value="' + settings.dailyGoal + '" style="width:120px">';
-  html += '<button class="btn" onclick="settings.dailyGoal=parseInt(document.getElementById(\'goalInput\').value)||10;saveSettings();refreshDashboard();alert(\'Goal updated!\')" style="margin-left:.5rem">Save</button></div>';
+  html += '<button class="btn" onclick="settings.dailyGoal=parseInt(document.getElementById(\'goalInput\').value)||10;saveSettings();refreshDashboard();notify(\'Goal updated!\', \'ok\')" style="margin-left:.5rem">Save</button></div>';
   html += '<div class="vb-card" style="margin-top:.5rem"><h4>Spaced Repetition Boxes</h4>';
   html += '<p class="info">Box 1 = review now, Box 2 = 1 day, Box 3 = 3 days, Box 4 = 7 days, Box 5 = 14 days (mastered)</p>';
   var all = getAllWords();
@@ -1425,8 +1425,8 @@ function renderSettings() {
   }
   html += '</div></div>';
   html += '<div class="vb-card" style="margin-top:.5rem"><h4>Reset Data</h4>';
-  html += '<button class="btn btn-outline" onclick="if(confirm(\'Reset all progress? This cannot be undone.\')){localStorage.removeItem(LS_KEYS.srs);localStorage.removeItem(LS_KEYS.stats);localStorage.removeItem(LS_KEYS.favs);srsState={};stats={totalRight:0,totalWrong:0,streak:0,lastStudyDate:null,todayRight:0,todayDate:null,wordsLearnedSet:[]};favourites=new Set();saveStats();saveSRS();saveFavs();refreshDashboard();renderSettings();alert(\'Progress reset!\')}" style="border-color:var(--danger);color:var(--danger)">Reset Progress</button>';
-  html += ' <button class="btn btn-outline" onclick="if(confirm(\'Delete all custom words?\')){customWords=[];saveCustom();renderSettings();alert(\'Custom words cleared!\')}" style="border-color:var(--danger);color:var(--danger)">Clear Custom Words</button></div>';
+  html += '<button class="btn btn-outline" onclick="if(confirm(\'Reset all progress? This cannot be undone.\')){localStorage.removeItem(LS_KEYS.srs);localStorage.removeItem(LS_KEYS.stats);localStorage.removeItem(LS_KEYS.favs);srsState={};stats={totalRight:0,totalWrong:0,streak:0,lastStudyDate:null,todayRight:0,todayDate:null,wordsLearnedSet:[]};favourites=new Set();saveStats();saveSRS();saveFavs();refreshDashboard();renderSettings();notify(\'Progress reset!\', \'ok\')}" style="border-color:var(--danger);color:var(--danger)">Reset Progress</button>';
+  html += ' <button class="btn btn-outline" onclick="if(confirm(\'Delete all custom words?\')){customWords=[];saveCustom();renderSettings();notify(\'Custom words cleared!\', \'ok\')}" style="border-color:var(--danger);color:var(--danger)">Clear Custom Words</button></div>';
   document.getElementById('panelSettings').innerHTML = html;
 }
 

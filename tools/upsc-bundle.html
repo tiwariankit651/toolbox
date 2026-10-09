@@ -116,16 +116,16 @@
   <script>
 /* ===== UPSC BUNDLE ADVANCED ===== */
 var UB_KEY='upsc_bundle_v2';
-function loadData(){var d=localStorage.getItem(UB_KEY);if(d){try{return JSON.parse(d)}catch(e){}}return{syllabus:{},answers:[],current:[],revision:{},timerLog:{},version:2};}
+function loadData(){var d=storeGetRaw(UB_KEY, null);if(d){try{return JSON.parse(d)}catch(e){}}return{syllabus:{},answers:[],current:[],revision:{},timerLog:{},version:2};}
 var D=loadData();
-function save(){localStorage.setItem(UB_KEY,JSON.stringify(D));}
+function save(){storeSet(UB_KEY, D);}
 
 /* Quote */
 var quotes=["Success is not final, failure is not fatal — it is the courage to continue that counts.","The only way to do great work is to love what you do.","Hard work beats talent when talent doesn't work hard.","Dream is not that which you see while sleeping, it is something that does not let you sleep.","Discipline is the bridge between goals and accomplishment.","Don't watch the clock; do what it does. Keep going.","The future belongs to those who believe in the beauty of their dreams.","It does not matter how slowly you go as long as you do not stop.","Believe you can and you're halfway there.","Education is the most powerful weapon to change the world."];
 document.getElementById('quoteBox').textContent='\uD83D\uDCAC "'+quotes[new Date().getDate()%quotes.length]+'"';
 
 /* Streak */
-function getStreak(){var d=JSON.parse(localStorage.getItem('upsc_streak')||'{"count":0,"last":""}');var today=new Date().toDateString();if(d.last===today)return d.count;var yesterday=new Date(Date.now()-864e5).toDateString();if(d.last===yesterday){d.count++;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}d.count=1;d.last=today;localStorage.setItem('upsc_streak',JSON.stringify(d));return d.count;}
+function getStreak(){var d=storeGet('upsc_streak', {"count":0,"last":""});var today=new Date().toDateString();if(d.last===today)return d.count;var yesterday=new Date(Date.now()-864e5).toDateString();if(d.last===yesterday){d.count++;d.last=today;storeSet('upsc_streak', d);return d.count;}d.count=1;d.last=today;storeSet('upsc_streak', d);return d.count;}
 document.getElementById('statStreak').textContent=getStreak();
 
 function escH(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
@@ -223,7 +223,7 @@ function renderAnswer(){
 var awTimerInterval=null;var awSeconds=0;
 function startAWTimer(){clearInterval(awTimerInterval);var limit=parseInt(document.getElementById('awLimit').value);awSeconds=0;var maxTime=limit===150?420:600;awTimerInterval=setInterval(function(){awSeconds++;var m=Math.floor(awSeconds/60);var s=awSeconds%60;var el=document.getElementById('awTimerDisplay');if(el){el.textContent=m+':'+(s<10?'0':'')+s;el.style.color=awSeconds>maxTime?'#ef4444':'var(--accent)';}},1000);}
 function updateAWCount(){var text=document.getElementById('awEditor').value.trim();var words=text?text.split(/\s+/).length:0;var limit=parseInt(document.getElementById('awLimit').value);var el=document.getElementById('awWordCount');if(el){el.textContent=words+' / '+limit+' words';el.style.color=words>limit?'#ef4444':words>=limit*0.8?'#f59e0b':'var(--text)';}}
-function saveAnswer(){var q=document.getElementById('awQuestion').value.trim();var a=document.getElementById('awEditor').value.trim();if(!q||!a){alert('Enter both question and answer.');return;}var words=a.split(/\s+/).length;D.answers.push({question:q,answer:a,wordCount:words,limit:parseInt(document.getElementById('awLimit').value),date:new Date().toLocaleDateString('en-IN')});save();clearInterval(awTimerInterval);renderAnswer();}
+function saveAnswer(){var q=document.getElementById('awQuestion').value.trim();var a=document.getElementById('awEditor').value.trim();if(!q||!a){notify('Enter both question and answer.', 'warn');return;}var words=a.split(/\s+/).length;D.answers.push({question:q,answer:a,wordCount:words,limit:parseInt(document.getElementById('awLimit').value),date:new Date().toLocaleDateString('en-IN')});save();clearInterval(awTimerInterval);renderAnswer();}
 function deleteAnswer(i){if(confirm('Delete this answer?')){D.answers.splice(i,1);save();renderAnswer();}}
 
 /* ===== CURRENT AFFAIRS ===== */
@@ -253,9 +253,9 @@ function renderCAList(){
   });
   var el=document.getElementById('caList');if(el)el.innerHTML=html;
 }
-function addCA(){var date=document.getElementById('caDate').value;var tag=document.getElementById('caTag').value;var title=document.getElementById('caTitle').value.trim();var note=document.getElementById('caNote').value.trim();if(!title){alert('Enter a title.');return;}D.current.push({date:date,tag:tag,title:title,note:note});save();document.getElementById('caTitle').value='';document.getElementById('caNote').value='';renderCAList();}
+function addCA(){var date=document.getElementById('caDate').value;var tag=document.getElementById('caTag').value;var title=document.getElementById('caTitle').value.trim();var note=document.getElementById('caNote').value.trim();if(!title){notify('Enter a title.', 'warn');return;}D.current.push({date:date,tag:tag,title:title,note:note});save();document.getElementById('caTitle').value='';document.getElementById('caNote').value='';renderCAList();}
 function deleteCA(i){if(confirm('Delete this note?')){D.current.splice(i,1);save();renderCAList();}}
-function exportCA(fmt){if(!D.current.length){alert('No notes to export.');return;}var blob;if(fmt==='json'){blob=new Blob([JSON.stringify(D.current,null,2)],{type:'application/json'});}else{var text=D.current.map(function(c){return '['+c.date+'] ['+c.tag+'] '+c.title+'\n'+c.note;}).join('\n\n---\n\n');blob=new Blob([text],{type:'text/plain'});}var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-current-affairs.'+fmt;a.click();URL.revokeObjectURL(a.href);}
+function exportCA(fmt){if(!D.current.length){notify('No notes to export.', 'warn');return;}var blob;if(fmt==='json'){blob=new Blob([JSON.stringify(D.current,null,2)],{type:'application/json'});}else{var text=D.current.map(function(c){return '['+c.date+'] ['+c.tag+'] '+c.title+'\n'+c.note;}).join('\n\n---\n\n');blob=new Blob([text],{type:'text/plain'});}var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-current-affairs.'+fmt;a.click();URL.revokeObjectURL(a.href);}
 
 /* ===== REVISION CHECKLIST ===== */
 var REVISION_LIST={
@@ -318,7 +318,7 @@ function toggleTimer(){
 }
 function tickTimer(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var s=Math.floor(total/1000);var h=Math.floor(s/3600);var m=Math.floor((s%3600)/60);var sec=s%60;var el=document.getElementById('timerDisplay');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;}
 function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerElapsed=0;timerStart=0;var el=document.getElementById('timerDisplay');if(el)el.textContent='00:00:00';var btn=document.getElementById('timerBtn');if(btn)btn.textContent='▶ Start';}
-function logTime(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var minutes=Math.round(total/60000);if(minutes<1){alert('Timer too short to log.');return;}var subject=document.getElementById('timerSubject').value;var today=new Date().toISOString().split('T')[0];if(!D.timerLog[today])D.timerLog[today]=[];D.timerLog[today].push({subject:subject,minutes:minutes});save();resetTimer();renderTimer();}
+function logTime(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var minutes=Math.round(total/60000);if(minutes<1){notify('Timer too short to log.', 'warn');return;}var subject=document.getElementById('timerSubject').value;var today=new Date().toISOString().split('T')[0];if(!D.timerLog[today])D.timerLog[today]=[];D.timerLog[today].push({subject:subject,minutes:minutes});save();resetTimer();renderTimer();}
 function drawTimerChart(){
   var canvas=document.getElementById('timerChart');if(!canvas)return;
   var ctx=canvas.getContext('2d');
@@ -415,7 +415,7 @@ function exportAll(){
 function importAll(e){
   var file=e.target.files[0];if(!file)return;
   var reader=new FileReader();reader.onload=function(ev){
-    try{var imported=JSON.parse(ev.target.result);if(typeof imported.syllabus==='object'){D=imported;save();alert('Data imported successfully!');renderTab('syllabus');switchTab('syllabus');}else{alert('Invalid backup file.');}}catch(err){alert('Error reading file: '+err.message);}
+    try{var imported=JSON.parse(ev.target.result);if(typeof imported.syllabus==='object'){D=imported;save();notify('Data imported successfully!', 'ok');renderTab('syllabus');switchTab('syllabus');}else{notify('Invalid backup file.', 'warn');}}catch(err){notify('Error reading file: '+err.message, 'warn');}
   };reader.readAsText(file);e.target.value='';
 }
 

@@ -365,7 +365,7 @@ function addChild(){
 
 function deleteNode(){
   if(!selectedId)return;
-  if(nodes.length<=1){alert("Cannot delete the root node.");return}
+  if(nodes.length<=1){notify("Cannot delete the root node.", 'warn');return}
   var desc=countAllDescendants(selectedId);
   var msg=desc>0?"Delete this node and its "+desc+" descendant(s)?":"Delete this node?";
   if(!confirm(msg))return;
@@ -479,7 +479,7 @@ function exportPNG(){
 
 async function exportPDF(){
   var PDFLib=window.PDFLib;
-  if(!PDFLib){alert("PDF library still loading, please try again.");return}
+  if(!PDFLib){notify("PDF library still loading, please try again.", 'warn');return}
   var bounds={minX:Infinity,minY:Infinity,maxX:0,maxY:0};
   nodes.forEach(function(n){
     if(n.x<bounds.minX)bounds.minX=n.x;if(n.y<bounds.minY)bounds.minY=n.y;
@@ -547,8 +547,8 @@ function importJSON(){
           connLabels=obj.connLabels||{};collapsed=obj.collapsed||{};
           selectedId=null;document.getElementById("node-editor").style.display="none";
           renderAll();fitToScreen();
-        }else{alert("Invalid mind map JSON file.")}
-      }catch(err){alert("Error reading file: "+err.message)}
+        }else{notify("Invalid mind map JSON file.", 'warn')}
+      }catch(err){notify("Error reading file: "+err.message, 'warn')}
     };
     reader.readAsText(file);
   };
@@ -565,12 +565,12 @@ function clearAll(){
 }
 
 function autoSave(){
-  try{localStorage.setItem("mindmap_autosave",JSON.stringify({nodes:nodes,idCounter:idCounter,connLabels:connLabels,collapsed:collapsed}))}catch(e){}
+  try{storeSet("mindmap_autosave", {nodes:nodes,idCounter:idCounter,connLabels:connLabels,collapsed:collapsed})}catch(e){}
 }
 
 function loadAutoSave(){
   try{
-    var d=localStorage.getItem("mindmap_autosave");
+    var d=storeGetRaw("mindmap_autosave", null);
     if(d){var obj=JSON.parse(d);if(obj.nodes&&obj.nodes.length){nodes=obj.nodes;idCounter=obj.idCounter;connLabels=obj.connLabels||{};collapsed=obj.collapsed||{};return true}}
   }catch(e){}
   return false;

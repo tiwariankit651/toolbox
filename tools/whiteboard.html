@@ -159,10 +159,10 @@ saveState();
 
 // Auto-save & restore
 function autoSave(){
-  try{localStorage.setItem("wb_data",mainCanvas.toDataURL("image/png"));}catch(e){}
+  try{storeSetRaw("wb_data", mainCanvas.toDataURL("image/png"));}catch(e){}
 }
 function autoRestore(){
-  var data=localStorage.getItem("wb_data");
+  var data=storeGetRaw("wb_data", null);
   if(data){
     var img=new Image();
     img.onload=function(){mainCtx.drawImage(img,0,0);saveState();};

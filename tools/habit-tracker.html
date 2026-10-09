@@ -138,28 +138,28 @@ var TODAY=new Date().toISOString().split('T')[0];
 document.getElementById('today').textContent='Today: '+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 function migrateOld(){
-  var old=localStorage.getItem('habits');
-  if(old&&!localStorage.getItem(HT_KEY)){
+  var old=storeGetRaw('habits', null);
+  if(old&&!storeGetRaw(HT_KEY, null)){
     try{
       var oldH=JSON.parse(old);
       var newH=oldH.map(function(h,i){return{id:'m'+i,name:h.name,emoji:'✅',color:'#6366f1',type:'yesno',target:1,schedule:'daily',days:[],timesPerWeek:7,reminderTime:'',log:h.log||{},created:h.created||TODAY};});
       var data={habits:newH,version:2};
-      localStorage.setItem(HT_KEY,JSON.stringify(data));
+      storeSet(HT_KEY, data);
     }catch(e){}
   }
 }
 migrateOld();
 
-function loadHT(){var d=localStorage.getItem(HT_KEY);if(d){try{return JSON.parse(d);}catch(e){}}return{habits:[],version:2};}
+function loadHT(){var d=storeGetRaw(HT_KEY, null);if(d){try{return JSON.parse(d);}catch(e){}}return{habits:[],version:2};}
 var H=loadHT();
 function saveHT(){
   /* The bare setItem threw in private browsing and when the quota filled up,
      which silently lost a tick the user had just made. */
-  try{ localStorage.setItem(HT_KEY,JSON.stringify(H)); }
+  try{ storeSet(HT_KEY, H); }
   catch(e){ htNote('Could not save — browser storage is full or blocked. Export a backup now.',true); }
 }
 
-/* Inline status line, replacing the four alert() calls. */
+/* Inline status line, replacing the four notify(, 'info') calls. */
 function htNote(msg,isErr){
   var el=document.getElementById('htNote');
   if(!el)return;

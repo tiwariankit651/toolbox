@@ -161,8 +161,8 @@ var readySets={
 "Computer Knowledge":[["CPU full form?","Central Processing Unit"],["RAM full form?","Random Access Memory"],["ROM full form?","Read Only Memory"],["HTML full form?","HyperText Markup Language"],["URL full form?","Uniform Resource Locator"],["HTTP full form?","HyperText Transfer Protocol"],["What is an algorithm?","Step-by-step procedure to solve a problem"],["Binary system uses?","Only 0 and 1"],["1 KB equals?","1024 Bytes"],["1 MB equals?","1024 KB"],["What does OS stand for?","Operating System"],["Examples of OS?","Windows, Linux, macOS, Android"],["What is a virus in computing?","Malicious program that damages data"],["What is a firewall?","Security system that monitors network traffic"],["Who is the father of computers?","Charles Babbage"],["What is RAM?","Temporary memory that loses data when power off"],["What is ROM?","Permanent memory that retains data"],["What is an IP address?","Unique numerical label for each device on network"],["HTTP vs HTTPS?","HTTPS is secure (encrypted) version of HTTP"],["What is cloud computing?","Storing and accessing data over internet instead of local"],["What is phishing?","Fraudulent attempt to steal personal information"],["What is a cookie in web?","Small data file stored by websites in browser"],["What is bandwidth?","Maximum data transfer rate of a network"],["What is malware?","Malicious software designed to harm computers"],["Full form of PDF?","Portable Document Format"]]
 };
 var deck=[],idx=0,score={know:0,dont:0},customCards=[],srData={};
-function loadSR(){var s=localStorage.getItem("fcSR");if(s)srData=JSON.parse(s);}
-function saveSR(){localStorage.setItem("fcSR",JSON.stringify(srData));}
+function loadSR(){var s=storeGetRaw("fcSR", null);if(s)srData=JSON.parse(s);}
+function saveSR(){storeSet("fcSR", srData);}
 function getSR(key){return srData[key]||{ef:2.5,interval:0,reps:0,due:0};}
 function sm2(key,quality){
   var d=getSR(key);
@@ -244,28 +244,28 @@ function updateScore(){
 function addCustomCard(){
   var f=document.getElementById("newFront").value.trim();
   var b=document.getElementById("newBack").value.trim();
-  if(!f||!b)return alert("Fill both sides");
+  if(!f||!b)return notify("Fill both sides", 'info');
   customCards.push({front:f,back:b});
   document.getElementById("newFront").value="";document.getElementById("newBack").value="";
-  localStorage.setItem("fcCustom",JSON.stringify(customCards));
+  storeSet("fcCustom", customCards);
   renderCustomList();
 }
 function renderCustomList(){
-  var saved=localStorage.getItem("fcCustom");
+  var saved=storeGetRaw("fcCustom", null);
   if(saved&&!customCards.length)customCards=JSON.parse(saved);
   document.getElementById("customList").innerHTML=customCards.map(function(c,i){
-    return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center"><span><strong>'+c.front+'</strong> → '+c.back+'</span><button onclick="customCards.splice('+i+',1);localStorage.setItem(\'fcCustom\',JSON.stringify(customCards));renderCustomList()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.2rem">×</button></div>';
+    return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0;display:flex;justify-content:space-between;align-items:center"><span><strong>'+c.front+'</strong> → '+c.back+'</span><button onclick="customCards.splice('+i+',1);storeSet(\'fcCustom\', customCards);renderCustomList()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.2rem">×</button></div>';
   }).join("")||'<p class="info">No cards yet. Add some above!</p>';
 }
 function studyCustom(){
-  if(!customCards.length)return alert("Add some cards first");
+  if(!customCards.length)return notify("Add some cards first", 'warn');
   deck=customCards.slice();idx=0;score={know:0,dont:0};
   sortByDue();
   document.getElementById("deckInfo").textContent="Studying: My Cards ("+deck.length+" cards)";
   showTab("study");showCard();
 }
 function exportCards(){
-  if(!customCards.length)return alert("No cards to export");
+  if(!customCards.length)return notify("No cards to export", 'warn');
   download(new Blob([JSON.stringify(customCards)],{type:"application/json"}),"flashcards.json");
 }
 function importCards(e){
@@ -274,8 +274,8 @@ function importCards(e){
   reader.onload=function(){
     try{
       var data=JSON.parse(reader.result);
-      if(Array.isArray(data)){customCards=customCards.concat(data);localStorage.setItem("fcCustom",JSON.stringify(customCards));renderCustomList();alert("Imported "+data.length+" cards!");}
-    }catch(err){alert("Invalid file")}
+      if(Array.isArray(data)){customCards=customCards.concat(data);storeSet("fcCustom", customCards);renderCustomList();notify("Imported "+data.length+" cards!", 'ok');}
+    }catch(err){notify("Invalid file", 'warn')}
   };
   reader.readAsText(file);e.target.value="";
 }
@@ -292,12 +292,12 @@ function importCsv(e){
       var back=line.substring(sep+1).trim().replace(/^"|"$/g,"");
       if(front&&back){customCards.push({front:front,back:back});count++;}
     });
-    if(count){localStorage.setItem("fcCustom",JSON.stringify(customCards));renderCustomList();alert("Imported "+count+" cards from CSV!");}
-    else alert("No valid cards found. Use format: front,back");
+    if(count){storeSet("fcCustom", customCards);renderCustomList();notify("Imported "+count+" cards from CSV!", 'ok');}
+    else notify("No valid cards found. Use format: front,back", 'warn');
   };
   reader.readAsText(file);e.target.value="";
 }
-var saved=localStorage.getItem("fcCustom");if(saved)customCards=JSON.parse(saved);
+var saved=storeGetRaw("fcCustom", null);if(saved)customCards=JSON.parse(saved);
 loadSR();updateScore();
   </script>
 </body>

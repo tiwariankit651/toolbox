@@ -288,15 +288,15 @@
   }
   function pushHistory(label,value){
     var h=[];
-    try{h=JSON.parse(localStorage.getItem(PC_HKEY))||[];}catch(e){h=[];}
+    try{h=storeGet(PC_HKEY, null)||[];}catch(e){h=[];}
     h.unshift({label:label,value:value,t:new Date().toLocaleString()});
     h=h.slice(0,25);
-    localStorage.setItem(PC_HKEY,JSON.stringify(h));
+    storeSet(PC_HKEY, h);
     renderHistory();
   }
   function renderHistory(){
     var h=[];
-    try{h=JSON.parse(localStorage.getItem(PC_HKEY))||[];}catch(e){h=[];}
+    try{h=storeGet(PC_HKEY, null)||[];}catch(e){h=[];}
     var el=document.getElementById("pc_history");
     if(!h.length){el.innerHTML="<p class='info'>No calculations yet.</p>";return;}
     el.innerHTML=h.map(function(x){
@@ -308,7 +308,7 @@
   // (a) What is X% of Y
   function pcOf(){
     var x=num("a_x"),y=num("a_y");
-    if(isNaN(x)||isNaN(y))return alert("Enter both X and Y");
+    if(isNaN(x)||isNaN(y))return notify("Enter both X and Y", 'warn');
     var r=x/100*y;
     show("a_out",fmt(r),"("+x+" ÷ 100) × "+y+" = "+fmt(r));
     pushHistory(x+"% of "+y,fmt(r));
@@ -316,8 +316,8 @@
   // (b) X is what percent of Y
   function pcWhat(){
     var x=num("b_x"),y=num("b_y");
-    if(isNaN(x)||isNaN(y))return alert("Enter both X and Y");
-    if(y===0)return alert("Y cannot be zero");
+    if(isNaN(x)||isNaN(y))return notify("Enter both X and Y", 'warn');
+    if(y===0)return notify("Y cannot be zero", 'warn');
     var r=x/y*100;
     show("b_out",fmt(r)+"%","("+x+" ÷ "+y+") × 100 = "+fmt(r)+"%");
     pushHistory(x+" is what % of "+y,fmt(r)+"%");
@@ -325,8 +325,8 @@
   // (c) Percentage increase / decrease
   function pcChange(){
     var o=num("c_old"),n=num("c_new");
-    if(isNaN(o)||isNaN(n))return alert("Enter both values");
-    if(o===0)return alert("Original value cannot be zero");
+    if(isNaN(o)||isNaN(n))return notify("Enter both values", 'warn');
+    if(o===0)return notify("Original value cannot be zero", 'warn');
     var ch=(n-o)/Math.abs(o)*100;
     var dir=ch>=0?"increase":"decrease";
     show("c_out",(ch>0?"+":"")+fmt(ch)+"% ("+dir+")","(("+n+" − "+o+") ÷ |"+o+"|) × 100 = "+fmt(ch)+"%");
@@ -335,7 +335,7 @@
   // (d) Add or subtract X% from a value
   function pcAddSub(){
     var v=num("d_v"),p=num("d_p");
-    if(isNaN(v)||isNaN(p))return alert("Enter value and percent");
+    if(isNaN(v)||isNaN(p))return notify("Enter value and percent", 'warn');
     var up=v+v*p/100, down=v-v*p/100;
     show("d_out","↑ "+fmt(up)+"  |  ↓ "+fmt(down),
       v+" ± ("+v+" × "+p+" ÷ 100) = "+fmt(up)+" / "+fmt(down));
@@ -344,7 +344,7 @@
   // (e) Reverse percentage
   function pcReverse(){
     var f=num("e_final"),p=num("e_p"),dir=document.getElementById("e_dir").value;
-    if(isNaN(f)||isNaN(p))return alert("Enter final value and percent");
+    if(isNaN(f)||isNaN(p))return notify("Enter final value and percent", 'warn');
     var orig, formula;
     if(dir==="inc"){orig=f/(1+p/100);formula=f+" ÷ (1 + "+p+"/100) = "+fmt(orig);}
     else{orig=f/(1-p/100);formula=f+" ÷ (1 − "+p+"/100) = "+fmt(orig);}
@@ -354,9 +354,9 @@
   // (f) Percentage difference
   function pcDiff(){
     var a=num("f_a"),b=num("f_b");
-    if(isNaN(a)||isNaN(b))return alert("Enter both numbers");
+    if(isNaN(a)||isNaN(b))return notify("Enter both numbers", 'warn');
     var avg=(a+b)/2;
-    if(avg===0)return alert("Average cannot be zero");
+    if(avg===0)return notify("Average cannot be zero", 'warn');
     var d=Math.abs(a-b)/Math.abs(avg)*100;
     show("f_out",fmt(d)+"%","(|"+a+" − "+b+"| ÷ (("+a+" + "+b+") ÷ 2)) × 100 = "+fmt(d)+"%");
     pushHistory("% diff of "+a+" & "+b,fmt(d)+"%");
@@ -378,7 +378,7 @@
       var o=parseFloat(obt[i].value),t=parseFloat(tot[i].value);
       if(!isNaN(o)&&!isNaN(t)&&t>0){sumO+=o;sumT+=t;valid=true;}
     }
-    if(!valid)return alert("Enter at least one subject with obtained and total marks");
+    if(!valid)return notify("Enter at least one subject with obtained and total marks", 'warn');
     var pct=sumO/sumT*100;
     show("g_out",fmt(pct)+"%","("+fmt(sumO)+" ÷ "+fmt(sumT)+") × 100 = "+fmt(pct)+"%");
     pushHistory("Marks "+fmt(sumO)+"/"+fmt(sumT),fmt(pct)+"%");
@@ -387,7 +387,7 @@
   function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a||1;}
   function pcConvert(){
     var p=num("h_p");
-    if(isNaN(p))return alert("Enter a percent");
+    if(isNaN(p))return notify("Enter a percent", 'warn');
     var dec=p/100;
     var numer=Math.round(dec*1000000),denom=1000000;
     var g=gcd(numer,denom);
@@ -400,7 +400,7 @@
   // (i) CGPA <-> percentage
   function pcCgpaToPct(){
     var c=num("i_cgpa"),f=num("i_factor");
-    if(isNaN(c))return alert("Enter CGPA");
+    if(isNaN(c))return notify("Enter CGPA", 'warn');
     if(isNaN(f)||f<=0){f=9.5;document.getElementById("i_factor").value=9.5;}
     var pct=c*f;
     show("i_out",fmt(pct)+"%","CGPA × factor = "+c+" × "+f+" = "+fmt(pct)+"% (per common university formula)");
@@ -408,7 +408,7 @@
   }
   function pcPctToCgpa(){
     var p=num("i_pct"),f=num("i_factor");
-    if(isNaN(p))return alert("Enter percentage");
+    if(isNaN(p))return notify("Enter percentage", 'warn');
     if(isNaN(f)||f<=0){f=9.5;document.getElementById("i_factor").value=9.5;}
     var cgpa=p/f;
     show("i_out",fmt(cgpa)+" CGPA","% ÷ factor = "+p+" ÷ "+f+" = "+fmt(cgpa)+" CGPA (per common university formula)");
@@ -417,7 +417,7 @@
   // (j) Discount
   function pcDiscount(){
     var o=num("j_orig"),d=num("j_disc");
-    if(isNaN(o)||isNaN(d))return alert("Enter original price and discount %");
+    if(isNaN(o)||isNaN(d))return notify("Enter original price and discount %", 'warn');
     var saved=o*d/100,final=o-saved;
     show("j_out","Final: "+fmt(final)+"  |  Saved: "+fmt(saved),
       o+" − ("+o+" × "+d+"% ) = "+fmt(final)+" ; you save "+fmt(saved));
@@ -425,8 +425,8 @@
   }
   function pcDiscountReverse(){
     var was=num("j_was"),now=num("j_now");
-    if(isNaN(was)||isNaN(now))return alert("Enter both prices");
-    if(was===0)return alert("Original price cannot be zero");
+    if(isNaN(was)||isNaN(now))return notify("Enter both prices", 'warn');
+    if(was===0)return notify("Original price cannot be zero", 'warn');
     var pct=(was-now)/was*100;
     show("j_out",fmt(pct)+"% off","(("+was+" − "+now+") ÷ "+was+") × 100 = "+fmt(pct)+"%");
     pushHistory("Discount from "+was+"→"+now,fmt(pct)+"% off");
@@ -434,7 +434,7 @@
   // (k) GST add/remove
   function pcGst(){
     var amt=num("k_amt"),rate=num("k_rate"),mode=document.getElementById("k_mode").value;
-    if(isNaN(amt)||isNaN(rate))return alert("Enter amount and rate");
+    if(isNaN(amt)||isNaN(rate))return notify("Enter amount and rate", 'warn');
     if(mode==="add"){
       var tax=amt*rate/100,total=amt+tax;
       show("k_out","Tax: "+fmt(tax)+"  |  Total: "+fmt(total),
@@ -450,8 +450,8 @@
   // (l) Profit and loss
   function pcProfitLoss(){
     var cp=num("l_cp"),sp=num("l_sp");
-    if(isNaN(cp)||isNaN(sp))return alert("Enter cost and selling price");
-    if(cp===0)return alert("Cost price cannot be zero");
+    if(isNaN(cp)||isNaN(sp))return notify("Enter cost and selling price", 'warn');
+    if(cp===0)return notify("Cost price cannot be zero", 'warn');
     var diff=sp-cp,pct=diff/cp*100;
     var label=diff>=0?"Profit":"Loss";
     show("l_out",label+": "+fmt(Math.abs(diff))+" ("+fmt(Math.abs(pct))+"%)",

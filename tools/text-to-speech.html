@@ -185,7 +185,7 @@ function loadVoices(){
 function renderVoiceOptions(){
   const sel=document.getElementById('voice');
   const q=(document.getElementById('voiceSearch').value||'').toLowerCase().trim();
-  const saved=localStorage.getItem('tts_voice');
+  const saved=storeGetRaw('tts_voice', null);
   // group by language
   const groups={};
   voices.forEach((v,i)=>{
@@ -211,7 +211,7 @@ function renderVoiceOptions(){
 }
 function onVoiceChange(){
   const v=voices[+document.getElementById('voice').value];
-  if(v)localStorage.setItem('tts_voice',v.name);
+  if(v)storeSetRaw('tts_voice', v.name);
 }
 loadVoices();
 if(synth.onvoiceschanged!==undefined)synth.onvoiceschanged=loadVoices;
@@ -332,7 +332,7 @@ function setProgress(frac){document.getElementById('progressBar').style.width=Ma
 // ---------- Speak ----------
 function speak(){
   const text=document.getElementById('text').value.trim();
-  if(!text)return alert('Enter some text first');
+  if(!text)return notify('Enter some text first', 'warn');
   synth.cancel();
   if(dictTimer){clearTimeout(dictTimer);dictTimer=null}
   addHistory(text);
@@ -438,13 +438,13 @@ function stopSpeak(){
 }
 
 // ---------- History ----------
-function getHistory(){return JSON.parse(localStorage.getItem('tts_history')||'[]')}
+function getHistory(){return storeGet('tts_history', [])}
 function addHistory(text){
   let h=getHistory();
   h=h.filter(x=>x!==text);
   h.unshift(text);
   h=h.slice(0,8);
-  localStorage.setItem('tts_history',JSON.stringify(h));
+  storeSet('tts_history', h);
   renderHistory();
 }
 function loadHistory(i){
@@ -464,11 +464,11 @@ function renderHistory(){
 }
 
 // ---------- Bookmarks ----------
-function getBookmarks(){return JSON.parse(localStorage.getItem('tts_bookmarks')||'[]')}
-function saveBookmarks(bm){localStorage.setItem('tts_bookmarks',JSON.stringify(bm))}
+function getBookmarks(){return storeGet('tts_bookmarks', [])}
+function saveBookmarks(bm){storeSet('tts_bookmarks', bm)}
 function saveBookmark(){
   const text=document.getElementById('text').value.trim();
-  if(!text)return alert('Enter text to bookmark');
+  if(!text)return notify('Enter text to bookmark', 'warn');
   const phrase=text.length>50?text.substring(0,50)+'...':text;
   const bm=getBookmarks();
   bm.push({phrase:text,label:phrase,voiceIdx:document.getElementById('voice').value,rate:+document.getElementById('speed').value,pitch:+document.getElementById('pitch').value});

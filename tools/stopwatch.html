@@ -223,19 +223,19 @@ function swReset(){
 }
 
 /* ---------- Session persistence & history ---------- */
-function swSave(){try{localStorage.setItem('sw_state',JSON.stringify({accum:swElapsed(),running:swRunning,ts:Date.now(),laps:laps}))}catch(e){}}
+function swSave(){try{storeSet('sw_state', {accum:swElapsed(),running:swRunning,ts:Date.now(),laps:laps})}catch(e){}}
 function swRestore(){
-  try{var s=JSON.parse(localStorage.getItem('sw_state')||'null');if(!s)return;
+  try{var s=storeGet('sw_state', null);if(!s)return;
     laps=s.laps||[];swAccum=s.accum||0;
     if(s.running){swAccum+=Date.now()-s.ts;swStartTs=performance.now();swRunning=true;swTick();document.getElementById('swBtn').textContent='\u23f8 Pause'}
     else swRender();
     renderLaps();
   }catch(e){}
 }
-function saveSession(ms){try{var h=JSON.parse(localStorage.getItem('sw_history')||'[]');h.unshift({dur:ms,date:new Date().toLocaleString()});h=h.slice(0,20);localStorage.setItem('sw_history',JSON.stringify(h));renderHistory()}catch(e){}}
+function saveSession(ms){try{var h=storeGet('sw_history', []);h.unshift({dur:ms,date:new Date().toLocaleString()});h=h.slice(0,20);storeSet('sw_history', h);renderHistory()}catch(e){}}
 function clearHistory(){localStorage.removeItem('sw_history');renderHistory()}
 function renderHistory(){
-  var h=JSON.parse(localStorage.getItem('sw_history')||'[]');var el=document.getElementById('sessionHistory');
+  var h=storeGet('sw_history', []);var el=document.getElementById('sessionHistory');
   if(!h.length){el.innerHTML='';return}
   var s='<h3>\ud83d\udcdc Past Sessions</h3><div style="display:flex;flex-direction:column;gap:.3rem">';
   h.forEach(function(x){s+='<div style="display:flex;justify-content:space-between;background:var(--card);padding:.4rem .8rem;border-radius:8px;font-size:.85rem"><span style="font-family:monospace">'+fmt(x.dur)+'</span><span style="color:var(--text2)">'+x.date+'</span></div>'});

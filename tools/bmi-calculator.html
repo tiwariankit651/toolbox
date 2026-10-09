@@ -234,7 +234,7 @@ function bmiCard(l,v){return "<div class='bmi-card'><div class='v'>"+v+"</div><d
 function calc(){
   var mw=getMetric();
   var h=mw.h,w=mw.w;
-  if(!h||!w||h<=0||w<=0)return alert("Enter a valid height and weight");
+  if(!h||!w||h<=0||w<=0)return notify("Enter a valid height and weight", 'warn');
   var age=num("age");if(isNaN(age)||age<=0)age=30;
   var gender=document.getElementById("gender").value;
   var hm=h/100;
@@ -352,12 +352,12 @@ function saveInputs(){
     neck:document.getElementById("neck").value,
     hip:document.getElementById("hip").value
   };
-  localStorage.setItem(BMI_LAST,JSON.stringify(data));
+  storeSet(BMI_LAST, data);
 }
 
 function restoreInputs(){
   var data;
-  try{data=JSON.parse(localStorage.getItem(BMI_LAST));}catch(e){data=null;}
+  try{data=storeGet(BMI_LAST, null);}catch(e){data=null;}
   if(!data)return;
   Object.keys(data).forEach(function(k){
     var el=document.getElementById(k);
@@ -368,16 +368,16 @@ function restoreInputs(){
 
 function saveHistory(bmi,cat){
   var h=[];
-  try{h=JSON.parse(localStorage.getItem(BMI_HIST))||[];}catch(e){h=[];}
+  try{h=storeGet(BMI_HIST, null)||[];}catch(e){h=[];}
   h.unshift({bmi:bmi.toFixed(1),cat:cat,date:new Date().toLocaleDateString()});
   h=h.slice(0,15);
-  localStorage.setItem(BMI_HIST,JSON.stringify(h));
+  storeSet(BMI_HIST, h);
   renderHistory();
 }
 
 function renderHistory(){
   var h=[];
-  try{h=JSON.parse(localStorage.getItem(BMI_HIST))||[];}catch(e){h=[];}
+  try{h=storeGet(BMI_HIST, null)||[];}catch(e){h=[];}
   var el=document.getElementById("bmiHistList");
   if(!h.length){el.innerHTML="<p class='info'>No entries yet. Calculate to start tracking.</p>";return;}
   el.innerHTML=h.map(function(x){

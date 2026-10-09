@@ -184,8 +184,8 @@ const QREF={
   cooking:[['1 US cup','236.6 ml'],['1 tbsp','3 tsp'],['1 US tsp','~4.93 ml']]
 };
 
-var favs=JSON.parse(localStorage.getItem('uc_favs')||'[]');
-var recent=JSON.parse(localStorage.getItem('uc_recent')||'[]');
+var favs=storeGet('uc_favs', []);
+var recent=storeGet('uc_recent', []);
 
 /* Populate category dropdown */
 (function initCats(){
@@ -312,7 +312,7 @@ function copyResult(){
   var val=document.getElementById('tv').value;if(!val)return;
   var f=document.getElementById('fs').value,t=document.getElementById('ts').value,v=document.getElementById('fv').value;
   var text=v+' '+f+' = '+val+' '+t;
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text);
+  if(navigator.clipboard&&navigator.clipboard.writeText)copyNow(text);
   else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
 }
 
@@ -320,9 +320,9 @@ function copyResult(){
 function addFav(){
   var c=document.getElementById('cat').value,f=document.getElementById('fs').value,t=document.getElementById('ts').value;
   var key=c+'|'+f+'|'+t;
-  if(!favs.includes(key)){favs.push(key);localStorage.setItem('uc_favs',JSON.stringify(favs));renderFavs()}
+  if(!favs.includes(key)){favs.push(key);storeSet('uc_favs', favs);renderFavs()}
 }
-function removeFav(i){favs.splice(i,1);localStorage.setItem('uc_favs',JSON.stringify(favs));renderFavs()}
+function removeFav(i){favs.splice(i,1);storeSet('uc_favs', favs);renderFavs()}
 function useFav(key){
   var p=key.split('|');document.getElementById('cat').value=p[0];load();
   document.getElementById('fs').value=p[1];document.getElementById('ts').value=p[2];conv();
@@ -338,7 +338,7 @@ function pushRecent(c,f,t,v,r){
   var entry={c:c,f:f,t:t,v:v,r:fmtNum(r),ts:Date.now()};
   recent=recent.filter(function(x){return !(x.c===c&&x.f===f&&x.t===t&&x.v===v)});
   recent.unshift(entry);recent=recent.slice(0,10);
-  localStorage.setItem('uc_recent',JSON.stringify(recent));renderRecent();
+  storeSet('uc_recent', recent);renderRecent();
 }
 function useRecent(i){var x=recent[i];document.getElementById('cat').value=x.c;load();
   document.getElementById('fs').value=x.f;document.getElementById('ts').value=x.t;document.getElementById('fv').value=x.v;conv()}

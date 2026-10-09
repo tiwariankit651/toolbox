@@ -244,7 +244,7 @@ function readPrimary(){
 }
 function analyze(){
   var p=readPrimary();
-  if(!(p.amt>0)||!(p.months>0)){alert('Enter a valid amount and tenure');return;}
+  if(!(p.amt>0)||!(p.months>0)){notify('Enter a valid amount and tenure', 'warn');return;}
   var sched=buildSchedule(p.amt,p.rate,p.months);
   _primary={input:p,sched:sched};
   document.getElementById('primaryResults').style.display='';
@@ -315,16 +315,16 @@ function drawPie(principal,interest){
 
 /* ===== CSV & print of primary schedule ===== */
 function exportCSV(){
-  if(!_primary){alert('Analyse the loan first');return;}
+  if(!_primary){notify('Analyse the loan first', 'warn');return;}
   var rows=_primary.sched.rows;
   var lines=['Month,EMI,Principal,Interest,Balance'];
   rows.forEach(function(r){lines.push([r.month,Math.round(r.emi),Math.round(r.principal),Math.round(r.interest),Math.round(r.balance)].join(','));});
   var blob=new Blob([lines.join('\n')],{type:'text/csv'});download(blob,'amortisation-schedule.csv');
 }
 function printSchedule(){
-  if(!_primary){alert('Analyse the loan first');return;}
+  if(!_primary){notify('Analyse the loan first', 'warn');return;}
   var p=_primary.input,s=_primary.sched;var w=window.open('','_blank');
-  if(!w){alert('Please allow pop-ups to print.');return;}
+  if(!w){notify('Please allow pop-ups to print.', 'warn');return;}
   var body='<h1>Loan Amortisation Schedule</h1><p>Amount: '+fmt(p.amt)+' · Rate: '+p.rate+'% · Tenure: '+p.months+' months · EMI: '+fmt(s.emi)+'</p>';
   body+='<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px"><tr><th>Month</th><th>EMI</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>';
   s.rows.forEach(function(r){body+='<tr><td>'+r.month+'</td><td>'+fmt(r.emi)+'</td><td>'+fmt(r.principal)+'</td><td>'+fmt(r.interest)+'</td><td>'+fmt(r.balance)+'</td></tr>';});
@@ -335,7 +335,7 @@ function printSchedule(){
 
 /* ===== Prepayment ===== */
 function calcPrepay(){
-  if(!_primary){alert('Analyse the loan first');return;}
+  if(!_primary){notify('Analyse the loan first', 'warn');return;}
   var p=_primary.input;
   var opts={prepay:{
     type:document.getElementById('prepType').value,
@@ -358,7 +358,7 @@ function calcPrepay(){
 
 /* ===== Moratorium ===== */
 function calcMoratorium(){
-  if(!_primary){alert('Analyse the loan first');return;}
+  if(!_primary){notify('Analyse the loan first', 'warn');return;}
   var p=_primary.input;var mm=+document.getElementById('moraMonths').value||0;
   var r=p.rate/100/12;
   // interest accrues and capitalises during moratorium
@@ -375,7 +375,7 @@ function calcMoratorium(){
 
 /* ===== Floating rate what-if ===== */
 function calcFloating(){
-  if(!_primary){alert('Analyse the loan first');return;}
+  if(!_primary){notify('Analyse the loan first', 'warn');return;}
   var p=_primary.input;
   var opts={rateChangeMonth:+document.getElementById('floatMonth').value||1,newRate:+document.getElementById('floatRate').value};
   var flo=buildSchedule(p.amt,p.rate,p.months,opts);
@@ -474,11 +474,11 @@ el.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.
 function autosave(){
   try{
     var data={amt:document.getElementById('pAmt').value,rate:document.getElementById('pRate').value,tenure:document.getElementById('pTenure').value,unit:document.getElementById('pUnit').value,fee:document.getElementById('pFee').value};
-    localStorage.setItem(LS_KEY,JSON.stringify(data));
+    storeSet(LS_KEY, data);
   }catch(e){}
 }
 function restore(){
-  try{var s=localStorage.getItem(LS_KEY);if(!s)return;var d=JSON.parse(s);
+  try{var s=storeGetRaw(LS_KEY, null);if(!s)return;var d=JSON.parse(s);
     if(d.amt!=null)document.getElementById('pAmt').value=d.amt;
     if(d.rate!=null)document.getElementById('pRate').value=d.rate;
     if(d.tenure!=null)document.getElementById('pTenure').value=d.tenure;

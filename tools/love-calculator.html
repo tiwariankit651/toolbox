@@ -349,12 +349,12 @@ function saveHistory(n1,n2,mode,result){
      and setItem throws in private browsing. Neither should break the tool. */
   var hist=[];
   try{
-    var v=JSON.parse(localStorage.getItem("loveHistory")||"[]");
+    var v=storeGet("loveHistory", []);
     if(Array.isArray(v))hist=v;
   }catch(e){ hist=[] }
   hist.unshift({n1:n1,n2:n2,mode:mode,result:result,t:Date.now()});
   hist=hist.slice(0,20);
-  try{ localStorage.setItem("loveHistory",JSON.stringify(hist)) }
+  try{ storeSet("loveHistory", hist) }
   catch(e){ /* nothing the user can act on; the result is still shown */ }
   renderHistory();
 }
@@ -388,7 +388,7 @@ document.addEventListener("keydown",function(e){
   else if(e.key==="d"||e.key==="D"){generateCard()}
 });
 function renderHistory(){
-  var hist=(function(){try{var v=JSON.parse(localStorage.getItem("loveHistory")||"[]");return Array.isArray(v)?v:[]}catch(e){return []}})();
+  var hist=(function(){try{var v=storeGet("loveHistory", []);return Array.isArray(v)?v:[]}catch(e){return []}})();
   var box=document.getElementById("historyBox");
   if(!hist.length){box.style.display="none";return;}
   box.style.display="block";

@@ -168,14 +168,14 @@ function calcHRA(){var e=document.getElementById("hraCalc");e.style.display=e.st
 function doHRA(){var basic=+document.getElementById("hraBasic").value*12;var received=+document.getElementById("hraReceived").value*12;var rent=+document.getElementById("hraRent").value*12;var metro=document.getElementById("hraMetro").value==="yes"?0.5:0.4;var a=received;var b=metro*basic;var c=rent-0.1*basic;var exempt=Math.max(0,Math.min(a,b,c));document.getElementById("dhra").value=Math.round(exempt);document.getElementById("hraResult").textContent="HRA Exemption: "+fmt(exempt)+" (Min of: "+fmt(a)+", "+fmt(b)+", "+fmt(Math.max(0,c))+")";save()}
 
 var FIELDS=["income","otherInc","age","d80c","d80dSelf","d80dParents","d80ccd","d80tta","d24b","d80e","d80g","dhra","dother","hraBasic","hraReceived","hraRent","hraMetro"];
-function save(){try{var o={};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});localStorage.setItem("taxCalc",JSON.stringify(o))}catch(e){}}
-function load(){try{var o=JSON.parse(localStorage.getItem("taxCalc")||"{}");FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]})}catch(e){}}
+function save(){try{var o={};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});storeSet("taxCalc", o)}catch(e){}}
+function load(){try{var o=storeGet("taxCalc", {});FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]})}catch(e){}}
 
 var lastSummary="";
 function calc(){
   var salary=+document.getElementById("income").value;
   var other=+document.getElementById("otherInc").value||0;
-  if(!salary&&!other)return alert("Enter your income");
+  if(!salary&&!other)return notify("Enter your income", 'warn');
   var gross=salary+other;
   var age=document.getElementById("age").value;
   var d80c=Math.min(+document.getElementById("d80c").value||0,150000);

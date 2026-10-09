@@ -219,7 +219,7 @@ var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var HOURS=[];for(var h=6;h<=22;h++)HOURS.push(h);
 var COLORS=['#6366f1','#f44336','#4caf50','#ff9800','#9c27b0','#00bcd4','#e91e63','#8bc34a','#ff5722','#3f51b5','#009688','#ffc107'];
 var grid={},selectedCells=[],isDragging=false,colorIdx=0,subjectColors={};
-var subjects=JSON.parse(localStorage.getItem('tt_subjects')||'[]');
+var subjects=storeGet('tt_subjects', []);
 
 function timeLabel(h){return(h>12?h-12:h===0?12:h)+(h>=12?' PM':' AM')}
 
@@ -239,12 +239,12 @@ function addSubject(){
   var name=document.getElementById('newSubName').value.trim();
   var hrs=parseFloat(document.getElementById('newSubHrs').value)||0;
   var color=document.getElementById('newSubColor').value;
-  if(!name){alert('Enter subject name');return}
+  if(!name){notify('Enter subject name', 'warn');return}
   var exists=subjects.find(function(s){return s.name.toLowerCase()===name.toLowerCase()});
   if(exists){exists.targetHrs=hrs;exists.color=color}
   else{subjects.push({name:name,targetHrs:hrs,color:color})}
   subjectColors[name]=color;
-  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
+  storeSet('tt_subjects', subjects);
   document.getElementById('newSubName').value='';
   document.getElementById('newSubHrs').value='';
   renderSubjectsList();
@@ -252,7 +252,7 @@ function addSubject(){
 
 function deleteSubject(i){
   subjects.splice(i,1);
-  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
+  storeSet('tt_subjects', subjects);
   renderSubjectsList();
 }
 
@@ -403,11 +403,11 @@ function clearAll(){if(confirm('Clear entire timetable?')){grid={};subjectColors
 
 /* Autosave */
 function autoSave(){
-  localStorage.setItem('tt_autosave',JSON.stringify({grid:grid,subjectColors:subjectColors}));
+  storeSet('tt_autosave', {grid:grid,subjectColors:subjectColors});
 }
 function autoLoad(){
   try{
-    var d=JSON.parse(localStorage.getItem('tt_autosave'));
+    var d=storeGet('tt_autosave', null);
     if(d&&d.grid){grid=d.grid;subjectColors=d.subjectColors||{}}
   }catch(e){}
 }
@@ -415,27 +415,27 @@ function autoLoad(){
 /* Save/Load named */
 function saveTT(){
   var name=document.getElementById('ttName').value.trim();
-  if(!name){alert('Enter a name');return}
-  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  if(!name){notify('Enter a name', 'warn');return}
+  var saved=storeGet('tt_saved', {});
   saved[name]={grid:grid,subjectColors:subjectColors,subjects:subjects};
-  localStorage.setItem('tt_saved',JSON.stringify(saved));
+  storeSet('tt_saved', saved);
   loadList();
   document.getElementById('ttName').value='';
 }
 function loadList(){
   var sel=document.getElementById('ttList');
-  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  var saved=storeGet('tt_saved', {});
   sel.innerHTML='<option value="">— Load Saved —</option>';
   Object.keys(saved).forEach(function(n){sel.innerHTML+='<option value="'+n+'">'+n+'</option>'});
 }
 function loadSaved(){
   var name=document.getElementById('ttList').value;
   if(!name)return;
-  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  var saved=storeGet('tt_saved', {});
   if(saved[name]){
     grid=saved[name].grid||{};
     subjectColors=saved[name].subjectColors||{};
-    if(saved[name].subjects){subjects=saved[name].subjects;localStorage.setItem('tt_subjects',JSON.stringify(subjects))}
+    if(saved[name].subjects){subjects=saved[name].subjects;storeSet('tt_subjects', subjects)}
     buildTable();
   }
 }
@@ -443,9 +443,9 @@ function deleteSaved(){
   var name=document.getElementById('ttList').value;
   if(!name)return;
   if(!confirm('Delete "'+name+'"?'))return;
-  var saved=JSON.parse(localStorage.getItem('tt_saved')||'{}');
+  var saved=storeGet('tt_saved', {});
   delete saved[name];
-  localStorage.setItem('tt_saved',JSON.stringify(saved));
+  storeSet('tt_saved', saved);
   loadList();
 }
 
@@ -461,9 +461,9 @@ function importJSON(e){
   r.onload=function(){
     try{
       var d=JSON.parse(r.result);
-      if(d.grid){grid=d.grid;subjectColors=d.subjectColors||{};if(d.subjects){subjects=d.subjects;localStorage.setItem('tt_subjects',JSON.stringify(subjects))}buildTable();alert('Timetable imported!')}
-      else{alert('Invalid file')}
-    }catch(err){alert('Invalid JSON file')}
+      if(d.grid){grid=d.grid;subjectColors=d.subjectColors||{};if(d.subjects){subjects=d.subjects;storeSet('tt_subjects', subjects)}buildTable();notify('Timetable imported!', 'ok')}
+      else{notify('Invalid file', 'warn')}
+    }catch(err){notify('Invalid JSON file', 'warn')}
   };
   r.readAsText(f);e.target.value='';
 }
@@ -540,14 +540,14 @@ function loadTemplate(name){
       subjects.push({name:s,targetHrs:0,color:subjectColors[s]});
     }
   });
-  localStorage.setItem('tt_subjects',JSON.stringify(subjects));
+  storeSet('tt_subjects', subjects);
   buildTable();
 }
 
 /* Auto-generate */
 function autoGenerate(){
   if(!subjects.length||!subjects.some(function(s){return s.targetHrs>0})){
-    alert('Add subjects with target hours in the Subjects tab first.');return;
+    notify('Add subjects with target hours in the Subjects tab first.', 'warn');return;
   }
   if(Object.keys(grid).length>0&&!confirm('This will replace the current timetable. Continue?'))return;
   grid={};subjectColors={};
@@ -567,7 +567,7 @@ function autoGenerate(){
       pool.push({name:s.name,color:s.color,remaining:s.targetHrs});
     }
   });
-  if(!pool.length){alert('No subjects have target hours set.');return}
+  if(!pool.length){notify('No subjects have target hours set.', 'warn');return}
 
   /* For each day, fill slots */
   dayList.forEach(function(day){

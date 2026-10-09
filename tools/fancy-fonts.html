@@ -180,10 +180,10 @@ function convert(text,def){
 }
 
 // ---- Favourites & copy counts ----
-function getFavs(){try{return JSON.parse(localStorage.getItem("ffFavs")||"[]");}catch(e){return [];}}
-function setFavs(f){localStorage.setItem("ffFavs",JSON.stringify(f));}
-function getCounts(){try{return JSON.parse(localStorage.getItem("ffCounts")||"{}");}catch(e){return {};}}
-function setCounts(c){localStorage.setItem("ffCounts",JSON.stringify(c));}
+function getFavs(){try{return storeGet("ffFavs", []);}catch(e){return [];}}
+function setFavs(f){storeSet("ffFavs", f);}
+function getCounts(){try{return storeGet("ffCounts", {});}catch(e){return {};}}
+function setCounts(c){storeSet("ffCounts", c);}
 var favOnly=false;
 
 function toggleFav(name){
@@ -197,7 +197,7 @@ function toggleFavOnly(){
   generate();
 }
 function copyStyle(name,text,btn){
-  navigator.clipboard.writeText(text);
+  copyNow(text);
   var counts=getCounts();counts[name]=(counts[name]||0)+1;setCounts(counts);
   btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy";},1000);
   var badge=document.getElementById("cnt-"+cssId(name));
@@ -282,7 +282,7 @@ function buildDeco(){
   document.getElementById("decoOut").textContent=out;
 }
 function copyDeco(btn){
-  navigator.clipboard.writeText(document.getElementById("decoOut").textContent);
+  copyNow(document.getElementById("decoOut").textContent);
   btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy";},1000);
 }
 
@@ -295,7 +295,7 @@ function bioCount(){
   el.style.color=len>150?"#ec4899":"var(--text2)";
 }
 function copyBio(btn){
-  navigator.clipboard.writeText(document.getElementById("bioBuilder").value);
+  copyNow(document.getElementById("bioBuilder").value);
   btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy Bio";},1000);
 }
 

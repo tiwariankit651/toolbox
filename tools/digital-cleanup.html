@@ -713,8 +713,8 @@ function renderRegionsOnImage(dataUrl){
   });
 }
 function applyToAllBatch(){
-  if(batch.length<=1){alert("Load more than one image to use batch mode.");return;}
-  if(!regions.length){alert("Redact at least one region on the current image first.");return;}
+  if(batch.length<=1){notify("Load more than one image to use batch mode.", 'info');return;}
+  if(!regions.length){notify("Redact at least one region on the current image first.", 'warn');return;}
   document.getElementById("batchInfo").textContent="Applied "+regions.length+" region(s) to all "+batch.length+" images. Use Download all as ZIP.";
 }
 function canvasToBlobFmt(c){
@@ -727,9 +727,9 @@ function canvasToBlobFmt(c){
   });
 }
 function downloadAllZip(){
-  if(typeof JSZip==="undefined"){alert("ZIP library failed to load. Check your connection.");return;}
-  if(batch.length<=1){alert("Load more than one image for batch ZIP download.");return;}
-  if(!regions.length){alert("Redact at least one region on the current image first — it will be applied to all.");return;}
+  if(typeof JSZip==="undefined"){notify("ZIP library failed to load. Check your connection.", 'warn');return;}
+  if(batch.length<=1){notify("Load more than one image for batch ZIP download.", 'info');return;}
+  if(!regions.length){notify("Redact at least one region on the current image first — it will be applied to all.", 'warn');return;}
   var zip=new JSZip();
   var ext=currentExt();
   var chain=Promise.resolve();

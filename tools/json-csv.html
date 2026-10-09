@@ -321,7 +321,7 @@ function convert(){
     $("output").value=out;$("output").style.display="block";ok("Converted successfully!");autosave();
   }catch(e){err(e.message)}
 }
-function copyResult(){var o=$("output");if(!o.value){err("Nothing to copy. Convert first.");return}navigator.clipboard.writeText(o.value);ok("Copied to clipboard!")}
+function copyResult(){var o=$("output");if(!o.value){err("Nothing to copy. Convert first.");return}copyNow(o.value);ok("Copied to clipboard!")}
 function download(){
   var o=$("output");if(!o.value){err("Nothing to download. Convert first.");return}
   var ext,mime;
@@ -337,8 +337,8 @@ var dz=$("dropZone");
 dz.addEventListener("dragover",function(e){e.preventDefault();dz.style.background="rgba(99,102,241,.12)"});
 dz.addEventListener("dragleave",function(){dz.style.background=""});
 dz.addEventListener("drop",function(e){e.preventDefault();dz.style.background="";if(e.dataTransfer.files.length)readFile(e.dataTransfer.files[0])});
-function autosave(){localStorage.setItem(STORE,JSON.stringify({input:$("input").value,mode:mode}))}
-function restore(){var d=localStorage.getItem(STORE);if(d){try{var p=JSON.parse(d);if(p.input)$("input").value=p.input;if(p.mode)switchTab(p.mode)}catch(e){}}}
+function autosave(){storeSet(STORE, {input:$("input").value,mode:mode})}
+function restore(){var d=storeGetRaw(STORE, null);if(d){try{var p=JSON.parse(d);if(p.input)$("input").value=p.input;if(p.mode)switchTab(p.mode)}catch(e){}}}
 restore();
 </script>
 </body>

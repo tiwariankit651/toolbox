@@ -275,11 +275,11 @@ var timerInterval=null;
 var showArchive=false;
 
 function migrate(){
-  var d=JSON.parse(localStorage.getItem(STORAGE)||'null');
+  var d=storeGet(STORAGE, null);
   if(d&&d.boards){d.boards.forEach(normalizeBoard);return d}
   // migrate from old v1 key
-  var old=JSON.parse(localStorage.getItem('kanban_data')||'null');
-  if(old&&old.boards){old.boards.forEach(normalizeBoard);old.archive=old.archive||[];localStorage.setItem(STORAGE,JSON.stringify(old));return old}
+  var old=storeGet('kanban_data', null);
+  if(old&&old.boards){old.boards.forEach(normalizeBoard);old.archive=old.archive||[];storeSet(STORAGE, old);return old}
   var fresh={boards:[{name:'My Board',columns:makeColumns(TEMPLATES.simple)}],active:0,archive:[]};
   return fresh;
 }
@@ -299,7 +299,7 @@ function normalizeBoard(b){
   });
 }
 
-function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
+function save(){storeSet(STORAGE, data)}
 function board(){return data.boards[data.active]}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -325,7 +325,7 @@ function newBoard(){
 }
 function renameBoard(){var n=prompt('Rename board:',board().name);if(!n)return;board().name=n.trim();save();renderBoard()}
 function deleteBoard(){
-  if(data.boards.length<2){alert('Cannot delete the only board');return}
+  if(data.boards.length<2){notify('Cannot delete the only board', 'warn');return}
   if(!confirm('Delete board "'+board().name+'"?'))return;
   data.boards.splice(data.active,1);data.active=0;save();renderBoard();
 }
@@ -530,7 +530,7 @@ function pickColor(el){
 }
 function saveCard(){
   var title=document.getElementById('cardTitleInput').value.trim();
-  if(!title){alert('Title is required');return}
+  if(!title){notify('Title is required', 'info');return}
   var tags=document.getElementById('cardTagsInput').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
   var base={title:title,desc:document.getElementById('cardDescInput').value.trim(),priority:document.getElementById('cardPriorityInput').value,due:document.getElementById('cardDueInput').value,color:selectedColor,assignee:document.getElementById('cardAssigneeInput').value.trim(),tags:tags,checklist:modalChecklist.map(function(s){return {text:s.text,done:s.done}})};
   if(editingCard!==null){
@@ -624,7 +624,7 @@ function download(name,text,type){var b=new Blob([text],{type:type});var a=docum
 function exportBoard(){download(board().name.replace(/\s+/g,'_')+'.json',JSON.stringify(board(),null,2),'application/json')}
 function importBoard(e){
   var f=e.target.files[0];if(!f)return;var r=new FileReader();
-  r.onload=function(){try{var b=JSON.parse(r.result);if(b&&b.columns){normalizeBoard(b);data.boards.push(b);data.active=data.boards.length-1;save();renderBoard();alert('Board imported.')}else alert('Invalid board file.')}catch(err){alert('Could not read file.')}};
+  r.onload=function(){try{var b=JSON.parse(r.result);if(b&&b.columns){normalizeBoard(b);data.boards.push(b);data.active=data.boards.length-1;save();renderBoard();notify('Board imported.', 'ok')}else notify('Invalid board file.', 'warn')}catch(err){notify('Could not read file.', 'warn')}};
   r.readAsText(f);e.target.value='';
 }
 function exportMarkdown(){

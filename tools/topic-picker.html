@@ -433,7 +433,7 @@ function getPool(){
 function pick(){
   var pool=getPool();
   var n=Math.max(1,Math.min(20,+document.getElementById('pickN').value||1));
-  if(!pool.length){alert('No topics available. Reset exclusions, change filters, or add a custom list.');return;}
+  if(!pool.length){notify('No topics available. Reset exclusions, change filters, or add a custom list.', 'warn');return;}
   var chosen=[];var copy=pool.slice();
   for(var i=0;i<n&&copy.length;i++){
     var idx=Math.floor(Math.random()*copy.length);
@@ -449,15 +449,15 @@ function pick(){
 }
 function clearExclusions(){excluded=[];document.getElementById('poolInfo').textContent='Exclusions reset.';}
 function copyResult(){
-  if(!lastPicked.length){alert('Pick a topic first.');return;}
+  if(!lastPicked.length){notify('Pick a topic first.', 'warn');return;}
   var text=lastPicked.join('\n');
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){alert('Copied!');},function(){prompt('Copy:',text);});
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){notify('Copied!', 'ok');},function(){prompt('Copy:',text);});
   else prompt('Copy:',text);
 }
 
 /* ---- practice mode ---- */
 function practiceThis(){
-  if(!lastPicked.length){alert('Pick a topic first.');return;}
+  if(!lastPicked.length){notify('Pick a topic first.', 'warn');return;}
   practiceTopic=lastPicked[0];
   tpTab('practice',document.querySelector('#tpTabs button[data-t="practice"]'));
   updatePracticeTopic();
@@ -481,7 +481,7 @@ function cue(freq,count){
 }
 function fmtT(s){s=Math.max(0,s);return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);}
 function startPractice(){
-  if(!practiceTopic){var t=document.getElementById('practiceCustomTopic').value.trim();if(t){practiceTopic=t;updatePracticeTopic();}else{alert('Set a topic first.');return;}}
+  if(!practiceTopic){var t=document.getElementById('practiceCustomTopic').value.trim();if(t){practiceTopic=t;updatePracticeTopic();}else{notify('Set a topic first.', 'warn');return;}}
   initPracAudio();
   clearInterval(pracTimer);
   var prep=Math.max(0,+document.getElementById('prepSec').value||0);
@@ -510,10 +510,10 @@ function startPractice(){
 function stopPractice(){clearInterval(pracTimer);pracTimer=null;document.getElementById('practicePhase').textContent='⏹ Stopped';document.getElementById('practicePhase').className='practice-phase phase-done';}
 
 /* ---- tpHistory ---- */
-function loadHistory(){try{tpHistory=JSON.parse(localStorage.getItem('tp_history')||'[]');}catch(e){tpHistory=[];}}
-function saveHistory(){localStorage.setItem('tp_history',JSON.stringify(tpHistory));}
+function loadHistory(){try{tpHistory=storeGet('tp_history', []);}catch(e){tpHistory=[];}}
+function saveHistory(){storeSet('tp_history', tpHistory);}
 function logHistory(topic){tpHistory.unshift({id:Date.now(),topic:topic,date:new Date().toLocaleString(),rating:0,note:''});saveHistory();renderHistory();}
-function saveToHistory(){if(!lastPicked.length){alert('Pick a topic first.');return;}logHistory(lastPicked[0]);tpTab('tpHistory',document.querySelector('#tpTabs button[data-t="tpHistory"]'));}
+function saveToHistory(){if(!lastPicked.length){notify('Pick a topic first.', 'warn');return;}logHistory(lastPicked[0]);tpTab('tpHistory',document.querySelector('#tpTabs button[data-t="tpHistory"]'));}
 function rateHistory(id,r){var h=tpHistory.find(function(x){return x.id===id;});if(h){h.rating=r;saveHistory();renderHistory();}}
 function noteHistory(id,val){var h=tpHistory.find(function(x){return x.id===id;});if(h){h.note=val;saveHistory();}}
 function removeHistory(id){tpHistory=tpHistory.filter(function(x){return x.id!==id;});saveHistory();renderHistory();}
@@ -536,7 +536,7 @@ function renderCustomWorking(){
 }
 function loadFromPaste(){
   var lines=document.getElementById('pasteBox').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
-  if(!lines.length){alert('Paste some topics first (one per line).');return;}
+  if(!lines.length){notify('Paste some topics first (one per line).', 'warn');return;}
   customTopics=customTopics.concat(lines);
   document.getElementById('pasteBox').value='';
   renderCustomWorking();
@@ -544,25 +544,25 @@ function loadFromPaste(){
 function addSingle(){var t=document.getElementById('singleTopic').value.trim();if(!t)return;customTopics.push(t);document.getElementById('singleTopic').value='';renderCustomWorking();}
 function removeCustom(i){customTopics.splice(i,1);renderCustomWorking();}
 function clearCustom(){customTopics=[];renderCustomWorking();}
-function getSavedLists(){try{return JSON.parse(localStorage.getItem('tp_lists')||'{}');}catch(e){return{};}}
-function setSavedLists(o){localStorage.setItem('tp_lists',JSON.stringify(o));}
+function getSavedLists(){try{return storeGet('tp_lists', {});}catch(e){return{};}}
+function setSavedLists(o){storeSet('tp_lists', o);}
 function fillSavedListSelect(){
   var lists=getSavedLists();var sel=document.getElementById('savedListSelect');
   sel.innerHTML='<option value="">Load saved list…</option>'+Object.keys(lists).map(function(n){return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+' ('+lists[n].length+')</option>';}).join('');
 }
 function saveCustom(){
   var name=document.getElementById('listName').value.trim();
-  if(!name){alert('Give the list a name.');return;}
-  if(!customTopics.length){alert('Add some topics first.');return;}
+  if(!name){notify('Give the list a name.', 'info');return;}
+  if(!customTopics.length){notify('Add some topics first.', 'warn');return;}
   var lists=getSavedLists();lists[name]=customTopics.slice();setSavedLists(lists);fillSavedListSelect();
-  alert('Saved list "'+name+'".');
+  notify('Saved list "'+name+'".', 'ok');
 }
 function loadCustom(){
   var name=document.getElementById('savedListSelect').value;if(!name)return;
   var lists=getSavedLists();if(lists[name]){customTopics=lists[name].slice();document.getElementById('listName').value=name;renderCustomWorking();}
 }
 function deleteSavedList(){
-  var name=document.getElementById('savedListSelect').value;if(!name){alert('Select a saved list first.');return;}
+  var name=document.getElementById('savedListSelect').value;if(!name){notify('Select a saved list first.', 'warn');return;}
   if(!confirm('Delete saved list "'+name+'"?'))return;
   var lists=getSavedLists();delete lists[name];setSavedLists(lists);fillSavedListSelect();
 }
@@ -578,8 +578,8 @@ function importListsFile(ev){
       if(d.lists){var lists=getSavedLists();for(var k in d.lists){lists[k]=d.lists[k];}setSavedLists(lists);}
       if(Array.isArray(d.current))customTopics=d.current.slice();
       else if(Array.isArray(d)){customTopics=d.slice();}
-      fillSavedListSelect();renderCustomWorking();alert('Imported lists.');
-    }catch(e){alert('Invalid JSON file.');}
+      fillSavedListSelect();renderCustomWorking();notify('Imported lists.', 'ok');
+    }catch(e){notify('Invalid JSON file.', 'warn');}
     ev.target.value='';
   };
   r.readAsText(f);
@@ -589,7 +589,7 @@ function importListsFile(ev){
 function downloadTxt(){
   var pool=getPool();
   var lines=lastPicked.length?lastPicked:(customTopics.length?customTopics:pool.slice(0,50));
-  if(!lines.length){alert('Nothing to download.');return;}
+  if(!lines.length){notify('Nothing to download.', 'info');return;}
   var blob=new Blob([lines.join('\n')],{type:'text/plain'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='topics.txt';a.click();
 }
@@ -614,7 +614,7 @@ function tpTab(t,btn){
 /* ---- init ---- */
 loadHistory();
 // migrate old tp_custom (array of {name,category,weight}) into a working list
-(function(){try{var old=JSON.parse(localStorage.getItem('tp_custom')||'null');if(old&&old.length&&!customTopics.length){customTopics=old.map(function(x){return x.name||x;});}}catch(e){}})();
+(function(){try{var old=storeGet('tp_custom', null);if(old&&old.length&&!customTopics.length){customTopics=old.map(function(x){return x.name||x;});}}catch(e){}})();
 fillCategorySelect();
 fillSavedListSelect();
 renderCustomWorking();

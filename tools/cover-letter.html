@@ -483,8 +483,8 @@ function printLetter(){
 /* ---- drafts ---- */
 var FIELDS=['name','jobtitle','email','phone','address','company','companyAddr','position','hiring','referral','skills','exp','why','structure','tone','length','industry','jd'];
 function collect(){var o={tpl:currentTpl};FIELDS.forEach(function(f){o[f]=val(f)});return o}
-function getDrafts(){try{return JSON.parse(localStorage.getItem(DKEY)||'[]')}catch(e){return []}}
-function setDrafts(d){localStorage.setItem(DKEY,JSON.stringify(d))}
+function getDrafts(){try{return storeGet(DKEY, [])}catch(e){return []}}
+function setDrafts(d){storeSet(DKEY, d)}
 function saveDraft(){
   var nm=val('draftName')||val('company')||('Draft '+(getDrafts().length+1));
   var drafts=getDrafts();

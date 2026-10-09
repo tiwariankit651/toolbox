@@ -331,14 +331,14 @@ function downloadOutput(){
 }
 
 // ---------- Autosave + history ----------
-function autosave(){localStorage.setItem('stt_autosave',document.getElementById('output').value)}
-function getHistory(){return JSON.parse(localStorage.getItem('stt_history')||'[]')}
+function autosave(){storeSetRaw('stt_autosave', document.getElementById('output').value)}
+function getHistory(){return storeGet('stt_history', [])}
 function addHistory(text){
   let h=getHistory();
   h=h.filter(x=>x!==text);
   h.unshift(text);
   h=h.slice(0,8);
-  localStorage.setItem('stt_history',JSON.stringify(h));
+  storeSet('stt_history', h);
   renderHistory();
 }
 function loadHistory(i){
@@ -362,7 +362,7 @@ function renderHistory(){
 
 // init
 (function(){
-  const saved=localStorage.getItem('stt_autosave');
+  const saved=storeGetRaw('stt_autosave', null);
   if(saved){document.getElementById('output').value=saved;baseText=saved}
   updateCounts();
   renderHistory();

@@ -228,7 +228,7 @@ function gen(){
 }
 
 function copyCSS(btn){
-  navigator.clipboard.writeText(document.getElementById("code").textContent);
+  copyNow(document.getElementById("code").textContent);
   btn.textContent="Copied!";setTimeout(function(){btn.textContent="📋 Copy CSS"},1000);
 }
 
@@ -275,15 +275,15 @@ function randomGradient(){
 }
 
 function saveGradient(){
-  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  var saved=storeGet("savedGrads", []);
   saved.unshift(document.getElementById("code").textContent);
   if(saved.length>20)saved.length=20;
-  localStorage.setItem("savedGrads",JSON.stringify(saved));
+  storeSet("savedGrads", saved);
   renderSaved();
 }
 
 function renderSaved(){
-  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  var saved=storeGet("savedGrads", []);
   if(!saved.length){document.getElementById("saved").style.display="none";return}
   document.getElementById("saved").style.display="block";
   document.getElementById("savedList").innerHTML=saved.map(function(s,i){
@@ -293,7 +293,7 @@ function renderSaved(){
 }
 
 function loadSaved(i){
-  var saved=JSON.parse(localStorage.getItem("savedGrads")||"[]");
+  var saved=storeGet("savedGrads", []);
   document.getElementById("preview").style.background=saved[i].replace("background: ","").replace(";","");
   document.getElementById("code").textContent=saved[i];
 }
@@ -319,7 +319,7 @@ function copyAs(fmt){
   }
   document.getElementById("altCode").style.display="block";
   document.getElementById("altCode").textContent=out;
-  navigator.clipboard.writeText(out);
+  copyNow(out);
 }
 
 // Init presets

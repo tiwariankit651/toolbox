@@ -180,11 +180,11 @@ var saveTimeout=null;
 /* --- Data Layer --- */
 function loadData(){
   try{
-    var raw=localStorage.getItem(STORAGE_KEY);
+    var raw=storeGetRaw(STORAGE_KEY, null);
     if(raw){var d=JSON.parse(raw);if(d&&d.version&&Array.isArray(d.notes))return d;}
   }catch(e){}
   // Migrate from old format
-  var old=JSON.parse(localStorage.getItem('multiNotes')||'null');
+  var old=storeGet('multiNotes', null);
   if(old&&Array.isArray(old)&&old.length){
     var migrated=old.map(function(n,i){return{id:Date.now()+i,title:n.title||'Untitled',content:n.content||'',created:n.date||Date.now(),modified:n.date||Date.now(),pinned:false,label:'',checklist:false};});
     var data={version:2,notes:migrated};
@@ -196,7 +196,7 @@ function loadData(){
 }
 
 function saveData(data){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  storeSet(STORAGE_KEY, data);
 }
 
 var data=loadData();
@@ -315,7 +315,7 @@ window.addNote=addNote;
 /* --- Delete Note --- */
 function deleteNote(){
   if(!activeId)return;
-  if(data.notes.length<=1){alert('Cannot delete the last note.');return;}
+  if(data.notes.length<=1){notify('Cannot delete the last note.', 'warn');return;}
   var note=getNote(activeId);
   if(!confirm('Delete "'+note.title+'"?'))return;
   data.notes=data.notes.filter(function(n){return n.id!==activeId;});
@@ -521,7 +521,7 @@ function handleImport(e){
       renderList();
       showToast('Imported '+imported.notes.length+' notes!');
     }catch(err){
-      alert('Import failed: '+err.message);
+      notify('Import failed: '+err.message, 'warn');
     }
   };
   reader.readAsText(file);
