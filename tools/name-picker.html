@@ -29,6 +29,18 @@
       <textarea id="names" rows="6" oninput="updateCount()" placeholder="Enter names, one per line or comma separated:&#10;Rahul&#10;Priya&#10;Amit&#10;Sneha&#10;Vikram"></textarea>
       <div class="info" id="nameCount"></div>
 
+      <div class="row">
+        <label>Preset:</label>
+        <select id="npPreset" onchange="npApplyPreset()" style="flex:2">
+          <option value="single">Pick one name</option>
+          <option value="pair">Pick a pair</option>
+          <option value="group">Pick a group of 5</option>
+          <option value="twoTeams">Split into 2 teams</option>
+          <option value="fourTeams">Split into 4 teams</option>
+          <option value="raffle">Raffle (weighted)</option>
+          <option value="elimination">Elimination round</option>
+        </select>
+      </div>
       <div class="row" style="flex-wrap:wrap">
         <label>Mode:</label>
         <select id="mode" onchange="modeChanged()">
@@ -76,11 +88,14 @@
       <div class="tool-section" style="margin-top:1.2rem;background:var(--card)">
         <h3>💾 Saved Lists & History</h3>
         <div class="row" style="flex-wrap:wrap">
-          <input type="text" id="listName" placeholder="List name (e.g. Class 10A)">
+          <input type="text" id="listName" placeholder="List name (e.g. Class 10A)" oninput="npNameFeedback()">
           <button class="btn btn-outline" onclick="saveList()">Save List</button>
           <button class="btn btn-outline" onclick="exportLists()">Export JSON</button>
+        <button class="btn btn-outline" onclick="npCopyResult()">📋 Copy result</button>
+        <button class="btn btn-outline" onclick="exportAllLists()">🗜️ Export all (ZIP)</button>
           <label class="btn btn-outline" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept="application/json" onchange="importLists(event)" style="display:none"></label>
         </div>
+      <p class="info" id="npNameNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
         <div id="savedLists" style="margin-top:.5rem"></div>
         <div id="history" style="margin-top:1rem"></div>
         <p class="info">🔒 Picks use <code>crypto.getRandomValues()</code> for cryptographically fair, unbiased randomness — important so no name is secretly favoured. Lists and history are stored only in your browser (localStorage).</p>
@@ -142,6 +157,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 /* ---------- Randomness (crypto) ---------- */
@@ -328,10 +344,146 @@ function renderHistory(){
   document.getElementById("history").innerHTML='<h4>History</h4>'+hist.slice(0,15).map(function(h,i){return '<div style="padding:.15rem .5rem;color:var(--text2);font-size:.82rem">'+(i+1)+'. '+esc(h.v)+' <span style="opacity:.6">· '+esc(h.t)+'</span></div>';}).join("")+'<button class="btn btn-outline" style="font-size:.75rem;padding:.3rem .8rem" onclick="clearHistory()">Clear History</button>';
 }
 function clearHistory(){hist=[];storeSetRaw(HKEY, "[]");renderHistory();}
+/* Picking presets. The useful combinations differ a lot: a classroom pick is one
+   name with no repeats, a team split is several groups, a raffle wants weights. */
+/* Values must exist in their controls: mode offers single/multiN/multiRep/
+   weighted/elimination, teamMode offers count/size, and teamBalance is a
+   checkbox. An unlisted value silently blanks a select. */
+var NP_PRESETS={
+  single:    {mode:'single'},
+  pair:      {mode:'multiN', pickCount:'2'},
+  group:     {mode:'multiN', pickCount:'5'},
+  twoTeams:  {mode:'multiN', teamMode:'count', teamCount:'2', teamBalance:true},
+  fourTeams: {mode:'multiN', teamMode:'count', teamCount:'4', teamBalance:true},
+  raffle:    {mode:'weighted'},
+  elimination:{mode:'elimination'}
+};
+function npApplyPreset(){
+  var k=document.getElementById('npPreset').value;
+  var p=NP_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=(p[id]==='on'||p[id]===true);}
+    else{
+      if(el.tagName==='SELECT'){
+        /* an unlisted value silently blanks a select */
+        var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(p[id])});
+        if(!okv)return;
+      }
+      el.value=p[id];
+    }
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  storeSet('name-picker-preset-v1',{preset:k},true);
+  notify('Applied the '+k.replace(/([A-Z])/g,' $1').toLowerCase()+' preset.','ok');
+}
+function npRestorePreset(){
+  var d=storeGet('name-picker-preset-v1',null);
+  if(!d||!d.preset)return;
+  var sel=document.getElementById('npPreset');
+  if(sel&&Array.prototype.some.call(sel.options,function(o){return o.value===d.preset}))
+    sel.value=d.preset;
+}
+
+/* Copy the result. A teacher reads the picked names out, then pastes them into a
+   register or a chat; the wheel image is no use for that. */
+function npCopyResult(){
+  var el=document.getElementById('result');
+  var t=el?(el.innerText||'').trim():'';
+  if(!t){notify('Pick someone first.','warn');return}
+  copyNow(t,'Result copied.');
+}
+
+/* Export every saved list plus the pick history. */
+async function exportAllLists(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  var lists=getLists();
+  var names=Object.keys(lists);
+  var current=getNames();
+  if(!names.length&&!current.length){
+    notify('Nothing to export yet. Add some names or save a list first.','warn');
+    return;
+  }
+  try{
+    var zip=new JSZip();
+    var safe=function(s){return String(s).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-')||'list'};
+    var count=0;
+    if(current.length){
+      zip.file('current-list.txt',current.join('\n'));
+      count++;
+    }
+    names.forEach(function(n){
+      var arr=lists[n]||[];
+      if(!arr.length)return;
+      zip.file('lists/'+safe(n)+'.txt',arr.join('\n'));
+      count++;
+    });
+    var hist=storeGetRaw(HKEY,null);
+    if(typeof hist==='string'){try{hist=JSON.parse(hist)}catch(e){hist=[]}}
+    if(!Array.isArray(hist))hist=[];
+    if(hist&&hist.length){
+      var rows=[['When','Picked']];
+      hist.slice(0,200).forEach(function(h){
+        /* history entries are {v, t} with t already a display string */
+        rows.push([h.t||'', Array.isArray(h.v)?h.v.join(' | '):String(h.v||'')]);
+      });
+      zip.file('pick-history.csv','\ufeff'+rows.map(function(r){
+        return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',');
+      }).join('\n'));
+    }
+    zip.file('README.txt',
+      'Name lists exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'One .txt per saved list, one name per line, ready to paste back in.\n'+
+      (hist&&hist.length?'pick-history.csv holds your recent picks.\n':'')+
+      '\nLists included: '+count+'\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'name-lists.zip');
+    notify(count+' list'+(count>1?'s':'')+' exported as ZIP.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function getLists(){return storeGet(LKEY, {});}
 function saveList(){
-  var name=document.getElementById("listName").value.trim();if(!name)return notify("Enter a list name.", 'warn');
-  var lists=getLists();lists[name]=getNames();storeSet(LKEY, lists);renderSaved();
+  var name=document.getElementById("listName").value.trim();
+  if(!name){notify("Enter a list name.", 'warn');return}
+  var names=getNames();
+  if(!names.length){notify("Add some names before saving.", 'warn');return}
+  var lists=getLists();
+  /* Saving over an existing list replaced it with no warning, and the previous
+     names were unrecoverable. */
+  var replacing=!!lists[name];
+  if(replacing&&!confirm('A list called "'+name+'" already exists ('+lists[name].length+
+                         ' names). Replace it?'))return;
+  lists[name]=names;
+  if(!storeSet(LKEY, lists))return;
+  renderSaved();
+  npNameFeedback();
+  notify(replacing?('Replaced "'+name+'" with '+names.length+' names.')
+                  :('Saved "'+name+'" with '+names.length+' names.'), 'ok');
+}
+
+/* Live feedback on the list name, so an overwrite is visible before the click. */
+function npNameFeedback(){
+  var inp=document.getElementById("listName");
+  var note=document.getElementById("npNameNote");
+  if(!inp||!note)return;
+  var v=inp.value.trim();
+  if(!v){note.style.display="none";note.textContent="";return}
+  var lists=getLists();
+  note.style.display="block";
+  if(lists[v]){
+    note.style.color="var(--warn)";
+    note.textContent='"'+v+'" already exists ('+lists[v].length+' names). Saving will replace it.';
+  }else{
+    note.style.color="var(--ok)";
+    note.textContent="Will save as a new list.";
+  }
 }
 function loadList(name){var lists=getLists();if(lists[name]){document.getElementById("names").value=lists[name].join("\n");updateCount();}}
 function deleteList(name){var lists=getLists();delete lists[name];storeSet(LKEY, lists);renderSaved();}
@@ -351,6 +503,8 @@ function importLists(ev){
 updateCount();renderHistory();renderSaved();drawWheel(getNames(),0);
 document.getElementById("names").addEventListener("input",function(){if(!spinning)drawWheel(getNames(),wheelAngle);});
 window.addEventListener("resize",function(){var cv=document.getElementById("confetti");if(cv.style.display==="block"){cv.width=innerWidth;cv.height=innerHeight;}});
-  </script>
+  
+npRestorePreset();
+</script>
 </body>
 </html>

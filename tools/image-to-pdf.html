@@ -71,6 +71,17 @@
       </div>
       <div class="thumb-grid" id="thumbGrid"></div>
 
+      <div class="row" style="margin-top:1.2rem">
+        <label>Preset:</label>
+        <select id="ipPreset" onchange="ipApplyPreset()" style="flex:2">
+          <option value="">Choose a preset...</option>
+          <option value="scan">Scanned documents (A4, small margin)</option>
+          <option value="photo">Photo album (landscape, no margin)</option>
+          <option value="print4x6">Print fill (crop to page)</option>
+          <option value="report">Report (wide margin, page numbers)</option>
+          <option value="small">Smallest file</option>
+        </select>
+      </div>
       <h3 style="margin-top:1.2rem;font-size:1rem">⚙️ Page Settings</h3>
       <div class="settings-grid">
         <div class="setting-item">
@@ -133,6 +144,7 @@
       </div>
 
       <button class="btn" onclick="convert()" id="goBtn" disabled style="margin-top:1rem;width:100%">Convert to PDF</button>
+        <button class="btn btn-outline" onclick="ipCopyOrder()">📋 Copy page order</button>
       <div id="result" class="preview-area"></div>
     </div>
     <div style="min-height:90px">
@@ -191,6 +203,85 @@ let rotations={}; // index -> degrees (0,90,180,270)
 const sizes={a4:[595.28,841.89],letter:[612,792],legal:[612,1008],a5:[419.53,595.28]};
 function mm2pt(mm){return mm*2.8346}
 function toggleCustom(){document.getElementById("customRow").style.display=document.getElementById("pageSize").value==="custom"?"flex":"none"}
+
+/* Page presets. The page size, orientation, fit and margin combination differs
+   completely between scanning documents, printing photos and making a contact
+   sheet, and picking four controls each time is the tedious part. */
+var IP_PRESETS={
+  scan:    {pageSize:'a4',     orientation:'portrait',  fitMode:'fit',  marginSize:'10', compressImages:true,  jpegQuality:'85', addPageNums:false},
+  photo:   {pageSize:'a4',     orientation:'landscape', fitMode:'fit',  marginSize:'0',  compressImages:false, jpegQuality:'95', addPageNums:false},
+  print4x6:{pageSize:'letter', orientation:'portrait',  fitMode:'fill', marginSize:'0',  compressImages:false, jpegQuality:'95', addPageNums:false},
+  report:  {pageSize:'a4',     orientation:'portrait',  fitMode:'fit',  marginSize:'20', compressImages:true,  jpegQuality:'80', addPageNums:true},
+  small:   {pageSize:'a4',     orientation:'portrait',  fitMode:'fit',  marginSize:'5',  compressImages:true,  jpegQuality:'60', addPageNums:false}
+};
+function ipApplyPreset(){
+  var k=document.getElementById('ipPreset').value;
+  var p=IP_PRESETS[k];
+  if(!p)return;
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!p[id]}
+    else{
+      if(el.tagName==='SELECT'){
+        /* an unlisted value silently blanks a select */
+        var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(p[id])});
+        if(!okv)return;
+      }
+      el.value=p[id];
+    }
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  ipSave();
+  if(typeof toggleCustom==='function')toggleCustom();
+  notify('Applied the '+k+' preset.','ok');
+}
+
+/* These settings get re-picked on every visit even though most people convert
+   the same kind of images each time. */
+var IP_KEY='image-to-pdf-settings-v1';
+var IP_FIELDS=['pageSize','orientation','fitMode','marginSize','compressImages',
+               'jpegQuality','addPageNums','cw','ch'];
+function ipSave(){
+  var d={};
+  IP_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(IP_KEY,d,true);
+}
+function ipRestore(){
+  var d=storeGet(IP_KEY,null);
+  if(!d)return;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+  });
+  if(typeof toggleCustom==='function')toggleCustom();
+}
+
+/* Copy the file list in order. People check the page order with a colleague
+   before converting, and the PDF itself cannot go on a clipboard. */
+function ipCopyOrder(){
+  if(!files.length){notify('Add some images first.','warn');return}
+  var L=['PDF PAGE ORDER ('+files.length+' image'+(files.length>1?'s':'')+')'];
+  files.forEach(function(f,i){
+    var rot=rotations[i]?('  rotated '+rotations[i]+'\u00b0'):'';
+    L.push((i+1)+'. '+f.name+'  '+formatSize(f.size)+rot);
+  });
+  var total=files.reduce(function(a,f){return a+f.size},0);
+  L.push('');
+  L.push('Total input size: '+formatSize(total));
+  copyNow(L.join('\n'),'Page order copied.');
+}
 
 function updateStats(){
   const bar=document.getElementById("statsBar");
@@ -420,6 +511,10 @@ async function convert(){
   document.getElementById("goBtn").disabled=false;
   document.getElementById("goBtn").textContent="Convert to PDF";
 }
-  </script>
+  
+ipRestore();
+IP_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',ipSave)});
+</script>
 </body>
 </html>

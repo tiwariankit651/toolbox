@@ -123,6 +123,9 @@
         <select id="filterTag" onchange="renderBoard()"><option value="">All Tags</option></select>
         <select id="filterDue" onchange="renderBoard()"><option value="">Any Due</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="week">Due This Week</option></select>
         <button onclick="exportBoard()">📤 JSON</button>
+        <button class="btn btn-outline" onclick="copyBoard()">📋 Copy board</button>
+        <button class="btn btn-outline" onclick="copyBoardMarkdown()">📝 Copy as Markdown</button>
+        <button class="btn btn-outline" onclick="exportAllBoards()">🗜️ Export all boards (ZIP)</button>
         <button onclick="document.getElementById('importFile').click()">📥 Import</button>
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importBoard(event)">
         <button onclick="exportMarkdown()">📝 Markdown</button>
@@ -257,6 +260,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var STORAGE='kanban_data_v2';
@@ -318,12 +322,141 @@ function renderBoardSelect(){
   s.innerHTML=data.boards.map(function(b,i){return '<option value="'+i+'"'+(i===data.active?' selected':'')+'>'+esc(b.name)+'</option>'}).join('');
 }
 function switchBoard(){data.active=+document.getElementById('boardSelect').value;showArchive=false;renderBoard()}
+/* Duplicate board names are allowed but make the picker ambiguous, so warn and
+   suggest a free one rather than silently creating a second "Sprint 1". */
+function kbUniqueName(base){
+  var names=data.boards.map(function(b){return (b.name||'').toLowerCase()});
+  if(names.indexOf(base.toLowerCase())<0)return base;
+  for(var n=2;n<100;n++){
+    var cand=base+' '+n;
+    if(names.indexOf(cand.toLowerCase())<0)return cand;
+  }
+  return base+' '+Date.now();
+}
+
+/* Copy the board as plain text. A kanban board gets shared in a standup or pasted
+   into a status update far more often than it gets exported as JSON. */
+function kbBoardAsText(b){
+  b=b||board();
+  if(!b)return null;
+  var L=['BOARD: '+(b.name||'Untitled')];
+  var total=0;
+  (b.columns||[]).forEach(function(col){
+    var cards=col.cards||[];
+    total+=cards.length;
+    L.push('');
+    L.push(col.name+' ('+cards.length+(col.wip?(' / wip '+col.wip):'')+')');
+    if(!cards.length){L.push('  (empty)');return}
+    cards.forEach(function(card){
+      var bits=[];
+      if(card.priority&&card.priority!=='none')bits.push(card.priority);
+      if(card.assignee)bits.push('@'+card.assignee);
+      if(card.due)bits.push('due '+card.due);
+      if(card.tags&&card.tags.length)bits.push(card.tags.map(function(t){return '#'+t}).join(' '));
+      var done=(card.checklist||[]).filter(function(x){return x.done}).length;
+      if(card.checklist&&card.checklist.length)bits.push(done+'/'+card.checklist.length+' subtasks');
+      L.push('  - '+card.title+(bits.length?('  ['+bits.join(', ')+']'):''));
+      if(card.desc)L.push('      '+String(card.desc).replace(/\s+/g,' ').slice(0,120));
+    });
+  });
+  L.push('');
+  L.push(total+' card'+(total===1?'':'s')+' across '+(b.columns||[]).length+' columns');
+  return L.join('\n');
+}
+
+function copyBoard(){
+  var t=kbBoardAsText();
+  if(!t){notify('Nothing to copy yet.','warn');return}
+  copyNow(t,'Board copied - paste it into a standup or status update.');
+}
+
+/* Markdown, for a GitHub issue or a wiki page. */
+function copyBoardMarkdown(){
+  var b=board();
+  if(!b){notify('Nothing to copy yet.','warn');return}
+  var L=['## '+(b.name||'Untitled')];
+  (b.columns||[]).forEach(function(col){
+    L.push('');
+    L.push('### '+col.name+' ('+(col.cards||[]).length+')');
+    (col.cards||[]).forEach(function(card){
+      var done=(card.checklist||[]).filter(function(x){return x.done}).length;
+      var all=(card.checklist||[]).length;
+      var box=all&&done===all?'x':' ';
+      var bits=[];
+      if(card.assignee)bits.push('@'+card.assignee);
+      if(card.due)bits.push('due '+card.due);
+      L.push('- ['+box+'] '+card.title+(bits.length?(' _('+bits.join(', ')+')_'):''));
+    });
+    if(!(col.cards||[]).length)L.push('- _empty_');
+  });
+  copyNow(L.join('\n'),'Board copied as Markdown.');
+}
+
+/* Export every board: text for reading, JSON for re-importing, CSV for a
+   spreadsheet. People keep several boards and backing them up one at a time is
+   the tedious part. */
+async function exportAllBoards(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  if(!data.boards||!data.boards.length){notify('No boards to export.','warn');return}
+  try{
+    var zip=new JSZip();
+    var safe=function(s){return String(s).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-')||'board'};
+    var count=0;
+    data.boards.forEach(function(b){
+      var dir=safe(b.name);
+      var txt=kbBoardAsText(b);
+      if(txt)zip.file(dir+'/'+dir+'.txt',txt);
+      zip.file(dir+'/'+dir+'.json',JSON.stringify(b,null,2));
+      var rows=[['Column','Card','Priority','Assignee','Due','Tags','Subtasks done','Subtasks total','Description']];
+      (b.columns||[]).forEach(function(col){
+        (col.cards||[]).forEach(function(card){
+          var done=(card.checklist||[]).filter(function(x){return x.done}).length;
+          rows.push([col.name,card.title,card.priority||'',card.assignee||'',card.due||'',
+                     (card.tags||[]).join(' '),done,(card.checklist||[]).length,
+                     String(card.desc||'').replace(/\s+/g,' ')]);
+        });
+      });
+      var csv=rows.map(function(r){
+        return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',');
+      }).join('\n');
+      zip.file(dir+'/'+dir+'.csv','\ufeff'+csv);
+      count++;
+    });
+    zip.file('README.txt',
+      'Kanban boards exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'Each folder holds one board as .txt (readable), .json (re-importable here)\n'+
+      'and .csv (opens in Excel or Google Sheets).\n\n'+
+      'Boards included: '+count+'\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'kanban-boards.zip');
+    notify(count+' board'+(count>1?'s':'')+' exported as ZIP.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function newBoard(){
   var name=prompt('Board name:');if(!name)return;
-  data.boards.push({name:name.trim(),columns:makeColumns(TEMPLATES.simple),archive:[]});
+  var unique=kbUniqueName(name.trim());
+  if(unique!==name.trim())
+    notify('A board called "'+name.trim()+'" already exists, so this one is "'+unique+'".','warn');
+  data.boards.push({name:unique,columns:makeColumns(TEMPLATES.simple),archive:[]});
   data.active=data.boards.length-1;save();renderBoard();
+  notify('Board "'+unique+'" created.','ok');
 }
-function renameBoard(){var n=prompt('Rename board:',board().name);if(!n)return;board().name=n.trim();save();renderBoard()}
+function renameBoard(){
+  var n=prompt('Rename board:',board().name);
+  if(!n)return;
+  var want=n.trim();
+  /* exclude the current board from the clash check, otherwise renaming to the
+     same name would needlessly append a number */
+  var others=data.boards.filter(function(b,i){return i!==data.active});
+  var taken=others.some(function(b){return (b.name||'').toLowerCase()===want.toLowerCase()});
+  if(taken){notify('Another board is already called "'+want+'".','warn');return}
+  board().name=want;save();renderBoard();
+  notify('Renamed to "'+want+'".','ok');
+}
 function deleteBoard(){
   if(data.boards.length<2){notify('Cannot delete the only board', 'warn');return}
   if(!confirm('Delete board "'+board().name+'"?'))return;

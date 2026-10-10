@@ -37,6 +37,15 @@
     <div style="min-height:90px"></div>
     <div class="tool-section"><h1>{ } JSON Formatter & Validator</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <div class="row">
+        <label>Format preset:</label>
+        <select id="jfPreset" onchange="jfApplyPreset()" style="flex:2">
+          <option value="readable">Readable (2 spaces)</option>
+          <option value="diff">Diff-friendly (sorted keys)</option>
+          <option value="wide">Wide (4 spaces)</option>
+          <option value="tabs">Tabs</option>
+        </select>
+      </div>
       <div class="row" style="flex-wrap:wrap;gap:.6rem">
         <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0">Indent:
           <select id="indent" style="width:auto;margin:0">
@@ -46,10 +55,11 @@
           </select>
         </label>
         <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><input type="checkbox" id="sortKeys" style="width:auto;margin:0"> Sort keys A→Z</label>
-        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><input type="file" id="jsonFile" accept=".json,application/json" style="width:auto;margin:0;padding:.3rem"></label>
+        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><div class="drop-zone" id="jfDrop" style="margin:.5rem 0">Drop a .json file here or click to browse<input type="file" id="jsonFile" accept=".json,application/json" style="width:auto;margin:0;padding:.3rem" style="display:none"></div></label>
       </div>
       <textarea id="j" placeholder="Paste JSON here..." style="font-family:monospace;min-height:250px" oninput="autosave()"></textarea>
-      <div class="row" style="flex-wrap:wrap"><button class="btn" onclick="fmt()">Format / Beautify</button><button class="btn btn-outline" onclick="mini()">Minify</button><button class="btn btn-outline" onclick="validateOnly()">✔ Validate</button><button class="btn btn-outline" onclick="treeView()">🌳 Tree View</button><button class="btn btn-outline" onclick="copyOut()">📋 Copy</button><button class="btn btn-outline" onclick="downloadJson()">⬇ Download</button></div>
+      <div class="row" style="flex-wrap:wrap"><button class="btn" onclick="fmt()">Format / Beautify</button><button class="btn btn-outline" onclick="mini()">Minify</button><button class="btn btn-outline" onclick="validateOnly()">✔ Validate</button><button class="btn btn-outline" onclick="treeView()">🌳 Tree View</button><button class="btn btn-outline" onclick="copyOut()">📋 Copy</button><button class="btn btn-outline" onclick="downloadJson()">⬇ Download</button>
+        <button class="btn btn-outline" onclick="exportAllFormats()">🗜️ Export all formats (ZIP)</button></div>
       <div id="result"></div>
       <div class="row" style="flex-wrap:wrap;align-items:center;gap:.5rem">
         <input type="text" id="searchBox" placeholder="🔍 Search keys/values (filters tree)" oninput="applySearch()" style="flex:1;min-width:180px">
@@ -139,6 +149,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var G="#2ecc71",R="#e74c3c",O="#ff9800",Bl="#6366f1",Pu="#8b5cf6";
@@ -199,6 +210,111 @@ function buildStats(val){var counts={string:0,number:0,boolean:0,"null":0,object
   html+="</div>";document.getElementById("stats").innerHTML=html}
 
 // Convert
+/* Formatting presets. Indentation and key sorting are the two settings people
+   change constantly, and the right combination depends on where the JSON is going:
+   a config file, a diff, or a minified payload. */
+/* indent offers 2, 4 and "tab" only; an unlisted value silently blanks it. */
+var JF_PRESETS={
+  readable: {indent:'2',   sortKeys:false},
+  diff:     {indent:'2',   sortKeys:true},
+  wide:     {indent:'4',   sortKeys:false},
+  tabs:     {indent:'tab', sortKeys:false}
+};
+function jfApplyPreset(){
+  var k=document.getElementById('jfPreset').value;
+  var p=JF_PRESETS[k];
+  if(!p)return;
+  var ind=document.getElementById('indent');
+  if(ind&&Array.prototype.some.call(ind.options,function(o){return o.value===String(p.indent)}))
+    ind.value=p.indent;
+  var sk=document.getElementById('sortKeys');
+  if(sk)sk.checked=!!p.sortKeys;
+  storeSet('json-formatter-prefs-v1',{indent:ind?ind.value:null,sortKeys:sk?sk.checked:false},true);
+  if(document.getElementById('j').value.trim()&&typeof fmt==='function')fmt();
+  notify('Applied the '+k+' preset.','ok');
+}
+function jfRestorePrefs(){
+  var d=storeGet('json-formatter-prefs-v1',null);
+  if(!d)return;
+  var ind=document.getElementById('indent');
+  if(ind&&d.indent!=null&&Array.prototype.some.call(ind.options,function(o){return o.value===String(d.indent)}))
+    ind.value=d.indent;
+  var sk=document.getElementById('sortKeys');
+  if(sk&&d.sortKeys!==undefined)sk.checked=!!d.sortKeys;
+}
+
+/* Drag and drop a .json file, which is the natural gesture for a file-based tool
+   and was not supported at all. */
+function jfInitDrop(){
+  var zone=document.getElementById('jfDrop');
+  var input=document.getElementById('jsonFile');
+  if(!zone||!input)return;
+  zone.addEventListener('click',function(){input.click()});
+  zone.addEventListener('dragover',function(e){e.preventDefault();zone.classList.add('dragover')});
+  zone.addEventListener('dragleave',function(){zone.classList.remove('dragover')});
+  zone.addEventListener('drop',function(e){
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!f)return;
+    if(f.size>8*1024*1024){
+      notify('That file is '+(f.size/1048576).toFixed(1)+'MB. Files over 8MB are too slow to parse in a browser.','warn');
+      return;
+    }
+    var r=new FileReader();
+    r.onerror=function(){notify('Could not read that file.','error')};
+    r.onload=function(){
+      document.getElementById('j').value=String(r.result||'');
+      document.getElementById('j').dispatchEvent(new Event('input',{bubbles:true}));
+      notify('Loaded '+f.name+'.','ok');
+    };
+    r.readAsText(f);
+  });
+}
+
+/* Export every conversion at once: the JSON, CSV, YAML, TypeScript interface and
+   query-string forms together, which is what you want when handing a payload to
+   someone else. */
+async function exportAllFormats(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  var src=document.getElementById('j').value.trim();
+  if(!src){notify('Paste some JSON first.','warn');return}
+  var parsed;
+  try{ parsed=JSON.parse(src) }
+  catch(err){ notify('That is not valid JSON, so it cannot be converted: '+err.message,'error'); return }
+  try{
+    var zip=new JSZip();
+    var ind=document.getElementById('indent');
+    var step=ind?(ind.value==='tab'?'\t':(+ind.value||2)):2;
+    zip.file('data.json',JSON.stringify(parsed,null,step));
+    zip.file('data.min.json',JSON.stringify(parsed));
+    /* reuse conv() so the archive cannot drift from the on-screen output */
+    ['csv','yaml','ts','query'].forEach(function(kind){
+      try{
+        conv(kind);
+        var out=(document.getElementById('j2').value||'').trim();
+        if(!out)return;
+        var ext={csv:'csv',yaml:'yaml',ts:'ts',query:'txt'}[kind];
+        zip.file('data.'+ext,out);
+      }catch(e){ /* a shape that cannot become CSV is fine to skip */ }
+    });
+    zip.file('README.txt',
+      'JSON exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'data.json      formatted with your current indent setting\n'+
+      'data.min.json  minified\n'+
+      'data.csv       flattened to rows, where the shape allows it\n'+
+      'data.yaml      YAML form\n'+
+      'data.ts        TypeScript interface\n'+
+      'data.txt       query-string form\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'json-export.zip');
+    notify('Exported as ZIP with every format.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function conv(type){var r=parseJSON(document.getElementById("j").value);var box=document.getElementById("convResult");box.style.display="block";if(!r.ok){box.innerHTML="<span style='color:"+R+"'>"+errMsg(r)+"</span>";return}
   var out="";try{
   if(type==="csv")out=toCSV(r.value);
@@ -228,5 +344,8 @@ function checkType(obj,key,expectedType,path,errors){for(var k in obj){var curPa
 // Diff (kept)
 function diffJson(){var ra=parseJSON(document.getElementById("j").value);var rb=parseJSON(document.getElementById("j2").value);var box=document.getElementById("diffResult");box.style.display="block";if(!ra.ok){box.innerHTML="<span style='color:"+R+"'>First JSON: "+errMsg(ra)+"</span>";return}if(!rb.ok){box.innerHTML="<span style='color:"+R+"'>Second JSON: "+errMsg(rb)+"</span>";return}var diffs=[];compareObj(ra.value,rb.value,"",diffs);if(diffs.length===0){box.innerHTML="<span style='color:"+G+"'>✅ No differences found.</span>"}else{box.innerHTML="<strong>Found "+diffs.length+" difference(s):</strong><br><br>"+diffs.join("<br>")}}
 function compareObj(a,b,path,diffs){var allKeys=new Set(Object.keys(a||{}).concat(Object.keys(b||{})));allKeys.forEach(function(k){var p=path?path+"."+k:k;var va=a?a[k]:undefined;var vb=b?b[k]:undefined;if(va===undefined){diffs.push("<span style='color:"+G+"'>+ "+esc(p)+": "+esc(JSON.stringify(vb))+"</span>")}else if(vb===undefined){diffs.push("<span style='color:"+R+"'>- "+esc(p)+": "+esc(JSON.stringify(va))+"</span>")}else if(typeof va==="object"&&va!==null&&typeof vb==="object"&&vb!==null){compareObj(va,vb,p,diffs)}else if(JSON.stringify(va)!==JSON.stringify(vb)){diffs.push("<span style='color:"+O+"'>~ "+esc(p)+": "+esc(JSON.stringify(va))+" → "+esc(JSON.stringify(vb))+"</span>")}})}
+
+jfRestorePrefs();
+jfInitDrop();
 </script>
 </body></html>

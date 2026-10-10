@@ -57,7 +57,7 @@
         <select id="bState" onchange="calcTotals();autoSaveInv()"><option value="">-- Supplier State --</option></select>
         <input type="text" id="bPhone" placeholder="Phone (optional)" oninput="autoSaveInv()">
       </div>
-      <div class="row" style="margin-top:.5rem"><label>Company Logo:</label><input type="file" id="logoFile" accept="image/png,image/jpeg" onchange="previewLogo(this)"></div>
+      <div class="row" style="margin-top:.5rem"><label>Company Logo:</label><div class="drop-zone" id="invDrop" style="margin:.4rem 0;padding:.8rem;font-size:.85rem">Drop your logo here or click to browse<input type="file" id="logoFile" accept="image/png,image/jpeg" onchange="previewLogo(this)" style="display:none"></div></div>
       <div id="logoPreview" style="margin:.5rem 0"></div>
 
       <!-- Invoice Meta -->
@@ -77,6 +77,20 @@
       <!-- Items -->
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
       <h2>Items</h2>
+      <div class="row">
+        <label>GST preset:</label>
+        <select id="invPreset" onchange="invApplyPreset()" style="flex:2">
+          <option value="">Choose a GST case...</option>
+          <option value="intra">Intra-state (CGST + SGST, 18%)</option>
+          <option value="inter">Inter-state (IGST, 18%)</option>
+          <option value="gst5">5% slab</option>
+          <option value="gst12">12% slab</option>
+          <option value="gst28">28% slab</option>
+          <option value="exempt">Export / SEZ (zero-rated)</option>
+          <option value="composition">Composition dealer (no GST)</option>
+        </select>
+      </div>
+      <p class="info" id="invPresetNote" style="display:none;font-size:.82rem;margin:.25rem 0"></p>
       <div id="items"></div>
       <button class="btn btn-outline" onclick="addItem()">+ Add Item</button>
 
@@ -96,6 +110,7 @@
       <!-- Actions -->
       <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="genInvoice()" style="flex:1">📄 Generate & Download PDF</button>
+        <button class="btn btn-outline" onclick="exportInvoiceZip()">🗜️ Export all (ZIP)</button>
         <button class="btn btn-outline" onclick="copyInvoiceText()">📋 Copy as text</button>
         <button class="btn btn-outline" onclick="shareInvoiceWhatsApp()">💬 Send on WhatsApp</button>
         <button class="btn btn-outline" onclick="printInvoice()">🖨️ Print</button>
@@ -150,6 +165,7 @@
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var logoDataUrl=null;var itemCount=0;
@@ -242,6 +258,139 @@ function printInvoice(){updateInvPreview();window.print();}
 /* Many small businesses send the invoice over WhatsApp rather than as a PDF, so a
    plain-text version is genuinely the primary output for them. Built from the same
    calcTotalsRaw() the PDF uses, so the numbers cannot drift apart. */
+/* GST presets. Indian invoices fall into a few well-defined cases and the tax
+   treatment differs: intra-state splits into CGST and SGST, inter-state uses
+   IGST, exports are zero-rated, and a composition dealer charges no GST at all.
+   Getting this wrong is the single most consequential mistake on an invoice. */
+var INV_PRESETS={
+  intra:   {rate:'18', note:'Intra-state supply. Tax splits into CGST and SGST automatically when both states match.'},
+  inter:   {rate:'18', note:'Inter-state supply. Set the two states differently and IGST is applied instead.'},
+  gst5:    {rate:'5',  note:'5% slab: essentials, some packaged food, economy transport.'},
+  gst12:   {rate:'12', note:'12% slab: processed food, business-class travel, some electronics.'},
+  gst28:   {rate:'28', note:'28% slab: luxury goods, cars, tobacco.'},
+  exempt:  {rate:'0',  note:'Zero-rated: exports and SEZ supplies. Keep your LUT or bond reference on file.'},
+  composition:{rate:'0', note:'Composition dealer: no GST charged. Your invoice must say "composition taxable person, not eligible to collect tax on supplies".'}
+};
+function invApplyPreset(){
+  var k=document.getElementById('invPreset').value;
+  var p=INV_PRESETS[k];
+  if(!p)return;
+  /* the rate lives on each line item, so apply it to every row */
+  var rows=document.querySelectorAll('#items > div');
+  var applied=0;
+  rows.forEach(function(r){
+    var sel=r.querySelector('select');
+    if(!sel)return;
+    var okv=Array.prototype.some.call(sel.options,function(o){return o.value===String(p.rate)});
+    if(!okv)return;
+    sel.value=p.rate;
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+    applied++;
+  });
+  var note=document.getElementById('invPresetNote');
+  if(note){note.style.display='block';note.textContent=p.note}
+  if(typeof calcTotals==='function')calcTotals();
+  notify(applied?('Applied '+p.rate+'% GST to '+applied+' line'+(applied>1?'s':'')+'.')
+                :'Add a line item first, then apply the preset.', applied?'ok':'warn');
+}
+
+/* Drag the logo straight onto the invoice rather than hunting for the file picker. */
+function invInitDrop(){
+  var zone=document.getElementById('invDrop');
+  var input=document.getElementById('logoFile');
+  if(!zone||!input)return;
+  zone.addEventListener('click',function(){input.click()});
+  zone.addEventListener('dragover',function(e){e.preventDefault();zone.classList.add('dragover')});
+  zone.addEventListener('dragleave',function(){zone.classList.remove('dragover')});
+  zone.addEventListener('drop',function(e){
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!f)return;
+    if(f.type&&f.type.indexOf('image/')!==0){
+      notify('That is not an image. Use a PNG or JPG logo.','error');
+      return;
+    }
+    var dt=new DataTransfer();
+    dt.items.add(f);
+    input.files=dt.files;
+    previewLogo(input);
+  });
+}
+
+/* Export the invoice in every form at once: the PDF for sending, text for a chat,
+   CSV for the books, and JSON so the tool can reload it later. */
+async function exportInvoiceZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  var anyItem=false;
+  document.querySelectorAll('#items > div').forEach(function(r){
+    var i=r.querySelector('input');
+    if(i&&i.value.trim())anyItem=true;
+  });
+  if(!anyItem){notify('Add at least one item first.','warn');return}
+  try{
+    var zip=new JSZip();
+    var gv=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():''};
+    var invNo=gv('invNo')||'invoice';
+    zip.file('invoice.txt',invoiceAsText());
+
+    var calc=calcTotalsRaw();
+    var rows=[['Description','HSN/SAC','Qty','Rate','Discount %','GST %','Amount']];
+    document.querySelectorAll('#items > div').forEach(function(r){
+      var inp=r.querySelectorAll('input'), sel=r.querySelector('select');
+      var desc=inp[0]?inp[0].value.trim():'';
+      if(!desc)return;
+      var qty=inp[2]?(+inp[2].value||0):0;
+      var rate=inp[3]?(+inp[3].value||0):0;
+      rows.push([desc, inp[1]?inp[1].value:'', qty, rate.toFixed(2),
+                 inp[4]?inp[4].value:'0', sel?sel.value:'0', (qty*rate).toFixed(2)]);
+    });
+    rows.push([]);
+    rows.push(['Subtotal','','','','','',calc.subtotal.toFixed(2)]);
+    rows.push(['Grand total','','','','','',calc.grandTotal.toFixed(2)]);
+    zip.file('invoice.csv','\ufeff'+rows.map(function(r){
+      return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',');
+    }).join('\n'));
+
+    /* the supplier block is what autoSaveInv already keeps, so reuse its shape */
+    var snapshot={};
+    ['bName','bGstin','bAddress','bPhone','bState','cName','cGstin','cAddress','cEmail','cState',
+     'invNo','invDate','dueDate','placeOfSupply','bankName','bankAcc','bankIfsc','upiId',
+     'overallDiscount','discountType','invTemplate','invAccent'].forEach(function(id){
+      snapshot[id]=gv(id);
+    });
+    snapshot.items=[];
+    document.querySelectorAll('#items > div').forEach(function(r){
+      var inp=r.querySelectorAll('input'), sel=r.querySelector('select');
+      if(!inp[0]||!inp[0].value.trim())return;
+      snapshot.items.push({desc:inp[0].value, hsn:inp[1]?inp[1].value:'',
+                           qty:inp[2]?inp[2].value:'', rate:inp[3]?inp[3].value:'',
+                           disc:inp[4]?inp[4].value:'', gst:sel?sel.value:''});
+    });
+    zip.file('invoice.json',JSON.stringify(snapshot,null,2));
+
+    /* the PDF, captured rather than downloaded separately */
+    var pdfBlob=null;
+    var origDl=window.download;
+    window.download=function(b){pdfBlob=b};
+    try{ await genInvoice() }finally{ window.download=origDl }
+    if(pdfBlob)zip.file('invoice.pdf',pdfBlob);
+
+    zip.file('README.txt',
+      'Invoice exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'invoice.pdf   ready to send\n'+
+      'invoice.txt   plain text for WhatsApp or email\n'+
+      'invoice.csv   line items for your books\n'+
+      'invoice.json  reload it into this tool later\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'invoice-'+invNo.replace(/[^\w-]/g,'')+'.zip');
+    notify('Invoice exported as ZIP with PDF, text, CSV and JSON.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function invoiceAsText(){
   var gv=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():''};
   var calc=calcTotalsRaw();
@@ -399,6 +548,8 @@ async function genInvoice(){
   document.getElementById('result').innerHTML="<p class='info'>\u2705 Invoice downloaded!</p>";
   document.getElementById('invNo').value=getNextInvNo();autoSaveInv();}
 calcTotals();
-  </script>
+  
+invInitDrop();
+</script>
 </body>
 </html>
