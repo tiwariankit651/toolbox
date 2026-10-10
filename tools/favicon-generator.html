@@ -54,7 +54,7 @@
       </div>
 
       <div id="imagePanel" style="display:none">
-        <div class="row"><input type="file" id="imgFile" accept="image/*" onchange="loadImg(this)"></div>
+        <div class="row"><div class="drop-zone" id="fvDrop" style="margin:.5rem 0">Drop an image here or click to browse<input type="file" id="imgFile" accept="image/*" onchange="loadImg(this)" style="display:none"></div></div>
         <p class="info">Upload a logo or photo. Adjust the square crop below. Transparent PNGs can get a background fill.</p>
         <div id="imgControls" style="display:none">
           <div class="row" style="flex-wrap:wrap">
@@ -104,7 +104,9 @@
         <button class="btn" onclick="showSnippet()">🔗 HTML &lt;link&gt; Snippet</button>
         <button class="btn" onclick="showManifest()">📋 site.webmanifest</button>
       </div>
+      <button class="btn btn-outline" style="margin:.4rem 0 0;padding:.4rem .8rem;font-size:.82rem" onclick="copySnippet()">📋 Copy HTML snippet</button>
       <pre id="snippetOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
+      <button class="btn btn-outline" style="margin:.4rem 0 0;padding:.4rem .8rem;font-size:.82rem" onclick="copyManifest()">📋 Copy manifest</button>
       <pre id="manifestOut" style="display:none;background:var(--card);padding:1rem;border-radius:8px;overflow-x:auto;margin-top:.5rem;font-size:.8rem"></pre>
 
       <div class="info" style="margin-top:1rem;padding:1rem;background:rgba(255,152,0,.1);border-radius:10px;color:var(--text2)">
@@ -328,6 +330,79 @@ function snippetHTML(){
 }
 function showSnippet(){var el=document.getElementById("snippetOut");el.style.display="block";el.textContent=snippetHTML()}
 
+/* The HTML snippet is the whole point for a developer: generating the PNGs is
+   easy, remembering the exact link tags is not. Copying it beats selecting a
+   <pre> by hand. */
+function copySnippet(){
+  var el=document.getElementById('snippetOut');
+  var t=el?(el.textContent||'').trim():'';
+  if(!t){notify('Generate the favicons first.','warn');return}
+  copyNow(t,'HTML snippet copied - paste it into your <head>.');
+}
+
+function copyManifest(){
+  var el=document.getElementById('manifestOut');
+  var t=el?(el.textContent||'').trim():'';
+  if(!t){notify('Generate the favicons first.','warn');return}
+  copyNow(t,'site.webmanifest copied.');
+}
+
+/* Brand colours and the shape get re-picked on every visit, which is the most
+   repetitive part of generating favicons for several projects. */
+var FV_KEY='favicon-generator-settings-v1';
+var FV_FIELDS=['bg','bg2','fg','fillColor','font','fsize','eshape','ebg','emojiBg',
+               'emojiCustom','darkPrev'];
+function fvSave(){
+  var d={};
+  FV_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(FV_KEY,d,true);
+}
+function fvRestore(){
+  var d=storeGet(FV_KEY,null);
+  if(!d)return;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      /* an unlisted value silently blanks a select */
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+  });
+}
+
+/* Drag and drop onto the whole upload area, since dragging an icon in is the
+   natural gesture and there was no drop target at all. */
+function fvInitDrop(){
+  var zone=document.getElementById('fvDrop');
+  var input=document.getElementById('imgFile');
+  if(!zone||!input)return;
+  zone.addEventListener('click',function(){input.click()});
+  zone.addEventListener('dragover',function(e){e.preventDefault();zone.classList.add('dragover')});
+  zone.addEventListener('dragleave',function(){zone.classList.remove('dragover')});
+  zone.addEventListener('drop',function(e){
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!f)return;
+    if(f.type&&f.type.indexOf('image/')!==0){
+      notify('That is not an image. Try a PNG, JPG or SVG file.','error');
+      return;
+    }
+    /* reuse the existing loader rather than duplicating its logic */
+    var dt=new DataTransfer();
+    dt.items.add(f);
+    input.files=dt.files;
+    loadImg(input);
+  });
+}
+
 function manifestJSON(){
   return JSON.stringify({
     name:"My App",short_name:"App",
@@ -342,6 +417,11 @@ function manifestJSON(){
 function showManifest(){var el=document.getElementById("manifestOut");el.style.display="block";el.textContent=manifestJSON()}
 
 initEmojis();setMode("text");
-  </script>
+  
+fvRestore();
+fvInitDrop();
+FV_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',fvSave)});
+</script>
 </body>
 </html>

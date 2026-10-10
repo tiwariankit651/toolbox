@@ -35,6 +35,7 @@
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files (JPEG for full metadata reading)<input type="file" id="inp" accept="image/*" multiple></div>
       <div class="row" id="batchActions" style="display:none;justify-content:center;margin-top:1rem">
         <button class="btn" onclick="downloadAllZip()">📦 Download All as ZIP</button>
+        <button class="btn btn-outline" onclick="copyExifReport()">📋 Copy metadata report</button>
       </div>
       <div id="result"></div>
     </div>
@@ -290,15 +291,35 @@ setupDrop("drop","inp",function(files){
 
 function processFile(file,i,result){
   var reader=new FileReader();
+  /* Neither the file read nor the image decode was guarded. A corrupt or renamed
+     file left the slot stuck on "processing" with nothing on screen. */
+  reader.onerror=function(){
+    result.innerHTML='<p class="info" style="color:var(--danger)">Could not read '+
+      (file.name||'that file')+'.</p>';
+    notify('Could not read '+(file.name||'that file')+'.','error');
+  };
   reader.onload=function(){
     var arrBuf=reader.result;
-    var exif=parseEXIF(arrBuf);
+    var exif;
+    try{
+      exif=parseEXIF(arrBuf);
+    }catch(err){
+      /* Malformed EXIF should not stop the strip: carry on with an empty record
+         so the cleaned image is still produced. */
+      exif={all:[],fields:{},gps:null};
+      notify('The metadata in '+(file.name||'that file')+' could not be read, but the image will still be cleaned.','warn');
+    }
     var mode=document.querySelector('input[name="rmMode"]:checked').value;
     var isJpeg=file.type==="image/jpeg"||/\.jpe?g$/i.test(file.name);
     var outFmt=document.getElementById("outFmt").value;
     var quality=+document.getElementById("quality").value/100;
 
     var img=new Image();
+    img.onerror=function(){
+      result.innerHTML='<p class="info" style="color:var(--danger)">'+
+        (file.name||'That file')+' is not a readable image. Try a PNG, JPG or WEBP file.</p>';
+      notify((file.name||'That file')+' is not a readable image.','error');
+    };
     img.onload=function(){
       var beforeCount=exif.all.length+(exif.gps?1:0);
       // Build metadata summary
@@ -319,6 +340,22 @@ function processFile(file,i,result){
       if(exif.gps)meta+='• GPS: '+exif.gps.lat.toFixed(6)+', '+exif.gps.lon.toFixed(6)+'<br>';
       if(beforeCount===0)meta+='• <em>No readable EXIF tags detected (image may already be clean, or is not a JPEG)</em><br>';
       meta+='</div>';
+
+      /* Keep a plain-text copy of what was found. People paste this when
+         reporting a photo's origin, or to keep a record before stripping it. */
+      var txt=['METADATA FOUND IN '+(file.name||'image'),
+               'Dimensions: '+img.width+'x'+img.height,
+               'File size: '+formatSize(file.size)];
+      if(f.Make||f.Model)txt.push('Camera: '+fmtVal(f.Make)+' '+fmtVal(f.Model));
+      if(f.LensMake||f.LensModel)txt.push('Lens: '+fmtVal(f.LensMake)+' '+fmtVal(f.LensModel));
+      if(f.DateTimeOriginal||f.DateTime)txt.push('Date taken: '+fmtVal(f.DateTimeOriginal||f.DateTime));
+      if(f.ISO)txt.push('ISO: '+f.ISO);
+      if(f.Software)txt.push('Software: '+f.Software);
+      if(exif.gps)txt.push('GPS: '+exif.gps.lat.toFixed(6)+', '+exif.gps.lon.toFixed(6));
+      if(beforeCount===0)txt.push('No readable EXIF tags detected.');
+      txt.push('','Tags removed: '+beforeCount);
+      window._exifMeta=(window._exifMeta||[]);
+      window._exifMeta[i]=txt.join('\n');
 
       if(exif.gps){
         var mapUrl="https://www.openstreetmap.org/?mlat="+exif.gps.lat+"&mlon="+exif.gps.lon+"#map=16/"+exif.gps.lat+"/"+exif.gps.lon;
@@ -370,6 +407,48 @@ function processFile(file,i,result){
   reader.readAsArrayBuffer(file);
 }
 
+/* Copy the metadata that was found, for every image processed in this run. */
+function copyExifReport(){
+  var all=(window._exifMeta||[]).filter(Boolean);
+  if(!all.length){notify('Process an image first.','warn');return}
+  copyNow(all.join('\n\n' + '-'.repeat(40) + '\n\n'),
+          all.length>1?(all.length+' metadata reports copied.'):'Metadata copied.');
+}
+
+/* The output format and quality get re-chosen every visit even though people
+   usually strip metadata the same way each time. */
+var EX_KEY='exif-remover-settings-v1';
+var EX_FIELDS=['outFmt','quality'];
+function exSave(){
+  var d={};
+  EX_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)d[id]=el.value;
+  });
+  var mode=document.querySelector('input[name="rmMode"]:checked');
+  if(mode)d.rmMode=mode.value;
+  storeSet(EX_KEY,d,true);
+}
+function exRestore(){
+  var d=storeGet(EX_KEY,null);
+  if(!d)return;
+  EX_FIELDS.forEach(function(id){
+    if(d[id]===undefined)return;
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return;
+    }
+    el.value=d[id];
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  if(d.rmMode){
+    var r=document.querySelector('input[name="rmMode"][value="'+d.rmMode+'"]');
+    if(r)r.checked=true;
+  }
+}
+
 function downloadAllZip(){
   if(!window._exifBlobs||!window._exifBlobs.length)return notify("Process images first", 'warn');
   var zip=new JSZip();var added=0;
@@ -377,6 +456,12 @@ function downloadAllZip(){
   if(!added)return notify("No processed files yet", 'warn');
   zip.generateAsync({type:"blob"}).then(function(z){download(z,"clean-images.zip")});
 }
-  </script>
+  
+exRestore();
+EX_FIELDS.forEach(function(id){var el=document.getElementById(id);
+  if(el)el.addEventListener('change',exSave)});
+document.querySelectorAll('input[name="rmMode"]').forEach(function(r){
+  r.addEventListener('change',exSave)});
+</script>
 </body>
 </html>

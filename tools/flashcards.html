@@ -57,7 +57,17 @@
       </div>
       <div id="study">
         <div id="deckInfo" style="text-align:center;margin-bottom:.5rem" class="info"></div>
-        <div class="card" id="flashcard" onclick="flipCard()">
+        <div class="row" style="margin-bottom:.6rem">
+        <label>Study preset:</label>
+        <select id="fcPreset" onchange="fcApplyPreset()" style="flex:2">
+          <option value="normal">Normal (25 due cards)</option>
+          <option value="quick">Quick revision (10 due cards)</option>
+          <option value="cram">Cram (50 cards, due or not)</option>
+          <option value="full">Full deck</option>
+        </select>
+      </div>
+      <p class="info" id="fcPresetNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
+      <div class="card" id="flashcard" onclick="flipCard()">
           <div class="card-inner">
             <div class="card-front" id="cardFront">Click "Ready Sets" to start or create your own cards</div>
             <div class="card-back" id="cardBack">Answer will appear here</div>
@@ -85,13 +95,15 @@
       </div>
       <div id="create" style="display:none">
         <h2>✏️ Create Your Own Flashcards</h2>
-        <div class="row"><input type="text" id="newFront" placeholder="Question / Front side"><input type="text" id="newBack" placeholder="Answer / Back side"></div>
+        <div class="row"><input type="text" id="newFront" placeholder="Question / Front side" oninput="fcCardFeedback()"><input type="text" id="newBack" placeholder="Answer / Back side" oninput="fcCardFeedback()"></div>
+      <p class="info" id="fcCardNote" style="display:none;font-size:.8rem;margin:.25rem 0"></p>
         <button class="btn" onclick="addCustomCard()" style="margin:.5rem 0">+ Add Card</button>
         <div id="customList"></div>
         <div class="row" style="margin-top:.5rem">
           <button class="btn" onclick="studyCustom()">📖 Study My Cards</button>
           <button class="btn btn-outline" onclick="exportCards()">📤 Export</button>
         <button class="btn btn-outline" onclick="exportCardsCsv()">📊 Export CSV (Anki)</button>
+        <button class="btn btn-outline" onclick="exportAllDecks()">🗜️ Export all decks (ZIP)</button>
         <button class="btn btn-outline" onclick="copyDeck()">📋 Copy deck</button>
           <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCards(event)">
@@ -149,6 +161,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var readySets={
@@ -183,6 +196,21 @@ function cardKey(c){return c.front.substring(0,50);}
 function sortByDue(){
   var now=Date.now();
   deck.sort(function(a,b){return getSR(cardKey(a)).due-getSR(cardKey(b)).due;});
+  /* Honour the study preset. Keeping the full deck in fullDeck means switching
+     preset can widen the session again without reloading the set. */
+  if(!deck._full)deck._full=deck.slice();
+  var pool=deck._full.slice();
+  pool.sort(function(a,b){return getSR(cardKey(a)).due-getSR(cardKey(b)).due;});
+  if(FC_DUE_ONLY){
+    var due=pool.filter(function(x){return getSR(cardKey(x)).due<=now});
+    /* never leave the user with an empty session just because nothing is due */
+    if(due.length)pool=due;
+  }
+  if(FC_LIMIT>0)pool=pool.slice(0,FC_LIMIT);
+  var full=deck._full;
+  deck.length=0;
+  pool.forEach(function(x){deck.push(x)});
+  deck._full=full;
 }
 function showTab(t){
   document.getElementById("study").style.display=t==="study"?"":"none";
@@ -202,6 +230,7 @@ function renderSets(){
 }
 function loadSet(name){
   deck=readySets[name].map(function(c){return{front:c[0],back:c[1]}});
+  deck._full=null;   /* a new set means a fresh pool for the study preset */
   idx=0;score={know:0,dont:0};
   sortByDue();
   document.getElementById("deckInfo").textContent="Studying: "+name;
@@ -268,6 +297,124 @@ function studyCustom(){
 }
 /* CSV is what Anki and Quizlet import, so it is far more useful than the JSON
    export for anyone moving a deck somewhere else. */
+/* Live feedback while typing a card: a duplicate front is the mistake that
+   matters, because two cards with the same question make the spaced-repetition
+   scheduling meaningless. */
+function fcCardFeedback(){
+  var f=document.getElementById('newFront');
+  var note=document.getElementById('fcCardNote');
+  if(!f||!note)return;
+  var v=f.value.trim();
+  if(!v){note.style.display='none';note.textContent='';return}
+  note.style.display='block';
+  var hit=customCards.find(function(x){
+    var front=(x.front!==undefined?x.front:x[0])||'';
+    return front.toLowerCase()===v.toLowerCase();
+  });
+  if(hit){
+    note.style.color='var(--warn)';
+    note.textContent='You already have a card with this question.';
+  }else{
+    var back=document.getElementById('newBack');
+    if(back&&!back.value.trim()){
+      note.style.color='var(--text2)';
+      note.textContent='Now fill in the answer side.';
+    }else{
+      note.style.color='var(--ok)';
+      note.textContent='Ready to add.';
+    }
+  }
+}
+
+/* Study presets. The tool has no session controls of its own, so these add the
+   two that actually change how a session runs: a cap on how many cards to see,
+   and whether to limit it to cards the spaced-repetition schedule says are due.
+   Both are read by nextCard()/sortByDue() below. */
+var FC_LIMIT=0;        /* 0 means no cap */
+var FC_DUE_ONLY=false;
+var FC_PRESETS={
+  quick:  {limit:10, dueOnly:true},
+  normal: {limit:25, dueOnly:true},
+  full:   {limit:0,  dueOnly:false},
+  cram:   {limit:50, dueOnly:false}
+};
+function fcApplyPreset(){
+  var k=document.getElementById('fcPreset').value;
+  var p=FC_PRESETS[k];
+  if(!p)return;
+  FC_LIMIT=p.limit;
+  FC_DUE_ONLY=p.dueOnly;
+  storeSet('flashcards-study-v1',{limit:p.limit,dueOnly:p.dueOnly,preset:k},true);
+  fcShowPreset();
+  if(deck&&deck.length){
+    /* re-apply the limit to the deck already loaded */
+    sortByDue();
+    idx=0;
+    showCard();
+  }
+  notify('Applied the '+k+' study preset.','ok');
+}
+function fcShowPreset(){
+  var el=document.getElementById('fcPresetNote');
+  if(!el)return;
+  var bits=[];
+  bits.push(FC_LIMIT?('up to '+FC_LIMIT+' cards'):'all cards');
+  bits.push(FC_DUE_ONLY?'due cards only':'including cards not yet due');
+  el.style.display='block';
+  el.textContent='This session: '+bits.join(', ')+'.';
+}
+function fcRestorePreset(){
+  var d=storeGet('flashcards-study-v1',null);
+  if(!d)return;
+  FC_LIMIT=+d.limit||0;
+  FC_DUE_ONLY=!!d.dueOnly;
+  var sel=document.getElementById('fcPreset');
+  if(sel&&d.preset&&Array.prototype.some.call(sel.options,function(o){return o.value===d.preset}))
+    sel.value=d.preset;
+  fcShowPreset();
+}
+
+/* Export every built-in deck plus the custom one as a single ZIP of CSVs, which
+   is what someone moving to Anki actually wants. */
+async function exportAllDecks(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a second.','warn');return}
+  try{
+    var zip=new JSZip(), count=0;
+    var toCsv=function(pairs){
+      var rows=[['Front','Back']].concat(pairs);
+      return rows.map(function(r){
+        return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',');
+      }).join('\n');
+    };
+    var safe=function(s){return String(s).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-')||'deck'};
+    Object.keys(readySets).forEach(function(name){
+      var pairs=readySets[name];
+      if(!pairs||!pairs.length)return;
+      zip.file('ready/'+safe(name)+'.csv','\ufeff'+toCsv(pairs));
+      count++;
+    });
+    if(customCards.length){
+      var mine=customCards.map(function(x){
+        return [x.front!==undefined?x.front:x[0], x.back!==undefined?x.back:x[1]];
+      });
+      zip.file('my-cards.csv','\ufeff'+toCsv(mine));
+      count++;
+    }
+    if(!count){notify('No decks to export.','warn');return}
+    zip.file('README.txt',
+      'Flashcard decks exported from freetoolhubs.com\n'+
+      'Generated: '+new Date().toLocaleString()+'\n\n'+
+      'Each .csv has a Front and Back column and imports directly into Anki\n'+
+      'or Quizlet.\n\n'+
+      'Decks included: '+count+'\n');
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'flashcard-decks.zip');
+    notify(count+' deck'+(count>1?'s':'')+' exported as ZIP.','ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');
+  }
+}
+
 function exportCardsCsv(){
   var src=(deck&&deck.length)?deck:customCards.map(function(c){
     return {front:c.front!==undefined?c.front:c[0], back:c.back!==undefined?c.back:c[1]};
@@ -332,6 +479,8 @@ function importCsv(e){
 }
 var saved=storeGetRaw("fcCustom", null);if(saved)customCards=JSON.parse(saved);
 loadSR();updateScore();
-  </script>
+  
+fcRestorePreset();
+</script>
 </body>
 </html>
