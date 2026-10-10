@@ -36,7 +36,7 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=4').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
