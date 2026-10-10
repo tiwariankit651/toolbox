@@ -52,6 +52,16 @@
       <div class="row"><input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)" oninput="autoSave();updatePreview()">
         <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1"><img id="photoPreview" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
       </div>
+      <div class="drop-zone" id="photoDrop" onclick="document.getElementById('photo').click()" style="margin:.3rem 0;padding:.8rem;font-size:.85rem">📷 Drop a profile photo here, or click to choose</div>
+      <div class="row" style="margin:.3rem 0;align-items:center;flex-wrap:wrap">
+        <label style="white-space:nowrap">Photo quality / size:</label>
+        <select id="photoQuality" onchange="updatePhotoQualityNote()">
+          <option value="small">Compact (max 240px, lower quality — smallest PDF)</option>
+          <option value="medium" selected>Balanced (max 400px, good quality)</option>
+          <option value="high">High (max 640px, best quality — larger PDF)</option>
+        </select>
+        <span class="info" id="photoQualityNote" style="font-size:.78rem"></span>
+      </div>
       <h2 style="margin-top:1rem">Summary</h2>
       <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px" oninput="autoSave();updatePreview()"></textarea>
       <h2 style="margin-top:1rem">Skills</h2>
@@ -84,6 +94,7 @@
 
       <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="genResume()" style="flex:1">📄 Generate & Download PDF</button>
+        <button class="btn btn-outline" onclick="downloadResumeZip()">🗜️ Download ZIP (PDF + TXT + JSON)</button>
         <button class="btn btn-outline" onclick="copyResumeText()">📋 Copy as plain text</button>
         <button class="btn btn-outline" onclick="downloadResumeText()">📄 Download .txt (ATS)</button>
         <button class="btn btn-outline" onclick="printResume()" style="flex:0">🖨️ Print</button>
@@ -158,18 +169,20 @@
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var ratedSkills=[];
 var autoSaveTimer=null;
 function autoSave(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(function(){
-  var data={name:gv('name'),title:gv('title'),email:gv('email'),phone:gv('phone'),location:gv('location'),linkedin:gv('linkedin'),portfolio:gv('portfolio'),summary:gv('summary'),skills:gv('skills'),certs:gv('certs'),languages:gv('languages'),ratedSkills:ratedSkills,template:document.getElementById('template').value,accentColor:document.getElementById('accentColor').value};
+  var data={name:gv('name'),title:gv('title'),email:gv('email'),phone:gv('phone'),location:gv('location'),linkedin:gv('linkedin'),portfolio:gv('portfolio'),summary:gv('summary'),skills:gv('skills'),certs:gv('certs'),languages:gv('languages'),ratedSkills:ratedSkills,template:document.getElementById('template').value,accentColor:document.getElementById('accentColor').value,photoQuality:document.getElementById('photoQuality').value};
   var exps=[];document.querySelectorAll('#exp > div').forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');exps.push({company:inp[0]?inp[0].value:'',role:inp[1]?inp[1].value:'',duration:inp[2]?inp[2].value:'',desc:ta?ta.value:''});});data.exps=exps;
   var edus=[];document.querySelectorAll('#edu > div').forEach(function(e){var inp=e.querySelectorAll('input');edus.push({inst:inp[0]?inp[0].value:'',degree:inp[1]?inp[1].value:'',year:inp[2]?inp[2].value:'',score:inp[3]?inp[3].value:''});});data.edus=edus;
   storeSet('resumeBuilderData', data);calcATS();updatePreview();
 },600);}
 function loadSaved(){var raw=storeGetRaw('resumeBuilderData', null);if(!raw)return;try{var d=JSON.parse(raw);
   if(d.name)document.getElementById('name').value=d.name;if(d.title)document.getElementById('title').value=d.title;if(d.email)document.getElementById('email').value=d.email;if(d.phone)document.getElementById('phone').value=d.phone;if(d.location)document.getElementById('location').value=d.location;if(d.linkedin)document.getElementById('linkedin').value=d.linkedin;if(d.portfolio)document.getElementById('portfolio').value=d.portfolio;if(d.summary)document.getElementById('summary').value=d.summary;if(d.skills)document.getElementById('skills').value=d.skills;if(d.certs)document.getElementById('certs').value=d.certs;if(d.languages)document.getElementById('languages').value=d.languages;if(d.template)document.getElementById('template').value=d.template;if(d.accentColor)document.getElementById('accentColor').value=d.accentColor;
+  if(d.photoQuality){var pq=document.getElementById('photoQuality');if(pq&&Array.prototype.some.call(pq.options,function(o){return o.value===d.photoQuality}))pq.value=d.photoQuality;}
   if(d.ratedSkills&&d.ratedSkills.length){ratedSkills=d.ratedSkills;renderSkills();}
   document.getElementById('exp').innerHTML='';document.getElementById('edu').innerHTML='';
   if(d.exps&&d.exps.length){d.exps.forEach(function(ex){addExpWith(ex)});}else{addExp();}
@@ -184,8 +197,48 @@ function addExp(){addExpWith(null);}
 function addExpWith(data){var d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';d.innerHTML='<div class="row"><input type="text" placeholder="Company" oninput="autoSave()"><input type="text" placeholder="Role" oninput="autoSave()"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)" oninput="autoSave()"></div><textarea placeholder="Key responsibilities..." style="min-height:60px" oninput="autoSave()"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove();autoSave()" style="margin-top:.3rem">✕ Remove</button>';if(data){var inp=d.querySelectorAll('input');var ta=d.querySelector('textarea');if(data.company)inp[0].value=data.company;if(data.role)inp[1].value=data.role;if(data.duration)inp[2].value=data.duration;if(data.desc)ta.value=data.desc;}document.getElementById('exp').appendChild(d);}
 function addEdu(){addEduWith(null);}
 function addEduWith(data){var d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';d.innerHTML='<div class="row"><input type="text" placeholder="Institution" oninput="autoSave()"><input type="text" placeholder="Degree" oninput="autoSave()"></div><div class="row"><input type="text" placeholder="Year (e.g. 2020-2024)" oninput="autoSave()"><input type="text" placeholder="Score/CGPA" oninput="autoSave()"></div><button class="btn btn-outline" onclick="this.parentElement.remove();autoSave()" style="margin-top:.3rem">✕ Remove</button>';if(data){var inp=d.querySelectorAll('input');if(data.inst)inp[0].value=data.inst;if(data.degree)inp[1].value=data.degree;if(data.year)inp[2].value=data.year;if(data.score)inp[3].value=data.score;}document.getElementById('edu').appendChild(d);}
-document.getElementById('photo').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var prev=document.getElementById('photoPreview');prev.src=URL.createObjectURL(file);prev.style.display='inline-block';});
-async function getPhotoBytes(){var file=document.getElementById('photo').files[0];if(!file)return null;var buf=await file.arrayBuffer();if(file.type==='image/png')return{bytes:buf,type:'png'};return{bytes:buf,type:'jpg'};}
+document.getElementById('photo').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var prev=document.getElementById('photoPreview');prev.src=URL.createObjectURL(file);prev.style.display='inline-block';autoSave();});
+
+/* Photo size/quality presets: cap the embedded photo so the PDF does not balloon.
+   Each preset genuinely re-encodes at a different max dimension + JPEG quality, so
+   two different choices produce different PDF byte sizes. */
+var PHOTO_PRESETS={
+  small:{max:240,q:0.55},
+  medium:{max:400,q:0.72},
+  high:{max:640,q:0.88}
+};
+function photoPreset(){
+  var sel=document.getElementById('photoQuality');
+  return PHOTO_PRESETS[sel&&sel.value]||PHOTO_PRESETS.medium;
+}
+function updatePhotoQualityNote(){
+  var p=photoPreset();
+  var note=document.getElementById('photoQualityNote');
+  if(note)note.textContent='→ max '+p.max+'px, JPEG '+Math.round(p.q*100)+'%';
+  autoSave();
+}
+
+/* Downscale + re-encode the chosen photo through a canvas. Always returns JPEG so
+   the quality cap is honoured regardless of the source format. */
+async function getPhotoBytes(){
+  var file=document.getElementById('photo').files[0];if(!file)return null;
+  var preset=photoPreset();
+  try{
+    var img=await loadImage(file);
+    var scale=Math.min(1,preset.max/Math.max(img.width,img.height));
+    var w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+    var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    var cx=cv.getContext('2d');cx.fillStyle='#ffffff';cx.fillRect(0,0,w,h);
+    cx.drawImage(img,0,0,w,h);
+    var durl=cv.toDataURL('image/jpeg',preset.q);
+    var bin=atob(durl.split(',')[1]);var arr=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    return {bytes:arr.buffer,type:'jpg'};
+  }catch(e){
+    imgError(e);
+    return null;
+  }
+}
 function calcATS(){var score=0;var tips=[];var name=gv('name'),email=gv('email'),phone=gv('phone'),loc=gv('location'),summary=gv('summary'),tmpl=document.getElementById('template').value;var allSkills=ratedSkills.slice();var sk=gv('skills');if(sk)sk.split(',').forEach(function(s){if(s.trim())allSkills.push({name:s.trim(),rating:3});});var exps=document.querySelectorAll('#exp > div');var edus=document.querySelectorAll('#edu > div');
   if(name){score+=5;}else{tips.push('❌ Add your full name');}
   if(email){score+=4;}else{tips.push('❌ Add email address');}
@@ -289,7 +342,7 @@ function updatePreview(){var tmpl=document.getElementById('template').value;var 
   document.getElementById('livePreview').innerHTML=html;}
 function printResume(){updatePreview();window.print();}
 
-async function genResume(){
+async function buildResumePdfBytes(){
   var v=function(id){return document.getElementById(id).value.trim();};
   var tmpl=document.getElementById("template").value;var acHex=document.getElementById("accentColor").value;
   var acR=parseInt(acHex.substr(1,2),16)/255,acG=parseInt(acHex.substr(3,2),16)/255,acB=parseInt(acHex.substr(5,2),16)/255;
@@ -351,9 +404,99 @@ async function genResume(){
     if(v('certs')){y=section('CERTIFICATIONS',y);y=wrapText(v('certs'),50,y,f,10,490);}
     if(v('languages')){y=section('LANGUAGES',y);t(v('languages'),50,y,f,10);y-=14;}
   }
-  var blob=new Blob([await doc.save()],{type:'application/pdf'});download(blob,'resume.pdf');
-  document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>\u2705 Resume downloaded! Template: "+tmpl+"</p>";}
+  return await doc.save();
+}
+
+async function genResume(){
+  var tmpl=document.getElementById("template").value;
+  try{
+    var bytes=await buildResumePdfBytes();
+    download(new Blob([bytes],{type:'application/pdf'}),'resume.pdf');
+    var sizeNote=(typeof formatSize==='function')?(' ('+formatSize(bytes.byteLength||bytes.length)+')'):'';
+    document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>\u2705 Resume downloaded"+sizeNote+"! Template: "+tmpl+"</p>";
+  }catch(e){
+    document.getElementById('result').innerHTML="<p class='info' style='color:var(--danger)'>\u274c Could not build the PDF: "+(e.message||'unknown error')+"</p>";
+  }
+}
+
+/* JSON snapshot of the resume data so it can be re-imported later. Mirrors the
+   same fields autoSave() persists, so a downloaded JSON round-trips cleanly. */
+function resumeAsJSON(){
+  var gvv=function(id){var e=document.getElementById(id);return e?e.value.trim():''};
+  var data={
+    name:gvv('name'),title:gvv('title'),email:gvv('email'),phone:gvv('phone'),
+    location:gvv('location'),linkedin:gvv('linkedin'),portfolio:gvv('portfolio'),
+    summary:gvv('summary'),skills:gvv('skills'),certs:gvv('certs'),languages:gvv('languages'),
+    ratedSkills:ratedSkills,
+    template:document.getElementById('template').value,
+    accentColor:document.getElementById('accentColor').value
+  };
+  var exps=[];document.querySelectorAll('#exp > div').forEach(function(e){var inp=e.querySelectorAll('input');var ta=e.querySelector('textarea');exps.push({company:inp[0]?inp[0].value:'',role:inp[1]?inp[1].value:'',duration:inp[2]?inp[2].value:'',desc:ta?ta.value:''});});data.exps=exps;
+  var edus=[];document.querySelectorAll('#edu > div').forEach(function(e){var inp=e.querySelectorAll('input');edus.push({inst:inp[0]?inp[0].value:'',degree:inp[1]?inp[1].value:'',year:inp[2]?inp[2].value:'',score:inp[3]?inp[3].value:''});});data.edus=edus;
+  return JSON.stringify(data,null,2);
+}
+
+/* ZIP bundle: the styled PDF, the plain-text ATS version (reusing resumeAsText),
+   a JSON of the data for re-import, and a README explaining each file. */
+async function downloadResumeZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.','warn');return}
+  var txt=resumeAsText();
+  if(!txt||txt==='YOUR NAME'){notify('Fill in your details first.','warn');return}
+  var base=(document.getElementById('name').value||'resume').trim().replace(/\s+/g,'-').toLowerCase()||'resume';
+  var res=document.getElementById('result');
+  res.innerHTML="<p class='info'>\u23f3 Building ZIP…</p>";
+  try{
+    var pdfBytes=await buildResumePdfBytes();
+    var json=resumeAsJSON();
+    var readme=[
+      'RESUME EXPORT — '+(document.getElementById('name').value||'Your Resume'),
+      '',
+      'This ZIP contains your resume in three formats:',
+      '',
+      '  '+base+'.pdf   The formatted, print-ready resume (template: '+document.getElementById('template').value+').',
+      '                 Send this to recruiters and attach it to applications.',
+      '',
+      '  '+base+'.txt   A plain-text version. Many job portals and Applicant Tracking',
+      '                 Systems (ATS) parse plain text more reliably than PDFs — paste',
+      '                 this into online application forms.',
+      '',
+      '  '+base+'.json  A machine-readable copy of all the data you entered. Keep it so',
+      '                 you can re-import and edit this resume later without retyping.',
+      '',
+      'Generated with FreeToolHubs Resume Builder — https://freetoolhubs.com/tools/resume-builder',
+      'Everything was produced in your browser; nothing was uploaded.'
+    ].join('\n');
+    var zip=new JSZip();
+    zip.file(base+'.pdf',pdfBytes);
+    zip.file(base+'.txt',txt);
+    zip.file(base+'.json',json);
+    zip.file('README.txt',readme);
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,base+'-resume-bundle.zip');
+    res.innerHTML="<p class='info' style='color:#4caf50'>\u2705 ZIP downloaded"+((typeof formatSize==='function')?(' ('+formatSize(blob.size)+')'):'')+" — PDF, TXT, JSON and a README.</p>";
+  }catch(e){
+    res.innerHTML="<p class='info' style='color:var(--danger)'>\u274c Could not build the ZIP: "+(e.message||'unknown error')+"</p>";
+  }
+}
+/* Photo drag & drop. setupDrop hands us the FileList; for a real drop the file is
+   not yet on the <input>, so copy it in via DataTransfer, then refresh the preview.
+   Non-images are refused with notify() rather than silently ignored. */
+setupDrop('photoDrop','photo',function(files){
+  if(!files||!files[0])return;
+  var f=files[0];
+  if(!/^image\//.test(f.type)){notify('That is not an image. Choose a PNG, JPG or WEBP photo.','error');return}
+  var inp=document.getElementById('photo');
+  if(inp.files[0]!==f){
+    try{var dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;}catch(e){}
+  }
+  var prev=document.getElementById('photoPreview');
+  prev.src=URL.createObjectURL(f);prev.style.display='inline-block';
+  notify('Photo added.','ok');
+  autoSave();
+});
+updatePhotoQualityNote();
 loadSaved();if(!document.querySelectorAll('#exp > div').length)addExp();if(!document.querySelectorAll('#edu > div').length)addEdu();calcATS();updatePreview();
+updatePhotoQualityNote();
   </script>
 </body>
 </html>

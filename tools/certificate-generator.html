@@ -108,9 +108,14 @@
           <h3>2. Bulk Recipients</h3>
           <p class="hint">Paste one recipient per line, or upload a CSV. CSV columns: <b>name, description, date</b> (only name is required). The other fields (title, signatures, organisation, style) come from the settings below and apply to every certificate.</p>
           <textarea class="names" id="bulk-names" placeholder="Aisha Khan&#10;Rahul Verma&#10;Emily Carter, for completing the Python course, 2026-01-15"></textarea>
+          <div class="drop-zone" id="csvDrop" onclick="document.getElementById('csv-upload').click()" style="margin:.5rem 0;padding:.8rem;font-size:.85rem">📄 Drop a CSV file here, or click to choose (columns: name, description, date)</div>
           <div class="row" style="margin-top:.5rem">
-            <input type="file" id="csv-upload" accept=".csv,text/csv" onchange="loadCSV(this)" style="flex:2">
+            <input type="file" id="csv-upload" accept=".csv,text/csv" style="flex:2">
             <button class="btn" onclick="generateBulk()" style="flex:1">⚡ Generate Gallery</button>
+          </div>
+          <div id="bulk-progress-wrap" style="display:none;margin-top:.8rem">
+            <div id="bulk-progress-label" class="hint" style="margin-bottom:.3rem"></div>
+            <div style="height:14px;background:rgba(148,148,184,.22);border-radius:7px;overflow:hidden"><div id="bulk-progress-bar" style="height:100%;width:0%;background:var(--gradient);transition:width .12s ease"></div></div>
           </div>
           <div class="form-grid" style="margin-top:.8rem">
             <div class="full">
@@ -171,15 +176,18 @@
           </div>
           <div>
             <label>Logo (optional)</label>
-            <input type="file" id="logo-upload" accept="image/*" onchange="loadLogo(this)">
+            <input type="file" id="logo-upload" accept="image/*">
+            <div class="drop-zone" id="logoDrop" onclick="document.getElementById('logo-upload').click()" style="margin-top:.3rem;padding:.6rem;font-size:.78rem">🖼️ Drop logo</div>
           </div>
           <div>
             <label>Signature Image (optional)</label>
-            <input type="file" id="sig-upload" accept="image/*" onchange="loadSig(this)">
+            <input type="file" id="sig-upload" accept="image/*">
+            <div class="drop-zone" id="sigDrop" onclick="document.getElementById('sig-upload').click()" style="margin-top:.3rem;padding:.6rem;font-size:.78rem">✍️ Drop signature</div>
           </div>
           <div>
             <label>Seal Image (optional)</label>
-            <input type="file" id="seal-upload" accept="image/*" onchange="loadSeal(this)">
+            <input type="file" id="seal-upload" accept="image/*">
+            <div class="drop-zone" id="sealDrop" onclick="document.getElementById('seal-upload').click()" style="margin-top:.3rem;padding:.6rem;font-size:.78rem">🏅 Drop seal</div>
           </div>
           <div class="full">
             <label><input type="checkbox" id="drawSealChk" onchange="render()" checked style="width:auto"> Draw procedural seal with text below</label>
@@ -197,6 +205,8 @@
       <div class="actions">
         <button class="btn" onclick="downloadPNG()">📥 Download PNG (print res)</button>
         <button class="btn" onclick="downloadPDF()">📄 Download PDF</button>
+        <button class="btn btn-outline" onclick="copyCertPNG()">📋 Copy certificate (PNG)</button>
+        <button class="btn btn-outline" onclick="copyRecipientList()">📋 Copy recipient list</button>
         <button class="btn btn-outline" onclick="printCert()">🖨 Print</button>
       </div>
     </div>
@@ -663,13 +673,23 @@ function parseBulk(){
   }).filter(function(r){return r.name});
 }
 
-function generateBulk(){
+async function generateBulk(){
   var rows=parseBulk();
   var gallery=document.getElementById("bulk-gallery");
   gallery.innerHTML="";bulkCerts=[];
-  if(!rows.length){gallery.innerHTML='<p class="hint">Add at least one name above.</p>';document.getElementById("bulk-actions").style.display="none";return}
+  var pw=document.getElementById("bulk-progress-wrap");
+  var pbar=document.getElementById("bulk-progress-bar");
+  var plabel=document.getElementById("bulk-progress-label");
+  if(!rows.length){gallery.innerHTML='<p class="hint">Add at least one name above.</p>';document.getElementById("bulk-actions").style.display="none";pw.style.display="none";return}
   var portrait=document.getElementById("orientation").value==="portrait";
-  rows.forEach(function(row){
+  // Show real progress and yield between certificates so the page keeps painting
+  // instead of freezing on large CSVs (a 240-row batch is genuinely slow).
+  pw.style.display="block";
+  pbar.style.width="0%";
+  plabel.textContent="Preparing "+rows.length+" certificate"+(rows.length>1?"s":"")+"…";
+  await new Promise(function(r){requestAnimationFrame(function(){r()})});
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i];
     var c=document.createElement("canvas");
     if(portrait){c.width=990;c.height=1400}else{c.width=1400;c.height=990}
     var over={recipient:row.name};
@@ -683,8 +703,15 @@ function generateBulk(){
     var cap=document.createElement("figcaption");cap.textContent=row.name;
     fig.appendChild(img);fig.appendChild(cap);
     gallery.appendChild(fig);
-  });
+    // update the real progress text + bar, then hand control back to the browser
+    var done=i+1;
+    plabel.textContent="Certificate "+done+" of "+rows.length+" — "+row.name;
+    pbar.style.width=Math.round(done/rows.length*100)+"%";
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  plabel.textContent="Done — "+rows.length+" certificate"+(rows.length>1?"s":"")+" generated.";
   document.getElementById("bulk-actions").style.display="flex";
+  setTimeout(function(){pw.style.display="none"},1500);
 }
 
 function safeName(s){return s.replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"")||"certificate"}
@@ -736,6 +763,70 @@ function printCert(){
   win.document.close();
   win.onload=function(){win.print();win.close()};
 }
+
+/* Copy the rendered certificate to the clipboard as a PNG image. ClipboardItem
+   only reliably accepts image/png, so we go via the canvas blob. */
+function copyCertPNG(){
+  var canvas=document.getElementById("cert-canvas");
+  if(typeof ClipboardItem==="undefined"||!navigator.clipboard||!navigator.clipboard.write){
+    notify("This browser can't copy images to the clipboard. Use Download PNG instead.","warn");
+    return;
+  }
+  canvas.toBlob(function(blob){
+    if(!blob){notify("Could not render the certificate image.","error");return}
+    navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){
+      notify("Certificate copied as PNG — paste it into docs, chat or email.","ok");
+    },function(){
+      notify("Copy was blocked by the browser. Use Download PNG instead.","error");
+    });
+  },"image/png");
+}
+
+/* Copy the bulk recipient list as plain text — handy for pasting back into a
+   tracking sheet or confirming who was issued a certificate. */
+function copyRecipientList(){
+  var rows=parseBulk();
+  if(!rows.length){notify("Add recipients in the Bulk tab first.","warn");return}
+  var L=["RECIPIENTS ("+rows.length+")"];
+  rows.forEach(function(r,i){
+    var line=(i+1)+". "+r.name;
+    if(r.desc)line+=" — "+r.desc;
+    if(r.date)line+=" ("+r.date+")";
+    L.push(line);
+  });
+  copyNow(L.join("\n"),rows.length+" recipient(s) copied.");
+}
+
+/* Drag & drop for the CSV and the three image inputs. setupDrop hands us the
+   dropped FileList (and also fires on the input's own change). We copy the file
+   onto the matching <input> and call its loader directly — note setupDrop already
+   listens for 'change', so we must NOT re-dispatch 'change' here or it recurses. */
+function certSetupDrop(dropId,inputId,accept,label,loader){
+  var busy=false, lastFile=null;
+  setupDrop(dropId,inputId,function(files){
+    if(busy)return; busy=true;
+    try{
+      if(!files||!files[0])return;
+      var f=files[0];
+      if(f===lastFile)return; // same file already handled (native change + drop both fire)
+      var ok = accept==='csv'
+        ? (/\.csv$/i.test(f.name)||/csv/i.test(f.type)||f.type==='text/plain'||f.type==='')
+        : /^image\//.test(f.type);
+      if(!ok){notify("That file isn't a "+label+". Expected "+(accept==='csv'?"a .csv file":"an image")+".","error");return}
+      lastFile=f;
+      var inp=document.getElementById(inputId);
+      if(inp.files[0]!==f){
+        try{var dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;}catch(e){}
+      }
+      loader(inp); // loadCSV / loadLogo / loadSig / loadSeal read from inp.files
+      notify((label.charAt(0).toUpperCase()+label.slice(1))+" added.","ok");
+    }finally{ busy=false; }
+  });
+}
+certSetupDrop('csvDrop','csv-upload','csv','CSV',loadCSV);
+certSetupDrop('logoDrop','logo-upload','image','logo',loadLogo);
+certSetupDrop('sigDrop','sig-upload','image','signature',loadSig);
+certSetupDrop('sealDrop','seal-upload','image','seal',loadSeal);
 
 // ---- localStorage design save/load ----
 function collectDesign(){

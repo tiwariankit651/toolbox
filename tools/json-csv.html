@@ -53,6 +53,8 @@
       <div id="csvOpts" style="margin:.5rem 0;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
         <label style="font-size:.8rem;margin:0">Nested separator:</label>
         <input type="text" id="sep" value="." maxlength="3" style="width:50px;padding:.2rem .4rem;font-size:.8rem;margin:0">
+        <label style="font-size:.8rem;margin:0">Flatten depth:</label>
+        <select id="flattenDepth" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="0" selected>Unlimited</option><option value="1">1 level</option><option value="2">2 levels</option><option value="3">3 levels</option></select>
         <label style="font-size:.8rem;margin:0">Arrays:</label>
         <select id="arrayMode" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="join">Join into one cell</option><option value="expand">Expand to numbered columns</option><option value="explode">Explode into rows</option></select>
         <input type="text" id="arrJoin" value="; " title="Array join delimiter" style="width:55px;padding:.2rem .4rem;font-size:.8rem;margin:0">
@@ -72,6 +74,8 @@
         <select id="delimiterIn" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="auto" selected>Auto-detect</option><option value=",">Comma</option><option value=";">Semicolon</option><option value="\t">Tab</option><option value="|">Pipe</option></select>
         <label style="font-size:.8rem;margin:0"><input type="checkbox" id="inferTypes" checked> Infer types (number/bool/null)</label>
         <label style="font-size:.8rem;margin:0"><input type="checkbox" id="hasHeaderIn" checked> First row is header</label>
+        <label style="font-size:.8rem;margin:0">Output:</label>
+        <select id="jsonPretty" style="width:auto;padding:.2rem .4rem;font-size:.8rem;margin:0"><option value="pretty" selected>Pretty (2-space)</option><option value="min">Minified</option></select>
       </div>
 
       <!-- SQL options -->
@@ -84,7 +88,10 @@
         <button class="btn" onclick="convert()">Convert</button>
         <button class="btn btn-outline" onclick="copyResult()">📋 Copy</button>
         <button class="btn btn-outline" onclick="download()">⬇️ Download</button>
+        <button class="btn btn-outline" onclick="exportZip()">📦 ZIP (+ split)</button>
       </div>
+      <div id="progressBox" class="info" style="display:none;font-size:.82rem;color:var(--accent-text);margin:.4rem 0"></div>
+      <div id="sizeBox" class="info" style="font-size:.8rem"></div>
       <div id="result"></div>
       <div id="previewBox" style="display:none;margin-top:.6rem">
         <p style="font-size:.8rem;color:var(--text2);margin:.3rem 0" id="previewMeta"></p>
@@ -152,6 +159,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var $=function(id){return document.getElementById(id)};
@@ -172,11 +180,15 @@ function eolStr(){return $("eol").value==="crlf"?"\r\n":"\n"}
 // ---- Flatten with array strategies ----
 function flatten(obj,prefix,rows,arrMode,sep,arrJoin){
   // returns array of flat objects (explode may produce >1)
+  var maxDepth=parseInt(($("flattenDepth")||{}).value||"0",10)||0; // 0 = unlimited
   var base={};var explodeKeys=[];
-  function walk(o,pfx){
+  function walk(o,pfx,depth){
     for(var k in o){if(!Object.prototype.hasOwnProperty.call(o,k))continue;
       var key=pfx?pfx+sep+k:k;var val=o[k];
-      if(val!==null&&typeof val==="object"&&!Array.isArray(val)){walk(val,key)}
+      if(val!==null&&typeof val==="object"&&!Array.isArray(val)){
+        if(maxDepth&&depth>=maxDepth){base[key]=JSON.stringify(val)}
+        else{walk(val,key,depth+1)}
+      }
       else if(Array.isArray(val)){
         if(arrMode==="join"){base[key]=val.map(function(x){return typeof x==="object"&&x!==null?JSON.stringify(x):x}).join(arrJoin)}
         else if(arrMode==="expand"){val.forEach(function(x,i){base[key+sep+i]=typeof x==="object"&&x!==null?JSON.stringify(x):x})}
@@ -185,7 +197,7 @@ function flatten(obj,prefix,rows,arrMode,sep,arrJoin){
       else base[key]=val;
     }
   }
-  walk(obj,prefix);
+  walk(obj,prefix,1);
   if(!explodeKeys.length)return[base];
   // explode: cartesian across arrays that need exploding (handle simply: first explode key)
   var out=[];
@@ -215,6 +227,26 @@ function json2csv(arr){
   var lines=[];
   if($("header").checked)lines.push(d.keys.map(function(k){return escCsv(k,delim,qa)}).join(delim));
   d.rows.forEach(function(o){lines.push(d.keys.map(function(k){return escCsv(o[k],delim,qa)}).join(delim))});
+  return lines.join(eol);
+}
+// chunked variant that yields to the browser so a row counter can paint
+function nextFrame(){return new Promise(function(r){requestAnimationFrame(function(){setTimeout(r,0)})})}
+function showProgress(msg){var p=$("progressBox");if(!p)return;p.style.display='block';p.textContent=msg;}
+function hideProgress(){var p=$("progressBox");if(p)p.style.display='none';}
+async function json2csvAsync(arr){
+  var d=buildRows(arr);var delim=realDelim($("delimiter").value);var eol=eolStr();var qa=$("quoteAll").checked;
+  var lines=[];
+  if($("header").checked)lines.push(d.keys.map(function(k){return escCsv(k,delim,qa)}).join(delim));
+  var total=d.rows.length;
+  var CHUNK=500;
+  for(var i=0;i<total;i++){
+    var o=d.rows[i];
+    lines.push(d.keys.map(function(k){return escCsv(o[k],delim,qa)}).join(delim));
+    if(i%CHUNK===0&&total>CHUNK){
+      showProgress('Row '+(i+1).toLocaleString()+' of '+total.toLocaleString()+'…');
+      await nextFrame();
+    }
+  }
   return lines.join(eol);
 }
 // ---- CSV parsing ----
@@ -307,19 +339,35 @@ function parseJsonInput(input){
   if(typeof data[0]!=="object"||data[0]===null)throw new Error("Array items must be objects.");
   return data;
 }
-function convert(){
+async function convert(){
   var input=$("input").value.trim();
   if(!input){err("Please paste some data to convert.");return}
+  $("sizeBox").innerHTML="";
   try{
     var out;
-    if(mode==="csv2json"){var arr=csv2json(input);out=JSON.stringify(arr,null,2);buildPreview(arr)}
+    if(mode==="csv2json"){
+      var arr=csv2json(input);
+      var pretty=($("jsonPretty")||{}).value!=="min";
+      out=pretty?JSON.stringify(arr,null,2):JSON.stringify(arr);
+      buildPreview(arr);
+    }
     else{var data=parseJsonInput(input);buildPreview(data);
-      if(mode==="json2csv")out=json2csv(data);
+      if(mode==="json2csv")out=await json2csvAsync(data);
       else if(mode==="json2md")out=json2md(data);
       else out=json2sql(data);
     }
-    $("output").value=out;$("output").style.display="block";ok("Converted successfully!");autosave();
-  }catch(e){err(e.message)}
+    hideProgress();
+    $("output").value=out;$("output").style.display="block";ok("Converted successfully!");
+    showSizes(input,out);
+    autosave();
+  }catch(e){hideProgress();err(e.message)}
+}
+function byteLen(s){return new Blob([s]).size}
+function showSizes(input,out){
+  var inB=byteLen(input), outB=byteLen(out);
+  var delta=inB?Math.round((outB-inB)/inB*100):0;
+  var sign=delta>=0?'+':'';
+  $("sizeBox").innerHTML='Input: '+formatSize(inB)+' ('+inB.toLocaleString()+' B) → Output: '+formatSize(outB)+' ('+outB.toLocaleString()+' B) <span class="badge badge-blue">'+sign+delta+'%</span>';
 }
 function copyResult(){var o=$("output");if(!o.value){err("Nothing to copy. Convert first.");return}copyNow(o.value);ok("Copied to clipboard!")}
 function download(){
@@ -331,6 +379,79 @@ function download(){
   else{ext=".sql";mime="text/plain"}
   var blob=new Blob([o.value],{type:mime});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="converted"+ext;a.click();URL.revokeObjectURL(a.href);
 }
+
+async function exportZip(){
+  var input=$("input").value.trim();
+  if(!input){err("Please paste some data to convert.");return}
+  if(typeof JSZip==="undefined"){err("ZIP library is still loading — try again in a moment.");return}
+  try{
+    // ensure we have fresh output for the current input/options
+    await convert();
+    var o=$("output");
+    if(!o.value){return}
+    var ext,mime,inExt;
+    if(mode==="json2csv"){ext=".csv";mime="text/csv";inExt=".json"}
+    else if(mode==="csv2json"){ext=".json";mime="application/json";inExt=".csv"}
+    else if(mode==="json2md"){ext=".md";mime="text/markdown";inExt=".json"}
+    else{ext=".sql";mime="text/plain";inExt=".json"}
+
+    var zip=new JSZip();
+    zip.file("input"+inExt,input);
+    zip.file("converted"+ext,o.value);
+
+    // Split large arrays into chunked files (1000 rows/file) for spreadsheet &
+    // import limits. Only meaningful for the row-oriented outputs.
+    var ROWS_PER_FILE=1000;
+    var splitNote='no split (small output)';
+    if(mode==="json2csv"){
+      var d=buildRows(parseJsonInput(input));
+      if(d.rows.length>ROWS_PER_FILE){
+        var delim=realDelim($("delimiter").value),eol=eolStr(),qa=$("quoteAll").checked;
+        var headerLine=$("header").checked?d.keys.map(function(k){return escCsv(k,delim,qa)}).join(delim):null;
+        var nParts=Math.ceil(d.rows.length/ROWS_PER_FILE);
+        var pad=String(nParts).length;
+        var chunksFolder=zip.folder("chunks");
+        for(var p=0;p<nParts;p++){
+          var slice=d.rows.slice(p*ROWS_PER_FILE,(p+1)*ROWS_PER_FILE);
+          var lines=[];if(headerLine!==null)lines.push(headerLine);
+          slice.forEach(function(row){lines.push(d.keys.map(function(k){return escCsv(row[k],delim,qa)}).join(delim))});
+          var num=String(p+1);while(num.length<pad)num='0'+num;
+          chunksFolder.file("part-"+num+".csv",lines.join(eol));
+        }
+        splitNote=nParts+' files of up to '+ROWS_PER_FILE+' rows each, in chunks/';
+      }
+    }else if(mode==="csv2json"){
+      var arr=csv2json(input);
+      if(arr.length>ROWS_PER_FILE){
+        var pretty=($("jsonPretty")||{}).value!=="min";
+        var nP=Math.ceil(arr.length/ROWS_PER_FILE);
+        var pd=String(nP).length;
+        var cf=zip.folder("chunks");
+        for(var q=0;q<nP;q++){
+          var sl=arr.slice(q*ROWS_PER_FILE,(q+1)*ROWS_PER_FILE);
+          var txt=pretty?JSON.stringify(sl,null,2):JSON.stringify(sl);
+          var nn=String(q+1);while(nn.length<pd)nn='0'+nn;
+          cf.file("part-"+nn+".json",txt);
+        }
+        splitNote=nP+' files of up to '+ROWS_PER_FILE+' rows each, in chunks/';
+      }
+    }
+
+    var readme=['Conversion bundle','Generated by FreeToolHubs JSON to CSV Converter','',
+      'Mode: '+mode,
+      'Contents:',
+      '  input'+inExt+'      the data you pasted',
+      '  converted'+ext+'  the full converted output',
+      '  chunks/          split output ('+splitNote+')','',
+      'Row chunking: '+ROWS_PER_FILE+' rows per file when the output exceeds that.'].join('\n');
+    zip.file("README.txt",readme);
+
+    var out=await zip.generateAsync({type:"blob"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(out);a.download="conversion-bundle.zip";a.click();URL.revokeObjectURL(a.href);
+    ok("ZIP bundle downloaded.");
+  }catch(e){err(e.message)}
+}
+window.exportZip=exportZip;
 function readFile(f){var r=new FileReader();r.onload=function(){$("input").value=r.result;if(/\.csv$/i.test(f.name)&&mode!=="csv2json")switchTab("csv2json");else if(/\.json$/i.test(f.name)&&mode==="csv2json")switchTab("json2csv");convert()};r.readAsText(f)}
 function uploadFile(e){var f=e.target.files[0];if(f)readFile(f)}
 var dz=$("dropZone");

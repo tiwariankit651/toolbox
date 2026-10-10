@@ -95,7 +95,10 @@
           </div>
           <div>
             <label>Upload Logo</label>
-            <input type="file" id="logoUpload" accept="image/*" onchange="loadLogo(event)" style="font-size:.8rem">
+            <div class="drop-zone" id="logoDrop" onclick="document.getElementById('logoUpload').click()" style="padding:.6rem;font-size:.78rem">
+              🖼️ Drop logo or click
+              <input type="file" id="logoUpload" accept="image/*" style="font-size:.8rem">
+            </div>
           </div>
           <div>
             <label>Logo Scale: <span id="logoScaleVal">100%</span></label>
@@ -150,11 +153,13 @@
       <div class="bc-grid">
         <button class="btn" onclick="downloadCard('front')">⬇️ Front PNG</button>
         <button class="btn" onclick="downloadCard('back')">⬇️ Back PNG</button>
+        <button class="btn" onclick="copyCard()">📋 Copy Card</button>
         <button class="btn" onclick="downloadZip()">🗜️ Both as ZIP</button>
         <button class="btn" onclick="downloadPDF()">📄 Print PDF</button>
         <button class="btn" onclick="downloadSheetPDF()">📄 A4 Sheet (cut marks)</button>
         <button class="btn btn-outline" onclick="printCard()">🖨️ Print</button>
       </div>
+      <div class="info" id="exportStatus" style="text-align:center;font-size:.8rem;min-height:1.1rem;margin-top:.4rem"></div>
       <div class="pill-row" style="margin-top:.6rem">
         <button class="btn btn-outline" onclick="saveCard()" style="margin:0">💾 Save Card Data</button>
         <button class="btn btn-outline" onclick="loadCard()" style="margin:0">📂 Load Saved Data</button>
@@ -299,11 +304,22 @@ function showSide(s){
   if(bb)bb.className=s==='back'?'btn':'btn btn-outline';
   renderCard();
 }
-function loadLogo(e){
-  var fl=e.target.files[0]; if(!fl)return;
+function handleLogoFile(fl){
+  if(!fl)return;
+  if(fl.type.indexOf('image/')!==0){notify('That file is not an image. Please choose a JPG, PNG or SVG.', 'error');return;}
   var r=new FileReader();
-  r.onload=function(ev){var im=new Image();im.onload=function(){logoImg=im;renderCard()};im.src=ev.target.result};
+  r.onload=function(ev){var im=new Image();im.onload=function(){logoImg=im;renderCard();notify('Logo added.', 'ok')};im.onerror=function(){notify('That image could not be read.', 'error')};im.src=ev.target.result};
   r.readAsDataURL(fl);
+}
+function loadLogo(e){handleLogoFile(e.target.files[0]);}
+// Drag & drop for the logo (refuses non-images via handleLogoFile)
+setupDrop('logoDrop','logoUpload',function(fl){handleLogoFile(fl&&fl[0]);});
+
+// Shared busy/progress indicator for the export steps.
+function exportStatus(msg){var el=document.getElementById('exportStatus');if(el)el.textContent=msg||'';}
+function setExportBusy(on){
+  var sel='.bc-grid .btn, .pill-row .btn';
+  document.querySelectorAll(sel).forEach(function(b){b.disabled=!!on;b.style.opacity=on?'.6':''});
 }
 
 /* ---- helpers ---- */
@@ -523,56 +539,103 @@ function downloadCard(s){
   var a=document.createElement('a');
   a.download='business-card-'+s+'.png'; a.href=sideDataURL(s); a.click();
 }
+
+// Let the browser paint the status text before the next (blocking) step runs.
+function _yield(){return new Promise(function(r){setTimeout(r,30)});}
+
+// Copy the rendered card (current side) to the clipboard as PNG.
+function copyCard(){
+  if(!(navigator.clipboard&&window.ClipboardItem)){
+    notify('Your browser cannot copy images to the clipboard. Use the PNG download instead.', 'warn');return;
+  }
+  // Encode the currently shown side straight from the live canvas.
+  canvas.toBlob(function(png){
+    if(!png){notify('Could not prepare the card for copying.', 'error');return;}
+    try{
+      navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(function(){
+        notify('Card ('+side+') copied to clipboard as PNG.', 'ok');
+      },function(err){
+        notify('Copy was blocked by the browser'+(err&&err.message?': '+err.message:'')+'. Use Download instead.', 'error');
+      });
+    }catch(e){notify('Copy was blocked by the browser. Use Download instead.', 'error');}
+  },'image/png');
+}
 async function downloadZip(){
   if(typeof JSZip==='undefined'){notify('ZIP library still loading, please try again in a moment.', 'warn');return}
-  var zip=new JSZip();
-  zip.file('business-card-front.png', sideDataURL('front').split(',')[1], {base64:true});
-  zip.file('business-card-back.png', sideDataURL('back').split(',')[1], {base64:true});
-  var blob=await zip.generateAsync({type:'blob'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='business-card.zip'; a.click();
+  setExportBusy(true);
+  try{
+    exportStatus('Rendering front…');await _yield();
+    var frontB64=sideDataURL('front').split(',')[1];
+    exportStatus('Rendering back…');await _yield();
+    var backB64=sideDataURL('back').split(',')[1];
+    exportStatus('Building ZIP…');await _yield();
+    var zip=new JSZip();
+    zip.file('business-card-front.png', frontB64, {base64:true});
+    zip.file('business-card-back.png', backB64, {base64:true});
+    var blob=await zip.generateAsync({type:'blob'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='business-card.zip'; a.click();
+    exportStatus('ZIP ready ('+formatSize(blob.size)+').');
+  }catch(e){exportStatus('');notify('ZIP export failed: '+(e&&e.message?e.message:'unknown'), 'error');}
+  finally{setExportBusy(false);}
 }
 async function downloadPDF(){
   if(typeof PDFLib==='undefined'){notify('PDF library still loading, please try again in a moment.', 'warn');return}
-  var doc=await PDFLib.PDFDocument.create();
-  var W=canvas.width, H=canvas.height;
-  for(const s of ['front','back']){
-    var img=await doc.embedPng(dataURLtoBytes(sideDataURL(s)));
-    var pg=doc.addPage([W,H]);
-    pg.drawImage(img,{x:0,y:0,width:W,height:H});
-  }
-  var bytes=await doc.save();
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  a.download='business-card.pdf'; a.click();
+  setExportBusy(true);
+  try{
+    var doc=await PDFLib.PDFDocument.create();
+    var W=canvas.width, H=canvas.height;
+    var sides=['front','back'];
+    for(var i=0;i<sides.length;i++){
+      exportStatus('Rendering '+sides[i]+'…');await _yield();
+      var img=await doc.embedPng(dataURLtoBytes(sideDataURL(sides[i])));
+      var pg=doc.addPage([W,H]);
+      pg.drawImage(img,{x:0,y:0,width:W,height:H});
+    }
+    exportStatus('Building PDF…');await _yield();
+    var bytes=await doc.save();
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    a.download='business-card.pdf'; a.click();
+    exportStatus('PDF ready.');
+  }catch(e){exportStatus('');notify('PDF export failed: '+(e&&e.message?e.message:'unknown'), 'error');}
+  finally{setExportBusy(false);}
 }
 async function downloadSheetPDF(){
   if(typeof PDFLib==='undefined'){notify('PDF library still loading, please try again in a moment.', 'warn');return}
-  // A4 portrait at 72pt/inch = 595 x 842
-  var A4W=595, A4H=842;
-  var doc=await PDFLib.PDFDocument.create();
-  var page=doc.addPage([A4W,A4H]);
-  var img=await doc.embedPng(dataURLtoBytes(sideDataURL('front')));
-  // card physical size in points (1 in = 72pt)
-  var inW=SIZES[sizeKey].w/300, inH=SIZES[sizeKey].h/300; // canvas is ~300dpi
-  var cw=inW*72, chh=inH*72;
-  var margin=28, gap=10;
-  var cols=Math.max(1,Math.floor((A4W-margin*2+gap)/(cw+gap)));
-  var rows=Math.max(1,Math.floor((A4H-margin*2+gap)/(chh+gap)));
-  for(var r=0;r<rows;r++)for(var cc=0;cc<cols;cc++){
-    var x=margin+cc*(cw+gap), y=A4H-margin-chh-r*(chh+gap);
-    page.drawImage(img,{x:x,y:y,width:cw,height:chh});
-    // cut marks
-    var m=6;
-    [[x,y],[x+cw,y],[x,y+chh],[x+cw,y+chh]].forEach(function(pt){
-      page.drawLine({start:{x:pt[0]-m,y:pt[1]},end:{x:pt[0]+m,y:pt[1]},thickness:.3,color:PDFLib.rgb(.6,.6,.6)});
-      page.drawLine({start:{x:pt[0],y:pt[1]-m},end:{x:pt[0],y:pt[1]+m},thickness:.3,color:PDFLib.rgb(.6,.6,.6)});
-    });
-  }
-  var bytes=await doc.save();
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  a.download='business-cards-a4-sheet.pdf'; a.click();
+  setExportBusy(true);
+  try{
+    // A4 portrait at 72pt/inch = 595 x 842
+    var A4W=595, A4H=842;
+    exportStatus('Rendering front…');await _yield();
+    var doc=await PDFLib.PDFDocument.create();
+    var page=doc.addPage([A4W,A4H]);
+    var img=await doc.embedPng(dataURLtoBytes(sideDataURL('front')));
+    exportStatus('Laying out A4 sheet…');await _yield();
+    // card physical size in points (1 in = 72pt)
+    var inW=SIZES[sizeKey].w/300, inH=SIZES[sizeKey].h/300; // canvas is ~300dpi
+    var cw=inW*72, chh=inH*72;
+    var margin=28, gap=10;
+    var cols=Math.max(1,Math.floor((A4W-margin*2+gap)/(cw+gap)));
+    var rows=Math.max(1,Math.floor((A4H-margin*2+gap)/(chh+gap)));
+    for(var r=0;r<rows;r++)for(var cc=0;cc<cols;cc++){
+      var x=margin+cc*(cw+gap), y=A4H-margin-chh-r*(chh+gap);
+      page.drawImage(img,{x:x,y:y,width:cw,height:chh});
+      // cut marks
+      var m=6;
+      [[x,y],[x+cw,y],[x,y+chh],[x+cw,y+chh]].forEach(function(pt){
+        page.drawLine({start:{x:pt[0]-m,y:pt[1]},end:{x:pt[0]+m,y:pt[1]},thickness:.3,color:PDFLib.rgb(.6,.6,.6)});
+        page.drawLine({start:{x:pt[0],y:pt[1]-m},end:{x:pt[0],y:pt[1]+m},thickness:.3,color:PDFLib.rgb(.6,.6,.6)});
+      });
+    }
+    exportStatus('Building PDF…');await _yield();
+    var bytes=await doc.save();
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    a.download='business-cards-a4-sheet.pdf'; a.click();
+    exportStatus('A4 sheet ready ('+(cols*rows)+' cards per page).');
+  }catch(e){exportStatus('');notify('A4 sheet export failed: '+(e&&e.message?e.message:'unknown'), 'error');}
+  finally{setExportBusy(false);}
 }
 function printCard(){
   var f=sideDataURL('front'), b=sideDataURL('back');

@@ -76,9 +76,12 @@
             <option value="sprint">Sprint (900 wpm, 5 words)</option>
           </select>
         </div>
+        <div class="drop-zone" id="srDropZone" style="padding:1rem;margin:.4rem 0" onclick="document.getElementById('srFileInput').click()">
+          📥 Drop a .txt or .md file here, or click to import text
+        </div>
         <div class="row" style="margin:.4rem 0;gap:.4rem">
           <button class="btn btn-outline" onclick="document.getElementById('srFileInput').click()" style="font-size:.85rem">📁 Upload .txt</button>
-          <input type="file" id="srFileInput" accept=".txt" style="display:none" onchange="srLoadFile(event)">
+          <input type="file" id="srFileInput" accept=".txt,.md,text/plain,text/markdown" style="display:none">
           <select id="srPassageSelect" onchange="srLoadPassage(this.value)" style="flex:2;font-size:.85rem">
             <option value="">— Practice Passages —</option>
             <option value="0">Easy: The Importance of Reading</option>
@@ -87,6 +90,10 @@
             <option value="3">Comprehension: The Indian Economy</option>
             <option value="4">Comprehension: Space Exploration</option>
           </select>
+        </div>
+        <div class="row" style="margin:.4rem 0;gap:.4rem">
+          <button class="btn btn-outline" onclick="srDownloadReading()" style="font-size:.85rem">💾 Download text + settings</button>
+          <button class="btn btn-outline" onclick="srExportChunksZip()" style="font-size:.85rem">📦 Split into session ZIP</button>
         </div>
         <div id="srTextStats" class="sr-meta"></div>
       </div>
@@ -167,7 +174,7 @@
         <h3 style="margin:.8rem 0 .4rem">Past Sessions</h3>
         <button class="btn btn-outline" style="margin:0 0 .5rem;padding:.4rem .8rem;font-size:.82rem" onclick="srCopyHistory()">📋 Copy session history</button>
         <div id="srHistoryList"></div>
-        <button class="btn btn-outline" onclick="if(confirm('Clear all history?')){srHistory=[];saveJSON('sr_history',[]);srShowTab('history')}" style="margin-top:.5rem">Clear History</button>
+        <button class="btn btn-outline" onclick="srClearHistory()" style="margin-top:.5rem">Clear History</button>
       </div>
 
     </div>
@@ -228,6 +235,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 /* ===== PRACTICE PASSAGES ===== */
@@ -288,20 +296,104 @@ function srUpdateStats() {
   el.textContent = wc ? wc + ' words \u00b7 ~' + mins.toFixed(1) + ' min at ' + wpm + ' WPM' : '';
 }
 
-function srLoadFile(e) {
-  var file = e.target.files[0];
-  if (!file) return;
+function srHandleFile(file){
+  if(!file)return;
+  if(file.size>5*1024*1024){notify('That file is '+(file.size/1048576).toFixed(1)+'MB. Please use a file under 5MB.','error');return;}
+  if(!/\.(txt|md)$/i.test(file.name)&&!/^text\//.test(file.type||'')){
+    notify('Only .txt and .md text files are supported.','error');return;
+  }
   var reader = new FileReader();
   reader.onload = function(ev) {
     document.getElementById('srText').value = ev.target.result;
     srUpdateStats();
+    notify('Loaded '+file.name,'ok');
   };
   reader.onerror = function() {
     notify("That file could not be read. Try a plain .txt file.", "error");
   };
   reader.readAsText(file);
+}
+function srLoadFile(e) {
+  srHandleFile(e.target.files[0]);
   e.target.value = '';
 }
+setupDrop('srDropZone','srFileInput',function(files){if(files&&files[0])srHandleFile(files[0]);});
+
+/* Download the reading text with the current session settings, so a reading
+   setup can be kept or shared. */
+function srReadingSettings(){
+  return {
+    wpm:parseInt(document.getElementById('srWpm').value)||250,
+    chunk:parseInt(document.getElementById('srChunk').value)||1,
+    fontSize:document.getElementById('srFsize').value,
+    pauseOnPunctuation:document.getElementById('srPausePunc').checked,
+    rampUp:document.getElementById('srRampUp').checked,
+    preset:document.getElementById('srPreset').value
+  };
+}
+function srDownloadReading(){
+  var text=(document.getElementById('srText').value||'').trim();
+  if(!text){notify('Paste or load some text first.','warn');return}
+  var s=srReadingSettings();
+  var wc=text.split(/\s+/).filter(Boolean).length;
+  var mins=s.wpm?(wc/s.wpm):0;
+  var head=['# Speed Reader session',
+    'Words per minute: '+s.wpm,
+    'Words per chunk: '+s.chunk,
+    'Font size: '+s.fontSize+'px',
+    'Pause on punctuation: '+(s.pauseOnPunctuation?'yes':'no'),
+    'Ramp up: '+(s.rampUp?'yes':'no'),
+    'Preset: '+s.preset,
+    'Words: '+wc+'  (~'+mins.toFixed(1)+' min at '+s.wpm+' wpm)',
+    '','----- READING TEXT -----',''].join('\n');
+  download(new Blob([head+text],{type:'text/plain'}),'speed-reader-session.txt');
+}
+
+/* Split long text into session-sized chunks (default one file per 10 minutes of
+   reading at the configured wpm) and export as a ZIP of numbered .txt files.
+   Mirrors the chunk-ZIP approach used elsewhere in the project. */
+async function srExportChunksZip(){
+  var text=(document.getElementById('srText').value||'').trim();
+  if(!text){notify('Paste or load some text first.','warn');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.','error');return}
+  var words=text.split(/\s+/).filter(Boolean);
+  var s=srReadingSettings();
+  var minutesPerChunk=10;
+  var wordsPerChunk=Math.max(1,s.wpm*minutesPerChunk);
+  var nChunks=Math.ceil(words.length/wordsPerChunk);
+  if(nChunks<=1){
+    notify('Text is under one '+minutesPerChunk+'-minute session ('+words.length+' words) — nothing to split.','warn');
+    return;
+  }
+  try{
+    var zip=new JSZip();
+    var pad=String(nChunks).length;
+    for(var i=0;i<nChunks;i++){
+      var slice=words.slice(i*wordsPerChunk,(i+1)*wordsPerChunk);
+      var num=String(i+1);while(num.length<pad)num='0'+num;
+      zip.file('part-'+num+'.txt',slice.join(' '));
+    }
+    var mins=(wordsPerChunk/s.wpm).toFixed(0);
+    var readme=['Speed Reader session chunks','Generated by FreeToolHubs Speed Reader','',
+      'Words per minute: '+s.wpm,
+      'Words per chunk: '+wordsPerChunk,
+      'Estimated time per chunk: ~'+mins+' min',
+      'Total words: '+words.length,
+      'Chunks: '+nChunks,'',
+      'Read one part per sitting to pace a long document.'].join('\n');
+    zip.file('README.txt',readme);
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'speed-reader-chunks.zip');
+  }catch(e){
+    notify('ZIP export failed: '+(e.message||'unknown error'),'error');
+  }
+}
+window.srDownloadReading=srDownloadReading;
+window.srExportChunksZip=srExportChunksZip;
+function srClearHistory(){
+  if(confirm('Clear all history?')){srHistory=[];saveJSON('sr_history',[]);srShowTab('history')}
+}
+window.srClearHistory=srClearHistory;
 
 function srLoadPassage(idx) {
   if (idx === '') return;

@@ -145,7 +145,10 @@
       </div>
 
       <canvas id="canvas"></canvas>
-      <button class="btn" id="dlBtn" onclick="downloadCurrent()" style="width:100%;margin-top:.5rem;display:none">💾 Download this image</button>
+      <div class="wm-row" style="gap:.5rem;margin-top:.5rem">
+        <button class="btn" id="dlBtn" onclick="downloadCurrent()" style="flex:1;display:none">💾 Download this image</button>
+        <button class="btn btn-outline" id="copyBtn" onclick="copyCurrent()" style="flex:1;display:none">📋 Copy image</button>
+      </div>
 
       <div class="wm-queue" id="queue" style="display:none"></div>
       <button class="btn btn-outline" id="zipBtn" onclick="downloadZip()" style="width:100%;margin-top:.5rem;display:none">🗜️ Download all as ZIP</button>
@@ -262,7 +265,7 @@ function syncFieldsets(){
 document.getElementById('posGrid').addEventListener('click',function(e){
   var btn=e.target.closest('button');if(!btn)return;
   document.querySelectorAll('.pos-grid button').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');position=btn.dataset.pos;freeOffset=null;updatePreview();
+  btn.classList.add('active');position=btn.dataset.pos;freeOffset=null;persistWM();updatePreview();
 });
 
 // Live-update bindings
@@ -289,8 +292,40 @@ function onControlChange(id){
   document.getElementById('qualityRow').style.display=document.getElementById('outFormat').value==='image/png'?'none':'';
   if(id==='textOn'||id==='logoOn')syncFieldsets();
   if(id==='tiled')freeOffset=null;
+  persistWM();
   updatePreview();
 }
+
+// ---- Settings persistence (never stores the images) ----
+var WM_KEY='watermark_settings_v1';
+var WM_IDS=['wmText','wmFont','fontSize','opacity','wmColor','wmBold','wmItalic','wmOutline','wmRot','opacity2','logoSize','logoRot','wmPad','tiled','tileGap','tileAng','outFormat','quality','textOn','logoOn'];
+function persistWM(){
+  var s={position:position};
+  WM_IDS.forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    s[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(WM_KEY,s,true);
+}
+function restoreWM(){
+  var s=storeGet(WM_KEY,null);
+  if(!s)return;
+  WM_IDS.forEach(function(id){
+    if(s[id]===undefined)return;
+    var el=document.getElementById(id);if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!s[id];}
+    else if(el.tagName==='SELECT'){
+      // Only assign a value that actually exists as an option.
+      if([].some.call(el.options,function(o){return o.value===s[id]}))el.value=s[id];
+    }else{el.value=s[id];}
+  });
+  if(s.position){
+    position=s.position;
+    document.querySelectorAll('.pos-grid button').forEach(function(b){b.classList.toggle('active',b.dataset.pos===position)});
+  }
+  onControlChange('restore');
+}
+restoreWM();
 
 function opts(){
   return{
@@ -388,8 +423,31 @@ function updatePreview(){
     drawWatermark(ctx,src.width,src.height,o);
     src.style.display='block';
     document.getElementById('dlBtn').style.display='';
+    document.getElementById('copyBtn').style.display='';
     estimateSize();
   },40);
+}
+
+// Copy the watermarked preview to the clipboard as PNG (ClipboardItem is only
+// reliable for image/png, so always encode PNG regardless of the export format).
+function copyCurrent(){
+  if(!mainImg){notify('Add an image first.', 'warn');return;}
+  if(!(navigator.clipboard&&window.ClipboardItem)){
+    notify('Your browser cannot copy images to the clipboard. Use Download instead.', 'error');return;
+  }
+  var canvas=document.getElementById('canvas');
+  canvas.toBlob(function(png){
+    if(!png){notify('Could not prepare the image for copying.', 'error');return;}
+    try{
+      navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(function(){
+        notify('Watermarked image copied to clipboard as PNG.', 'ok');
+      },function(err){
+        notify('Copy was blocked by the browser'+(err&&err.message?': '+err.message:'')+'. Use Download instead.', 'error');
+      });
+    }catch(e){
+      notify('Copy was blocked by the browser. Use Download instead.', 'error');
+    }
+  },'image/png');
 }
 
 function encodeCanvas(canvas){

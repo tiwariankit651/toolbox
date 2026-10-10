@@ -39,8 +39,13 @@
   <h3 style="margin-top:1.4rem">📐 Legibility Checker</h3>
   <div id="legibility" style="background:var(--card);border-radius:10px;padding:1rem;font-size:.9rem;line-height:1.7"></div>
 
-  <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
+  <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap;align-items:center">
     <button class="btn" onclick="exportContactSheet()">🖼️ Export Contact Sheet PNG</button>
+    <button class="btn" onclick="exportAllZip()">📦 Download all previews (ZIP)</button>
+    <label style="font-size:.85rem">Copy:
+      <select id="copyPlatform" style="font-size:.85rem"></select>
+    </label>
+    <button class="btn btn-outline" onclick="copyPreview()">📋 Copy preview</button>
   </div>
 </div>
 
@@ -121,6 +126,7 @@
     </div>
   </footer>
   <style>.ctxWrap{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start}.ctxCard{background:var(--card);border-radius:10px;padding:.7rem}.ctxCard h4{margin:0 0 .3rem;font-size:.82rem}.ctxCard .dim{font-size:.75rem;color:var(--text2)}</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var mainImg=null;         // Image object for primary thumbnail
@@ -152,6 +158,7 @@ function sub(){return ytDark?"#aaaaaa":"#606060";}
 function toggleModeYT(){
   ytDark=!ytDark;
   document.getElementById("ytModeBtn").textContent=ytDark?"🌙 YouTube: Dark":"☀️ YouTube: Light";
+  if(typeof persistTP==="function")persistTP();
   render();
 }
 
@@ -371,12 +378,100 @@ function exportContactSheet(){
 // ---- char counter ----
 function charCount(){var len=document.getElementById("vidTitle").value.length;var el=document.getElementById("charCounter");el.textContent=len+"/60 characters"+(len>60?" ⚠️ Too long!":len>50?" (getting close)":" (YouTube recommends <60)");el.style.color=len>60?"#ec4899":"var(--text2)";}
 
+// ---- platform select for copy ----
+function allContexts(){return ytContexts.concat(otherContexts);}
+function populateCopySelect(){
+  var sel=document.getElementById("copyPlatform");
+  if(!sel||sel.options.length)return;
+  allContexts().forEach(function(c){
+    var o=document.createElement("option");o.value=c.id;o.textContent=c.name;sel.appendChild(o);
+  });
+}
+
+// ---- Copy a single platform preview to the clipboard as PNG ----
+function copyPreview(){
+  if(!mainImg){notify("Upload a thumbnail first.", 'warn');return;}
+  if(!(navigator.clipboard&&window.ClipboardItem)){
+    notify("Your browser cannot copy images to the clipboard. Use the ZIP or contact sheet instead.", 'error');return;
+  }
+  var id=document.getElementById("copyPlatform").value;
+  var list=allContexts();
+  var c=null;for(var i=0;i<list.length;i++){if(list[i].id===id){c=list[i];break;}}
+  if(!c)c=list[0];
+  var forYT=ytContexts.indexOf(c)>-1;
+  var r=renderContext(mainImg,c,forYT);
+  r.canvas.toBlob(function(png){
+    if(!png){notify("Could not prepare the image for copying.", 'error');return;}
+    try{
+      navigator.clipboard.write([new ClipboardItem({"image/png":png})]).then(function(){
+        notify(c.name+" preview copied to clipboard as PNG.", 'ok');
+      },function(err){
+        notify("Copy was blocked by the browser"+(err&&err.message?": "+err.message:"")+".", 'error');
+      });
+    }catch(e){notify("Copy was blocked by the browser.", 'error');}
+  },"image/png");
+}
+
+// ---- Export ALL platform previews as a ZIP of PNGs, one per platform ----
+function exportAllZip(){
+  if(!mainImg){notify("Upload a thumbnail first.", 'warn');return;}
+  if(typeof JSZip==="undefined"){notify("ZIP library failed to load. Try the contact sheet export instead.", 'warn');return;}
+  var zip=new JSZip();
+  var list=allContexts();
+  var pending=list.length;
+  list.forEach(function(c){
+    var forYT=ytContexts.indexOf(c)>-1;
+    var r=renderContext(mainImg,c,forYT);
+    r.canvas.toBlob(function(png){
+      if(png)zip.file(c.id+".png",png);
+      pending--;
+      if(pending===0){
+        zip.generateAsync({type:"blob"}).then(function(blob){download(blob,"thumbnail-previews.zip");});
+      }
+    },"image/png");
+  });
+}
+
+// ---- Settings persistence (never stores the images) ----
+var TP_KEY="thumbnailPreview_settings_v1";
+function persistTP(){
+  storeSet(TP_KEY,{
+    vidTitle:document.getElementById("vidTitle").value,
+    channel:document.getElementById("channel").value,
+    optOverlay:document.getElementById("optOverlay").checked,
+    optSafe:document.getElementById("optSafe").checked,
+    optDur:document.getElementById("optDur").value,
+    ytDark:ytDark,
+    copyPlatform:document.getElementById("copyPlatform").value
+  },true);
+}
+function restoreTP(){
+  var s=storeGet(TP_KEY,null);
+  if(!s)return;
+  if(s.vidTitle!=null)document.getElementById("vidTitle").value=s.vidTitle;
+  if(s.channel!=null)document.getElementById("channel").value=s.channel;
+  if(typeof s.optOverlay==="boolean")document.getElementById("optOverlay").checked=s.optOverlay;
+  if(typeof s.optSafe==="boolean")document.getElementById("optSafe").checked=s.optSafe;
+  if(s.optDur!=null)document.getElementById("optDur").value=s.optDur;
+  if(typeof s.ytDark==="boolean"){ytDark=s.ytDark;document.getElementById("ytModeBtn").textContent=ytDark?"🌙 YouTube: Dark":"☀️ YouTube: Light";}
+  var sel=document.getElementById("copyPlatform");
+  if(s.copyPlatform&&[].some.call(sel.options,function(o){return o.value===s.copyPlatform}))sel.value=s.copyPlatform;
+  charCount();
+}
+// Persist on any settings change
+["vidTitle","channel","optOverlay","optSafe","optDur","copyPlatform"].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el)el.addEventListener("change",persistTP);
+});
+
 // ---- upload ----
 setupDrop("drop","inp",function(f){
   if(!f||!f[0])return;
   var url=URL.createObjectURL(f[0]);
   var img=new Image();img.onload=function(){mainImg=img;render();};img.src=url;
 });
+populateCopySelect();
+restoreTP();
 charCount();
   </script>
 </body>

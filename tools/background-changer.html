@@ -87,6 +87,30 @@
           <option value="150x200">150×200 px (Thumbnail)</option>
         </select>
       </div>
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
+        <label><strong>Output Format:</strong></label>
+        <select id="outFormat" onchange="onFormatChange()">
+          <option value="image/png">PNG (lossless, keeps transparency)</option>
+          <option value="image/jpeg">JPEG (smaller, no transparency)</option>
+          <option value="image/webp">WEBP (smallest)</option>
+        </select>
+      </div>
+      <div class="row" id="qualityRow" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem;display:none">
+        <label>Quality: <strong id="qVal">0.85</strong></label>
+        <input type="range" id="quality" min="30" max="100" value="85" oninput="document.getElementById('qVal').textContent=(this.value/100).toFixed(2)" style="flex:3">
+      </div>
+      <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
+        <label><strong>Max Width:</strong></label>
+        <select id="maxWidth">
+          <option value="0">No limit (full resolution)</option>
+          <option value="2000">2000 px</option>
+          <option value="1280">1280 px</option>
+          <option value="1024">1024 px</option>
+          <option value="800">800 px</option>
+          <option value="640">640 px</option>
+        </select>
+        <span class="info" style="font-size:.75rem">Caps the exported width to shrink huge photos.</span>
+      </div>
       <button class="btn" onclick="process()" id="goBtn" disabled style="width:100%">Change Background</button>
       <p class="info" style="font-size:.75rem;margin-top:.3rem">🤖 AI mode downloads a ~40MB model on first use (cached after). Supported: JPG, PNG, WebP.</p>
       <div id="result" class="preview-area"></div>
@@ -169,6 +193,7 @@ function pickColor(c,btn){
   document.querySelectorAll(".color-presets button").forEach(function(b){b.classList.remove("active")});
   if(btn)btn.classList.add("active");
   if(c!=="transparent")document.getElementById("customColor").value=c;
+  persistSettings();
 }
 
 function hexToRgb(h){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b]}
@@ -179,6 +204,67 @@ function getOutputSize(){
   var parts=val.split("x");
   return{w:parseInt(parts[0]),h:parseInt(parts[1])};
 }
+
+// Read the chosen export format/quality/max-width controls
+function getExportOpts(){
+  var fmt=document.getElementById("outFormat").value;
+  var q=+document.getElementById("quality").value/100;
+  var maxW=+document.getElementById("maxWidth").value;
+  return {fmt:fmt,q:q,maxW:maxW};
+}
+function extFor(fmt){return fmt==="image/webp"?"webp":fmt==="image/jpeg"?"jpg":"png";}
+function onFormatChange(){
+  var fmt=document.getElementById("outFormat").value;
+  // Only JPEG/WEBP are lossy, so the quality slider only applies to them.
+  document.getElementById("qualityRow").style.display=(fmt==="image/png")?"none":"flex";
+  persistSettings();
+}
+
+// ---- Settings persistence (never stores the image or the result) ----
+var BGC_KEY="bgChanger_settings_v1";
+function persistSettings(){
+  storeSet(BGC_KEY,{
+    mode:document.getElementById("mode").value,
+    thresh:document.getElementById("thresh").value,
+    bgColor:bgColor,
+    customColor:document.getElementById("customColor").value,
+    useGradient:document.getElementById("useGradient").checked,
+    gradColor1:document.getElementById("gradColor1").value,
+    gradColor2:document.getElementById("gradColor2").value,
+    outputSize:document.getElementById("outputSize").value,
+    outFormat:document.getElementById("outFormat").value,
+    quality:document.getElementById("quality").value,
+    maxWidth:document.getElementById("maxWidth").value
+  },true);
+}
+function restoreSettings(){
+  var s=storeGet(BGC_KEY,null);
+  if(!s)return;
+  var modeEl=document.getElementById("mode");
+  if(s.mode&&[].some.call(modeEl.options,function(o){return o.value===s.mode}))modeEl.value=s.mode;
+  if(s.thresh!=null){document.getElementById("thresh").value=s.thresh;document.getElementById("tv").textContent=s.thresh;}
+  if(s.customColor)document.getElementById("customColor").value=s.customColor;
+  if(typeof s.useGradient==="boolean")document.getElementById("useGradient").checked=s.useGradient;
+  if(s.gradColor1)document.getElementById("gradColor1").value=s.gradColor1;
+  if(s.gradColor2)document.getElementById("gradColor2").value=s.gradColor2;
+  var osEl=document.getElementById("outputSize");
+  if(s.outputSize&&[].some.call(osEl.options,function(o){return o.value===s.outputSize}))osEl.value=s.outputSize;
+  var ofEl=document.getElementById("outFormat");
+  if(s.outFormat&&[].some.call(ofEl.options,function(o){return o.value===s.outFormat}))ofEl.value=s.outFormat;
+  if(s.quality!=null){document.getElementById("quality").value=s.quality;document.getElementById("qVal").textContent=(s.quality/100).toFixed(2);}
+  var mwEl=document.getElementById("maxWidth");
+  if(s.maxWidth!=null&&[].some.call(mwEl.options,function(o){return o.value===String(s.maxWidth)}))mwEl.value=s.maxWidth;
+  if(s.bgColor){bgColor=s.bgColor;}
+  document.getElementById("threshRow").style.display=modeEl.value==="fast"?"flex":"none";
+  onFormatChange();
+}
+// Wire persistence to every settings control
+["mode","thresh","useGradient","gradColor1","gradColor2","outputSize","quality","maxWidth","customColor"].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el)el.addEventListener("change",persistSettings);
+});
+restoreSettings();
+
 
 // Paint the chosen background (color or gradient) onto a canvas context
 function paintBackground(ctx,w,h){
@@ -195,7 +281,9 @@ function paintBackground(ctx,w,h){
   ctx.fillRect(0,0,w,h);
 }
 
-// Composite cutout blob onto chosen background, optionally resizing
+// Composite cutout blob onto chosen background, optionally resizing.
+// Resolves to {blob, canvas, fmt}. canvas is kept so a lossless PNG can be made
+// for the clipboard regardless of the chosen export format.
 function compositeResult(cutoutBlob){
   return new Promise(async function(resolve){
     var subject;
@@ -204,8 +292,17 @@ function compositeResult(cutoutBlob){
     var size=getOutputSize();
     var w=size?size.w:subject.width;
     var h=size?size.h:subject.height;
+    // Apply the max-width cap (only shrinks, never upscales) when keeping original size.
+    var ex=getExportOpts();
+    if(ex.maxW&&w>ex.maxW){
+      var r=ex.maxW/w;
+      w=Math.round(w*r);
+      h=Math.round(h*r);
+    }
     var c=document.createElement("canvas");c.width=w;c.height=h;
     var ctx=c.getContext("2d");
+    // JPEG has no alpha; without an opaque fill a transparent cutout turns black.
+    if(ex.fmt==="image/jpeg"&&bgColor==="transparent"){ctx.fillStyle="#ffffff";ctx.fillRect(0,0,w,h);}
     paintBackground(ctx,w,h);
     // Fit subject into canvas maintaining aspect ratio
     var scale=Math.min(w/subject.width,h/subject.height);
@@ -214,7 +311,7 @@ function compositeResult(cutoutBlob){
     var sx=Math.round((w-sw)/2);
     var sy=Math.round((h-sh)/2);
     ctx.drawImage(subject,sx,sy,sw,sh);
-    c.toBlob(function(b){resolve(b)},"image/png");
+    c.toBlob(function(b){resolve({blob:b,canvas:c,fmt:ex.fmt})},ex.fmt,ex.fmt==="image/png"?undefined:ex.q);
   });
 }
 
@@ -366,13 +463,45 @@ function runFastCutout(f){
   });
 }
 
-function finishSingle(origFile,blob){
+function finishSingle(origFile,result){
+  if(!result||!result.blob){document.getElementById("goBtn").disabled=false;return;}
+  var blob=result.blob;
   var origUrl=URL.createObjectURL(origFile);
   var newUrl=URL.createObjectURL(blob);
   var bgStyle=bgColor==="transparent"?"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/16px 16px;":"";
-  document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><div style='display:inline-block;border-radius:10px;"+bgStyle+"padding:4px'><img src='"+newUrl+"' style='border-radius:8px'></div></div></div><br><button class='btn' onclick='download(window._b,\"new-background.png\")'>\ud83d\udcbe Download</button>";
+  var ext=extFor(result.fmt);
   window._b=blob;
+  window._bExt=ext;
+  window._bCanvas=result.canvas;
+  document.getElementById("result").innerHTML="<div class='compare'><div><p class='info'>Original</p><img src='"+origUrl+"'></div><div><p class='info'>New Background</p><div style='display:inline-block;border-radius:10px;"+bgStyle+"padding:4px'><img src='"+newUrl+"' style='border-radius:8px'></div></div></div>"+
+    "<p class='info' style='text-align:center'>Exported as "+ext.toUpperCase()+" \u00b7 "+formatSize(blob.size)+"</p>"+
+    "<div class='row' style='justify-content:center;gap:.5rem;flex-wrap:wrap'>"+
+    "<button class='btn' onclick='download(window._b,\"new-background.\"+window._bExt)'>\ud83d\udcbe Download</button>"+
+    "<button class='btn btn-outline' onclick='copyResultToClipboard()'>\ud83d\udccb Copy image</button>"+
+    "</div>";
   document.getElementById("goBtn").disabled=false;
+}
+
+// Copy the finished image to the clipboard as PNG. ClipboardItem only reliably
+// accepts image/png, so re-encode the kept canvas to PNG rather than the chosen
+// (possibly JPEG/WEBP) export format.
+function copyResultToClipboard(){
+  if(!window._bCanvas){notify("Nothing to copy yet.", "warn");return;}
+  if(!(navigator.clipboard&&window.ClipboardItem)){
+    notify("Your browser cannot copy images to the clipboard. Use Download instead.", "error");return;
+  }
+  window._bCanvas.toBlob(function(png){
+    if(!png){notify("Could not prepare the image for copying.", "error");return;}
+    try{
+      navigator.clipboard.write([new ClipboardItem({"image/png":png})]).then(function(){
+        notify("Image copied to clipboard as PNG.", "ok");
+      },function(err){
+        notify("Copy was blocked by the browser"+(err&&err.message?": "+err.message:"")+". Use Download instead.", "error");
+      });
+    }catch(e){
+      notify("Copy was blocked by the browser. Use Download instead.", "error");
+    }
+  },"image/png");
 }
 
 // ---- Batch processing ----
@@ -404,21 +533,23 @@ async function processBatch(){
   renderQueue();
   for(var i=0;i<total;i++){
     done=i;renderQueue();
-    var blob=null;
+    var blob=null,fmt="image/png";
     try{
       var cutout;
       if(mode==="ai"){cutout=await imglyRemove(files[i]);}else{cutout=await runFastCutout(files[i]);}
-      blob=await compositeResult(cutout);
+      var r=await compositeResult(cutout);
+      if(r){blob=r.blob;fmt=r.fmt;}
     }catch(e){blob=null;}
-    batchResults.push({name:files[i].name,blob:blob});
+    var bext=extFor(fmt);
+    batchResults.push({name:files[i].name,blob:blob,ext:bext});
     done=i+1;renderQueue();
     var brDiv=document.getElementById("batchResults");
     if(blob){
       var url=URL.createObjectURL(blob);
-      var outName="bg-changed_"+files[i].name.replace(/\.[^.]+$/,".png");
+      var outName="bg-changed_"+files[i].name.replace(/\.[^.]+$/,"")+"."+bext;
       window["_batch"+i]=blob;
       var bgStyle2=bgColor==="transparent"?"background:repeating-conic-gradient(#808080 0% 25%,transparent 0% 50%) 50%/16px 16px;":"";
-      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top'><div style='"+bgStyle2+"border-radius:8px;padding:6px;display:inline-block'><img src='"+url+"' style='max-width:120px;max-height:120px;display:block;border-radius:6px'></div><br><button class='btn' style='font-size:.75rem;padding:.3rem .6rem;margin-top:.3rem' onclick=\"download(window._batch"+i+",'"+outName+"')\">\ud83d\udcbe Download</button></div>";
+      brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top'><div style='"+bgStyle2+"border-radius:8px;padding:6px;display:inline-block'><img src='"+url+"' style='max-width:120px;max-height:120px;display:block;border-radius:6px'></div><br><span style='font-size:.72rem;color:var(--text2);display:block;margin-top:.2rem'>"+formatSize(blob.size)+"</span><button class='btn' style='font-size:.75rem;padding:.3rem .6rem;margin-top:.3rem' onclick=\"download(window._batch"+i+",'"+outName+"')\">\ud83d\udcbe Download</button></div>";
     }else{
       brDiv.innerHTML+="<div style='display:inline-block;margin:.4rem;text-align:center;vertical-align:top;padding:1rem;background:var(--card);border-radius:8px'><span>\u274c</span><br><span style='font-size:.75rem'>"+files[i].name+"<br>Failed</span></div>";
     }
@@ -435,7 +566,7 @@ async function downloadAllZip(){
   var zip=new JSZip();
   for(var i=0;i<batchResults.length;i++){
     if(batchResults[i].blob){
-      var name="bg-changed_"+batchResults[i].name.replace(/\.[^.]+$/,".png");
+      var name="bg-changed_"+batchResults[i].name.replace(/\.[^.]+$/,"")+"."+(batchResults[i].ext||"png");
       zip.file(name,batchResults[i].blob);
     }
   }

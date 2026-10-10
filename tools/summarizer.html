@@ -27,8 +27,9 @@
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><line x1="40" y1="30" x2="130" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="50" x2="120" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="70" x2="110" y2="70" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="90" x2="100" y2="90" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M145,90 L160,30 L165,35" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
       <p class="info">Paste any article or text (or upload a .txt file). Get an extractive summary with adjustable length, output modes, key points, and compression stats. Works with English, Hindi, and other languages.</p>
       <textarea id="input" rows="8" placeholder="Paste your article, essay, or text here..." oninput="autosave()"></textarea>
-      <div class="row" style="margin:.6rem 0">
-        <label style="flex:0 0 auto">📎 Upload .txt: <input type="file" id="fileInput" accept=".txt,text/plain" onchange="loadFile(event)" style="width:auto;display:inline-block;padding:.3rem"></label>
+      <div class="drop-zone" id="dropZone" style="padding:1.2rem;margin:.6rem 0" onclick="document.getElementById('fileInput').click()">
+        📥 Drop a .txt or .md file here, or click to import text
+        <input type="file" id="fileInput" accept=".txt,.md,text/plain,text/markdown" style="display:none">
       </div>
       <div class="row" style="margin:.8rem 0">
         <label>Length by:</label>
@@ -63,6 +64,7 @@
         <div class="row" style="margin-top:.8rem">
           <button class="btn btn-outline" onclick="copySummary(this)">📋 Copy</button>
           <button class="btn btn-outline" onclick="download(new Blob([document.getElementById('summary').innerText],{type:'text/plain'}),'summary.txt')">💾 Download .txt</button>
+          <button class="btn btn-outline" onclick="exportSummaryZip()">📦 ZIP bundle</button>
         </div>
       </div>
     </div>
@@ -123,9 +125,11 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var SUM_KEY="summarizerText";
+var _lastSum=null;
 var stopWords=new Set(["the","a","an","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","may","might","shall","can","need","dare","ought","used","to","of","in","for","on","with","at","by","from","as","into","through","during","before","after","above","below","between","out","off","over","under","again","further","then","once","here","there","when","where","why","how","all","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","just","because","but","and","or","if","while","that","this","it","i","me","my","we","our","you","your","he","him","his","she","her","they","them","their","which","what","who","whom","whose","aur","hai","ka","ki","ke","ko","se","mein","par","ye","wo","ek","nahi","ho","tha","thi","hain","kya","bhi","ne","us","un","jab","tab","ab","hi","ya"]);
 function autosave(){try{storeSetRaw(SUM_KEY, document.getElementById("input").value);}catch(e){}}
 function toggleLengthUI(){
@@ -136,12 +140,23 @@ function toggleLengthUI(){
 function updateSliderLabel(){document.getElementById("sliderLabel").textContent="Summary: "+document.getElementById("percentSlider").value+"%";}
 function setPercent(v){document.getElementById("percentSlider").value=v;updateSliderLabel();}
 function copySummary(btn){copyNow(document.getElementById('summary').innerText);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
-function loadFile(e){
-  var f=e.target.files[0];if(!f)return;
+function handleSumFile(f){
+  if(!f)return;
+  if(f.size>5*1024*1024){notify('That file is '+(f.size/1048576).toFixed(1)+'MB. Please use a file under 5MB.','error');return;}
+  if(!/\.(txt|md)$/i.test(f.name)&&!/^text\//.test(f.type||'')){
+    notify('Only .txt and .md text files are supported.','error');return;
+  }
   var r=new FileReader();
-  r.onload=function(ev){document.getElementById("input").value=ev.target.result;autosave();};
+  r.onload=function(ev){document.getElementById("input").value=ev.target.result;autosave();notify('Loaded '+f.name,'ok');};
+  r.onerror=function(){notify('That file could not be read.','error');};
   r.readAsText(f);
 }
+function loadFile(e){
+  var f=e.target.files[0];
+  handleSumFile(f);
+  e.target.value='';
+}
+setupDrop('dropZone','fileInput',function(files){if(files&&files[0])handleSumFile(files[0]);});
 function splitSentences(text){
   // Keep sentence with trailing punctuation where possible
   var raw=text.replace(/\s+/g,' ').match(/[^.!?।]+[.!?।]+|\S[^.!?।]*$/g)||[];
@@ -230,6 +245,20 @@ function summarize(){
   // Output
   resultEl.style.display="block";
   var fmt=document.getElementById("sumFormat").value;
+  // Capture plain-text artefacts for the ZIP bundle
+  _lastSum={
+    original:text,
+    summarySentences:chosen.map(function(s){return s.text}),
+    keywords:topKw.map(function(k){return {word:k[0],count:k[1]}}),
+    settings:{
+      lengthMode:document.getElementById("lengthMode").value,
+      percent:document.getElementById("percentSlider").value,
+      sentenceCount:document.getElementById("countInput").value,
+      outputMode:fmt,
+      chosen:count, totalSentences:n,
+      origWords:origWords, summaryWords:sumWords, reductionPct:reduction
+    }
+  };
   var out="";
   if(fmt==="bullet"){
     out=chosen.map(function(s){return '<p style="margin:.4rem 0">• '+esc(s.text)+'</p>'}).join("");
@@ -245,6 +274,36 @@ function summarize(){
   document.getElementById("summary").innerHTML=out;
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function exportSummaryZip(){
+  if(!_lastSum){notify('Summarize something first.','warn');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.','error');return}
+  var s=_lastSum;
+  try{
+    var zip=new JSZip();
+    zip.file('summary.txt',s.summarySentences.join('\n\n'));
+    zip.file('key-sentences.txt',s.summarySentences.map(function(t,i){return (i+1)+'. '+t}).join('\n'));
+    zip.file('keywords.txt',s.keywords.map(function(k){return k.word+'\t'+k.count}).join('\n'));
+    zip.file('original.txt',s.original);
+    var set=s.settings;
+    var readme=['Article summary bundle','Generated by FreeToolHubs Article Summarizer','',
+      'Contents:',
+      '  summary.txt        the summary text',
+      '  key-sentences.txt  the selected sentences, numbered',
+      '  keywords.txt       top keywords with frequency',
+      '  original.txt       the source text','',
+      'Settings used:',
+      '  Length by: '+set.lengthMode+(set.lengthMode==='percent'?(' ('+set.percent+'%)'):(' ('+set.sentenceCount+' sentences)')),
+      '  Output mode: '+set.outputMode,
+      '  Sentences kept: '+set.chosen+' of '+set.totalSentences,'',
+      'Reduction: '+set.origWords+' words → '+set.summaryWords+' words ('+set.reductionPct+'% shorter)'];
+    zip.file('README.txt',readme.join('\n'));
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'summary-bundle.zip');
+  }catch(e){
+    notify('ZIP export failed: '+(e.message||'unknown error'),'error');
+  }
+}
+window.exportSummaryZip=exportSummaryZip;
 (function(){try{var saved=storeGetRaw(SUM_KEY, null);if(saved)document.getElementById("input").value=saved;}catch(e){}toggleLengthUI();updateSliderLabel();})();
   </script>
 </body>

@@ -90,9 +90,16 @@
         <button onclick="deleteList()">🗑️ Delete</button>
         <button onclick="exportJSON()">📤 Export JSON</button>
         <button onclick="document.getElementById('importFile').click()">📥 Import</button>
-        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
+        <input type="file" id="importFile" accept="application/json" style="display:none">
         <button onclick="exportText()">📝 Text</button>
         <button onclick="exportMarkdown()">☑️ Markdown</button>
+        <button onclick="copyChecklist()">📋 Copy Checklist</button>
+        <button onclick="exportZip()">🗜️ Backup ZIP</button>
+      </div>
+
+      <div class="drop-zone" id="todoDrop" onclick="document.getElementById('importFile').click()" style="margin:.2rem 0 .6rem">
+        <strong>📥 Import a backup</strong> — drag &amp; drop a <code>.json</code> backup here, or click to choose one.
+        <div class="info">Only JSON backups exported by this tool are accepted. Everything stays in your browser.</div>
       </div>
 
       <div class="td-views" id="views"></div>
@@ -124,6 +131,7 @@
       <div class="td-stats" id="stats"></div>
       <p class="info" style="margin-top:.8rem">Tasks completed — last 7 days</p>
       <div class="td-chart" id="chart"></div>
+      <p class="info" id="backupInfo" style="margin-top:.6rem"></p>
 
       <h2 style="margin-top:1.5rem">⌨️ Keyboard Shortcuts</h2>
       <ul style="margin-left:1.5rem;line-height:2">
@@ -212,6 +220,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var KEY='fth_todo_v2';
@@ -328,7 +337,7 @@ function render(){
   var ul=document.getElementById('taskList');
   if(!tasks.length){ul.innerHTML='<li class="info" style="text-align:center;list-style:none">No tasks in this view.</li>'}
   else ul.innerHTML=tasks.map(function(t){return taskHtml(t,manual)}).join('');
-  renderStats();renderChart();save();
+  renderStats();renderChart();save();renderBackupInfo();
 }
 function taskHtml(t,manual){
   var p=PRI[t.priority];
@@ -456,15 +465,103 @@ function renderChart(){
 /* ---- export / import ---- */
 function download(filename,text,type){var b=new Blob([text],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=filename;a.click()}
 function exportJSON(){download('todo_backup.json',JSON.stringify(data,null,2),'application/json')}
-function importJSON(e){
-  var f=e.target.files[0];if(!f)return;var r=new FileReader();
-  r.onload=function(){try{var d=JSON.parse(r.result);if(d&&d.lists){data=d;data.active=0;save();render();notify('Imported successfully.', 'ok')}else notify('Invalid file.', 'warn')}catch(err){notify('Could not read file.', 'warn')}};
-  r.readAsText(f);e.target.value='';
-}
 function exportText(){
   var lines=[list().name,''];
   list().tasks.forEach(function(t){lines.push((t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':''));});
   download(list().name.replace(/\s+/g,'_')+'.txt',lines.join('\n'),'text/plain');
+}
+
+/* Copy the ON-SCREEN task list as a plain-text checklist. Respects the active
+   view, search and filters so you copy exactly what you see — the thing people
+   paste into a standup note or chat. */
+function checklistText(filtered){
+  return filtered.map(function(t){
+    return (t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':'');
+  }).join('\n');
+}
+function copyChecklist(){
+  var filtered=sortTasks(applyFilters(list().tasks));
+  if(!filtered.length){notify('Nothing to copy in this view.','warn');return}
+  copyNow(checklistText(filtered),filtered.length+' task'+(filtered.length===1?'':'s')+' copied as a checklist.');
+}
+
+/* Blob download that does NOT collide with the local text download() above. */
+function saveBlob(blob,fname){
+  var a=document.createElement('a');var url=URL.createObjectURL(blob);
+  a.href=url;a.download=fname;document.body.appendChild(a);a.click();
+  setTimeout(function(){a.remove();URL.revokeObjectURL(url)},100);
+}
+
+/* A full backup ZIP: the re-importable JSON, a human checklist .txt, a .csv for
+   spreadsheets, and a README explaining how to restore. */
+function exportZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and retry.','error');return}
+  if(!list().tasks.length){notify('This list has no tasks to back up.','warn');return}
+  var zip=new JSZip();
+  var jsonStr=JSON.stringify(data,null,2);
+  zip.file('todo_backup.json',jsonStr);
+  var txtLines=[list().name,'='.repeat(list().name.length),''];
+  list().tasks.forEach(function(t){
+    txtLines.push((t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':''));
+    (t.subtasks||[]).forEach(function(s){txtLines.push('    '+(s.done?'[x] ':'[ ] ')+s.text)});
+  });
+  zip.file('checklist.txt',txtLines.join('\n'));
+  var csvRows=['Title,Done,Priority,Due,Tags,Notes'];
+  list().tasks.forEach(function(t){
+    function q(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
+    csvRows.push([q(t.title),t.done?'yes':'no',q(t.priority),q(t.due||''),q((t.tags||[]).join('; ')),q(t.notes||'')].join(','));
+  });
+  zip.file('tasks.csv',csvRows.join('\r\n'));
+  zip.file('README.txt',
+    'TO-DO LIST BACKUP\n'+
+    '=================\n\n'+
+    'This ZIP was created by the FreeToolHubs To-Do List tool.\n\n'+
+    'FILES:\n'+
+    '  todo_backup.json  Full backup of ALL your lists. To restore, open the\n'+
+    '                    To-Do tool and use "Import" (or drag this JSON onto the\n'+
+    '                    drop zone). This replaces your current data.\n'+
+    '  checklist.txt     Human-readable checklist of the current list, with\n'+
+    '                    [x] for done and [ ] for pending tasks and subtasks.\n'+
+    '  tasks.csv         The current list as a spreadsheet (open in Excel,\n'+
+    '                    Google Sheets, etc.).\n\n'+
+    'Only todo_backup.json can be re-imported. The .txt and .csv are for reading.\n');
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    saveBlob(blob,'todo_backup.zip');
+    notify('Backup ZIP created ('+formatSize(blob.size)+').','ok');
+    renderBackupInfo(blob.size);
+  }).catch(function(e){
+    notify('Could not build the ZIP: '+((e&&e.message)||'unknown'),'error');
+  });
+}
+
+/* Honest, size-related readout. A quality slider makes no sense for a to-do
+   list, so instead we show real counts and the JSON backup size. */
+function renderBackupInfo(zipSize){
+  var el=document.getElementById('backupInfo');if(!el)return;
+  var tasks=list().tasks;
+  var done=tasks.filter(function(t){return t.done}).length;
+  var pending=tasks.length-done;
+  var jsonBytes=0;
+  try{jsonBytes=new Blob([JSON.stringify(data)]).size}catch(e){jsonBytes=JSON.stringify(data).length}
+  var msg='📦 '+tasks.length+' task'+(tasks.length===1?'':'s')+' in "'+list().name+'" — '+
+    done+' completed, '+pending+' pending · backup data '+formatSize(jsonBytes);
+  if(zipSize)msg+=' · last ZIP '+formatSize(zipSize);
+  el.textContent=msg;
+}
+
+function importJSON(e){
+  var f=e.target.files[0];if(!f)return;
+  var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.json')||f.type==='application/json')){notify('Please choose a .json backup file.','warn');e.target.value='';return}
+  var r=new FileReader();
+  r.onload=function(){try{var d=JSON.parse(r.result);if(d&&d.lists){data=d;data.active=0;save();render();notify('Imported successfully.', 'ok')}else notify('That JSON is not a to-do backup.', 'warn')}catch(err){notify('Could not read file.', 'warn')}};
+  r.readAsText(f);e.target.value='';
+}
+function importFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.json')||f.type==='application/json')){notify('Only .json backups can be imported here.','warn');return}
+  importJSON({target:{files:[f],value:''}});
 }
 function exportMarkdown(){
   var lines=['# '+list().name,''];
@@ -532,6 +629,7 @@ function itemKey(e,id){
   else if(e.key==='Delete'){e.preventDefault();delTask(id)}
 }
 
+setupDrop('todoDrop','importFile',importFiles);
 render();
   </script>
 </body>

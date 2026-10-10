@@ -53,15 +53,18 @@
       </div>
       <div id="create" style="display:none">
         <h3>Add Question</h3>
-        <input type="text" id="cQ" placeholder="Question...">
-        <div class="row"><input type="text" id="cA" placeholder="Option A"><input type="text" id="cB" placeholder="Option B"></div>
-        <div class="row"><input type="text" id="cC" placeholder="Option C"><input type="text" id="cD" placeholder="Option D"></div>
-        <div class="row"><label>Correct:</label><select id="cCorrect"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
+        <input type="text" id="cQ" placeholder="Question..." oninput="cmFeedback()">
+        <div class="row"><input type="text" id="cA" placeholder="Option A" oninput="cmFeedback()"><input type="text" id="cB" placeholder="Option B" oninput="cmFeedback()"></div>
+        <div class="row"><input type="text" id="cC" placeholder="Option C" oninput="cmFeedback()"><input type="text" id="cD" placeholder="Option D" oninput="cmFeedback()"></div>
+        <div class="row"><label>Correct:</label><select id="cCorrect" onchange="cmFeedback()"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
         <input type="text" id="cExplain" placeholder="Explanation (optional)">
+        <div id="cmLive" class="info" style="margin:.4rem 0;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px"></div>
         <button class="btn" onclick="addQ()" style="margin:.5rem 0">+ Add Question</button>
         <div id="cList"></div>
-        <div class="row" style="margin-top:.5rem;flex-wrap:wrap"><button class="btn" onclick="startCustomQuiz()">📖 Take My Quiz</button><button class="btn btn-outline" onclick="exportQuiz()">📤 Export JSON</button><button class="btn btn-outline" onclick="exportPDF()">📄 Export PDF</button><button class="btn btn-outline" onclick="shareQuiz()">🔗 Share URL</button></div>
-        <div class="row" style="margin-top:.5rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="document.getElementById('impFile').click()">📥 Import JSON</button><input type="file" id="impFile" accept=".json" style="display:none" onchange="importQuiz(event)"><button class="btn btn-outline" onclick="document.getElementById('csvFile').click()">📥 Import CSV</button><input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(event)"><button class="btn btn-outline" onclick="document.getElementById('txtImport').style.display='block'">📋 Import Text</button></div>
+        <div class="row" style="margin-top:.5rem;flex-wrap:wrap"><button class="btn" onclick="startCustomQuiz()">📖 Take My Quiz</button><button class="btn btn-outline" onclick="exportQuiz()">📤 Export JSON</button><button class="btn btn-outline" onclick="exportPDF()">📄 Export PDF</button><button class="btn btn-outline" onclick="exportTeachingZip()">🗜️ Teaching Pack ZIP</button><button class="btn btn-outline" onclick="shareQuiz()">🔗 Share URL</button></div>
+        <div class="row" style="margin-top:.5rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="document.getElementById('impFile').click()">📥 Import JSON</button><input type="file" id="impFile" accept=".json" style="display:none"><button class="btn btn-outline" onclick="document.getElementById('csvFile').click()">📥 Import CSV</button><input type="file" id="csvFile" accept=".csv" style="display:none"><button class="btn btn-outline" onclick="document.getElementById('txtImport').style.display='block'">📋 Import Text</button></div>
+        <div class="drop-zone" id="jsonDrop" onclick="document.getElementById('impFile').click()" style="margin:.5rem 0"><strong>📥 Drop a quiz <code>.json</code></strong> here to add its questions, or click to choose. Only JSON is accepted.</div>
+        <div class="drop-zone" id="csvDrop" onclick="document.getElementById('csvFile').click()" style="margin:.5rem 0"><strong>📥 Drop a <code>.csv</code></strong> here (question,A,B,C,D,correct per row), or click to choose. Only CSV is accepted.</div>
         <div id="txtImport" style="display:none;margin-top:.5rem"><textarea id="txtImportArea" rows="6" placeholder="Format 1 — Q: / A: / B: / C: / D: / Correct:&#10;Format 2 — Q|A|B|C|D|correct (pipe-separated per line)&#10;Format 3 — 1. Question\na) opt\nb) opt\nc) opt\nd) opt\nAnswer: a"></textarea><button class="btn" onclick="importFromText()" style="margin-top:.3rem">Import</button><button class="btn btn-outline" onclick="document.getElementById('txtImport').style.display='none'" style="margin-top:.3rem;margin-left:.3rem">Cancel</button></div>
       </div>
     </div>
@@ -123,6 +126,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var totalTimeInt,totalTimeLeft=0;
@@ -987,7 +991,112 @@ function autoAnswer(){answered=true;var q=quiz[qIdx];document.querySelectorAll("
 function nextQ(){qIdx++;showQ()}
 function showScore(){clearInterval(timerInt);clearInterval(totalTimeInt);document.getElementById("totalTimerDisplay").style.display="none";document.getElementById("quizArea").style.display="none";var neg=parseFloat(document.getElementById("negMarking").value)||0;var finalScore=score-negScore;var maxScore=quiz.length;var pct=Math.round(Math.max(0,finalScore)/maxScore*100);var grade=pct>=80?"Excellent!":pct>=60?"Good!":pct>=40?"Average":"Needs Improvement";var negInfo=neg>0?'<div style="font-size:.9rem;color:var(--text2);margin:.3rem 0">Correct: '+score+' | Wrong: '+(quiz.length-score)+' | Penalty: -'+negScore.toFixed(2)+'</div>':"";document.getElementById("scoreCard").style.display="block";document.getElementById("scoreCard").innerHTML='<div style="font-size:3rem">🏆</div><div style="font-size:2rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+finalScore.toFixed(neg>0?2:0)+"/"+maxScore+'</div><div style="font-size:1.3rem;margin:.5rem 0">'+pct+'% — '+grade+'</div>'+negInfo+'<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem"><button class="btn" onclick="renderQuizList();document.getElementById(\'quizList\').style.display=\'\'">Try Another Quiz</button><button class="btn btn-outline" onclick="showReview()">📋 Review Answers</button></div>';saveScore(finalScore,maxScore,pct);showHistory();showLeaderboard()}
 function addQ(){var q=document.getElementById("cQ").value.trim();var a=document.getElementById("cA").value.trim();var b=document.getElementById("cB").value.trim();var c=document.getElementById("cC").value.trim();var d=document.getElementById("cD").value.trim();var correct=+document.getElementById("cCorrect").value;var explain=document.getElementById("cExplain").value.trim();if(!q||!a||!b||!c||!d)return notify("Fill question and all 4 options", 'info');customQs.push({q:q,o:[a,b,c,d],c:correct,e:explain});storeSet("customQuiz", customQs);["cQ","cA","cB","cC","cD","cExplain"].forEach(function(id){document.getElementById(id).value=""});renderCList()}
-function renderCList(){document.getElementById("cList").innerHTML=customQs.map(function(q,i){return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0"><strong>'+(i+1)+'. '+q.q+'</strong> (Ans: '+String.fromCharCode(65+q.c)+') <button onclick="customQs.splice('+i+',1);storeSet(\'customQuiz\', customQs);renderCList()" style="float:right;background:none;border:none;color:var(--danger);cursor:pointer">×</button></div>'}).join("")||'<p class="info">No questions yet.</p>'}
+function renderCList(){document.getElementById("cList").innerHTML=customQs.map(function(q,i){return '<div style="background:var(--card);padding:.5rem .8rem;border-radius:8px;margin:.3rem 0"><strong>'+(i+1)+'. '+q.q+'</strong> (Ans: '+String.fromCharCode(65+q.c)+') <button onclick="customQs.splice('+i+',1);storeSet(\'customQuiz\', customQs);renderCList()" style="float:right;background:none;border:none;color:var(--danger);cursor:pointer">×</button></div>'}).join("")||'<p class="info">No questions yet.</p>';cmFeedback()}
+
+/* Live feedback for the Create tab. Runs on every keystroke / option change —
+   no button press needed. Shows: validation of the draft question, a running
+   count of saved questions, and an estimated time to complete the quiz. */
+function estMinutes(n){
+  // ~30s to read+answer an MCQ; round up, minimum 1 min when there are questions
+  if(!n)return 0;
+  return Math.max(1,Math.round(n*0.5));
+}
+function cmFeedback(){
+  var el=document.getElementById("cmLive");if(!el)return;
+  var q=(document.getElementById("cQ").value||"").trim();
+  var opts=[document.getElementById("cA").value,document.getElementById("cB").value,document.getElementById("cC").value,document.getElementById("cD").value].map(function(x){return (x||"").trim()});
+  var correct=+document.getElementById("cCorrect").value;
+  var saved=customQs.length;
+  var problems=[];
+  if(q||opts.some(function(o){return o})){ // only validate once the author starts typing a draft
+    if(!q)problems.push("question text is empty");
+    var emptyOpts=[];
+    opts.forEach(function(o,i){if(!o)emptyOpts.push(String.fromCharCode(65+i))});
+    if(emptyOpts.length)problems.push("option "+emptyOpts.join(", ")+" "+(emptyOpts.length>1?"are":"is")+" empty");
+    if(!opts[correct])problems.push("the option marked correct ("+String.fromCharCode(65+correct)+") has no text");
+  }
+  var mins=estMinutes(saved);
+  var countLine="📋 "+saved+" question"+(saved===1?"":"s")+" saved"+(saved?(" · about "+mins+" min to complete ("+(saved)+" × ~30s)"):"");
+  var draftLine;
+  if(!q&&!opts.some(function(o){return o})){
+    draftLine='<span style="color:var(--text2)">Start typing a question — this question would be #'+(saved+1)+'.</span>';
+  }else if(problems.length){
+    draftLine='<span style="color:var(--warn)">⚠️ Question '+(saved+1)+': '+problems.join("; ")+'.</span>';
+  }else{
+    draftLine='<span style="color:var(--ok)">✅ Question '+(saved+1)+' looks complete — press "+ Add Question".</span>';
+  }
+  el.innerHTML=draftLine+'<br>'+countLine;
+}
+
+function csvFromQuestions(qs){
+  var rows=['question,A,B,C,D,correct'];
+  function q(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
+  qs.forEach(function(x){
+    rows.push([q(x.q),q(x.o[0]),q(x.o[1]),q(x.o[2]),q(x.o[3]),String.fromCharCode(65+x.c)].join(','));
+  });
+  return rows.join('\r\n');
+}
+function paperText(qs){
+  var L=['QUESTION PAPER','='.repeat(14),'',qs.length+' questions · time ~'+estMinutes(qs.length)+' min','',''];
+  qs.forEach(function(x,i){
+    L.push((i+1)+'. '+x.q);
+    x.o.forEach(function(o,j){L.push('   ('+String.fromCharCode(65+j)+') '+o)});
+    L.push('');
+  });
+  return L.join('\n');
+}
+function answerKeyText(qs){
+  var L=['ANSWER KEY','='.repeat(10),''];
+  qs.forEach(function(x,i){
+    L.push((i+1)+'. '+String.fromCharCode(65+x.c)+'. '+x.o[x.c]+(x.e?('  — '+x.e):''));
+  });
+  return L.join('\n');
+}
+
+/* A teaching pack a teacher can actually use: the re-importable quiz JSON, a
+   printable question paper, a SEPARATE answer key, the CSV, and a README. */
+function exportTeachingZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and retry.','error');return}
+  if(!customQs.length){notify('Add questions first.','warn');return}
+  var zip=new JSZip();
+  zip.file('quiz.json',JSON.stringify(customQs,null,2));
+  zip.file('question_paper.txt',paperText(customQs));
+  zip.file('answer_key.txt',answerKeyText(customQs));
+  zip.file('quiz.csv',csvFromQuestions(customQs));
+  zip.file('README.txt',
+    'MCQ QUIZ TEACHING PACK\n'+
+    '======================\n\n'+
+    'Created by the FreeToolHubs MCQ Quiz Maker.\n\n'+
+    'FILES:\n'+
+    '  quiz.json           Re-importable quiz. Use "Import JSON" (or drop it on\n'+
+    '                      the JSON drop zone) to load the questions back.\n'+
+    '  question_paper.txt  Printable paper WITHOUT answers — hand this to\n'+
+    '                      students. Options are labelled (A)-(D).\n'+
+    '  answer_key.txt      The correct answer (and explanation) for each\n'+
+    '                      question — keep this one for yourself.\n'+
+    '  quiz.csv            Spreadsheet form (question,A,B,C,D,correct) — this is\n'+
+    '                      also what the CSV import expects.\n');
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    download(blob,'quiz_teaching_pack.zip');
+    notify('Teaching pack ZIP created ('+formatSize(blob.size)+') with paper, answer key, JSON and CSV.','ok');
+  }).catch(function(e){
+    notify('Could not build the ZIP: '+((e&&e.message)||'unknown'),'error');
+  });
+}
+
+/* Drag & drop / file-input handlers with type guards. */
+function importQuizFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.json')||f.type==='application/json')){notify('That drop zone only accepts a .json quiz file.','warn');return}
+  importQuiz({target:{files:[f],value:''}});
+}
+function importCsvFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.csv')||f.type==='text/csv')){notify('That drop zone only accepts a .csv file.','warn');return}
+  importCSV({target:{files:[f],value:''}});
+}
 function startCustomQuiz(){if(!customQs.length)return notify("Add questions first", 'warn');quiz=customQs.slice();if(document.getElementById("shuffleQ").checked)quiz.sort(function(){return Math.random()-0.5});qIdx=0;score=0;negScore=0;userAnswers=[];showTab("take");document.getElementById("quizList").style.display="none";document.getElementById("quizArea").style.display="block";document.getElementById("scoreCard").style.display="none";document.getElementById("reviewScreen").style.display="none";startTotalTimer();showQ()}
 function exportQuiz(){if(!customQs.length)return notify("No questions", 'warn');download(new Blob([JSON.stringify(customQs)],{type:"application/json"}),"quiz.json")}
 function importQuiz(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(Array.isArray(d)){customQs=customQs.concat(d);storeSet("customQuiz", customQs);renderCList();notify("Imported "+d.length+" questions!", 'ok')}}catch(err){notify("Invalid file", 'warn')}};r.readAsText(f);e.target.value=""}
@@ -1018,6 +1127,8 @@ function startBookmarkedQuiz(){if(!bookmarked.length){notify("No bookmarked ques
 /* Practice wrong answers */
 function startWrongQuiz(){if(!wrongBank.length){notify("No wrong answers saved yet. Take a quiz first — wrong answers are automatically saved for practice.", 'warn');return}quiz=wrongBank.slice();if(document.getElementById("shuffleQ").checked)quiz.sort(function(){return Math.random()-0.5});qIdx=0;score=0;negScore=0;userAnswers=[];document.getElementById("quizList").style.display="none";document.getElementById("quizArea").style.display="block";document.getElementById("scoreCard").style.display="none";document.getElementById("reviewScreen").style.display="none";startTotalTimer();showQ()}
 renderQuizList();renderCList();loadSharedQuiz();
+setupDrop('jsonDrop','impFile',importQuizFiles);
+setupDrop('csvDrop','csvFile',importCsvFiles);
   </script>
 </body>
 </html>

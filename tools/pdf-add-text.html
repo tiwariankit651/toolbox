@@ -94,6 +94,13 @@
         <div class="row" id="imageCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem;align-items:center">
           <button class="btn btn-outline" onclick="document.getElementById('stampImg').click()">📤 Choose PNG / JPEG</button>
           <input type="file" id="stampImg" accept="image/png,image/jpeg" style="display:none">
+          <div style="flex:0 0 auto"><label>Stamp quality / size cap</label>
+            <select id="stampQuality">
+              <option value="small">Compact (max 400px, smaller file)</option>
+              <option value="medium" selected>Balanced (max 800px)</option>
+              <option value="high">High (max 1400px, larger file)</option>
+            </select>
+          </div>
           <span class="info" id="stampInfo">Then click on the page to place it. Drag to move, use the handle to scale.</span>
         </div>
 
@@ -135,11 +142,20 @@
           </div>
         </div>
 
-        <div class="row" style="margin-top:1rem">
+        <div class="row" style="margin-top:1rem;flex-wrap:wrap;align-items:center;gap:.6rem">
           <button class="btn" onclick="savePdf()">💾 Download Edited PDF</button>
+          <div style="flex:0 0 auto"><label>PNG export resolution</label>
+            <select id="pngScale">
+              <option value="1">72 DPI (screen, smallest)</option>
+              <option value="2" selected>144 DPI (recommended)</option>
+              <option value="3">216 DPI (print quality, largest)</option>
+            </select>
+          </div>
+          <button class="btn btn-outline" onclick="exportZip()">🗜️ Export ZIP (PDF + page PNGs)</button>
         <button class="btn btn-outline" onclick="patCopyAnnotations()">📋 Copy annotation list</button>
           <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All Annotations</button>
         </div>
+        <div id="outInfo" class="info" style="margin-top:.4rem"></div>
 
         <h2 style="margin-top:1.4rem;font-size:1.05rem">Added items</h2>
         <div id="itemList" class="info">No annotations yet.</div>
@@ -196,6 +212,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -224,6 +241,7 @@ var redoStack=[];
 var pageDims={};           // {pageNo:{w,h}}
 var pendingImage=null;     // {dataURL,type,w,h} chosen but not yet placed
 var drawing=false,drawStart=null;
+var selectedIdx=-1;        // index into items of the currently selected annotation (live editing)
 
 var FONT_MAP={
   "Helvetica":"Helvetica","Helvetica-Bold":"Helvetica","Helvetica-Oblique":"Helvetica","Helvetica-BoldOblique":"Helvetica",
@@ -315,13 +333,106 @@ function renderAnnotations(){
   });
 }
 
+/* ---- selection + live control feedback ----
+   Clicking an existing annotation selects it and loads its values into the
+   relevant control panel. From then on, editing any of those controls updates the
+   selected item live and re-renders — so the sliders and colour pickers give
+   immediate visual feedback instead of only affecting the next item placed. */
+function panelForType(t){
+  if(t==="text")return "text";
+  if(t==="image")return "image";
+  if(t==="highlight")return "highlight";
+  return "rect"; // rect / line / whiteout share the shape panel
+}
+function selectItem(idx){
+  selectedIdx=idx;
+  var it=items[idx];
+  if(!it)return;
+  // show the control panel that matches this annotation
+  var mode=document.getElementById("toolMode");
+  var panelMode=panelForType(it.type);
+  // keep line/whiteout under the shape panel but don't fight an explicit tool;
+  // only switch the panel visibility, not the stored tool semantics
+  if(it.type==="text"){mode.value="text"}
+  else if(it.type==="image"){mode.value="image"}
+  else if(it.type==="highlight"){mode.value="highlight"}
+  else if(it.type==="rect"){mode.value="rect"}
+  else if(it.type==="line"){mode.value="line"}
+  else if(it.type==="whiteout"){mode.value="whiteout"}
+  onToolChange();
+  // populate controls from the item
+  if(it.type==="text"){
+    setVal("fontFamily",it.font);setVal("fontSize",it.size);
+    setVal("fontColor",it.color);setVal("textOpacity",it.opacity);setVal("textRotation",it.rotation||0);
+  }else if(it.type==="rect"||it.type==="line"){
+    setVal("shapeColor",it.color);setVal("shapeThickness",it.thickness);setVal("shapeOpacity",it.opacity);
+    if(it.type==="rect"){var rf=document.getElementById("rectFill");if(rf)rf.checked=!!it.fill}
+  }else if(it.type==="highlight"){
+    setVal("hlColor",it.color);
+  }
+  renderAnnotations();
+  var hint=document.getElementById("hint");
+  if(hint)hint.textContent="✏️ Editing a selected "+it.type+" — change the controls above to update it live. Click empty space to deselect.";
+}
+function setVal(id,v){
+  var el=document.getElementById(id);
+  if(!el)return;
+  if(el.tagName==="SELECT"){
+    var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(v)});
+    if(!okv)return;
+  }
+  el.value=v;
+}
+function deselect(){
+  if(selectedIdx<0)return;
+  selectedIdx=-1;
+  renderAnnotations();
+}
+/* Apply the current control values onto the selected item (live). Debounced
+   rendering keeps dragging a slider smooth even on big pages. */
+var _liveTimer=null;
+function liveUpdateSelected(){
+  if(selectedIdx<0)return;
+  var it=items[selectedIdx];
+  if(!it)return;
+  if(it.type==="text"){
+    it.font=document.getElementById("fontFamily").value;
+    it.size=+document.getElementById("fontSize").value||it.size;
+    it.color=document.getElementById("fontColor").value;
+    it.opacity=+document.getElementById("textOpacity").value;
+    it.rotation=+document.getElementById("textRotation").value||0;
+  }else if(it.type==="rect"){
+    it.color=document.getElementById("shapeColor").value;
+    it.thickness=+document.getElementById("shapeThickness").value||it.thickness;
+    it.opacity=+document.getElementById("shapeOpacity").value;
+    it.fill=document.getElementById("rectFill").checked;
+  }else if(it.type==="line"){
+    it.color=document.getElementById("shapeColor").value;
+    it.thickness=+document.getElementById("shapeThickness").value||it.thickness;
+    it.opacity=+document.getElementById("shapeOpacity").value;
+  }else if(it.type==="highlight"){
+    it.color=document.getElementById("hlColor").value;
+  }
+  clearTimeout(_liveTimer);
+  _liveTimer=setTimeout(function(){renderAnnotations();updateItemList()},40);
+}
+function bindLiveControls(){
+  ['fontFamily','fontSize','fontColor','textOpacity','textRotation',
+   'shapeColor','shapeThickness','shapeOpacity','rectFill','hlColor'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('input',liveUpdateSelected);
+    el.addEventListener('change',liveUpdateSelected);
+  });
+}
+
 function delBtn(idx){
   var b=document.createElement("button");
   b.textContent="✕";
   b.title="Delete";
   b.style.cssText="position:absolute;top:-10px;right:-10px;width:20px;height:20px;line-height:18px;text-align:center;border-radius:50%;border:none;background:#e11d48;color:#fff;cursor:pointer;font-size:.75rem;padding:0;z-index:20";
   b.addEventListener("mousedown",function(e){e.stopPropagation()});
-  b.addEventListener("click",function(e){e.stopPropagation();pushHistory();items.splice(idx,1);renderAnnotations();updateItemList()});
+  b.addEventListener("click",function(e){e.stopPropagation();pushHistory();items.splice(idx,1);selectedIdx=-1;renderAnnotations();updateItemList()});
   return b;
 }
 
@@ -329,7 +440,7 @@ function renderText(it,idx,layer){
   var p=toCanvas(it.x,it.y); // top-left anchor
   var div=document.createElement("div");
   div.textContent=it.text;
-  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;font-size:"+(it.size*scale)+"px;line-height:1;color:"+it.color+";opacity:"+it.opacity+";font-family:"+FONT_MAP[it.font]+";font-weight:"+cssWeight(it.font)+";font-style:"+cssStyle(it.font)+";cursor:move;white-space:nowrap;transform-origin:left top;transform:rotate("+(-it.rotation)+"deg);padding:1px";
+  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;font-size:"+(it.size*scale)+"px;line-height:1;color:"+it.color+";opacity:"+it.opacity+";font-family:"+FONT_MAP[it.font]+";font-weight:"+cssWeight(it.font)+";font-style:"+cssStyle(it.font)+";cursor:move;white-space:nowrap;transform-origin:left top;transform:rotate("+(-it.rotation)+"deg);padding:1px"+(idx===selectedIdx?";outline:2px dashed var(--accent);outline-offset:2px":"");
   div.addEventListener("dblclick",function(e){e.stopPropagation();editText(idx)});
   makeDraggable(div,it,idx);
   div.appendChild(delBtn(idx));
@@ -370,7 +481,7 @@ function renderRect(it,idx,layer){
     if(it.fill){bg=it.color}
     bd=it.thickness+"px solid "+it.color;
   }
-  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;width:"+(it.w*scale)+"px;height:"+(it.h*scale)+"px;background:"+bg+";border:"+bd+";opacity:"+(it.opacity!=null?it.opacity:1)+";cursor:move;box-sizing:border-box";
+  div.style.cssText="position:absolute;left:"+p.x+"px;top:"+p.y+"px;width:"+(it.w*scale)+"px;height:"+(it.h*scale)+"px;background:"+bg+";border:"+bd+";opacity:"+(it.opacity!=null?it.opacity:1)+";cursor:move;box-sizing:border-box"+(idx===selectedIdx?";outline:2px dashed var(--accent);outline-offset:2px":"");
   makeDraggable(div,it,idx,true);
   div.appendChild(delBtn(idx));
   layer.appendChild(div);
@@ -388,6 +499,7 @@ function renderLine(it,idx,layer){
   div.addEventListener("mousedown",function(e){
     if(e.target!==div)return;
     e.preventDefault();
+    selectItem(idx);
     pushHistory();
     var sx=e.clientX,sy=e.clientY;var ox1=it.x1,oy1=it.y1,ox2=it.x2,oy2=it.y2;
     function mm(ev){var ddx=(ev.clientX-sx)/scale,ddy=(ev.clientY-sy)/scale;it.x1=ox1+ddx;it.y1=oy1-ddy;it.x2=ox2+ddx;it.y2=oy2-ddy;renderAnnotations()}
@@ -403,6 +515,7 @@ function makeDraggable(el,it,idx,bottomLeft){
   el.addEventListener("mousedown",function(e){
     if(e.target!==el&&e.target.tagName!=="IMG")return;
     e.preventDefault();
+    selectItem(idx);
     pushHistory();
     var sx=e.clientX,sy=e.clientY,ox=it.x,oy=it.y;
     function mm(ev){
@@ -421,7 +534,8 @@ function makeDraggable(el,it,idx,bottomLeft){
    most repetitive part of marking up a batch of documents the same way. */
 var PAT_KEY='pdf-add-text-style-v1';
 var PAT_FIELDS=['toolMode','fontFamily','fontSize','fontColor','textOpacity','textRotation',
-                'hlColor','shapeColor','shapeThickness','shapeOpacity','rectFill'];
+                'hlColor','shapeColor','shapeThickness','shapeOpacity','rectFill',
+                'stampQuality','pngScale'];
 function patSaveStyle(){
   var d={};
   PAT_FIELDS.forEach(function(id){
@@ -481,15 +595,35 @@ function onToolChange(){
   else hint.textContent="🟡 Drag to draw a translucent highlight.";
 }
 
+var STAMP_PRESETS={small:{max:400,q:0.7},medium:{max:800,q:0.82},high:{max:1400,q:0.9}};
+function stampPreset(){
+  var sel=document.getElementById("stampQuality");
+  return STAMP_PRESETS[sel&&sel.value]||STAMP_PRESETS.medium;
+}
+
 document.getElementById("stampImg").addEventListener("change",function(){
   var f=this.files[0];if(!f)return;
   var reader=new FileReader();
   reader.onload=function(){
     var img=new Image();
     img.onload=function(){
-      pendingImage={dataURL:reader.result,type:/png/i.test(f.type)?"png":"jpg",w:img.width,h:img.height};
-      document.getElementById("stampInfo").textContent="Loaded ✓ — now click on the page to place it.";
+      /* Cap the stamp so a multi-MB logo does not bloat the PDF. Downscale to the
+         chosen max dimension and re-encode; PNGs with transparency stay PNG, else
+         JPEG at the preset quality. Two presets give genuinely different bytes. */
+      var preset=stampPreset();
+      var scale=Math.min(1,preset.max/Math.max(img.width,img.height));
+      var ow=Math.max(1,Math.round(img.width*scale)),oh=Math.max(1,Math.round(img.height*scale));
+      var isPng=/png/i.test(f.type);
+      var cv=document.createElement("canvas");cv.width=ow;cv.height=oh;
+      var cx=cv.getContext("2d");
+      if(!isPng){cx.fillStyle="#ffffff";cx.fillRect(0,0,ow,oh)}
+      cx.drawImage(img,0,0,ow,oh);
+      var durl=isPng?cv.toDataURL("image/png"):cv.toDataURL("image/jpeg",preset.q);
+      pendingImage={dataURL:durl,type:isPng?"png":"jpg",w:ow,h:oh};
+      var approx=Math.round((durl.length-durl.indexOf(",")-1)*0.75);
+      document.getElementById("stampInfo").textContent="Loaded \u2713 ("+ow+"\u00d7"+oh+", ~"+formatSize(approx)+") — now click on the page to place it.";
     };
+    img.onerror=function(){notify("That image could not be read. Try a PNG or JPEG.","error")};
     img.src=reader.result;
   };
   reader.readAsDataURL(f);
@@ -501,6 +635,7 @@ function layerPos(e){var r=layerEl.getBoundingClientRect();return {x:e.clientX-r
 
 layerEl.addEventListener("mousedown",function(e){
   if(e.target!==this)return; // only start on empty canvas area
+  deselect();
   var m=document.getElementById("toolMode").value;
   var pos=layerPos(e);
   if(m==="text"){placeText(pos);return}
@@ -611,9 +746,9 @@ function editText(idx){
 function snapshot(){return JSON.parse(JSON.stringify(items))}
 function pushHistory(){redoStack=[];historyStack.push(snapshot());if(historyStack.length>50)historyStack.shift()}
 var historyStack=[];
-function undo(){if(!historyStack.length)return;redoStack.push(snapshot());items=historyStack.pop();renderAnnotations();updateItemList()}
-function redo(){if(!redoStack.length)return;historyStack.push(snapshot());items=redoStack.pop();renderAnnotations();updateItemList()}
-function clearAll(){if(!items.length)return;pushHistory();items=[];renderAnnotations();updateItemList()}
+function undo(){if(!historyStack.length)return;redoStack.push(snapshot());items=historyStack.pop();selectedIdx=-1;renderAnnotations();updateItemList()}
+function redo(){if(!redoStack.length)return;historyStack.push(snapshot());items=redoStack.pop();selectedIdx=-1;renderAnnotations();updateItemList()}
+function clearAll(){if(!items.length)return;pushHistory();items=[];selectedIdx=-1;renderAnnotations();updateItemList()}
 
 function prevPage(){if(currentPage>1){currentPage--;renderPage()}}
 function nextPage(){if(currentPage<totalPages){currentPage++;renderPage()}}
@@ -641,7 +776,7 @@ function updateItemList(){
   el.innerHTML=html;
 }
 function goToItem(idx){var it=items[idx];if(!it)return;if(it.page!==currentPage){currentPage=it.page;renderPage()}}
-function deleteItem(idx){if(!items[idx])return;pushHistory();items.splice(idx,1);renderAnnotations();updateItemList()}
+function deleteItem(idx){if(!items[idx])return;pushHistory();items.splice(idx,1);selectedIdx=-1;renderAnnotations();updateItemList()}
 
 /* ---- save with pdf-lib (correct coordinate mapping) ---- */
 function hexToRgb(hex){var r=hex.match(/\w\w/g).map(function(c){return parseInt(c,16)/255});return PDFLib.rgb(r[0],r[1],r[2])}
@@ -705,82 +840,168 @@ function winAnsiFold(s){
     .replace(/[\u2022\u00b7]/g,"-");
 }
 
+async function buildPdfBytes(){
+  var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+  var pages=doc.getPages();
+  var StdFonts=PDFLib.StandardFonts;
+  var fontKeyMap={
+    "Helvetica":StdFonts.Helvetica,"Helvetica-Bold":StdFonts.HelveticaBold,"Helvetica-Oblique":StdFonts.HelveticaOblique,"Helvetica-BoldOblique":StdFonts.HelveticaBoldOblique,
+    "TimesRoman":StdFonts.TimesRoman,"TimesRomanBold":StdFonts.TimesRomanBold,"TimesRomanItalic":StdFonts.TimesRomanItalic,"TimesRomanBoldItalic":StdFonts.TimesRomanBoldItalic,
+    "Courier":StdFonts.Courier,"Courier-Bold":StdFonts.CourierBold,"Courier-Oblique":StdFonts.CourierOblique,"Courier-BoldOblique":StdFonts.CourierBoldOblique
+  };
+  var fontCache={};
+  async function getFont(k){if(!fontCache[k])fontCache[k]=await doc.embedFont(fontKeyMap[k]||StdFonts.Helvetica);return fontCache[k]}
+
+  var textItems=items.filter(function(i){return i.type==="text"});
+  textItems.forEach(function(i){i._draw=winAnsiFold(i.text)});
+  var anyUnicode=textItems.some(function(i){return needsUnicode(i._draw)});
+  var uniFont=null;
+  if(anyUnicode){
+    document.getElementById("result").innerHTML=
+      "<p class='info'>\u23f3 Your text uses characters outside the basic Latin set "+
+      "(rupee sign, Hindi, emoji and so on), so a Unicode font is being embedded. "+
+      "First save downloads about 640KB.</p>";
+    try{
+      var bytes=await ensureUniFont();
+      doc.registerFontkit(window.fontkit);
+      uniFont=await doc.embedFont(bytes,{subset:true});
+    }catch(e){
+      uniFont=null;
+      textItems.forEach(function(i){i._draw=i._draw.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"")});
+      document.getElementById("result").innerHTML=
+        "<p class='info' style='color:var(--danger)'>\u26a0\ufe0f Could not load the Unicode font ("+
+        (e.message||"unknown")+"). Unsupported characters were removed so the rest of your "+
+        "PDF still saves.</p>";
+    }
+  }
+
+  var ordered=items.slice().sort(function(a,b){var r={image:0,whiteout:1,highlight:1,rect:1,line:1,text:2};return (r[a.type]||1)-(r[b.type]||1)});
+
+  for(var i=0;i<ordered.length;i++){
+    var it=ordered[i];
+    var pg=pages[it.page-1];if(!pg)continue;
+    if(it.type==="text"){
+      var font=uniFont||await getFont(it.font);
+      var baselineY=it.y-it.size*0.8;
+      pg.drawText(it._draw!=null?it._draw:it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
+    }else if(it.type==="image"){
+      var ibytes=await (await fetch(it.dataURL)).arrayBuffer();
+      var emb=it.imgType==="png"?await doc.embedPng(ibytes):await doc.embedJpg(ibytes);
+      pg.drawImage(emb,{x:it.x,y:it.y,width:it.w,height:it.h,opacity:it.opacity!=null?it.opacity:1});
+    }else if(it.type==="line"){
+      pg.drawLine({start:{x:it.x1,y:it.y1},end:{x:it.x2,y:it.y2},thickness:it.thickness,color:hexToRgb(it.color),opacity:it.opacity});
+    }else if(it.type==="whiteout"){
+      pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:PDFLib.rgb(1,1,1)});
+    }else if(it.type==="highlight"){
+      var hp=rgbaToParts(it.color);
+      pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:hp.color,opacity:hp.opacity});
+    }else if(it.type==="rect"){
+      var opts={x:it.x,y:it.y,width:it.w,height:it.h,borderWidth:it.thickness,borderColor:hexToRgb(it.color),opacity:it.opacity,borderOpacity:it.opacity};
+      if(it.fill)opts.color=hexToRgb(it.color);
+      pg.drawRectangle(opts);
+    }
+  }
+  return await doc.save();
+}
+
 async function savePdf(){
   if(!pdfFile)return;
   window.showProcessing&&window.showProcessing("result");
   try{
-    var doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
-    var pages=doc.getPages();
-    var StdFonts=PDFLib.StandardFonts;
-    var fontKeyMap={
-      "Helvetica":StdFonts.Helvetica,"Helvetica-Bold":StdFonts.HelveticaBold,"Helvetica-Oblique":StdFonts.HelveticaOblique,"Helvetica-BoldOblique":StdFonts.HelveticaBoldOblique,
-      "TimesRoman":StdFonts.TimesRoman,"TimesRomanBold":StdFonts.TimesRomanBold,"TimesRomanItalic":StdFonts.TimesRomanItalic,"TimesRomanBoldItalic":StdFonts.TimesRomanBoldItalic,
-      "Courier":StdFonts.Courier,"Courier-Bold":StdFonts.CourierBold,"Courier-Oblique":StdFonts.CourierOblique,"Courier-BoldOblique":StdFonts.CourierBoldOblique
-    };
-    var fontCache={};
-    async function getFont(k){if(!fontCache[k])fontCache[k]=await doc.embedFont(fontKeyMap[k]||StdFonts.Helvetica);return fontCache[k]}
-
-    /* Fold the easy lookalikes first, then see whether anything genuinely needs a
-       Unicode font. If it does, embed one once and use it for every text item so
-       the document does not mix two typefaces unpredictably. */
-    var textItems=items.filter(function(i){return i.type==="text"});
-    textItems.forEach(function(i){i._draw=winAnsiFold(i.text)});
-    var anyUnicode=textItems.some(function(i){return needsUnicode(i._draw)});
-    var uniFont=null;
-    if(anyUnicode){
-      document.getElementById("result").innerHTML=
-        "<p class='info'>\u23f3 Your text uses characters outside the basic Latin set "+
-        "(rupee sign, Hindi, emoji and so on), so a Unicode font is being embedded. "+
-        "First save downloads about 640KB.</p>";
-      try{
-        var bytes=await ensureUniFont();
-        doc.registerFontkit(window.fontkit);
-        uniFont=await doc.embedFont(bytes,{subset:true});
-      }catch(e){
-        /* Last resort: strip what cannot be drawn rather than failing the whole save. */
-        uniFont=null;
-        textItems.forEach(function(i){i._draw=i._draw.replace(/\u20b9/g,"Rs.").replace(/[^\u0000-\u00ff]/g,"")});
-        document.getElementById("result").innerHTML=
-          "<p class='info' style='color:var(--danger)'>\u26a0\ufe0f Could not load the Unicode font ("+
-          (e.message||"unknown")+"). Unsupported characters were removed so the rest of your "+
-          "PDF still saves.</p>";
-      }
-    }
-
-    // Draw shapes/whiteout/highlight/images first, text last (so text sits on top).
-    var ordered=items.slice().sort(function(a,b){var r={image:0,whiteout:1,highlight:1,rect:1,line:1,text:2};return (r[a.type]||1)-(r[b.type]||1)});
-
-    for(var i=0;i<ordered.length;i++){
-      var it=ordered[i];
-      var pg=pages[it.page-1];if(!pg)continue;
-      if(it.type==="text"){
-        var font=uniFont||await getFont(it.font);
-        // it.y is the TOP of the text in PDF coords. pdf-lib draws from baseline,
-        // so baseline = top - ascent. Approximate ascent as ~0.8*size.
-        var baselineY=it.y-it.size*0.8;
-        pg.drawText(it._draw!=null?it._draw:it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
-      }else if(it.type==="image"){
-        var bytes=await (await fetch(it.dataURL)).arrayBuffer();
-        var emb=it.imgType==="png"?await doc.embedPng(bytes):await doc.embedJpg(bytes);
-        pg.drawImage(emb,{x:it.x,y:it.y,width:it.w,height:it.h,opacity:it.opacity!=null?it.opacity:1});
-      }else if(it.type==="line"){
-        pg.drawLine({start:{x:it.x1,y:it.y1},end:{x:it.x2,y:it.y2},thickness:it.thickness,color:hexToRgb(it.color),opacity:it.opacity});
-      }else if(it.type==="whiteout"){
-        pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:PDFLib.rgb(1,1,1)});
-      }else if(it.type==="highlight"){
-        var hp=rgbaToParts(it.color);
-        pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:hp.color,opacity:hp.opacity});
-      }else if(it.type==="rect"){
-        var opts={x:it.x,y:it.y,width:it.w,height:it.h,borderWidth:it.thickness,borderColor:hexToRgb(it.color),opacity:it.opacity,borderOpacity:it.opacity};
-        if(it.fill)opts.color=hexToRgb(it.color);
-        pg.drawRectangle(opts);
-      }
-    }
-    var out=await doc.save();
+    var out=await buildPdfBytes();
     download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
     document.getElementById("result").innerHTML="<p class='info'>✅ PDF saved with your annotations. Remember: only whiteout/redact boxes actually hide the original content.</p>";
+    document.getElementById("outInfo").textContent="Edited PDF: "+formatSize(out.length||out.byteLength);
   }catch(err){
     document.getElementById("result").innerHTML="<p style='color:var(--danger)'>❌ Could not save: "+err.message+"</p>";
+  }
+}
+
+/* Draw one annotation onto a 2D canvas context, with `sc` mapping PDF points to
+   device pixels (sc = pngScale). This mirrors the on-screen preview so each page
+   PNG is the page raster plus the annotation layer composited together — the same
+   idea pdf-editor uses, adapted to this tool's DOM-based annotation layer. */
+function drawItemOnCanvas(ctx,it,sc,pageH){
+  // PDF origin is bottom-left; canvas is top-left, so flip Y.
+  var toY=function(pdfY){return (pageH-pdfY)*sc};
+  ctx.save();
+  if(it.type==="text"){
+    ctx.globalAlpha=it.opacity!=null?it.opacity:1;
+    ctx.fillStyle=it.color;
+    var px=it.size*sc;
+    var fam=FONT_MAP[it.font]||"Helvetica";
+    ctx.font=cssStyle(it.font)+" "+cssWeight(it.font)+" "+px+"px "+fam;
+    ctx.textBaseline="top";
+    var x=it.x*sc, y=toY(it.y); // it.y is the TOP of the text
+    if(it.rotation){
+      ctx.translate(x,y);ctx.rotate(-it.rotation*Math.PI/180);
+      ctx.fillText(it.text,0,0);
+    }else{
+      ctx.fillText(it.text,x,y);
+    }
+  }else if(it.type==="image"){
+    ctx.globalAlpha=it.opacity!=null?it.opacity:1;
+    var cimg=_imgCache[it.dataURL];
+    if(cimg){ctx.drawImage(cimg,it.x*sc,toY(it.y+it.h),it.w*sc,it.h*sc)}
+  }else if(it.type==="line"){
+    ctx.globalAlpha=it.opacity!=null?it.opacity:1;
+    ctx.strokeStyle=it.color;ctx.lineWidth=it.thickness*sc;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(it.x1*sc,toY(it.y1));ctx.lineTo(it.x2*sc,toY(it.y2));ctx.stroke();
+  }else if(it.type==="whiteout"){
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(it.x*sc,toY(it.y+it.h),it.w*sc,it.h*sc);
+  }else if(it.type==="highlight"){
+    ctx.fillStyle=it.color; // already an rgba() string
+    ctx.fillRect(it.x*sc,toY(it.y+it.h),it.w*sc,it.h*sc);
+  }else if(it.type==="rect"){
+    ctx.globalAlpha=it.opacity!=null?it.opacity:1;
+    var rx=it.x*sc, ry=toY(it.y+it.h), rw=it.w*sc, rh=it.h*sc;
+    if(it.fill){ctx.fillStyle=it.color;ctx.fillRect(rx,ry,rw,rh)}
+    ctx.strokeStyle=it.color;ctx.lineWidth=it.thickness*sc;ctx.strokeRect(rx,ry,rw,rh);
+  }
+  ctx.restore();
+}
+
+var _imgCache={};
+function preloadImages(){
+  var urls=items.filter(function(i){return i.type==="image"}).map(function(i){return i.dataURL});
+  return Promise.all(urls.map(function(u){
+    if(_imgCache[u])return Promise.resolve();
+    return new Promise(function(res){var im=new Image();im.onload=function(){_imgCache[u]=im;res()};im.onerror=res;im.src=u});
+  }));
+}
+
+/* Export the edited PDF plus one composited PNG per page inside a ZIP. */
+async function exportZip(){
+  if(!pdfFile||!pdfDoc){notify("Open a PDF first.","warn");return}
+  if(typeof JSZip==="undefined"){notify("ZIP library is still loading — try again in a moment.","warn");return}
+  window.showProcessing&&window.showProcessing("result");
+  try{
+    var sc=parseFloat((document.getElementById("pngScale")||{}).value)||2;
+    await preloadImages();
+    var zip=new JSZip();
+    for(var p=1;p<=totalPages;p++){
+      var page=await pdfDoc.getPage(p);
+      var vp=page.getViewport({scale:sc});
+      var cv=document.createElement("canvas");
+      cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+      var cx=cv.getContext("2d");
+      cx.fillStyle="#ffffff";cx.fillRect(0,0,cv.width,cv.height);
+      await page.render({canvasContext:cx,viewport:vp}).promise;
+      var pageH=pageDims[p]?pageDims[p].h:(vp.height/sc);
+      items.forEach(function(it){if(it.page===p)drawItemOnCanvas(cx,it,sc,pageH)});
+      var blob=await new Promise(function(r){cv.toBlob(r,"image/png")});
+      var buf=await blob.arrayBuffer();
+      zip.file("page-"+String(p).padStart(2,"0")+".png",buf);
+    }
+    var pdfBytes=await buildPdfBytes();
+    zip.file("edited.pdf",pdfBytes);
+    var out=await zip.generateAsync({type:"blob"});
+    download(out,"pdf-add-text-export.zip");
+    document.getElementById("result").innerHTML="<p class='info'>✅ Exported "+totalPages+" page PNG"+(totalPages!==1?"s":"")+" plus the edited PDF as a ZIP.</p>";
+    document.getElementById("outInfo").textContent="ZIP size: "+formatSize(out.size)+" · PNG resolution "+(sc*72)+" DPI";
+  }catch(err){
+    document.getElementById("result").innerHTML="<p style='color:var(--danger)'>❌ ZIP export failed: "+(err.message||"unknown error")+"</p>";
   }
 }
 
@@ -788,6 +1009,7 @@ onToolChange();
   
 patRestoreStyle();
 if(typeof onToolChange==='function')onToolChange();
+bindLiveControls();
 PAT_FIELDS.forEach(function(id){var el=document.getElementById(id);
   if(el)el.addEventListener('change',patSaveStyle)});
 </script>

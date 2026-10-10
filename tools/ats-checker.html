@@ -52,6 +52,22 @@
         </select>
       </div>
 
+      <div class="row" style="margin-top:.5rem;align-items:center;flex-wrap:wrap">
+        <label for="matchMode" style="flex:0 0 auto"><strong>Keyword match:</strong></label>
+        <select id="matchMode" style="flex:1">
+          <option value="lenient">Lenient (substring — "manage" matches "management")</option>
+          <option value="strict" selected>Strict (whole word only)</option>
+        </select>
+        <label for="minKwLen" style="flex:0 0 auto"><strong>Min keyword length:</strong></label>
+        <select id="minKwLen" style="flex:0 0 auto">
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+      <p class="info" style="font-size:.78rem;margin:.3rem 0">There is no image-style "quality" slider here — it would be meaningless for text. These control how strictly resume keywords are matched against the job description instead.</p>
+
       <button class="btn" onclick="checkATS()" style="width:100%;margin-top:.5rem">📄 Check ATS Score</button>
 
       <div id="scoreCard" style="display:none;margin-top:1.5rem;text-align:center">
@@ -66,10 +82,12 @@
       <div id="suggestions" style="display:none;margin-top:1rem"></div>
       <div id="reportBar" style="display:none;margin-top:1rem" class="row">
         <button class="btn btn-outline" onclick="downloadReport()" style="flex:1">💾 Download Report (.txt)</button>
+        <button class="btn btn-outline" onclick="exportZip()">🗜️ Application Pack ZIP</button>
         <button class="btn btn-outline" onclick="copyReport()">📋 Copy report</button>
         <button class="btn btn-outline" onclick="copyMissing()">🔑 Copy missing keywords</button>
         <button class="btn btn-outline" onclick="atsClear()">🗑️ Clear</button>
       </div>
+      <p id="atsNote" class="info" style="display:none;margin-top:.5rem"></p>
 
       <div style="margin-top:1.5rem">
         <p class="info">Live word count: <strong id="liveWords">0</strong></p>
@@ -154,6 +172,7 @@
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var actionVerbs=['managed','developed','led','created','implemented','designed','built','achieved','improved','increased','decreased','reduced','launched','delivered','coordinated','organized','analyzed','resolved','streamlined','optimized','negotiated','mentored','trained','supervised','directed','established','generated','transformed','spearheaded','executed','facilitated','pioneered','revamped','orchestrated','cultivated','automated','engineered','architected','deployed','scaled','drove','owned','shipped'];
@@ -179,6 +198,8 @@ var STOPWORDS={'the':1,'and':1,'for':1,'with':1,'you':1,'your':1,'our':1,'are':1
 
 var lastReport='';
 var lastMissing=[];   /* keywords the JD wants that the resume lacks, for copyMissing() */
+var lastDensity=null; /* {words,hits,density,mode,minLen} for the ZIP + readout */
+var lastMissingObjs=[]; /* [{w,f}] missing keywords with JD frequency, for the CSV */
 
 // ---------- File handling ----------
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
@@ -208,17 +229,22 @@ function extractPdf(file){
   var reader=new FileReader();
   reader.onload=function(){
     var data=new Uint8Array(reader.result);
-    pdfjsLib.getDocument({data:data}).promise.then(function(pdf){
+    pdfjsLib.getDocument({data:data}).promise.then(async function(pdf){
       var pages=[];
-      var chain=Promise.resolve();
-      for(var p=1;p<=pdf.numPages;p++){
-        (function(pageNum){
-          chain=chain.then(function(){return pdf.getPage(pageNum)}).then(function(page){return page.getTextContent()}).then(function(tc){
-            pages.push(tc.items.map(function(it){return it.str}).join(' '));
-          });
-        })(p);
+      var n=pdf.numPages;
+      for(var p=1;p<=n;p++){
+        /* Show real progress and YIELD so the browser repaints between pages —
+           a multi-page resume used to freeze the tab with no feedback. */
+        status.textContent='⏳ Reading page '+p+' of '+n+'…';
+        /* yield a frame so the status text above actually paints */
+        await new Promise(function(res){
+          (window.requestAnimationFrame||function(cb){setTimeout(cb,16)})(function(){setTimeout(res,0)});
+        });
+        var page=await pdf.getPage(p);
+        var tc=await page.getTextContent();
+        pages.push(tc.items.map(function(it){return it.str}).join(' '));
       }
-      return chain.then(function(){return pages.join('\n')});
+      return pages.join('\n');
     }).then(function(text){
       document.getElementById('resume').value=text.replace(/\s+\n/g,'\n').trim();
       updateWordCount();
@@ -325,24 +351,43 @@ function checkATS(){
   cats.push({name:'Quantified Achievements',score:quantScore,weight:12,feedback:quantFb});
 
   // 5. Keyword density & relevance (vs job description) — weighted by frequency in JD
+  var matchMode=(document.getElementById('matchMode')||{}).value||'strict';
+  var minKwLen=parseInt((document.getElementById('minKwLen')||{}).value,10)||4;
+  function resumeHasKeyword(w){
+    if(matchMode==='strict'){
+      return new RegExp('(?:^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:[^a-z0-9]|$)','i').test(resumeLower);
+    }
+    return resumeLower.indexOf(w)>-1;
+  }
   var jdFreq={};
   job.toLowerCase().replace(/[^a-z0-9+#.\s]/g,' ').split(/\s+/).forEach(function(w){
     w=w.replace(/^\.+|\.+$/g,'');
-    if(w.length>3&&!STOPWORDS[w]){jdFreq[w]=(jdFreq[w]||0)+1}
+    if(w.length>=minKwLen&&!STOPWORDS[w]){jdFreq[w]=(jdFreq[w]||0)+1}
   });
   var jdKeys=Object.keys(jdFreq).sort(function(a,b){return jdFreq[b]-jdFreq[a]});
   var totalWeight=0,matchedWeight=0,matchedList=[],missingList=[];
   jdKeys.forEach(function(w){
     totalWeight+=jdFreq[w];
-    if(resumeLower.indexOf(w)>-1){matchedWeight+=jdFreq[w];matchedList.push(w)}
+    if(resumeHasKeyword(w)){matchedWeight+=jdFreq[w];matchedList.push(w)}
     else missingList.push({w:w,f:jdFreq[w]})
   });
   var keywordScore=totalWeight?Math.round((matchedWeight/totalWeight)*100):0;
   missingList.sort(function(a,b){return b.f-a.f});
   var topMissing=missingList.slice(0,15);
   lastMissing=topMissing.map(function(m){return m.w});
+  lastMissingObjs=topMissing.slice();
+  /* Honest, text-appropriate readout: how dense the matched JD keywords are in
+     the resume. */
+  var matchedHits=0;
+  matchedList.forEach(function(w){
+    var re=new RegExp('(?:^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:[^a-z0-9]|$)','ig');
+    var m2=resumeLower.match(re);matchedHits+=m2?m2.length:0;
+  });
+  var density=words?((matchedHits/words)*100):0;
+  lastDensity={words:words,hits:matchedHits,density:density,mode:matchMode,minLen:minKwLen};
   var kwFb=[];
-  kwFb.push('Weighted keyword match: '+keywordScore+'% ('+matchedList.length+'/'+jdKeys.length+' distinct JD keywords).');
+  kwFb.push('Weighted keyword match: '+keywordScore+'% ('+matchedList.length+'/'+jdKeys.length+' distinct JD keywords, '+matchMode+' mode, min length '+minKwLen+').');
+  kwFb.push('Keyword density: '+matchedHits+' JD-keyword hits in '+words+' words ('+density.toFixed(1)+'%).');
   if(topMissing.length)kwFb.push('Most important missing keywords (by frequency in the JD): '+topMissing.map(function(m){return m.w+(m.f>1?' ('+m.f+'×)':'')}).join(', ')+'.');
   cats.push({name:'Keyword Relevance',score:keywordScore,weight:22,feedback:kwFb});
 
@@ -395,7 +440,7 @@ function checkATS(){
   overallEl.textContent=overall+'/100';
   overallEl.style.color=col;
   labelEl.textContent=overall>70?'✅ Good ATS Compatibility':overall>=50?'⚠️ Needs Improvement':'❌ Low ATS Compatibility';
-  document.getElementById('wordCountLine').textContent='Resume length: '+words+' words';
+  document.getElementById('wordCountLine').textContent='Resume length: '+words+' words · keyword density '+density.toFixed(1)+'% ('+matchedHits+' JD-keyword hits, '+matchMode+' mode)';
 
   // ---- Match card ----
   var mc=document.getElementById('matchCard');
@@ -494,6 +539,43 @@ function downloadReport(){
   }catch(e){ atsNote('Download failed: '+(e.message||'unknown'),true) }
 }
 
+/* The application pack a job seeker needs when applying: the ATS report, the
+   extracted plain-text resume (ATS portals want plain text), the missing-keyword
+   list as CSV (reusing the SAME data as "Copy missing keywords"), and a README. */
+function exportZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and retry.','error');return}
+  if(!lastReport){notify('Run a check first.','warn');return}
+  var resumeText=document.getElementById('resume').value||'';
+  var csv='keyword,jd_frequency\n';
+  (lastMissingObjs.length?lastMissingObjs:lastMissing.map(function(w){return {w:w,f:''}})).forEach(function(m){
+    csv+='"'+String(m.w).replace(/"/g,'""')+'",'+(m.f===''?'':m.f)+'\n';
+  });
+  var zip=new JSZip();
+  zip.file('ats-report.txt',lastReport);
+  zip.file('resume-plain-text.txt',resumeText);
+  zip.file('missing-keywords.csv',csv);
+  zip.file('README.txt',
+    'RESUME APPLICATION PACK\n'+
+    '=======================\n\n'+
+    'Created by the FreeToolHubs Resume ATS Checker (a heuristic — not a real ATS).\n\n'+
+    'FILES:\n'+
+    '  ats-report.txt        The full category-by-category ATS report with your\n'+
+    '                        overall score and top fixes.\n'+
+    '  resume-plain-text.txt The extracted plain text of your resume. Many ATS\n'+
+    '                        portals and "paste your resume" boxes want exactly\n'+
+    '                        this — plain text, no formatting.\n'+
+    '  missing-keywords.csv  The job-description keywords your resume is missing,\n'+
+    '                        with how often each appears in the JD. Work the\n'+
+    '                        relevant ones into your resume naturally.\n\n'+
+    'Reminder: real employer ATS behaviour varies. Use this as a guide.\n');
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    download(blob,'resume-application-pack.zip');
+    notify('Application pack ZIP created ('+formatSize(blob.size)+') with report, plain-text resume and missing keywords.','ok');
+  }).catch(function(e){
+    notify('Could not build the ZIP: '+((e&&e.message)||'unknown'),'error');
+  });
+}
+
 /* inline feedback: the old notify(, 'info') interrupted the flow and said nothing on success */
 function atsNote(msg,isErr){
   var el=document.getElementById('atsNote');
@@ -506,25 +588,14 @@ function atsNote(msg,isErr){
 
 function copyReport(){
   if(!lastReport){atsNote('Run a check first.',true);return}
-  try{
-    if(typeof copyText==='function'){copyText(lastReport,null);atsNote('Report copied.');return}
-    navigator.clipboard.writeText(lastReport).then(
-      function(){atsNote('Report copied.')},
-      function(){atsNote('Copy was blocked by the browser.',true)});
-  }catch(e){ atsNote('Copy failed: '+(e.message||'unknown'),true) }
+  copyNow(lastReport,'Report copied.');
 }
 
 /* Copy just the keywords the job description wants but the resume is missing -
    that is the single most useful thing to paste back into a resume draft. */
 function copyMissing(){
   if(!lastMissing||!lastMissing.length){atsNote('Run a check first, or no keywords are missing.',true);return}
-  var out=lastMissing.join(', ');
-  try{
-    if(typeof copyText==='function'){copyText(out,null);atsNote(lastMissing.length+' missing keywords copied.');return}
-    navigator.clipboard.writeText(out).then(
-      function(){atsNote(lastMissing.length+' missing keywords copied.')},
-      function(){atsNote('Copy was blocked by the browser.',true)});
-  }catch(e){ atsNote('Copy failed: '+(e.message||'unknown'),true) }
+  copyNow(lastMissing.join(', '),lastMissing.length+' missing keywords copied.');
 }
 
 /* ---- draft persistence ----

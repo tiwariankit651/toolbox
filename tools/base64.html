@@ -51,7 +51,8 @@
         <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem"><input type="checkbox" id="pad" checked style="width:auto"> Include <code>=</code> padding</label>
         <textarea id="inp" placeholder="Paste text or Base64 string — auto-detects input type..."></textarea>
         <div id="autoDetect" style="font-size:.8rem;color:var(--accent-text);margin:.3rem 0"></div>
-        <div class="row"><button class="btn" onclick="go('e')">Encode (UTF-8 safe)</button><button class="btn btn-outline" onclick="go('d')">Decode</button></div>
+        <div class="row"><button class="btn" onclick="go('e')">Encode (UTF-8 safe)</button><button class="btn btn-outline" onclick="go('d')">Decode</button><button class="btn btn-outline" onclick="clearDraft()" title="Clear the saved draft and the box">🗑️ Clear draft</button></div>
+        <div id="draftNote" class="info" style="font-size:.75rem"></div>
         <div id="textSizes" class="info"></div>
         <div class="result-box" id="result" style="max-height:250px;overflow:auto"></div>
       </div>
@@ -60,11 +61,16 @@
       <div id="tab-file" class="tabpane" style="display:none">
         <h3 style="margin:.4rem 0 .5rem">File → Base64</h3>
         <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem"><input type="checkbox" id="asDataUri" checked style="width:auto"> Output full data URI (with MIME type)</label>
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">Drop file here or click to browse<input type="file" id="fi"></div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">Drop one or more files here or click to browse<input type="file" id="fi" multiple></div>
         <div id="fileSizes" class="info"></div>
         <div id="cssSnippet"></div>
         <div class="result-box" id="fileResult" style="max-height:220px;overflow:auto"></div>
         <div id="filePreview" class="preview-area"></div>
+
+        <div id="batchBox" style="display:none;margin:1rem 0;padding:1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius)">
+          <div id="batchList" class="info" style="font-size:.8rem"></div>
+          <div class="row" style="margin-top:.5rem"><button class="btn" id="zipBtn" onclick="exportZip()">📦 Encode all → ZIP of .txt files</button></div>
+        </div>
 
         <h3 style="margin:1.2rem 0 .5rem">Base64 → File</h3>
         <p class="info">Paste raw Base64 or a full data URI. The MIME type & extension are auto-detected.</p>
@@ -147,9 +153,10 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
-function switchTab(name){document.querySelectorAll('.tabpane').forEach(function(p){p.style.display='none'});document.getElementById('tab-'+name).style.display='';document.querySelectorAll('#tabBar .cat-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===name)})}
+function switchTab(name){document.querySelectorAll('.tabpane').forEach(function(p){p.style.display='none'});document.getElementById('tab-'+name).style.display='';document.querySelectorAll('#tabBar .cat-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===name)});try{storeSetRaw('base64-active-tab-v1',name,true)}catch(e){}}
 const urlSafe=()=>document.getElementById('urlSafe').checked;
 const wantPad=()=>document.getElementById('pad').checked;
 function toUrlSafe(s){return s.replace(/\+/g,'-').replace(/\//g,'_')}
@@ -160,17 +167,21 @@ function utf8ToB64(str){var bytes=new TextEncoder().encode(str);var bin='';for(v
 function b64ToUtf8(b64){var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
 
 function go(m){
+  try{storeSetRaw('base64-last-mode-v1',m,true)}catch(e){}
   const i=document.getElementById('inp').value;
   const res=document.getElementById('result');
   const sizes=document.getElementById('textSizes');
   try{
     let r;
     if(m==='e'){
+      var inBytes=new TextEncoder().encode(i).length;
+      if(inBytes>5*1024*1024&&!confirm('That is '+formatSize(inBytes)+' of text. Encoding may briefly freeze the browser. Continue?')){return;}
       r=utf8ToB64(i);
       if(urlSafe())r=toUrlSafe(r);
       if(!wantPad())r=stripPad(r);
       var inB=new TextEncoder().encode(i).length,outB=r.length;
-      sizes.innerHTML='Input: '+inB+' B → Output: '+outB+' B <span class="badge badge-blue">~33% overhead</span>';
+      var ov=inB?Math.round((outB-inB)/inB*100):0;
+      sizes.innerHTML='Original: '+formatSize(inB)+' ('+inB+' B) → Encoded: '+formatSize(outB)+' ('+outB+' B) <span class="badge badge-blue">+'+ov+'% overhead</span>';
     }else{
       let d=i.trim();
       if(urlSafe()||/[-_]/.test(d))d=fromUrlSafe(d);
@@ -198,9 +209,28 @@ document.getElementById('inp').addEventListener('input',function(){
 
 // ---- FILE → Base64 ----
 var _b64full='';
+var _batchFiles=[];
+var LARGE_FILE=8*1024*1024; // warn beyond ~8MB per file
+
+function readAsDataURL(file){
+  return new Promise(function(res,rej){
+    var r=new FileReader();
+    r.onload=function(){res(r.result)};
+    r.onerror=function(){rej(new Error('Could not read '+file.name))};
+    r.readAsDataURL(file);
+  });
+}
+
 setupDrop('dropZone','fi',function(files){
-  const f=files[0];if(!f)return;
-  const r=new FileReader();
+  if(!files||!files.length)return;
+  _batchFiles=Array.prototype.slice.call(files);
+  var tooBig=_batchFiles.filter(function(f){return f.size>LARGE_FILE});
+  if(tooBig.length){
+    notify(tooBig.length+' file(s) are over '+formatSize(LARGE_FILE)+' — encoding may be slow in the browser.','warn');
+  }
+  // Single-file: keep the live preview + size readout + CSS snippet as before.
+  var f=_batchFiles[0];
+  var r=new FileReader();
   r.onload=()=>{
     let dataUri=r.result;              // data:<mime>;base64,<data>
     const parts=dataUri.split(',');
@@ -209,7 +239,8 @@ setupDrop('dropZone','fi',function(files){
     let out=document.getElementById('asDataUri').checked?(parts[0]+','+raw):raw;
     _b64full=out;
     var inB=f.size,outB=raw.length;
-    document.getElementById('fileSizes').innerHTML=f.name+' — Input: '+formatSize(inB)+' → Base64: '+formatSize(outB)+' <span class="badge badge-blue">~33% overhead</span>';
+    var overhead=inB?Math.round((outB-inB)/inB*100):0;
+    document.getElementById('fileSizes').innerHTML=f.name+' — Original: '+formatSize(inB)+' → Base64: '+formatSize(outB)+' <span class="badge badge-blue">+'+overhead+'% overhead</span>';
     document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+out.slice(0,600)+(out.length>600?'…':'')+'</span><button class="copy-btn" onclick="copyText(_b64full,this)">Copy</button>';
     // CSS data-URI snippet
     var css=document.getElementById('cssSnippet');
@@ -222,7 +253,47 @@ setupDrop('dropZone','fi',function(files){
     }else{css.innerHTML='';document.getElementById('filePreview').innerHTML=''}
   };
   r.readAsDataURL(f);
+  // Batch panel: show whenever at least one file is selected.
+  var box=document.getElementById('batchBox'),list=document.getElementById('batchList');
+  box.style.display='block';
+  var total=_batchFiles.reduce(function(a,x){return a+x.size},0);
+  list.innerHTML='<strong>'+_batchFiles.length+' file'+(_batchFiles.length===1?'':'s')+' selected</strong> ('+formatSize(total)+' total):<br>'+
+    _batchFiles.map(function(x){return '• '+x.name+' — '+formatSize(x.size)}).join('<br>');
 });
+
+async function exportZip(){
+  if(!_batchFiles.length){notify('Choose one or more files first.','warn');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.','error');return}
+  var total=_batchFiles.reduce(function(a,x){return a+x.size},0);
+  if(total>20*1024*1024&&!confirm('About '+formatSize(total)+' of files will be encoded. This may be slow. Continue?'))return;
+  var btn=document.getElementById('zipBtn');var orig=btn.textContent;btn.disabled=true;btn.textContent='Encoding…';
+  try{
+    var zip=new JSZip();
+    var asUri=document.getElementById('asDataUri').checked;
+    var readme=['Base64 batch export','Generated by FreeToolHubs Base64 Encoder','',
+      'Files: '+_batchFiles.length,'URL-safe: '+(urlSafe()?'yes':'no'),
+      'Output: '+(asUri?'full data URI (with MIME type)':'raw Base64'),'',
+      'Each .txt holds the Base64 of the matching input file.'];
+    for(var i=0;i<_batchFiles.length;i++){
+      var f=_batchFiles[i];
+      var dataUri=await readAsDataURL(f);
+      var parts=String(dataUri).split(',');
+      var raw=parts[1]||'';
+      if(urlSafe())raw=toUrlSafe(raw);
+      var out=asUri?(parts[0]+','+raw):raw;
+      var base=f.name.replace(/[\\/:*?"<>|]+/g,'_');
+      zip.file(base+'.txt',out);
+      readme.push('- '+base+'.txt  ('+formatSize(f.size)+' → '+formatSize(raw.length)+')');
+    }
+    zip.file('README.txt',readme.join('\n'));
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'base64-batch.zip');
+  }catch(e){
+    notify('ZIP export failed: '+(e.message||'unknown error'),'error');
+  }finally{
+    btn.disabled=false;btn.textContent=orig;
+  }
+}
 
 // ---- Base64 → File ----
 function detectMime(arr){
@@ -298,5 +369,52 @@ function urlGo(m){
     box.innerHTML='<span>'+r.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span><button class="copy-btn" onclick="copyText(this.previousElementSibling.textContent,this)">Copy</button>';
   }catch(e){box.textContent='❌ '+e.message}
 }
+// ---- Persistence: text draft + mode + options + active tab ----
+// The textarea value and option values are already strings, so use the RAW
+// variants; storeSet would JSON-encode them and bloat the entry.
+var B64_DRAFT='base64-text-draft-v1';
+var B64_MODE='base64-last-mode-v1';   // 'e' or 'd' — the last action the user ran
+var B64_URLSAFE='base64-urlsafe-v1';
+var B64_PAD='base64-pad-v1';
+var B64_TAB='base64-active-tab-v1';
+
+function b64Autosave(){
+  storeSetRaw(B64_DRAFT, document.getElementById('inp').value, true);
+  storeSetRaw(B64_URLSAFE, document.getElementById('urlSafe').checked?'1':'0', true);
+  storeSetRaw(B64_PAD, document.getElementById('pad').checked?'1':'0', true);
+  updateDraftNote();
+}
+function updateDraftNote(){
+  var n=document.getElementById('draftNote');if(!n)return;
+  var saved=storeGetRaw(B64_DRAFT,'');
+  n.textContent=saved?('💾 Draft autosaved ('+saved.length+' chars) — restored on reload.'):'';
+}
+function clearDraft(){
+  document.getElementById('inp').value='';
+  storeDel(B64_DRAFT);storeDel(B64_MODE);
+  document.getElementById('autoDetect').textContent='';
+  document.getElementById('textSizes').innerHTML='';
+  document.getElementById('result').innerHTML='';
+  updateDraftNote();
+  notify('Draft cleared.','ok');
+}
+window.clearDraft=clearDraft;
+window.exportZip=exportZip;
+
+(function(){
+  var el=document.getElementById('inp');
+  var t=null;
+  el.addEventListener('input',function(){clearTimeout(t);t=setTimeout(b64Autosave,500)});
+  document.getElementById('urlSafe').addEventListener('change',b64Autosave);
+  document.getElementById('pad').addEventListener('change',b64Autosave);
+  // restore
+  var d=storeGetRaw(B64_DRAFT,'');if(d)el.value=d;
+  if(storeGetRaw(B64_URLSAFE,'0')==='1')document.getElementById('urlSafe').checked=true;
+  if(storeGetRaw(B64_PAD,'1')==='0')document.getElementById('pad').checked=false;
+  var tab=storeGetRaw(B64_TAB,'text');
+  if(tab&&tab!=='text'&&document.getElementById('tab-'+tab))switchTab(tab);
+  updateDraftNote();
+  if(d)el.dispatchEvent(new Event('input',{bubbles:true}));
+})();
 </script>
 </body></html>

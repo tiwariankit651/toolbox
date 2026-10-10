@@ -142,10 +142,16 @@
         <button class="btn btn-outline" onclick="exportCSV()">📥 Export CSV</button>
         <button class="btn btn-outline" onclick="copyBudgetSummary()">📋 Copy summary</button>
         <button class="btn btn-outline" onclick="exportJSON()">📦 Export JSON</button>
+        <button class="btn btn-outline" onclick="exportZip()">🗜️ Accountant ZIP</button>
         <button class="btn btn-outline" onclick="document.getElementById('importJson').click()">📤 Import JSON</button>
-        <input type="file" id="importJson" accept="application/json,.json" style="display:none" onchange="importJSON(event)">
+        <input type="file" id="importJson" accept="application/json,.json" style="display:none">
         <button class="btn btn-outline" onclick="window.print()">🖨️ Print Report</button>
         <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear All</button>
+      </div>
+
+      <div class="drop-zone" id="budgetDrop" onclick="document.getElementById('importJson').click()" style="margin:.6rem 0">
+        <strong>📥 Import a backup</strong> — drag &amp; drop a <code>.json</code> backup here, or click to choose one.
+        <div class="info">Only JSON backups exported by this tool are accepted. It replaces your current data.</div>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -203,6 +209,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 /* ===== Budget Tracker Advanced ===== */
@@ -534,19 +541,19 @@ function renderInsights(){
 
 /* ---- export / import ---- */
 /* A short monthly summary is what gets shared with a partner or pasted into a
-   note. The CSV already covers the spreadsheet case. */
+   note. The CSV already covers the spreadsheet case. (Fixed: the transaction
+   array is data.txns with an .amt field, not d.tx/.amount.) */
 function budgetSummaryText(){
-  var d=storeGet(STORE_KEY,null);
-  if(!d||!d.tx||!d.tx.length)return null;
+  if(!data.txns||!data.txns.length)return null;
   var now=new Date();
   var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var month=d.tx.filter(function(t){return (t.date||'').indexOf(ym)===0});
-  var use=month.length?month:d.tx;
+  var month=data.txns.filter(function(t){return (t.date||'').indexOf(ym)===0});
+  var use=month.length?month:data.txns;
   var inc=0,exp=0,byCat={};
   use.forEach(function(t){
-    var amt=+t.amt||0;   /* the field is amt, not amount */
+    var amt=+t.amt||0;
     if(t.type==='income')inc+=amt;
-    else{exp+=amt;byCat[t.cat||'Other']=(byCat[t.cat||'Other']||0)+amt}
+    else{var cn=catById(t.cat).name;byCat[cn]=(byCat[cn]||0)+amt;exp+=amt}
   });
   var L=['BUDGET SUMMARY'+(month.length?(' - '+now.toLocaleString(undefined,{month:'long',year:'numeric'})):' (all time)')];
   L.push('');
@@ -573,17 +580,61 @@ function copyBudgetSummary(){
   copyNow(t,'Budget summary copied.');
 }
 
-function exportCSV(){
-  if(!data.txns.length){notify('No transactions to export.', 'warn');return;}
+/* Shared CSV text so the standalone Export CSV and the ZIP produce identical
+   output. */
+function txnsCsvText(){
   var csv='Date,Description,Type,Category,Method,Amount,Note\n';
   data.txns.slice().sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
     var c=catById(t.cat);
     csv+='"'+t.date+'","'+t.desc.replace(/"/g,'""')+'","'+t.type+'","'+c.name+'","'+t.method+'",'+t.amt+',"'+(t.note||'').replace(/"/g,'""')+'"\n';
   });
-  var blob=new Blob([csv],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='budget_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  return csv;
+}
+
+function exportCSV(){
+  if(!data.txns.length){notify('No transactions to export.', 'warn');return;}
+  var blob=new Blob([txnsCsvText()],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='budget_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+/* The pack an accountant actually needs: the re-importable JSON backup, the
+   transactions CSV, a plain-text monthly summary with per-category totals, and
+   a README. */
+function exportZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and retry.','error');return}
+  if(!data.txns.length){notify('No transactions to export.','warn');return}
+  var zip=new JSZip();
+  zip.file('budget_backup.json',JSON.stringify(data,null,2));
+  zip.file('transactions.csv',txnsCsvText());
+  zip.file('monthly_summary.txt',budgetSummaryText()||'No transactions.');
+  zip.file('README.txt',
+    'BUDGET / EXPENSE BACKUP\n'+
+    '=======================\n\n'+
+    'Created by the FreeToolHubs Budget Tracker.\n\n'+
+    'FILES:\n'+
+    '  budget_backup.json   Full backup of every transaction, budget and\n'+
+    '                       recurring item. Re-import it with "Import JSON" (or\n'+
+    '                       drag it onto the drop zone) to restore. This REPLACES\n'+
+    '                       your current data.\n'+
+    '  transactions.csv     Every transaction as a spreadsheet (Excel, Google\n'+
+    '                       Sheets). Columns: Date, Description, Type, Category,\n'+
+    '                       Method, Amount, Note.\n'+
+    '  monthly_summary.txt  Plain-text summary with income, expense, balance and\n'+
+    '                       totals per category — hand this to an accountant.\n');
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    download(blob,'budget_backup.zip');
+    notify('Accountant ZIP created ('+formatSize(blob.size)+') with JSON, CSV, summary and README.','ok');
+  }).catch(function(e){
+    notify('Could not build the ZIP: '+((e&&e.message)||'unknown'),'error');
+  });
 }
 function exportJSON(){
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='budget_backup.json';a.click();
+}
+function importBudgetFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.json')||f.type==='application/json')){notify('Only .json backups can be imported here.','warn');return}
+  importJSON({target:{files:[f],value:''}});
 }
 function importJSON(ev){
   var f=ev.target.files[0];if(!f)return;var r=new FileReader();
@@ -606,5 +657,6 @@ document.getElementById('monthPick').value=new Date().toISOString().slice(0,7);
 document.getElementById('txnDate').value=new Date().toISOString().slice(0,10);
 fillCategorySelects();
 renderAll();
+setupDrop('budgetDrop','importJson',importBudgetFiles);
 </script>
 </body></html>

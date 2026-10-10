@@ -99,8 +99,14 @@
         <button class="btn btn-outline" onclick="exportCountdowns()">📥 Export JSON</button>
         <button class="btn btn-outline" onclick="copyCountdowns()">📋 Copy list</button>
         <button class="btn btn-outline" onclick="exportCountdownsIcs()">📅 Export .ics</button>
+        <button class="btn btn-outline" onclick="exportCountdownsZip()">🗜️ Backup ZIP</button>
         <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
-        <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importCountdowns(event)">
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      </div>
+
+      <div class="drop-zone" id="cdDrop" onclick="document.getElementById('importFile').click()" style="margin:.6rem 0">
+        <strong>📥 Import countdowns</strong> — drag &amp; drop a <code>.json</code> backup here, or click to choose one.
+        <div class="info">Only JSON backups are accepted. Imported events are added to your current list.</div>
       </div>
 
       <div id="cdCards" class="cd-cards"></div>
@@ -172,6 +178,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>/*CD_START*/
 /* ===== Countdown Advanced ===== */
@@ -427,36 +434,70 @@ function copyCountdowns(){
   copyNow(t,countdowns.length+' countdowns copied.');
 }
 
+/* Shared .ics builder so both the standalone .ics export and the ZIP use the
+   exact same valid VCALENDAR output. */
+function countdownsIcsText(){
+  var pad=function(n){return n<10?'0'+n:''+n};
+  var stamp=function(ms){
+    var d=new Date(ms);
+    return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+
+           pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';
+  };
+  var esc=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n')};
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FreeToolHubs//Countdown//EN','CALSCALE:GREGORIAN'];
+  countdowns.forEach(function(c){
+    L.push('BEGIN:VEVENT');
+    L.push('UID:'+(c.id||Math.random().toString(36).slice(2))+'@freetoolhubs.com');
+    L.push('DTSTAMP:'+stamp(Date.now()));
+    L.push('DTSTART:'+stamp(c.target));
+    L.push('DTEND:'+stamp(c.target+3600000));
+    L.push('SUMMARY:'+esc((c.emoji?c.emoji+' ':'')+c.name));
+    if(c.recurring==='yearly')L.push('RRULE:FREQ=YEARLY');
+    else if(c.recurring==='monthly')L.push('RRULE:FREQ=MONTHLY');
+    else if(c.recurring==='weekly')L.push('RRULE:FREQ=WEEKLY');
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+
 /* One .ics with every countdown as an all-day event. */
 function exportCountdownsIcs(){
   if(!countdowns.length){notify('Add a countdown first.','warn');return}
   try{
-    var pad=function(n){return n<10?'0'+n:''+n};
-    var stamp=function(ms){
-      var d=new Date(ms);
-      return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+
-             pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';
-    };
-    var esc=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n')};
-    var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FreeToolHubs//Countdown//EN','CALSCALE:GREGORIAN'];
-    countdowns.forEach(function(c){
-      L.push('BEGIN:VEVENT');
-      L.push('UID:'+(c.id||Math.random().toString(36).slice(2))+'@freetoolhubs.com');
-      L.push('DTSTAMP:'+stamp(Date.now()));
-      L.push('DTSTART:'+stamp(c.target));
-      L.push('DTEND:'+stamp(c.target+3600000));
-      L.push('SUMMARY:'+esc((c.emoji?c.emoji+' ':'')+c.name));
-      if(c.recurring==='yearly')L.push('RRULE:FREQ=YEARLY');
-      else if(c.recurring==='monthly')L.push('RRULE:FREQ=MONTHLY');
-      else if(c.recurring==='weekly')L.push('RRULE:FREQ=WEEKLY');
-      L.push('END:VEVENT');
-    });
-    L.push('END:VCALENDAR');
-    download(new Blob([L.join('\r\n')],{type:'text/calendar;charset=utf-8'}),'countdowns.ics');
+    download(new Blob([countdownsIcsText()],{type:'text/calendar;charset=utf-8'}),'countdowns.ics');
     notify(countdowns.length+' countdowns exported as .ics - open it to add them to your calendar.','ok');
   }catch(err){
     notify('Calendar export failed: '+((err&&err.message)||'unknown'),'error');
   }
+}
+
+/* A backup ZIP: the re-importable JSON, a .txt summary, a valid .ics calendar,
+   and a README. The .ics is the genuinely valuable piece for real calendars. */
+function exportCountdownsZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and retry.','error');return}
+  if(!countdowns.length){notify('Add a countdown first.','warn');return}
+  var zip=new JSZip();
+  zip.file('countdowns.json',JSON.stringify(countdowns,null,2));
+  zip.file('countdowns.txt',countdownsAsText());
+  zip.file('countdowns.ics',countdownsIcsText());
+  zip.file('README.txt',
+    'EVENT COUNTDOWNS BACKUP\n'+
+    '=======================\n\n'+
+    'Created by the FreeToolHubs Event Countdown Timer.\n\n'+
+    'FILES:\n'+
+    '  countdowns.json  Full backup. Re-import it with the "Import JSON" button\n'+
+    '                   (or drag it onto the drop zone) to restore your events.\n'+
+    '  countdowns.txt   Human-readable summary: each event, its target date/time\n'+
+    '                   and the time remaining.\n'+
+    '  countdowns.ics   Standard calendar file. Open or import it into Google\n'+
+    '                   Calendar, Apple Calendar or Outlook to add every event.\n');
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    download(blob,'countdowns_backup.zip');
+    notify('Backup ZIP created ('+formatSize(blob.size)+') with JSON, text, calendar and README.','ok');
+  }).catch(function(e){
+    notify('Could not build the ZIP: '+((e&&e.message)||'unknown'),'error');
+  });
 }
 
 /* Live feedback while typing a countdown name: flag a duplicate, since two
@@ -496,7 +537,13 @@ function importCountdowns(ev){
   r.readAsText(f);
 }
 
-/* ---- study planner ---- */
+/* Drag & drop / file-input handler with a type guard. */
+function importCountdownFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];var nm=(f.name||'').toLowerCase();
+  if(!(nm.endsWith('.json')||f.type==='application/json')){notify('Only .json backups can be imported here.','warn');return}
+  importCountdowns({target:{files:[f],value:''}});
+}
 function renderPlannerSelect(){
   var sel=document.getElementById('plannerSelect');
   var cur=sel.value;
@@ -541,6 +588,7 @@ function celebrate(){
 
 /* ---- init ---- */
 loadCountdowns();
+setupDrop('cdDrop','importFile',importCountdownFiles);
 document.getElementById('dispModeBtn').textContent=displayMode==='full'?'🔎 Compact Mode':'🔎 Large Mode';
 renderCards();
 renderPlannerSelect();

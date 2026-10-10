@@ -96,6 +96,8 @@
         <input type="number" id="maxWidth" value="1240" min="400" step="100" style="width:120px">
       </div>
 
+      <div id="estimateBox" class="info" style="display:none;margin:.6rem 0;padding:.7rem 1rem;background:var(--card);border:1px solid rgba(148,148,184,.22);border-radius:var(--radius);font-size:.85rem"></div>
+
       <button class="btn" onclick="compressPDF()" id="goBtn" disabled style="width:100%">📦 Compress PDF</button>
       <button class="btn btn-outline" onclick="cancelCompression()" id="cancelBtn" style="width:100%;margin-top:.5rem;display:none">✖ Cancel</button>
 
@@ -110,6 +112,7 @@
       </div>
 
       <div id="result" class="preview-area"></div>
+      <button class="btn btn-outline" id="copyReportBtn" onclick="copyReport()" style="display:none;width:100%;margin-top:.5rem">📋 Copy compression report</button>
       <div class="faq"><h2>FAQ</h2>
         <details><summary>How does PDF compression work?</summary><p>It re-encodes embedded images at lower quality and removes unused objects, reducing file size significantly.</p></details>
         <details><summary>Is this suitable for government document uploads?</summary><p>Yes! Many government portals have 1-5MB limits. This tool helps you meet those requirements.</p></details>
@@ -203,6 +206,8 @@ function applyPreset(){
   else{$id('mode').value='quality'}
   onModeChange();
   $id('result').innerHTML="<p class='info'>Preset applied: "+s.note+"</p>";
+  if(typeof pcSaveSettings==='function')pcSaveSettings();
+  if(typeof runEstimate==='function')runEstimate();
 }
 
 function cancelCompression(){
@@ -234,6 +239,7 @@ setupDrop('drop','inp',function(fl){
   if(!pcFiles.length){$id('result').innerHTML="<p class='info' style='color:var(--accent3-text)'>Please choose a PDF file.</p>";return}
   $id('goBtn').disabled=false;
   showFileInfo();
+  runEstimate();
 });
 
 async function showFileInfo(){
@@ -402,7 +408,9 @@ async function compressPDF(){
 
 function renderResults(){
   var res=$id('result');
-  if(!pcResults.length){res.innerHTML="<p class='info'>No output produced.</p>";return}
+  var copyBtn=$id('copyReportBtn');
+  if(!pcResults.length){res.innerHTML="<p class='info'>No output produced.</p>";if(copyBtn)copyBtn.style.display='none';return}
+  if(copyBtn)copyBtn.style.display='block';
   var html='';
   if(pcCancel)html+="<p class='info'>Cancelled after "+pcResults.length+" file(s).</p>";
 
@@ -451,11 +459,121 @@ async function downloadAllZip(){
   download(blob,'compressed-pdfs.zip');
 }
 
+/* ---------- settings persistence (never the PDFs) ---------- */
+var PC_SETTINGS_KEY='pdfCompressorSettings-v1';
+var PC_FIELDS=['preset','mode','quality','dpi','grayscale','downscale','maxWidth','targetKB'];
+function pcSaveSettings(){
+  var d={};
+  PC_FIELDS.forEach(function(id){
+    var el=$id(id); if(!el)return;
+    d[id]=(el.type==='checkbox')?el.checked:el.value;
+  });
+  storeSet(PC_SETTINGS_KEY,d,true);
+}
+function pcRestoreSettings(){
+  var d=storeGet(PC_SETTINGS_KEY,null);
+  if(!d)return false;
+  PC_FIELDS.forEach(function(id){
+    if(!(id in d))return;
+    var el=$id(id); if(!el)return;
+    if(el.type==='checkbox'){el.checked=!!d[id];return}
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!okv)return; // unlisted value would blank the select
+    }
+    el.value=d[id];
+  });
+  return true;
+}
+
+/* ---------- live estimate (real single-page probe, extrapolated) ---------- */
+var pcEstTimer=null, pcEstToken=0;
+function scheduleEstimate(){
+  pcSaveSettings();
+  clearTimeout(pcEstTimer);
+  pcEstTimer=setTimeout(runEstimate,350);
+}
+async function runEstimate(){
+  var box=$id('estimateBox');
+  if(!pcFiles.length){box.style.display='none';return}
+  var myToken=++pcEstToken;
+  var mode=$id('mode').value;
+  var dpi=parseInt($id('dpi').value,10);
+  var gray=$id('grayscale').checked;
+  var maxW=$id('downscale').checked?parseInt($id('maxWidth').value,10)||1240:0;
+  // Target-size mode can only be estimated loosely because quality is searched.
+  if(mode==='target'){
+    box.style.display='block';
+    box.innerHTML="🎯 Target-size mode will search for the best quality that lands under "+
+      ($id('targetKB').value||'500')+" KB. The exact output size is only known after compressing.";
+    return;
+  }
+  var quality=parseFloat($id('quality').value);
+  box.style.display='block';
+  box.innerHTML="⏳ Estimating output size…";
+  try{
+    var f=pcFiles[0];
+    var data=new Uint8Array(await f.arrayBuffer());
+    var pdf=await pdfjsLib.getDocument({data:data.slice(0)}).promise;
+    var total=pdf.numPages;
+    // Probe up to the first 2 pages for a per-page average, then extrapolate.
+    var probePages=Math.min(2,total), sum=0;
+    for(var p=1;p<=probePages;p++){
+      if(myToken!==pcEstToken)return; // superseded by a newer change
+      var page=await pdf.getPage(p);
+      var durl=await renderPageJpeg(page,dpi,quality,gray,maxW);
+      sum+=dataUrlToBytes(durl).length;
+    }
+    if(myToken!==pcEstToken)return;
+    var perPage=sum/probePages;
+    var est=Math.round(perPage*total*1.02); // ~2% PDF container overhead
+    var pct=(1-est/f.size)*100;
+    var verdict= pct>0 ? ("about "+pct.toFixed(0)+"% smaller") : "may not shrink (already small)";
+    box.innerHTML="📊 <strong>Estimated output:</strong> ~"+fsz(est)+" ("+verdict+")"+
+      "<br><span class='info' style='font-size:.78rem'>Estimate from a "+probePages+"-page probe at quality "+
+      Math.round(quality*100)+"%, DPI "+dpi+(gray?", grayscale":"")+". Actual size is confirmed after compressing all "+total+" page(s).</span>";
+  }catch(e){
+    if(myToken!==pcEstToken)return;
+    box.innerHTML="<span class='info'>Could not estimate (the PDF may be encrypted or damaged).</span>";
+  }
+}
+
+/* ---------- copy compression report ---------- */
+function copyReport(){
+  if(!pcResults.length){notify('Compress a PDF first, then copy its report.','warn');return}
+  var dpi=$id('dpi').value, mode=$id('mode').value;
+  var gray=$id('grayscale').checked?'on':'off';
+  var down=$id('downscale').checked?('on (max '+$id('maxWidth').value+'px)'):'off';
+  var L=['PDF COMPRESSION REPORT','====================='];
+  L.push('Settings: mode='+mode+(mode==='target'?(', target='+$id('targetKB').value+' KB'):(', quality='+Math.round(parseFloat($id('quality').value)*100)+'%'))+
+    ', DPI='+dpi+', grayscale='+gray+', downscale='+down);
+  L.push('');
+  pcResults.forEach(function(r,i){
+    var saved=((1-r.blob.size/r.origSize)*100);
+    var bigger=r.blob.size>=r.origSize;
+    L.push((i+1)+'. '+r.name);
+    L.push('   original:   '+fsz(r.origSize));
+    L.push('   compressed: '+fsz(r.blob.size));
+    L.push('   saved:      '+(bigger?'no reduction':saved.toFixed(1)+'%'));
+    L.push('   pages:      '+r.pages+' of '+r.totalPages+'  @ quality '+Math.round(r.quality*100)+'%');
+    L.push('');
+  });
+  copyNow(L.join('\n'),'Compression report copied.');
+}
+
 /* wire the downscale checkbox + set initial state from the default preset */
 $id('downscale').addEventListener('change',function(){
   $id('downscaleRow').style.display=this.checked?'flex':'none';
 });
-applyPreset();
+/* restore persisted settings, then wire change listeners for save + live estimate */
+var pcHadSaved=pcRestoreSettings();
+if(!pcHadSaved)applyPreset(); // first visit: sync fields to the default (gov) preset
+$id('downscaleRow').style.display=$id('downscale').checked?'flex':'none';
+PC_FIELDS.forEach(function(id){
+  var el=$id(id); if(!el)return;
+  el.addEventListener('change',scheduleEstimate);
+  if(el.tagName!=='SELECT'&&el.type!=='checkbox')el.addEventListener('input',scheduleEstimate);
+});
 onModeChange();
 </script>
 </body>
