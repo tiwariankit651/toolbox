@@ -57,6 +57,14 @@
       <p class="info">Edit any PDF — add text, draw, highlight, white-out sections, annotate graphs & charts. All in your browser.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
       <div class="toolbar" id="toolbar" style="display:none">
+        <select id="stylePreset" title="Annotation style preset" onchange="applyPreset(this.value)">
+          <option value="">🎨 Preset…</option>
+          <option value="review">Review (red, thin)</option>
+          <option value="signature">Signature (black, thin)</option>
+          <option value="teaching">Teaching (blue, thick)</option>
+          <option value="redaction">Redaction (black-out)</option>
+          <option value="highlighter">Highlighter</option>
+        </select>
         <button onclick="setTool('text')" id="btn-text">✏️ Text</button>
         <button onclick="setTool('draw')" id="btn-draw">🖊️ Draw</button>
         <button onclick="setTool('highlight')" id="btn-highlight">🟡 Highlight</button>
@@ -76,6 +84,7 @@
         <button onclick="zoomOut()">🔍-</button>
         <button class="btn" onclick="extractAllText()">📄 Extract All Text</button>
         <button class="btn" onclick="savePDF()">💾 Save PDF</button>
+        <button class="btn" onclick="exportZip()">🗜️ Export ZIP (PDF + PNGs)</button>
       </div>
       <div id="extractPanel">
         <p class="info">📄 Extracted text from all pages:</p>
@@ -90,6 +99,7 @@
         <button class="btn btn-outline" onclick="goPage(-1)" style="padding:.3rem .8rem">◀ Prev</button>
         <span id="pageInfo" style="padding:0 1rem;font-weight:600"></span>
         <button class="btn btn-outline" onclick="goPage(1)" style="padding:.3rem .8rem">Next ▶</button>
+        <div id="annCount" class="info" style="margin-top:.4rem;font-size:.8rem"></div>
       </div>
       <div id="viewer"></div>
     </div>
@@ -145,6 +155,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -156,7 +167,7 @@ setupDrop("drop","inp",function(f){file=f[0];loadPDF()});
 
 function zoomIn(){SCALE=Math.min(SCALE+0.5,4);rerender();}
 function zoomOut(){SCALE=Math.max(SCALE-0.5,1);rerender();}
-function goPage(dir){var target=currentPage+dir;if(target>=0&&target<totalPages){currentPage=target;var viewer=document.getElementById("viewer");var wraps=viewer.querySelectorAll(".page-wrap");wraps.forEach(function(w,i){w.style.display=i===currentPage?"block":"none"});document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages;}}
+function goPage(dir){var target=currentPage+dir;if(target>=0&&target<totalPages){currentPage=target;var viewer=document.getElementById("viewer");var wraps=viewer.querySelectorAll(".page-wrap");wraps.forEach(function(w,i){w.style.display=i===currentPage?"block":"none"});document.getElementById("pageInfo").textContent="Page "+(currentPage+1)+" / "+totalPages;updateAnnCount();}}
 function rerender(){if(pdfDoc)loadPDF();}
 function insertImage(){document.getElementById("imgInput").click();}
 document.getElementById("imgInput").addEventListener("change",function(){
@@ -168,6 +179,7 @@ document.getElementById("imgInput").addEventListener("change",function(){
       var w=Math.min(img.width,200);var h=img.height*(w/img.width);
       ctx.drawImage(img,50,50,w,h);
       overlays[currentPage].history.push(ctx.getImageData(0,0,oc.width,oc.height));
+      overlays[currentPage].anns++;updateAnnCount();
     };img.src=reader.result;
   };reader.readAsDataURL(f);
 });
@@ -235,10 +247,32 @@ async function loadPDF(){
     wrap.style.display=(i-1===currentPage)?"block":"none";
     pages.push({canvas:c,vp:vp});
     var hist=[];
-    overlays.push({canvas:oc,ctx:oc.getContext("2d"),history:hist});
+    overlays.push({canvas:oc,ctx:oc.getContext("2d"),history:hist,anns:0});
     setupOverlay(oc,overlays[overlays.length-1]);
   }
+  updateAnnCount();
 }
+
+/* Live annotation count for the current page. Each committed shape, text,
+   image or sticky note increments ov.anns; undo decrements it. */
+function countStickies(idx){
+  var wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
+  if(!wraps[idx])return 0;
+  return wraps[idx].querySelectorAll(".sticky-note").length;
+}
+function updateAnnCount(){
+  var el=document.getElementById("annCount");
+  if(!el)return;
+  var ov=overlays[currentPage];
+  if(!ov){el.textContent="";return;}
+  var n=(ov.anns||0)+countStickies(currentPage);
+  if(n===0){
+    el.textContent="No annotations on this page yet — pick a tool and start marking up.";
+  }else{
+    el.textContent=n+" annotation"+(n!==1?"s":"")+" on this page";
+  }
+}
+window.updateAnnCount=updateAnnCount;
 
 async function extractAllText(){
   if(!pdfDoc)return;
@@ -317,6 +351,7 @@ function setupOverlay(canvas,ov){
         ov.ctx.fillStyle=document.getElementById("color").value;
         ov.ctx.fillText(txt,sx,sy);
         ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+        ov.anns++;updateAnnCount();
       }
       return;
     }
@@ -328,6 +363,7 @@ function setupOverlay(canvas,ov){
       ta.placeholder="Type note...";
       note.appendChild(ta);wrap.appendChild(note);
       ta.focus();
+      updateAnnCount();
       var dragging2=false,dx2,dy2;
       note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging2=true;dx2=ev.offsetX;dy2=ev.offsetY;ev.stopPropagation();});
       document.addEventListener("mousemove",function(ev){if(!dragging2)return;var wr=wrap.getBoundingClientRect();note.style.left=(ev.clientX-wr.left-dx2)+"px";note.style.top=(ev.clientY-wr.top-dy2)+"px";});
@@ -385,27 +421,55 @@ function setupOverlay(canvas,ov){
       ov.ctx.stroke();
     }
     ov.history.push(ov.ctx.getImageData(0,0,canvas.width,canvas.height));
+    ov.anns++;updateAnnCount();
   });
 }
 
 function undoLast(){
   var ov=overlays[currentPage];
   if(!ov)return;
-  if(ov.history.length>1){ov.history.pop();ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);}
-  else if(ov.history.length===1){ov.history.pop();ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height);}
+  if(ov.history.length>1){ov.history.pop();ov.ctx.putImageData(ov.history[ov.history.length-1],0,0);if(ov.anns>0)ov.anns--;}
+  else if(ov.history.length===1){ov.history.pop();ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height);if(ov.anns>0)ov.anns--;}
+  updateAnnCount();
 }
 
 async function savePDF(){
+  if(!pdfDoc){notify('Open a PDF first.', 'warn');return;}
+  try{
+    var out=await buildPdfBytes();
+    download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
+  }catch(err){
+    notify('Could not save PDF: '+((err&&err.message)||'unknown error'), 'error');
+  }
+}
+
+/* Build the edited PDF bytes (base canvas + overlay + sticky notes composed per
+   page) and return them, so both Save PDF and the ZIP export share one path. */
+async function buildPdfBytes(){
   var doc=await PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true});
   var pgs=doc.getPages();
   var wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
   for(var i=0;i<pgs.length;i++){
-    var merged=document.createElement("canvas");
-    merged.width=pages[i].canvas.width;merged.height=pages[i].canvas.height;
-    var mctx=merged.getContext("2d");
-    mctx.drawImage(pages[i].canvas,0,0);
-    mctx.drawImage(overlays[i].canvas,0,0);
-    var notes=wraps[i].querySelectorAll(".sticky-note");
+    var merged=composePage(i,wraps[i]);
+    var blob=await new Promise(function(r){merged.toBlob(r,"image/jpeg",0.92);});
+    var img=await doc.embedJpg(await blob.arrayBuffer());
+    var pg=pgs[i];
+    var sz=pg.getSize();
+    pg.drawImage(img,{x:0,y:0,width:sz.width,height:sz.height});
+  }
+  return await doc.save();
+}
+
+/* Compose a page's base canvas, overlay canvas and sticky notes onto one
+   temporary canvas. Reuses the already-rendered canvases, never re-renders. */
+function composePage(i,wrap){
+  var merged=document.createElement("canvas");
+  merged.width=pages[i].canvas.width;merged.height=pages[i].canvas.height;
+  var mctx=merged.getContext("2d");
+  mctx.drawImage(pages[i].canvas,0,0);
+  mctx.drawImage(overlays[i].canvas,0,0);
+  if(wrap){
+    var notes=wrap.querySelectorAll(".sticky-note");
     notes.forEach(function(n){
       var x=parseInt(n.style.left)||0,y=parseInt(n.style.top)||0;
       var w=n.offsetWidth,h=n.offsetHeight;
@@ -417,15 +481,66 @@ async function savePDF(){
         lines.forEach(function(l){mctx.fillText(l,x+5,ly);ly+=14;});
       }
     });
-    var blob=await new Promise(function(r){merged.toBlob(r,"image/jpeg",0.92);});
-    var img=await doc.embedJpg(await blob.arrayBuffer());
-    var pg=pgs[i];
-    var sz=pg.getSize();
-    pg.drawImage(img,{x:0,y:0,width:sz.width,height:sz.height});
   }
-  var out=await doc.save();
-  download(new Blob([out],{type:"application/pdf"}),"edited.pdf");
+  return merged;
 }
+
+/* Annotation style presets. Only valid values are assigned: brushSize,
+   fontFamily and whiteoutColor are <select>s, so each value is checked against
+   the options first (an unlisted value silently blanks a select). color and
+   textSize are free-form inputs. */
+var PRESETS={
+  review:{color:'#ff0000',brushSize:'2',textSize:'14',fontFamily:'Arial'},
+  signature:{color:'#000000',brushSize:'2',textSize:'20',fontFamily:'Georgia'},
+  teaching:{color:'#2563eb',brushSize:'8',textSize:'18',fontFamily:'Arial'},
+  redaction:{color:'#000000',brushSize:'8',whiteoutColor:'#000000'},
+  highlighter:{color:'#ffff00',brushSize:'8',textSize:'16',fontFamily:'Arial'}
+};
+function applyPreset(key){
+  var sel=document.getElementById('stylePreset');
+  if(!key){return;}
+  var p=PRESETS[key];
+  if(!p){if(sel)sel.value='';return;}
+  Object.keys(p).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var val=String(p[id]);
+    if(el.tagName==='SELECT'){
+      var okv=Array.prototype.some.call(el.options,function(o){return o.value===val;});
+      if(!okv)return; // skip unlisted value instead of blanking the select
+    }
+    el.value=val;
+    if(typeof peSaveStyle==='function')try{peSaveStyle();}catch(e){}
+  });
+  if(sel)sel.value='';
+  notify('Applied the '+key+' preset.', 'ok');
+}
+window.applyPreset=applyPreset;
+
+/* Export each annotated page as a PNG plus the edited PDF, all inside a ZIP. */
+async function exportZip(){
+  if(!pdfDoc){notify('Open a PDF first.', 'warn');return;}
+  if(typeof JSZip==='undefined'){notify('ZIP library failed to load. Check your connection.', 'error');return;}
+  try{
+    notify('Building ZIP…', 'info');
+    var zip=new JSZip();
+    var wraps=document.getElementById("viewer").querySelectorAll(".page-wrap");
+    for(var i=0;i<pages.length;i++){
+      var merged=composePage(i,wraps[i]);
+      var blob=await new Promise(function(r){merged.toBlob(r,"image/png");});
+      var buf=await blob.arrayBuffer();
+      zip.file('page-'+String(i+1).padStart(2,'0')+'.png',buf);
+    }
+    var pdfBytes=await buildPdfBytes();
+    zip.file('edited.pdf',pdfBytes);
+    var out=await zip.generateAsync({type:'blob'});
+    download(out,'pdf-editor-export.zip');
+    notify('Exported '+pages.length+' PNG'+(pages.length!==1?'s':'')+' plus the PDF as ZIP.', 'ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown error'), 'error');
+  }
+}
+window.exportZip=exportZip;
   
 peRestoreStyle();
 PE_FIELDS.forEach(function(id){var el=document.getElementById(id);

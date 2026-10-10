@@ -47,6 +47,17 @@
       <div id="progressBar" style="display:none;margin:.5rem 0"><div style="background:var(--card);border-radius:8px;height:6px;overflow:hidden"><div id="progFill" style="height:100%;background:var(--gradient);width:0%;transition:width .2s"></div></div><span id="progText" class="info"></span></div>
       <div id="controls" style="display:none">
         <div style="margin:.8rem 0">
+          <label style="font-weight:600;font-size:.85rem">Quick presets:</label>
+          <div class="row" style="flex-wrap:wrap;gap:6px;margin-top:.4rem">
+            <button class="btn btn-outline" onclick="applySplitPreset('individual')" style="font-size:.78rem;padding:.3rem .6rem">Every page separately</button>
+            <button class="btn btn-outline" onclick="applySplitPreset('half')" style="font-size:.78rem;padding:.3rem .6rem">Split in half</button>
+            <button class="btn btn-outline" onclick="applySplitPreset('odd')" style="font-size:.78rem;padding:.3rem .6rem">Odd pages</button>
+            <button class="btn btn-outline" onclick="applySplitPreset('even')" style="font-size:.78rem;padding:.3rem .6rem">Even pages</button>
+            <button class="btn btn-outline" onclick="applySplitPreset('first')" style="font-size:.78rem;padding:.3rem .6rem">Extract first page</button>
+            <button class="btn btn-outline" onclick="applySplitPreset('custom')" style="font-size:.78rem;padding:.3rem .6rem">Custom range</button>
+          </div>
+        </div>
+        <div style="margin:.8rem 0">
           <label style="font-weight:600;font-size:.9rem">Split Mode:</label>
           <select id="splitMode" onchange="modeChanged()" style="max-width:280px">
             <option value="selected">Extract selected pages</option>
@@ -166,6 +177,13 @@ setupDrop("drop", "inp", async function(f) {
     }
     document.getElementById('fileInfo').innerHTML = '<p class="info">Loaded: ' + file.name + ' (' + totalPages + ' pages, ' + formatSize(file.size) + ')</p>';
     document.getElementById('controls').style.display = 'block';
+    /* restore the last split mode, but only if it is a real option value */
+    var savedMode = storeGet('pdfSplitterMode', null);
+    if (savedMode) {
+      var ms = document.getElementById('splitMode'), msOk = false;
+      for (var mi = 0; mi < ms.options.length; mi++) { if (ms.options[mi].value === savedMode) { msOk = true; break; } }
+      if (msOk) ms.value = savedMode;
+    }
     modeChanged();
     await renderThumbnails(data);
   } catch (err) {
@@ -253,7 +271,7 @@ function selectPages(mode) {  for (var i = 0; i < pageStates.length; i++) {
 function psSummary() {
   var el = document.getElementById('psSummary');
   if (!el) return;
-  if (!pageStates.length) { el.textContent = ''; return; }
+  if (!pageStates.length) { el.textContent = ''; var oi0 = document.getElementById('outputInfo'); if (oi0) oi0.innerHTML = ''; return; }
   var sel = 0, del = 0, rot = 0;
   for (var i = 0; i < pageStates.length; i++) {
     if (pageStates[i].deleted) { del++; continue; }
@@ -264,6 +282,48 @@ function psSummary() {
   if (del) bits.push(del + ' deleted');
   if (rot) bits.push(rot + ' rotated');
   el.textContent = bits.join(' · ');
+  psOutputForecast();
+}
+
+/* Live forecast of how many output files and their page counts, driven by the
+   current split mode. Updates the existing #outputInfo element. */
+function psOutputForecast() {
+  var oi = document.getElementById('outputInfo');
+  if (!oi) return;
+  var modeEl = document.getElementById('splitMode');
+  if (!modeEl || !pageStates.length) { oi.innerHTML = ''; return; }
+  var mode = modeEl.value;
+  var valid = [];
+  for (var i = 0; i < pageStates.length; i++) { if (!pageStates[i].deleted) valid.push(i); }
+  var msg = '';
+
+  if (mode === 'selected') {
+    var selCount = 0;
+    for (var s = 0; s < pageStates.length; s++) { if (pageStates[s].selected && !pageStates[s].deleted) selCount++; }
+    msg = selCount ? ('→ 1 PDF with ' + selCount + ' page' + (selCount !== 1 ? 's' : '')) : '→ No pages selected';
+  } else if (mode === 'range') {
+    var rInp = document.getElementById('rangeInput');
+    var rStr = rInp ? rInp.value.trim() : '';
+    if (!rStr) { msg = '→ Enter a page range'; }
+    else {
+      var rp = parseRange(rStr, totalPages).filter(function(idx) { return !pageStates[idx].deleted; });
+      msg = rp.length ? ('→ 1 PDF with ' + rp.length + ' page' + (rp.length !== 1 ? 's' : '')) : '→ No valid pages in range';
+    }
+  } else if (mode === 'every') {
+    var nEl = document.getElementById('everyN');
+    var n = nEl ? (parseInt(nEl.value) || 1) : 1;
+    if (n < 1) n = 1;
+    var files = Math.ceil(valid.length / n);
+    var last = valid.length - (files - 1) * n;
+    msg = '→ ' + files + ' PDF' + (files !== 1 ? 's' : '') +
+          (files > 1 ? ' (' + n + ' page' + (n !== 1 ? 's' : '') + ' each, last has ' + last + ')' : ' (' + valid.length + ' pages)');
+  } else if (mode === 'individual') {
+    msg = '→ ' + valid.length + ' PDF' + (valid.length !== 1 ? 's' : '') + ', one page each (ZIP)';
+  } else if (mode === 'half') {
+    var mid = Math.ceil(valid.length / 2);
+    msg = '→ 2 PDFs (' + mid + ' + ' + (valid.length - mid) + ' pages)';
+  }
+  oi.textContent = msg;
 }
 
 /* ---- copy the current selection as a page range, handy for other tools ---- */
@@ -312,16 +372,17 @@ document.addEventListener('keydown', function (e) {
 
 function modeChanged() {
   var mode = document.getElementById('splitMode').value;
+  storeSet('pdfSplitterMode', mode, true);
   var opts = document.getElementById('modeOptions');
   var helpers = document.getElementById('selectionHelpers');
   if (mode === 'selected') {
     opts.innerHTML = '';
     helpers.style.display = 'flex';
   } else if (mode === 'range') {
-    opts.innerHTML = '<div class="row"><input type="text" id="rangeInput" placeholder="e.g. 1-3,5,8-10" style="max-width:280px"></div>';
+    opts.innerHTML = '<div class="row"><input type="text" id="rangeInput" placeholder="e.g. 1-3,5,8-10" oninput="psSummary()" style="max-width:280px"></div>';
     helpers.style.display = 'none';
   } else if (mode === 'every') {
-    opts.innerHTML = '<div class="row"><label>Split every</label><input type="number" id="everyN" value="1" min="1" style="max-width:80px"><label>pages</label></div>';
+    opts.innerHTML = '<div class="row"><label>Split every</label><input type="number" id="everyN" value="1" min="1" oninput="psSummary()" style="max-width:80px"><label>pages</label></div>';
     helpers.style.display = 'none';
   } else if (mode === 'individual') {
     opts.innerHTML = '<p class="info">Each page will be saved as a separate PDF file (downloaded as ZIP).</p>';
@@ -330,6 +391,52 @@ function modeChanged() {
     var mid = Math.ceil(totalPages / 2);
     opts.innerHTML = '<p class="info">Will split into pages 1–' + mid + ' and pages ' + (mid + 1) + '–' + totalPages + '.</p>';
     helpers.style.display = 'none';
+  }
+  setTimeout(psSummary, 0);
+}
+
+/* Assign a splitMode value only if it actually exists in the select, since an
+   unlisted value silently blanks the control. Valid values confirmed from the
+   static markup: selected, range, every, individual, half. */
+function setSplitMode(value) {
+  var sel = document.getElementById('splitMode');
+  var ok = false;
+  for (var i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === value) { ok = true; break; }
+  }
+  if (!ok) { notify('That split mode is not available.', 'error'); return false; }
+  sel.value = value;
+  modeChanged();
+  return true;
+}
+
+/* Quick presets. Each wires to a verified splitMode value, plus a page selection
+   where the preset is really a selection within "selected" mode. */
+function applySplitPreset(preset) {
+  if (!file) { notify('Upload a PDF first.', 'warn'); return; }
+  if (preset === 'individual') {
+    setSplitMode('individual');
+    notify('Preset: every page as a separate file.', 'ok');
+  } else if (preset === 'half') {
+    setSplitMode('half');
+    notify('Preset: split in half.', 'ok');
+  } else if (preset === 'odd') {
+    if (setSplitMode('selected')) { selectPages('odd'); notify('Preset: odd pages selected.', 'ok'); }
+  } else if (preset === 'even') {
+    if (setSplitMode('selected')) { selectPages('even'); notify('Preset: even pages selected.', 'ok'); }
+  } else if (preset === 'first') {
+    if (setSplitMode('selected')) {
+      for (var i = 0; i < pageStates.length; i++) {
+        if (pageStates[i].deleted) continue;
+        pageStates[i].selected = (i === 0);
+      }
+      renderGrid();
+      psSummary();
+      notify('Preset: first page only.', 'ok');
+    }
+  } else if (preset === 'custom') {
+    setSplitMode('range');
+    notify('Preset: enter a custom page range.', 'ok');
   }
 }
 

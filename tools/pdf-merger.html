@@ -48,6 +48,15 @@
         <button class="btn btn-outline" onclick="document.getElementById('inp2').click()" style="font-size:.85rem">➕ Add More Files<input type="file" id="inp2" accept=".pdf" multiple style="display:none"></button>
         <button class="btn btn-outline" onclick="clearAll()" style="font-size:.85rem;border-color:var(--danger);color:var(--danger)">🗑️ Clear All</button>
       </div>
+      <div class="row" id="presetRow" style="display:none;align-items:center;gap:.5rem;margin:.6rem 0">
+        <label for="orderPreset" style="font-weight:600;font-size:.85rem">Output order:</label>
+        <select id="orderPreset" onchange="applyOrderPreset()" style="max-width:220px">
+          <option value="keep">Keep current order</option>
+          <option value="reverse">Reverse order</option>
+          <option value="name-asc">Sort by name (A→Z)</option>
+          <option value="name-desc">Sort by name (Z→A)</option>
+        </select>
+      </div>
       <div id="totalInfo" class="info" style="margin:.5rem 0;font-weight:600"></div>
       <button class="btn" onclick="merge()" id="mergeBtn" disabled style="width:100%">Merge All PDFs</button>
         <button class="btn btn-outline" onclick="copyManifest()">📋 Copy merge order</button>
@@ -118,6 +127,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 setupDrop("drop", "inp", function(f) { addFiles(f); });
 document.getElementById('inp2').addEventListener('change', function() { addFiles(this.files); this.value = ''; });
+
+/* restore the last chosen output-order preset */
+(function(){
+  var saved = storeGet('pdfMergerOrder', 'keep');
+  var sel = document.getElementById('orderPreset');
+  if (sel && ['keep','reverse','name-asc','name-desc'].indexOf(saved) > -1) sel.value = saved;
+})();
 
 /* A merged PDF cannot be put on the clipboard, so the useful copyable output here
    is the ordered manifest: which files, in what order, how many pages each. People
@@ -203,6 +219,7 @@ function render() {
     html += '<div style="font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.file.name + '</div>';
     html += '<div style="font-size:.78rem;color:var(--text2)">' + formatSize(item.file.size) + ' · ' + item.pageCount + ' page' + (item.pageCount > 1 ? 's' : '') + '</div>';
     html += '<input type="text" data-range="' + i + '" value="' + (item.pageRange || '') + '" placeholder="Pages: all (or 1-3,5)" style="width:100%;max-width:180px;font-size:.75rem;padding:.3rem .5rem;margin-top:.3rem;border-radius:6px">';
+    html += '<div data-rangehint="' + i + '" style="font-size:.75rem;margin-top:.2rem;color:var(--text2)"></div>';
     html += '</div>';
     html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">';
     html += '<button onclick="moveItem(' + i + ',-1)" class="btn btn-outline" style="padding:.2rem .5rem;font-size:.75rem;margin:0" title="Move up">▲</button>';
@@ -213,24 +230,98 @@ function render() {
   }
   container.innerHTML = html;
   document.getElementById('actionRow').style.display = pdfItems.length > 0 ? 'flex' : 'none';
+  document.getElementById('presetRow').style.display = pdfItems.length > 0 ? 'flex' : 'none';
   document.getElementById('mergeBtn').disabled = pdfItems.length < 2;
   updateTotalInfo();
   attachDragListeners();
   attachRangeListeners();
+  for (var h = 0; h < pdfItems.length; h++) validateRange(h);
 }
 
 function attachRangeListeners() {
   document.querySelectorAll('[data-range]').forEach(function(inp) {
-    inp.addEventListener('change', function() {
+    /* live validation: oninput so the hint updates as you type, not only on blur */
+    inp.addEventListener('input', function() {
       var idx = parseInt(this.getAttribute('data-range'));
       pdfItems[idx].pageRange = this.value.trim();
+      validateRange(idx);
       updateTotalInfo();
     });
   });
 }
 
+/* Report whether a per-file page range is valid for that file's page count,
+   naming the problem when it is not. */
+function validateRange(idx) {
+  var item = pdfItems[idx];
+  var hint = document.querySelector('[data-rangehint="' + idx + '"]');
+  if (!hint || !item) return true;
+  var raw = (item.pageRange || '').trim();
+  if (!raw) {
+    hint.textContent = 'All ' + item.pageCount + ' pages';
+    hint.style.color = 'var(--text2)';
+    return true;
+  }
+  var pages = parseRange(raw, item.pageCount);
+  var tooBig = [], bad = false;
+  raw.split(',').forEach(function(part) {
+    part = part.trim();
+    if (!part) return;
+    if (part.indexOf('-') > -1) {
+      var ab = part.split('-').map(Number);
+      if (isNaN(ab[0]) || isNaN(ab[1]) || ab[0] > ab[1]) bad = true;
+      if (ab[1] > item.pageCount) tooBig.push(part);
+    } else {
+      var n = parseInt(part);
+      if (isNaN(n)) bad = true;
+      else if (n > item.pageCount) tooBig.push(part);
+      else if (n < 1) bad = true;
+    }
+  });
+  if (bad) {
+    hint.textContent = '⚠ Not a valid range (use e.g. 1-3,5)';
+    hint.style.color = 'var(--danger)';
+    return false;
+  }
+  if (!pages.length) {
+    hint.textContent = '⚠ No pages in range — this file has ' + item.pageCount + ' pages';
+    hint.style.color = 'var(--danger)';
+    return false;
+  }
+  if (tooBig.length) {
+    hint.textContent = '⚠ ' + tooBig.join(', ') + ' exceeds ' + item.pageCount + ' pages — only valid pages used (' + pages.length + ')';
+    hint.style.color = 'var(--warn)';
+    return false;
+  }
+  hint.textContent = '✓ ' + pages.length + ' of ' + item.pageCount + ' pages';
+  hint.style.color = 'var(--ok)';
+  return true;
+}
+
+/* Output-order presets. merge() iterates pdfItems in array order, so reordering
+   the array genuinely changes the merged output — not a no-op setting. */
+function applyOrderPreset() {
+  var sel = document.getElementById('orderPreset');
+  var mode = sel ? sel.value : 'keep';
+  storeSet('pdfMergerOrder', mode, true);
+  if (!pdfItems.length) return;
+  if (mode === 'reverse') {
+    pdfItems.reverse();
+  } else if (mode === 'name-asc') {
+    pdfItems.sort(function(a, b) { return a.file.name.localeCompare(b.file.name); });
+  } else if (mode === 'name-desc') {
+    pdfItems.sort(function(a, b) { return b.file.name.localeCompare(a.file.name); });
+  }
+  if (mode !== 'keep') {
+    render();
+    notify('Reordered: ' + sel.options[sel.selectedIndex].text + '.', 'ok');
+  }
+}
+
 function updateTotalInfo() {
-  var total = 0;
+  var el = document.getElementById('totalInfo');
+  if (pdfItems.length === 0) { el.innerHTML = ''; return; }
+  var total = 0, bytes = 0;
   for (var i = 0; i < pdfItems.length; i++) {
     var item = pdfItems[i];
     if (item.pageRange) {
@@ -238,8 +329,16 @@ function updateTotalInfo() {
     } else {
       total += item.pageCount;
     }
+    bytes += item.file.size;
   }
-  document.getElementById('totalInfo').textContent = pdfItems.length + ' file' + (pdfItems.length !== 1 ? 's' : '') + ' · Estimated output: ' + total + ' pages';
+  var msg = pdfItems.length + ' file' + (pdfItems.length !== 1 ? 's' : '') +
+            ' · ' + total + ' page' + (total !== 1 ? 's' : '') +
+            ' · ' + formatSize(bytes) + ' combined';
+  var warn = '';
+  if (bytes > 50 * 1024 * 1024) {
+    warn = '<div style="color:var(--warn);font-weight:600;margin-top:.3rem">⚠ Over 50MB combined — browser merging may be slow or run out of memory.</div>';
+  }
+  el.innerHTML = msg + warn;
 }
 
 function parseRange(str, max) {

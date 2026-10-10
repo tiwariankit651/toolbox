@@ -51,6 +51,15 @@
         <span class="info" id="selCount" style="margin-left:.4rem"></span>
       </div>
 
+      <div class="row" style="flex-wrap:wrap;gap:6px;align-items:center">
+        <label style="font-weight:600;font-size:.85rem">Presets:</label>
+        <button class="btn btn-outline" onclick="applyImgPreset('web')" style="margin:0;font-size:.78rem;padding:.3rem .6rem">Web</button>
+        <button class="btn btn-outline" onclick="applyImgPreset('print')" style="margin:0;font-size:.78rem;padding:.3rem .6rem">Print</button>
+        <button class="btn btn-outline" onclick="applyImgPreset('archive')" style="margin:0;font-size:.78rem;padding:.3rem .6rem">Archive</button>
+        <button class="btn btn-outline" onclick="applyImgPreset('whatsapp')" style="margin:0;font-size:.78rem;padding:.3rem .6rem">WhatsApp</button>
+        <button class="btn btn-outline" onclick="applyImgPreset('scan')" style="margin:0;font-size:.78rem;padding:.3rem .6rem">Scan cleanup</button>
+      </div>
+
       <div class="row">
         <label>Format:</label>
         <select id="fmt" onchange="onFmtChange()">
@@ -172,7 +181,81 @@ function sz(b){return (typeof formatSize==='function')?formatSize(b):(b<1024?b+'
 function onFmtChange(){
   var f=$g('fmt').value;
   $g('qualityRow').style.display = (f==='png') ? 'none' : 'flex';
+  persistImgSettings();
   updateDims();
+}
+
+/* Assign a <select> value only when the option exists, otherwise an unlisted
+   value silently blanks the control. Returns true on success. */
+function setSelVal(id, value){
+  var sel=$g(id);
+  if(!sel)return false;
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===String(value)){sel.value=String(value);return true}
+  }
+  return false;
+}
+
+/* Persist format, DPI and quality so the next visit starts where you left off. */
+function persistImgSettings(){
+  storeSet('p2iFmt', $g('fmt').value, true);
+  storeSet('p2iDpi', $g('dpi').value, true);
+  storeSet('p2iQuality', $g('quality').value, true);
+}
+
+/* Export presets. Every value below is verified against its select before use;
+   checkboxes are plain booleans. */
+function applyImgPreset(name){
+  var presets={
+    web:      {fmt:'jpeg', dpi:'150', quality:80, grayscale:false, invert:false, crop:false},
+    print:    {fmt:'png',  dpi:'300', quality:95, grayscale:false, invert:false, crop:false},
+    archive:  {fmt:'png',  dpi:'600', quality:95, grayscale:false, invert:false, crop:false},
+    whatsapp: {fmt:'jpeg', dpi:'150', quality:65, grayscale:false, invert:false, crop:false},
+    scan:     {fmt:'png',  dpi:'300', quality:90, grayscale:true,  invert:false, crop:true}
+  };
+  var p=presets[name];
+  if(!p){notify('Unknown preset.','error');return}
+  var fmtOk=setSelVal('fmt', p.fmt);
+  var dpiOk=setSelVal('dpi', p.dpi);
+  if(!fmtOk||!dpiOk){notify('This preset is not fully supported by the controls.','warn');}
+  $g('quality').value=p.quality;
+  $g('qVal').textContent=p.quality+'%';
+  $g('grayscale').checked=p.grayscale;
+  $g('invert').checked=p.invert;
+  $g('cropMargins').checked=p.crop;
+  onFmtChange();
+  notify('Applied "'+name+'" preset.','ok');
+}
+
+/* Copy a rendered page straight to the clipboard as a PNG image. ClipboardItem
+   reliably accepts only PNG, so a JPEG/WEBP output is re-encoded via canvas. */
+async function copyImage(idx){
+  var o=p2iOut[idx];
+  if(!o){notify('Render the page first.','warn');return}
+  if(typeof ClipboardItem==='undefined' || !navigator.clipboard || !navigator.clipboard.write){
+    notify('Your browser does not support copying images to the clipboard.','error');
+    return;
+  }
+  try{
+    var pngBlob=o.blob;
+    if(o.blob.type!=='image/png'){
+      pngBlob=await new Promise(function(resolve,reject){
+        var img=new Image();
+        img.onload=function(){
+          var cv=document.createElement('canvas');
+          cv.width=img.naturalWidth; cv.height=img.naturalHeight;
+          cv.getContext('2d').drawImage(img,0,0);
+          cv.toBlob(function(b){ b?resolve(b):reject(new Error('PNG conversion failed')) },'image/png');
+        };
+        img.onerror=function(){reject(new Error('Could not read the rendered image'))};
+        img.src=o.url;
+      });
+    }
+    await navigator.clipboard.write([new ClipboardItem({'image/png':pngBlob})]);
+    notify('Page '+o.page+' copied to clipboard as PNG.','ok');
+  }catch(e){
+    notify('Clipboard copy was refused by the browser'+(e&&e.message?(': '+e.message):'.')+' Use Save instead.','error');
+  }
 }
 
 function targetSize(vpW,vpH){
@@ -190,6 +273,7 @@ function targetSize(vpW,vpH){
 }
 
 function updateDims(){
+  persistImgSettings();
   if(!p2iFirstVp){$g('dimInfo').textContent='';return}
   var d=targetSize(p2iFirstVp.width,p2iFirstVp.height);
   var n=Object.keys(p2iSel).filter(function(k){return p2iSel[k]}).length;
@@ -367,7 +451,8 @@ async function convertPDF(){
     html+="<div style='background:var(--card);padding:.5rem;border-radius:8px;text-align:center'>"+
       "<img src='"+o.url+"' style='max-width:100%;border-radius:4px'>"+
       "<div class='info' style='font-size:.75rem;margin:.3rem 0'>p"+o.page+" &middot; "+o.w+"x"+o.h+"<br>"+sz(o.blob.size)+"</div>"+
-      "<button class='btn' style='padding:.4rem .7rem;font-size:.78rem;margin:0' onclick=\"download(window._p2i"+i+",'"+o.name+"')\">Save</button></div>";
+      "<button class='btn' style='padding:.4rem .7rem;font-size:.78rem;margin:0' onclick=\"download(window._p2i"+i+",'"+o.name+"')\">Save</button>"+
+      "<button class='btn btn-outline' style='padding:.4rem .7rem;font-size:.78rem;margin:.3rem 0 0' onclick=\"copyImage("+i+")\">📋 Copy</button></div>";
   });
   html+="</div>";
   res.innerHTML=html;
@@ -413,6 +498,20 @@ async function stitchLong(){
   $g('progressWrap').style.display='none';
   $g('stitchBtn').disabled=false; $g('goBtn').disabled=false;
 }
+
+/* restore last-used format, DPI and quality */
+(function(){
+  var savedFmt=storeGet('p2iFmt', null);
+  if(savedFmt)setSelVal('fmt', savedFmt);
+  var savedDpi=storeGet('p2iDpi', null);
+  if(savedDpi)setSelVal('dpi', savedDpi);
+  var savedQ=storeGet('p2iQuality', null);
+  if(savedQ!==null && !isNaN(parseInt(savedQ,10))){
+    var q=Math.min(100,Math.max(20,parseInt(savedQ,10)));
+    $g('quality').value=q;
+    $g('qVal').textContent=q+'%';
+  }
+})();
 
 onFmtChange();
 </script>

@@ -118,14 +118,25 @@
             <span class="saved-indicator" id="savedIndicator">✓ Saved</span>
           </div>
           <div class="editor-controls">
+            <select id="templatePicker" title="Insert a template" onchange="applyTemplate(this.value)" style="padding:4px 8px;font-size:.75rem;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text)">
+              <option value="">📄 Template…</option>
+              <option value="meeting">Meeting notes</option>
+              <option value="journal">Daily journal</option>
+              <option value="todo">To-do list</option>
+              <option value="study">Study notes</option>
+              <option value="recipe">Recipe</option>
+              <option value="blank">Blank</option>
+            </select>
             <button class="btn btn-outline" onclick="togglePin()" id="pinBtn" title="Pin/Unpin">📌 Pin</button>
             <button class="btn btn-outline" onclick="toggleChecklist()" id="checklistBtn" title="Toggle checklist mode">☑ Checklist</button>
             <button class="btn btn-outline" onclick="copyNote()">📋 Copy</button>
             <button class="btn btn-outline" onclick="downloadNote()">💾 .txt</button>
             <button class="btn btn-outline" onclick="exportAll()">📦 Backup</button>
+            <button class="btn btn-outline" onclick="exportZip()">🗜️ Export ZIP</button>
             <button class="btn btn-outline" onclick="importNotes()">📥 Import</button>
             <button class="btn btn-outline" onclick="deleteNote()" style="color:var(--danger)">🗑️</button>
           </div>
+          <div class="drop-zone" id="noteDrop" style="padding:1rem;margin:.3rem 0;font-size:.8rem">⬇️ Drop a .txt or .md file here to create a note from it</div>
           <div id="checklistView" style="display:none;background:var(--card);border-radius:12px;padding:1rem;min-height:300px;overflow-y:auto"></div>
           <textarea id="noteContent" placeholder="Start writing..." oninput="saveCurrentNote()" style="min-height:350px;font-size:1rem;line-height:1.7"></textarea>
           <div class="note-stats">
@@ -167,6 +178,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 (function(){
@@ -477,7 +489,9 @@ function updateStats(){
 
 /* --- Export/Import --- */
 function copyNote(){
-  navigator.clipboard.writeText(document.getElementById('noteContent').value).then(function(){showToast('Copied!');});
+  var note=getNote(activeId);
+  if(!note){notify('No note selected.', 'warn');return;}
+  copyNow(note.content, 'Note copied to clipboard.');
 }
 window.copyNote=copyNote;
 
@@ -494,6 +508,107 @@ function exportAll(){
   dlFile(blob,'notes_backup.json');
 }
 window.exportAll=exportAll;
+
+/* --- Templates --- */
+var TEMPLATES={
+  meeting:'# Meeting Notes\n\nDate: \nAttendees: \n\n## Agenda\n- \n\n## Discussion\n- \n\n## Action Items\n- [ ] \n\n## Next Steps\n- ',
+  journal:'# Daily Journal\n\nDate: \nMood: \n\n## Highlights\n- \n\n## What I did today\n- \n\n## Grateful for\n- \n\n## Tomorrow\n- ',
+  todo:'# To-Do List\n\n- [ ] \n- [ ] \n- [ ] \n\n## Done\n- [x] ',
+  study:'# Study Notes\n\nSubject: \nTopic: \n\n## Key Points\n- \n\n## Summary\n\n\n## Questions / Doubts\n- \n\n## Review Later\n- [ ] ',
+  recipe:'# Recipe\n\nServes: \nPrep time: \nCook time: \n\n## Ingredients\n- \n\n## Steps\n1. \n2. \n\n## Notes\n',
+  blank:''
+};
+function applyTemplate(key){
+  var sel=document.getElementById('templatePicker');
+  if(!key){return;}
+  if(!activeId){notify('Create or open a note first.', 'warn');if(sel)sel.value='';return;}
+  var note=getNote(activeId);
+  if(!note){if(sel)sel.value='';return;}
+  var tpl=TEMPLATES[key]||'';
+  var body=note.content.trim();
+  if(body!==''){
+    if(!confirm('This note is not empty. Replace its contents with the '+key+' template?')){if(sel)sel.value='';return;}
+  }
+  note.content=tpl;
+  note.modified=Date.now();
+  document.getElementById('noteContent').value=tpl;
+  saveData(data);
+  updateStats();
+  renderList();
+  if(sel)sel.value='';
+  notify('Template inserted.', 'ok');
+}
+window.applyTemplate=applyTemplate;
+
+/* --- ZIP export of all notes --- */
+function safeName(title,index){
+  var base=String(title||'Untitled').replace(/[\\\/:*?"<>|\n\r]+/g,'_').replace(/\s+/g,' ').trim();
+  if(!base)base='Untitled';
+  base=base.substring(0,60);
+  return base+'_'+index;
+}
+async function exportZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library failed to load. Check your connection.', 'error');return;}
+  if(!data.notes.length){notify('No notes to export.', 'warn');return;}
+  try{
+    var zip=new JSZip();
+    var used={};
+    data.notes.forEach(function(n,i){
+      var hasMd=/[#>*\-\[\]`]/.test(n.content)||/\n- /.test(n.content);
+      var ext=hasMd?'.md':'.txt';
+      var fname=safeName(n.title,i+1)+ext;
+      if(used[fname]){fname=safeName(n.title,i+1)+'_'+Date.now()+ext;}
+      used[fname]=true;
+      zip.file(fname,n.content||'');
+    });
+    var now=new Date();
+    var readme='Quick Notes export\n'+
+      '==================\n\n'+
+      'Notes exported: '+data.notes.length+'\n'+
+      'Date: '+now.toLocaleString()+'\n\n'+
+      'Each note is a separate .md or .txt file named from its title.\n'+
+      'Generated by FreeToolHubs Quick Notes.\n';
+    zip.file('README.txt',readme);
+    var blob=await zip.generateAsync({type:'blob'});
+    download(blob,'quick-notes-'+now.toISOString().slice(0,10)+'.zip');
+    notify('Exported '+data.notes.length+' note'+(data.notes.length!==1?'s':'')+' as ZIP.', 'ok');
+  }catch(err){
+    notify('ZIP export failed: '+((err&&err.message)||'unknown error'), 'error');
+  }
+}
+window.exportZip=exportZip;
+
+/* --- Drag & drop a text file to create a note --- */
+function noteFromFile(file){
+  if(!file)return;
+  var nm=(file.name||'').toLowerCase();
+  var isText=/\.(txt|md|markdown)$/.test(nm)||file.type==='text/plain'||file.type==='text/markdown';
+  if(!isText){notify('Only .txt or .md text files can be imported this way.', 'error');return;}
+  if(file.size>5*1024*1024){notify('That file is too large (max 5 MB).', 'error');return;}
+  var reader=new FileReader();
+  reader.onerror=function(){notify('Could not read that file.', 'error');};
+  reader.onload=function(ev){
+    var text=String(ev.target.result||'');
+    var baseTitle=(file.name||'Imported note').replace(/\.(txt|md|markdown)$/i,'');
+    var note={id:Date.now(),title:baseTitle||'Imported note',content:text,created:Date.now(),modified:Date.now(),pinned:false,label:'',checklist:false};
+    data.notes.unshift(note);
+    saveData(data);
+    selectNote(note.id);
+    notify('Note created from "'+(file.name||'file')+'".', 'ok');
+  };
+  reader.readAsText(file);
+}
+function setupNoteDrop(){
+  var drop=document.getElementById('noteDrop');
+  if(!drop)return;
+  drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('dragover');});
+  drop.addEventListener('dragleave',function(){drop.classList.remove('dragover');});
+  drop.addEventListener('drop',function(e){
+    e.preventDefault();drop.classList.remove('dragover');
+    var files=e.dataTransfer&&e.dataTransfer.files;
+    if(files&&files.length)noteFromFile(files[0]);
+  });
+}
 
 function importNotes(){
   document.getElementById('importFile').click();
@@ -554,6 +669,7 @@ function showToast(msg){
 }
 
 /* --- Init --- */
+setupNoteDrop();
 if(data.notes.length){
   activeId=data.notes[0].id;
   selectNote(activeId);
