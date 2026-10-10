@@ -45,7 +45,7 @@
       <!-- TEXT GENERATOR PANEL -->
       <div id="panelText">
         <div class="row">
-          <label>Count:</label><input type="number" id="count" value="3" min="1" max="500">
+          <label>Count:</label><input type="number" id="count" value="3" min="1" max="500" oninput="lgLive()">
           <label>Type:</label>
           <select id="type" onchange="gen()"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option><option value="characters">Characters</option></select>
           <label>Flavour:</label>
@@ -96,7 +96,7 @@
       <div id="panelData" style="display:none">
         <p class="info">⚠️ All data below is <strong>randomly generated for testing only</strong> — names, emails, phone numbers and addresses are fictitious and do not refer to real people.</p>
         <div class="row">
-          <label>Rows:</label><input type="number" id="dataRows" value="10" min="1" max="500">
+          <label>Rows:</label><input type="number" id="dataRows" value="10" min="1" max="500" oninput="lgLiveData()">
           <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="indianNames" checked onchange="genData()" style="width:auto;margin:0"> Indian names & addresses</label>
           <button class="btn" onclick="genData()">🔁 Generate Data</button>
         </div>
@@ -237,6 +237,7 @@ function gen(){
   }
   document.getElementById("out").textContent=out;
   updateStats(out);
+  lgSaveState();
 }
 
 function updateStats(txt){
@@ -349,6 +350,7 @@ function genData(){
   html+='</tbody></table>';
   if(lastData.length>50)html+='<p class="info">Showing 50 of '+lastData.length+' rows. Download for the full set.</p>';
   document.getElementById("dataOut").innerHTML=html;
+  lgSaveState();
 }
 function downloadData(kind){
   if(!lastData.length)genData();
@@ -369,6 +371,57 @@ function downloadData(kind){
   download(blob,fname);
 }
 
+/* ---- live feedback + persisted settings ----
+   The number inputs had no oninput wiring, so output only changed on a button
+   press. lgLive/lgLiveData regenerate as the user types, debounced because a
+   500-paragraph render is not free. Settings (never the output itself, which is
+   regenerated anyway) survive a reload via storeSet. */
+var LG_STATE_KEY="loremSettings";
+var LG_TEXT_FIELDS=["count","type","format","lang","startLorem","varyPara","varySent"];
+var LG_DATA_FIELDS=["dataRows","indianNames"];
+
+function lgSaveState(){
+  var s={};
+  LG_TEXT_FIELDS.concat(LG_DATA_FIELDS).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    s[id]=(el.type==="checkbox")?el.checked:el.value;
+  });
+  storeSet(LG_STATE_KEY,s,true);
+}
+
+function lgRestoreState(){
+  var s=storeGet(LG_STATE_KEY,null);
+  if(!s||typeof s!=="object")return;
+  LG_TEXT_FIELDS.concat(LG_DATA_FIELDS).forEach(function(id){
+    if(!(id in s))return;
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.type==="checkbox"){el.checked=!!s[id];return;}
+    var v=String(s[id]);
+    if(el.tagName==="SELECT"){
+      /* Assigning a value absent from the options silently blanks the select,
+         so only restore values that still exist as an option. */
+      var ok=[].some.call(el.options,function(o){return o.value===v;});
+      if(ok)el.value=v;
+    }else{
+      el.value=v;
+    }
+  });
+}
+
+var _lgTimer=null;
+function lgLive(){
+  if(_lgTimer)clearTimeout(_lgTimer);
+  _lgTimer=setTimeout(gen,220);
+}
+var _lgDataTimer=null;
+function lgLiveData(){
+  if(_lgDataTimer)clearTimeout(_lgDataTimer);
+  _lgDataTimer=setTimeout(genData,220);
+}
+
+lgRestoreState();
 gen();
   </script>
 </body>

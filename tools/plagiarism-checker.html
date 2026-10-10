@@ -40,6 +40,7 @@
       <div class="mode-tabs">
         <button type="button" class="mode-tab active" id="tabCompareBtn" onclick="setMode('compare')">🔀 Compare Two Texts</button>
         <button type="button" class="mode-tab" id="tabSelfBtn" onclick="setMode('self')">🔁 Self-Check (one document)</button>
+        <button type="button" class="btn btn-outline" style="margin:0" onclick="clearDrafts()">🗑 Clear drafts</button>
       </div>
 
       <div id="mode-compare">
@@ -156,6 +157,30 @@
 var mode='compare';
 var lastReport='';
 
+/* ===== Draft persistence (raw strings) ===== */
+var PC_KEYS={t1:'plagiarism.text1',t2:'plagiarism.text2',self:'plagiarism.selfText',thr:'plagiarism.thr',mode:'plagiarism.mode'};
+function saveDrafts(){
+  storeSetRaw(PC_KEYS.t1,document.getElementById('text1').value,true);
+  storeSetRaw(PC_KEYS.t2,document.getElementById('text2').value,true);
+  storeSetRaw(PC_KEYS.self,document.getElementById('selfText').value,true);
+  storeSetRaw(PC_KEYS.thr,document.getElementById('selfThr').value,true);
+  storeSetRaw(PC_KEYS.mode,mode,true);
+}
+function restoreDrafts(){
+  var t1=storeGetRaw(PC_KEYS.t1,null);if(t1!==null)document.getElementById('text1').value=t1;
+  var t2=storeGetRaw(PC_KEYS.t2,null);if(t2!==null)document.getElementById('text2').value=t2;
+  var sf=storeGetRaw(PC_KEYS.self,null);if(sf!==null)document.getElementById('selfText').value=sf;
+  var thr=storeGetRaw(PC_KEYS.thr,null);
+  if(thr!==null){var n=parseInt(thr,10);if(isFinite(n)&&n>=50&&n<=95){document.getElementById('selfThr').value=n;document.getElementById('thrVal').textContent=n;}}
+  var m=storeGetRaw(PC_KEYS.mode,null);if(m==='self'||m==='compare')setMode(m);
+}
+function clearDrafts(){
+  ['text1','text2','selfText'].forEach(function(id){document.getElementById(id).value='';});
+  Object.keys(PC_KEYS).forEach(function(k){storeDel(PC_KEYS[k]);});
+  document.getElementById('result').style.display='none';
+  notify('Drafts cleared.','ok');
+}
+
 function setMode(m){
   mode=m;
   document.getElementById('tabCompareBtn').classList.toggle('active',m==='compare');
@@ -163,8 +188,26 @@ function setMode(m){
   document.getElementById('mode-compare').style.display=m==='compare'?'':'none';
   document.getElementById('mode-self').style.display=m==='self'?'':'none';
   document.getElementById('result').style.display='none';
+  storeSetRaw(PC_KEYS.mode,m,true);
 }
 document.getElementById('selfThr').addEventListener('input',function(){document.getElementById('thrVal').textContent=this.value});
+// Autosave drafts as the user types / adjusts.
+['text1','text2','selfText','selfThr'].forEach(function(id){
+  var el=document.getElementById(id);if(el)el.addEventListener('input',saveDrafts);
+});
+
+/* Read the self-check threshold defensively. The range input normally keeps it
+   in 50–95, but a non-numeric or out-of-range value (e.g. set via devtools or a
+   restored draft) must not silently produce a broken comparison. */
+function getSelfThreshold(){
+  var raw=document.getElementById('selfThr').value;
+  var n=parseInt(raw,10);
+  if(!isFinite(n)){n=70;}
+  if(n<50)n=50; if(n>95)n=95;
+  document.getElementById('selfThr').value=n;
+  document.getElementById('thrVal').textContent=n;
+  return n/100;
+}
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function normalize(t){return t.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim()}
@@ -231,14 +274,21 @@ function highlight(sentences,matchedSet,cls){
 }
 
 function checkPlagiarism(){
+ try{
   var t1=document.getElementById('text1').value,t2=document.getElementById('text2').value;
   if(!t1.trim()||!t2.trim())return notify('Please enter both texts.', 'warn');
   var w1=getWords(t1),w2=getWords(t2);
+  if(w1.length<3||w2.length<3){
+    return notify('Each text needs at least a few words to compare. Paste a sentence or two into both boxes.','warn');
+  }
+  var s1=getSentences(t1),s2=getSentences(t2);
+  if(!s1.length||!s2.length){
+    notify('No clear sentences found — add punctuation (.!?) so matches can be shown. Comparing by words only.','info');
+  }
   var jac=jaccard(w1,w2);
   var cos=cosine(w1,w2);
   var lcs=lcsWords(w1,w2);
   var lcsPct=Math.min(w1.length,w2.length)?lcs/Math.min(w1.length,w2.length):0;
-  var s1=getSentences(t1),s2=getSentences(t2);
   var matchedS1=new Set(),matchedS2=new Set(),matchCount=0;
   for(var i=0;i<s1.length;i++)for(var j=0;j<s2.length;j++){
     if(sentenceSimilarity(s1[i],s2[j])>0.6){matchedS1.add(i);matchedS2.add(j);matchCount++}
@@ -286,13 +336,25 @@ function checkPlagiarism(){
     '</div>';
 
   lastReport=buildCompareReport(overall,verdict,jac,cos,lcs,matchCount,ng3,ng5,r1,r2);
+ }catch(err){
+   notify('Something went wrong while comparing. Please check your text and try again.','error');
+   if(window.console&&console.error)console.error('plagiarism compare error:',err);
+ }
 }
 
 function selfCheck(){
+ try{
   var t=document.getElementById('selfText').value;
   if(!t.trim())return notify('Please paste a document.', 'warn');
-  var thr=document.getElementById('selfThr').value/100;
+  var words=getWords(t);
+  if(words.length<5){
+    return notify('That is too short to analyse — paste at least a sentence or two.','warn');
+  }
+  var thr=getSelfThreshold();
   var sentences=getSentences(t);
+  if(sentences.length<2){
+    return notify('No repeatable sentences found. Add punctuation (.!?) between ideas so repetition can be detected.','warn');
+  }
   var exactMap={},dupExact=[];
   var nearPairs=[];
   for(var i=0;i<sentences.length;i++){
@@ -345,6 +407,10 @@ function selfCheck(){
     stat(r.wc,'Words')+stat(r.avgLen,'Avg words/sentence')+stat(r.flesch,'Reading ease (0-100)')+stat(r.diversity+'%','Vocabulary diversity')+'</div>';
 
   lastReport=buildSelfReport(repScore,verdict,sentences.length,dupExact,nearPairs,overused,counts,r);
+ }catch(err){
+   notify('Something went wrong while checking. Please check your text and try again.','error');
+   if(window.console&&console.error)console.error('plagiarism self-check error:',err);
+ }
 }
 
 function buildCompareReport(overall,verdict,jac,cos,lcs,matchCount,ng3,ng5,r1,r2){
@@ -381,6 +447,9 @@ function buildSelfReport(score,verdict,total,dup,near,overused,counts,r){
 
 function copyReport(btn){if(!lastReport)return;copyText(lastReport,btn)}
 function downloadReport(){if(!lastReport)return;download(new Blob([lastReport],{type:'text/plain'}),'similarity-report.txt')}
+
+// Restore any saved drafts on load.
+restoreDrafts();
 </script>
 </body>
 </html>

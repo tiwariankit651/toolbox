@@ -199,6 +199,7 @@
 var srRecorder=null, srChunks=[], srTimer=null, srSecs=0, srPaused=false;
 var srScreen=null, srCam=null, srMicStream=null, srAudioCtx=null, srRaf=null;
 var srBlob=null, srBytes=0, srMeterRaf=null;
+var srMeta=null; // {w,h,fps,bitrate,mime,ext} of the active/last recording, for the copyable summary
 
 function $s(x){return document.getElementById(x)}
 function fsz(b){return (typeof formatSize==='function')?formatSize(b):(b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB')}
@@ -399,6 +400,13 @@ async function startRec(){
   srRecorder.onstop=finishRec;
   srRecorder.start(1000);
 
+  // Remember what we actually captured, for the copyable summary.
+  var actualMime=(srRecorder&&srRecorder.mimeType)||mime||'video/webm';
+  srMeta={w:outW,h:outH,fps:fps,
+          bitrate:(parseInt($s('srBitrate').value,10)||6),
+          mime:actualMime,
+          ext:(actualMime.indexOf('mp4')>=0?'mp4':'webm')};
+
   // user stops sharing from the browser bar
   sTrack.addEventListener('ended',function(){ if(srRecorder&&srRecorder.state!=='inactive')stopRec() });
 
@@ -456,6 +464,7 @@ function finishRec(){
   var type=(srRecorder&&srRecorder.mimeType)||'video/webm';
   srBlob=new Blob(srChunks,{type:type});
   var ext=type.indexOf('mp4')>=0?'mp4':'webm';
+  if(srMeta){srMeta.ext=ext;srMeta.mime=type;}
   var url=URL.createObjectURL(srBlob);
   var v=$s('preview');
   v.src=url; v.style.display='block';
@@ -470,12 +479,33 @@ function finishRec(){
         ". Play it above before saving.</p>"+
       "<div class='row' style='gap:.4rem;flex-wrap:wrap'>"+
         "<button class='btn' style='margin:0' onclick=\"download(window._srBlob,'screen-recording-'+Date.now()+'."+ext+"')\">Download "+ext.toUpperCase()+"</button>"+
+        "<button class='btn btn-outline' style='margin:0' onclick='copySrSummary()'>📋 Copy details</button>"+
         "<button class='btn btn-outline' style='margin:0' onclick='grabFrame()'>Save current frame as PNG</button>"+
         "<button class='btn btn-outline' style='margin:0' onclick='discardRec()'>Discard</button>"+
       "</div>"+
       "<p class='info' style='font-size:.78rem;margin-top:.6rem'>Need a GIF or a trimmed clip? Use the "+
         "<a href='/tools/video-to-gif'>Video to GIF</a> tool with this file.</p>"+
     "</div>";
+}
+
+/* Build a plain-text summary of the recording's technical details — the sort of
+   thing people paste into bug reports and video-upload forms. A video blob can't
+   go on the clipboard, so we copy its facts instead. */
+function srSummaryText(){
+  if(!srBlob&&!srMeta)return '';
+  var L=['Screen recording details'];
+  if(srMeta)L.push('Resolution: '+srMeta.w+'x'+srMeta.h);
+  if(srMeta)L.push('Frame rate: '+srMeta.fps+' fps');
+  if(srMeta)L.push('Bitrate: '+srMeta.bitrate+' Mbps (target)');
+  if(srMeta)L.push('Format: '+(srMeta.ext?srMeta.ext.toUpperCase():'')+' ('+srMeta.mime+')');
+  L.push('Duration: '+mmss(srSecs));
+  if(srBlob)L.push('File size: '+fsz(srBlob.size));
+  return L.join('\n');
+}
+function copySrSummary(){
+  var txt=srSummaryText();
+  if(!txt){notify('Record something first — there are no details to copy yet.','warn');return;}
+  copyNow(txt,'Recording details copied.');
 }
 
 function grabFrame(){
@@ -493,7 +523,50 @@ function discardRec(){
   $s('result').innerHTML='';
 }
 
-applySrPreset();
+/* ===== Persist capture settings ===== */
+var SR_KEY='screenRecorder.settings';
+// Which controls to remember. Checkboxes vs value-controls handled separately.
+var SR_VAL_IDS=['srPreset','srRes','srFps','srBitrate','srFormat','srLimit','countdown',
+                'camPos','camSize','camShape','camMirror'];
+var SR_CHK_IDS=['audio','srMic','camera'];
+function hasOption(sel,val){
+  if(!sel||!sel.options)return false;
+  for(var i=0;i<sel.options.length;i++)if(sel.options[i].value===String(val))return true;
+  return false;
+}
+function saveSrSettings(){
+  var s={};
+  SR_VAL_IDS.forEach(function(id){var el=$s(id);if(el&&el.type!=='checkbox')s[id]=el.value;});
+  SR_CHK_IDS.forEach(function(id){var el=$s(id);if(el&&el.type==='checkbox')s['chk_'+id]=el.checked;});
+  storeSet(SR_KEY,s,true);
+}
+function restoreSrSettings(){
+  var s=storeGet(SR_KEY,null);
+  if(!s||typeof s!=='object')return;
+  SR_VAL_IDS.forEach(function(id){
+    if(s[id]===undefined)return;
+    var el=$s(id);if(!el)return;
+    // For selects, only assign a value that still exists in the options.
+    if(el.tagName==='SELECT'){if(hasOption(el,s[id]))el.value=s[id];}
+    else el.value=s[id];
+  });
+  SR_CHK_IDS.forEach(function(id){
+    if(s['chk_'+id]===undefined)return;
+    var el=$s(id);if(el&&el.type==='checkbox')el.checked=!!s['chk_'+id];
+  });
+  // keep dependent UI in sync with restored values
+  var br=parseInt($s('srBitrate').value,10);if(isFinite(br))$s('srBrVal').textContent=br+' Mbps';
+}
+// Autosave whenever a capture control changes.
+['change','input'].forEach(function(ev){
+  SR_VAL_IDS.concat(SR_CHK_IDS).forEach(function(id){
+    var el=$s(id);if(el)el.addEventListener(ev,saveSrSettings);
+  });
+});
+
+// Init: restore saved settings first, then let the UI react to them.
+restoreSrSettings();
+if($s('srPreset').value==='custom'){updateSrEstimate();}else{applySrPreset();}
 onCamToggle();
 </script>
 </body>
