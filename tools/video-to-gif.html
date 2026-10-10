@@ -143,9 +143,44 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var videoFile,videoDuration=0;
+
+/* Remember the output settings that belong to the user's preference, not to a
+   specific clip. startT and endT are deliberately NOT persisted - they only
+   make sense for the particular video that was loaded. */
+var VTG_KEY='vtg-settings-v1';
+var VTG_FIELDS=['fps','gifW','speed','loopCount'];
+function vtgSaveSettings(){
+  var d={};
+  VTG_FIELDS.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)d[id]=el.value;
+  });
+  storeSet(VTG_KEY,d,true);
+}
+function vtgRestoreSettings(){
+  var d=storeGet(VTG_KEY,null);
+  if(!d)return;
+  VTG_FIELDS.forEach(function(id){
+    if(d[id]===undefined)return;
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.tagName==='SELECT'){
+      /* assigning a value not present in a select silently blanks it */
+      var ok=Array.prototype.some.call(el.options,function(o){return o.value===String(d[id])});
+      if(!ok)return;
+    }
+    el.value=d[id];
+  });
+}
+vtgRestoreSettings();
+VTG_FIELDS.forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){el.addEventListener('change',vtgSaveSettings);el.addEventListener('input',vtgSaveSettings)}
+});
 
 setupDrop("drop","inp",function(f){
   videoFile=f[0];var vid=document.getElementById("vid");
@@ -350,6 +385,12 @@ function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
   if(playMode==="reverse"){frames.reverse();}
   else if(playMode==="boomerang"){var rev=frames.slice(1,-1).reverse();frames=frames.concat(rev);}
 
+  /* Keep the final frame set (post play-mode) and its dimensions so the ZIP
+     export can render the individual stills as PNGs without re-decoding the
+     video, which headless/background tabs cannot reliably do a second time. */
+  window._gifFrames=frames;
+  window._gifDims={w:gifW,h:gifH};
+
   var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
   var ctx=canvas.getContext("2d");
   var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,repeat:loopCount,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
@@ -366,12 +407,85 @@ function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
   gif.on("finished",function(blob){
     var sizeStr=blob.size>1048576?(blob.size/1048576).toFixed(2)+" MB":(blob.size/1024).toFixed(1)+" KB";
     var playModeLabel=document.querySelector('input[name="playMode"]:checked').value;
-    document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+sizeStr+' | '+gifW+'x'+gifH+' | '+document.getElementById("fps").value+' FPS'+(playModeLabel!=="normal"?" | "+playModeLabel:"")+'</p><button class="btn" onclick="download(window._gifBlob,\'output.gif\')">💾 Download GIF</button>';
+    document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+sizeStr+' | '+gifW+'x'+gifH+' | '+document.getElementById("fps").value+' FPS'+(playModeLabel!=="normal"?" | "+playModeLabel:"")+'</p><div class="row" style="flex-wrap:wrap;gap:.4rem"><button class="btn" onclick="download(window._gifBlob,\'output.gif\')" style="flex:1;min-width:140px">💾 Download GIF</button><button class="btn btn-outline" onclick="copyGif()" style="flex:1;min-width:140px">📋 Copy</button><button class="btn btn-outline" onclick="exportFramesZip()" style="flex:1;min-width:140px">🗜️ GIF + frames (ZIP)</button></div>';
     window._gifBlob=blob;
     document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done! Final size: '+sizeStr+'</p>';
     document.getElementById("convertBtn").disabled=false;
   });
   gif.render();
+}
+
+/* Copy the result to the clipboard. ClipboardItem support for image/gif is poor
+   across browsers - Chrome and Firefox only accept image/png in a clipboard
+   write - so an animated-GIF copy is not something we can honour reliably.
+   Instead we copy the FIRST FRAME as a PNG and say so plainly, rather than
+   claiming to have copied an animation we did not. */
+function copyGif(){
+  if(!window._gifFrames||!window._gifFrames.length||!window._gifDims){
+    notify('Convert a GIF first.','warn');return;
+  }
+  if(!(navigator.clipboard&&window.ClipboardItem)){
+    notify('This browser cannot copy images to the clipboard. Use Download instead.','error');
+    return;
+  }
+  var d=window._gifDims;
+  var canvas=document.createElement('canvas');canvas.width=d.w;canvas.height=d.h;
+  canvas.getContext('2d').putImageData(window._gifFrames[0],0,0);
+  canvas.toBlob(function(pngBlob){
+    if(!pngBlob){notify('Could not build the image to copy.','error');return}
+    try{
+      var item=new ClipboardItem({'image/png':pngBlob});
+      navigator.clipboard.write([item]).then(function(){
+        notify('Copied the FIRST FRAME as a PNG (not the animation — browsers cannot copy animated GIFs).','ok');
+      },function(){
+        notify('Copy was blocked by the browser. Use Download instead.','error');
+      });
+    }catch(e){
+      notify('This browser cannot copy images to the clipboard. Use Download instead.','error');
+    }
+  },'image/png');
+}
+
+/* "Batch" decision: true multi-video conversion in-browser means decoding
+   several videos and running the gif.js workers repeatedly, which is heavy and
+   fragile. The common real need behind "give me more than one output" here is
+   grabbing the individual stills, so instead we export a ZIP of the finished
+   GIF plus every captured frame as a numbered PNG. One well-built feature that
+   reuses frames already in memory, rather than a heavy half-working batch. */
+function exportFramesZip(){
+  if(!window._gifBlob||!window._gifFrames||!window._gifFrames.length||!window._gifDims){
+    notify('Convert a GIF first.','warn');return;
+  }
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a moment.','warn');return;}
+  var d=window._gifDims;
+  var frames=window._gifFrames;
+  notify('Building ZIP of GIF + '+frames.length+' frames…','info');
+  var zip=new JSZip();
+  zip.file('animation.gif',window._gifBlob);
+  var framesDir=zip.folder('frames');
+  var pad=String(frames.length).length;
+  var canvas=document.createElement('canvas');canvas.width=d.w;canvas.height=d.h;
+  var ctx=canvas.getContext('2d');
+  var chain=Promise.resolve();
+  frames.forEach(function(f,i){
+    chain=chain.then(function(){
+      return new Promise(function(resolve){
+        ctx.putImageData(f,0,0);
+        canvas.toBlob(function(b){
+          var n=String(i+1);while(n.length<pad)n='0'+n;
+          if(b)framesDir.file('frame-'+n+'.png',b);
+          resolve();
+        },'image/png');
+      });
+    });
+  });
+  chain.then(function(){
+    return zip.generateAsync({type:'blob'});
+  }).then(function(blob){
+    download(blob,'gif-and-frames.zip');
+  }).catch(function(){
+    notify('Could not build the ZIP file.','error');
+  });
 }
   </script>
 </body>

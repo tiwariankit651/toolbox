@@ -46,6 +46,17 @@
         <span id="charCount" class="info" style="flex:1;text-align:center;font-size:.8rem"></span>
       </div>
 
+      <div class="drop-zone" id="dropZone" style="margin-top:.6rem;cursor:default">
+        📥 Drag &amp; drop a <strong>.txt</strong> or <strong>.md</strong> file here to load it for reading
+        <div class="info" style="font-size:.78rem;margin-top:.3rem">Text files only, up to 5&nbsp;MB. The file stays on your device.</div>
+      </div>
+
+      <div class="row" style="margin-top:.6rem;flex-wrap:wrap;gap:.5rem">
+        <button class="btn btn-outline" onclick="ttsDownloadSetup()" style="flex:1;min-width:160px;font-size:.85rem">💾 Download text + voice settings (.txt)</button>
+        <button class="btn btn-outline" onclick="ttsExportZip()" style="flex:1;min-width:160px;font-size:.85rem">🗜️ Export reading chunks as ZIP</button>
+      </div>
+      <p class="info" style="font-size:.78rem;margin-top:.3rem">The ZIP splits long text into numbered .txt files for session-by-session listening, with a README describing the split and your current voice settings. The Web Speech API provides no audio stream, so an MP3/WAV download is genuinely not possible here.</p>
+
       <div class="row" style="flex-wrap:wrap;margin-top:.8rem">
         <div style="flex:2;min-width:220px">
           <label>Voice:</label>
@@ -175,6 +186,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 const synth=window.speechSynthesis;
@@ -402,6 +414,134 @@ function ttsCopyText(){
   if(!t){notify('Enter some text first.','warn');return}
   copyNow(t,'Text copied.');
 }
+
+/* A plain-language summary of the current voice setup, reused by the ZIP README
+   and the "download setup" .txt so a reading configuration can be shared. */
+function ttsSettingsSummary(){
+  var vSel=document.getElementById('voice');
+  var vName='(browser default)';
+  if(vSel&&vSel.value!==''&&voices[+vSel.value])vName=voices[+vSel.value].name+' ['+voices[+vSel.value].lang+']';
+  var speed=(+document.getElementById('speed').value).toFixed(1);
+  var pitch=(+document.getElementById('pitch').value).toFixed(1);
+  var volume=(+document.getElementById('volume').value).toFixed(2);
+  var preset=document.getElementById('ttsPreset').value;
+  var dict=document.getElementById('dictationMode').checked;
+  var lines=[
+    'Voice: '+vName,
+    'Speed (rate): '+speed+'x',
+    'Pitch: '+pitch,
+    'Volume: '+volume,
+    'Reading preset: '+preset
+  ];
+  if(dict){
+    lines.push('Dictation mode: ON');
+    lines.push('  Repeats per sentence: '+document.getElementById('repeatCount').value);
+    lines.push('  Pause between: '+document.getElementById('dictPause').value+'s');
+  }else{
+    lines.push('Dictation mode: off');
+  }
+  return lines.join('\n');
+}
+
+/* A genuine download that actually exists for this tool: the text plus the
+   current voice settings as a shareable/keepable .txt reading setup. */
+function ttsDownloadSetup(){
+  var t=document.getElementById('text').value.trim();
+  if(!t){notify('Enter some text first.','warn');return}
+  var body='=== FreeToolHubs Text-to-Speech reading setup ===\n\n'+
+    ttsSettingsSummary()+
+    '\n\n--- TEXT ---\n\n'+t+'\n';
+  download(new Blob([body],{type:'text/plain'}),'reading-setup.txt');
+}
+
+/* Split long text into readable chunks and export them as a ZIP of numbered
+   .txt files - what preparing a long document for listening in sessions needs.
+   Chunks are split on paragraph/sentence boundaries at ~400 words each. */
+function ttsExportZip(){
+  var t=document.getElementById('text').value.trim();
+  if(!t){notify('Enter some text first.','warn');return}
+  if(typeof JSZip==='undefined'){notify('ZIP library is still loading, try again in a moment.','warn');return}
+  var WORDS_PER_CHUNK=400;
+  var parts=ttsChunkByWords(t,WORDS_PER_CHUNK);
+  if(parts.length<2){
+    notify('This text fits in a single session (under '+WORDS_PER_CHUNK+' words) — a ZIP would just hold one file. Use the .txt download instead.','info');
+    return;
+  }
+  var zip=new JSZip();
+  var pad=String(parts.length).length;
+  parts.forEach(function(p,i){
+    var n=String(i+1);
+    while(n.length<pad)n='0'+n;
+    zip.file('part-'+n+'.txt',p);
+  });
+  var readme='FreeToolHubs — Text-to-Speech reading chunks\n'+
+    '============================================\n\n'+
+    'This ZIP splits a long document into readable sessions.\n\n'+
+    'Chunks (files): '+parts.length+'\n'+
+    'Target words per chunk: '+WORDS_PER_CHUNK+'\n'+
+    'Total words: '+(t.trim().split(/\s+/).length)+'\n\n'+
+    'Current voice settings\n'+
+    '----------------------\n'+
+    ttsSettingsSummary()+'\n\n'+
+    'How to use: open part-01.txt, paste it back into the Text to Speech tool\n'+
+    'and press Speak. Work through the parts one session at a time.\n';
+  zip.file('README.txt',readme);
+  zip.generateAsync({type:'blob'}).then(function(blob){
+    download(blob,'reading-chunks.zip');
+  }).catch(function(){
+    notify('Could not build the ZIP file.','error');
+  });
+}
+
+/* Group whole sentences into chunks of about N words, never splitting a
+   sentence. Falls back to word grouping if a single sentence is huge. */
+function ttsChunkByWords(text,maxWords){
+  var sentences=text.match(/[^.!?\n]+[.!?]*\s*|\n+/g)||[text];
+  var out=[],cur='',curWords=0;
+  sentences.forEach(function(s){
+    var w=s.trim()?s.trim().split(/\s+/).length:0;
+    if(curWords+w>maxWords&&cur.trim()){out.push(cur.trim());cur='';curWords=0}
+    cur+=s;curWords+=w;
+  });
+  if(cur.trim())out.push(cur.trim());
+  return out.length?out:[text];
+}
+
+/* Drag & drop a .txt or .md file onto the drop zone to load it for reading.
+   Non-text files and anything over 5MB are refused with a toast. */
+function ttsHandleDroppedFiles(files){
+  if(!files||!files.length)return;
+  var f=files[0];
+  var fname=(f.name||'').toLowerCase();
+  var isText=fname.endsWith('.txt')||fname.endsWith('.md')||
+             f.type==='text/plain'||f.type==='text/markdown';
+  if(!isText){
+    notify('Only .txt or .md text files can be loaded here.','error');
+    return;
+  }
+  if(f.size>5*1024*1024){
+    notify('That file is '+formatSize(f.size)+' — the limit is 5 MB.','error');
+    return;
+  }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('text').value=e.target.result;
+    updateEstimate();updateCharCount();
+    notify('Loaded "'+f.name+'" ('+formatSize(f.size)+').','ok');
+  };
+  reader.onerror=function(){notify('Could not read that file.','error')};
+  reader.readAsText(f);
+}
+(function(){
+  var dz=document.getElementById('dropZone');
+  if(!dz)return;
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover')});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('dragover')});
+  dz.addEventListener('drop',function(e){
+    e.preventDefault();dz.classList.remove('dragover');
+    ttsHandleDroppedFiles(e.dataTransfer.files);
+  });
+})();
 
 function speak(){
   const text=document.getElementById('text').value.trim();

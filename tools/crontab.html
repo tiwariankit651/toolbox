@@ -20,7 +20,14 @@
       <p class="info">Build cron expressions visually, decode existing ones to plain English, preview the next run times, and copy a ready crontab line.</p>
 <h3>Paste / Decode a Cron Expression</h3>
 <div class="row"><input type="text" id="exprInput" placeholder="e.g. */5 * * * *  or  @daily" style="flex:1"><button class="btn" onclick="decodeExpr()">Decode & Fill</button></div>
-<div id="parseError" class="info" style="color:#e74c3c"></div>
+<div id="parseError" class="info" style="color:var(--danger)"></div>
+<div id="recentWrap" style="display:none;margin-top:.6rem">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.4rem">
+    <span class="info" style="font-size:.8rem">🕘 Recent:</span>
+    <span id="recentChips" style="display:flex;flex-wrap:wrap;gap:.4rem"></span>
+    <button class="btn btn-outline" onclick="clearRecent()" style="font-size:.75rem;padding:.2rem .5rem">Clear</button>
+  </div>
+</div>
 
 <h3 style="margin-top:1rem">Visual Builder</h3>
 <div id="builder"></div>
@@ -30,6 +37,7 @@
 
 <div class="row" style="flex-wrap:wrap;align-items:center">
   <button class="btn" onclick="copyExpr()">📋 Copy Expression</button>
+  <button class="btn btn-outline" onclick="copyDesc()">📋 Copy Description</button>
   <input type="text" id="cmdInput" placeholder="command (e.g. /usr/bin/backup.sh)" value="/path/to/command" style="flex:1;min-width:180px">
   <button class="btn btn-outline" onclick="copyCrontabLine()">📋 Copy crontab line</button>
 </div>
@@ -180,8 +188,9 @@ function gen(){
 }
 function updateCrontabLine(expr){var cmd=document.getElementById("cmdInput").value||"/path/to/command";document.getElementById("crontabLine").textContent=expr+" "+cmd}
 document.getElementById("cmdInput").addEventListener("input",function(){updateCrontabLine(document.getElementById("expr").textContent)});
-function copyExpr(){copyText(document.getElementById("expr").textContent)}
-function copyCrontabLine(){copyText(document.getElementById("crontabLine").textContent)}
+function copyExpr(){copyNow(document.getElementById("expr").textContent,"Expression copied.")}
+function copyCrontabLine(){copyNow(document.getElementById("crontabLine").textContent,"Crontab line copied.")}
+function copyDesc(){copyNow(document.getElementById("desc").textContent,"Description copied.")}
 
 // ---- Human readable description ----
 function describeField(field,lo,hi,names){
@@ -249,7 +258,7 @@ function computeNext(expr,count){
 function showNext(expr){
   var box=document.getElementById("schedule");
   var times=computeNext(expr,10);
-  if(!times){box.innerHTML="<div style='color:#e74c3c'>Invalid expression — need exactly 5 fields.</div>";return}
+  if(!times){box.innerHTML="<div style='color:var(--danger)'>Invalid expression — need exactly 5 fields.</div>";return}
   box.innerHTML=times.length?times.map(function(t){return "<div>▸ "+t.toLocaleString()+"</div>"}).join(""):"<div>No matching times in the next few years (check the expression).</div>";
 }
 
@@ -259,12 +268,22 @@ function validateExpr(expr){
   if(f.length!==5)return {ok:false,msg:"Expected 5 fields (minute hour day month weekday); got "+f.length+"."};
   var ranges=[[0,59],[0,23],[1,31],[1,12],[0,7]];
   var re=/^(\*|(\d+)(-\d+)?)(\/\d+)?(,(\*|(\d+)(-\d+)?)(\/\d+)?)*$/;
+  var FNAMES=["minute","hour","day-of-month","month","day-of-week"];
   for(var i=0;i<5;i++){
     var part=f[i];
-    if(/[L#?]/.test(part))return {ok:false,msg:"Field "+(i+1)+" ('"+part+"') uses L/#/? which are Quartz-only and not supported by this standard-cron tool."};
-    if(!re.test(part))return {ok:false,msg:"Field "+(i+1)+" ('"+part+"') has invalid syntax. Use *, numbers, ranges (a-b), lists (a,b) or steps (*/n)."};
+    if(/[L#?]/.test(part))return {ok:false,msg:"Field "+(i+1)+" ("+FNAMES[i]+", '"+part+"') uses L/#/? which are Quartz-only and not supported by this standard-cron tool."};
+    if(!re.test(part))return {ok:false,msg:"Field "+(i+1)+" ("+FNAMES[i]+", '"+part+"') has invalid syntax. Use *, numbers, ranges (a-b), lists (a,b) or steps (*/n)."};
+    // step value must be a positive integer (reject */0 and 0 steps)
+    var steps=part.match(/\/(\d+)/g)||[];
+    for(var sIdx=0;sIdx<steps.length;sIdx++){var sv=parseInt(steps[sIdx].slice(1),10);if(sv<1)return {ok:false,msg:"Field "+(i+1)+" ("+FNAMES[i]+", '"+part+"') has a step of 0. The step after '/' must be 1 or greater."}}
+    // range sanity: start must not exceed end
+    var rangeParts=part.split(",");
+    for(var rp=0;rp<rangeParts.length;rp++){
+      var base=rangeParts[rp].split("/")[0];
+      if(base.indexOf("-")>-1){var rr=base.split("-");if(parseInt(rr[0],10)>parseInt(rr[1],10))return {ok:false,msg:"Field "+(i+1)+" ("+FNAMES[i]+", '"+rangeParts[rp]+"') has a reversed range — the start is greater than the end."}}
+    }
     var nums=part.match(/\d+/g)||[];
-    for(var n=0;n<nums.length;n++){var v=parseInt(nums[n],10);if(v<ranges[i][0]||v>ranges[i][1])return {ok:false,msg:"Field "+(i+1)+" value "+v+" is out of range ("+ranges[i][0]+"-"+ranges[i][1]+")."}}
+    for(var n=0;n<nums.length;n++){var v=parseInt(nums[n],10);if(v<ranges[i][0]||v>ranges[i][1])return {ok:false,msg:"Field "+(i+1)+" ("+FNAMES[i]+") value "+v+" is out of range ("+ranges[i][0]+"-"+ranges[i][1]+")."}}
   }
   return {ok:true};
 }
@@ -282,6 +301,41 @@ function decodeExpr(){
   if(!v.ok){err.textContent="❌ "+v.msg;return}
   fillBuilder(raw);
   gen();
+  rememberExpr(raw);
+}
+
+/* ---- Recent valid expressions ---- */
+var RECENT_KEY="crontab_recent",RECENT_MAX=8;
+function rememberExpr(expr){
+  expr=String(expr||"").trim();
+  if(!expr)return;
+  var list=storeGet(RECENT_KEY,[]);
+  if(!Array.isArray(list))list=[];
+  list=list.filter(function(e){return e!==expr});
+  list.unshift(expr);
+  list=list.slice(0,RECENT_MAX);
+  storeSet(RECENT_KEY,list,true);
+  renderRecent();
+}
+function renderRecent(){
+  var list=storeGet(RECENT_KEY,[]);
+  if(!Array.isArray(list))list=[];
+  var wrap=document.getElementById("recentWrap");
+  var chips=document.getElementById("recentChips");
+  if(!list.length){wrap.style.display="none";chips.innerHTML="";return}
+  wrap.style.display="block";
+  chips.innerHTML=list.map(function(e){
+    return "<button class='btn btn-outline' style='font-size:.75rem;padding:.25rem .55rem;font-family:monospace' onclick=\"loadRecent('"+e.replace(/'/g,"\\'")+"')\">"+e.replace(/</g,"&lt;")+"</button>";
+  }).join("");
+}
+function loadRecent(expr){
+  document.getElementById("exprInput").value=expr;
+  decodeExpr();
+}
+function clearRecent(){
+  storeDel(RECENT_KEY);
+  renderRecent();
+  notify("Recent expressions cleared.","info");
 }
 function fillBuilder(expr){
   var f=expr.trim().split(/\s+/);
@@ -313,7 +367,7 @@ var SPECIAL_DESC={"@reboot":"Run once, at startup.","@yearly":"Run once a year �
 function buildSpecials(){var keys=["@reboot","@yearly","@annually","@monthly","@weekly","@daily","@hourly"];document.getElementById("specials").innerHTML=keys.map(function(k){return "<button class='btn btn-outline' onclick=\"showSpecial('"+k+"')\">"+k+"</button>"}).join("")}
 function showSpecial(k){document.getElementById("specialDesc").innerHTML="<b>"+k+"</b> — "+SPECIAL_DESC[k]+(SPECIALS[k]?" Equivalent: <code>"+SPECIALS[k]+"</code>":"");document.getElementById("exprInput").value=k;decodeExpr()}
 
-buildBuilder();buildPresets();buildSpecials();gen();
+buildBuilder();buildPresets();buildSpecials();gen();renderRecent();
 </script>
 </body>
 </html>

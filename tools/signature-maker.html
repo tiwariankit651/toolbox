@@ -171,6 +171,7 @@
       <div class="row" style="margin-top:1rem;gap:.5rem;flex-wrap:wrap">
         <button class="btn" onclick="downloadSig('png')">⬇️ Download PNG (transparent)</button>
         <button class="btn" onclick="downloadSig('jpg')">⬇️ Download JPG (white bg)</button>
+        <button class="btn btn-outline" onclick="copySig()">📋 Copy PNG to clipboard</button>
       </div>
       <div id="downloadResult"></div>
     </div>
@@ -378,24 +379,27 @@ var uploadCanvas=document.getElementById("uploadCanvas");
 var uploadCtx=uploadCanvas.getContext("2d");
 var uploadedImage=null;
 
-document.getElementById("uploadInp").addEventListener("change",function(e){
-  var file=e.target.files[0];
+function handleUploadFile(file){
   if(!file)return;
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      uploadedImage=img;
-      var ratio=img.width/img.height;
-      uploadCanvas.width=700;
-      uploadCanvas.height=Math.round(700/ratio);
-      document.getElementById("thresholdRow").style.display="flex";
-      document.getElementById("uploadPreviewWrap").style.display="block";
-      processUpload();
-    };
-    img.src=ev.target.result;
-  };
-  reader.readAsDataURL(file);
+  if(file.type&&!file.type.startsWith("image/")){
+    notify('"'+(file.name||"That file")+'" is not an image. Try a PNG, JPG or WEBP file.','error');
+    return;
+  }
+  // loadImage() rejects on a corrupt or unreadable file instead of hanging.
+  loadImage(file).then(function(img){
+    uploadedImage=img;
+    var ratio=img.width/img.height;
+    uploadCanvas.width=700;
+    uploadCanvas.height=Math.round(700/ratio);
+    document.getElementById("thresholdRow").style.display="flex";
+    document.getElementById("uploadPreviewWrap").style.display="block";
+    processUpload();
+    notify("Image loaded. Adjust the background threshold if needed.","ok");
+  }).catch(imgError);
+}
+
+document.getElementById("uploadInp").addEventListener("change",function(e){
+  handleUploadFile(e.target.files[0]);
 });
 
 // Drop support for upload zone
@@ -508,6 +512,91 @@ function downloadSig(format){
     document.getElementById("downloadResult").innerHTML="<p class='info' style='margin-top:.5rem'>✅ Downloaded — "+finalW+"×"+finalH+"px, "+formatSize(blob.size)+"</p>";
   },mimeType,quality);
 }
+
+/* === COPY TO CLIPBOARD (transparent PNG) === */
+/* Builds the same auto-cropped, padded canvas as the PNG download but always as
+   a transparent PNG, which is the only type ClipboardItem reliably accepts. */
+function buildSigCanvas(){
+  var src=getActiveCanvas();
+  var padding=+document.getElementById("outputPadding").value;
+  var outputSizeVal=document.getElementById("outputSize").value;
+  var cropped=autoCrop(src);
+  var finalW,finalH;
+  if(outputSizeVal==="auto"||outputSizeVal==="custom"){
+    finalW=cropped.width+padding*2;finalH=cropped.height+padding*2;
+  }else{
+    var parts=outputSizeVal.split("x");finalW=+parts[0];finalH=+parts[1];
+  }
+  var out=document.createElement("canvas");
+  out.width=finalW;out.height=finalH;
+  var octx=out.getContext("2d");
+  var drawW=finalW-padding*2,drawH=finalH-padding*2;
+  var scale=Math.min(drawW/cropped.width,drawH/cropped.height,1);
+  var sw=cropped.width*scale,sh=cropped.height*scale;
+  var sx=padding+(drawW-sw)/2,sy=padding+(drawH-sh)/2;
+  octx.drawImage(cropped,0,0,cropped.width,cropped.height,sx,sy,sw,sh);
+  return out;
+}
+function copySig(){
+  if(!(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)){
+    notify("Your browser cannot copy images to the clipboard. Use the Download button instead.","error");
+    return;
+  }
+  var canvas=buildSigCanvas();
+  canvas.toBlob(function(blob){
+    if(!blob){notify("Nothing to copy yet — draw, type or upload a signature first.","warn");return}
+    try{
+      var item=new ClipboardItem({"image/png":blob});
+      navigator.clipboard.write([item]).then(function(){
+        notify("Signature copied to clipboard as a transparent PNG.","ok");
+      },function(){
+        notify("Copy was blocked by the browser. Use the Download button instead.","error");
+      });
+    }catch(e){
+      notify("Copy was blocked by the browser. Use the Download button instead.","error");
+    }
+  },"image/png");
+}
+
+/* === STATE PERSISTENCE ===
+   Remembers the style choices only. The drawn signature and typed name are
+   per-use content and are deliberately NOT stored. */
+var SIG_KEY="signature_prefs";
+function saveSigPrefs(){
+  storeSet(SIG_KEY,{
+    penSize:document.getElementById("penSize").value,
+    signFont:document.getElementById("signFont").value,
+    typeSize:document.getElementById("typeSize").value,
+    bgThreshold:document.getElementById("bgThreshold").value,
+    outputSize:document.getElementById("outputSize").value,
+    outputPadding:document.getElementById("outputPadding").value
+  },true);
+}
+function restoreSigPrefs(){
+  var p=storeGet(SIG_KEY,null);
+  if(!p||typeof p!=="object")return;
+  // Only assign values that exist, and for selects only values already present.
+  if(p.penSize!=null){document.getElementById("penSize").value=p.penSize;penWidth=+p.penSize;document.getElementById("penSizeVal").textContent=penWidth+"px";}
+  setSelectIfOption("signFont",p.signFont);
+  if(p.typeSize!=null)document.getElementById("typeSize").value=p.typeSize;
+  if(p.bgThreshold!=null){document.getElementById("bgThreshold").value=p.bgThreshold;document.getElementById("threshVal").textContent=p.bgThreshold;}
+  setSelectIfOption("outputSize",p.outputSize);
+  setSelectIfOption("outputPadding",p.outputPadding);
+}
+function setSelectIfOption(id,val){
+  if(val==null)return;
+  var sel=document.getElementById(id);
+  if(!sel)return;
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===val){sel.value=val;return}}
+}
+// Persist on every change to a remembered control.
+["penSize","signFont","typeSize","bgThreshold","outputSize","outputPadding"].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener("change",saveSigPrefs);
+  el.addEventListener("input",saveSigPrefs);
+});
+restoreSigPrefs();
   </script>
 </body>
 </html>

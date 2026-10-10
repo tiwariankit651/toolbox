@@ -109,6 +109,15 @@
 
       <!-- Result -->
       <div id="result" style="margin-top:1rem;text-align:center"></div>
+      <div class="row" id="copyRow" style="display:none;justify-content:center;margin-top:.5rem">
+        <button class="btn btn-outline" onclick="copyQR()">📋 Copy image to clipboard</button>
+      </div>
+
+      <!-- Batch Mode -->
+      <h3 style="margin-top:1.5rem">🗂️ Batch Generate</h3>
+      <p class="info" style="font-size:.8rem">Paste one URL or text per line. Each line becomes its own QR code, downloaded together as a ZIP. Current style options apply to every code. Up to <strong>100</strong> lines per batch.</p>
+      <textarea id="batchText" placeholder="https://example.com&#10;Second line&#10;Another entry..." rows="4" style="width:100%;padding:.6rem;border-radius:var(--radius);border:1px solid var(--border,rgba(255,255,255,.1));background:var(--card);color:var(--text);font-size:.85rem"></textarea>
+      <button class="btn" onclick="genBatchZip()" style="margin-top:.6rem;width:100%">📦 Generate & Download ZIP</button>
 
       <div class="faq"><h2>FAQ</h2>
         <details><summary>Can I use the QR code commercially?</summary><p>Yes, generated QR codes are free to use for any purpose.</p></details>
@@ -164,6 +173,7 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 function showTypeForm(){var t=document.getElementById('qrType').value;var forms=['Text','Wifi','Vcard','Email','Sms','Phone','Upi','Whatsapp'];forms.forEach(function(f){document.getElementById('typeForm'+f).style.display='none';});document.getElementById('typeForm'+t.charAt(0).toUpperCase()+t.slice(1)).style.display='block';gen();}
@@ -201,9 +211,116 @@ function gen(){
 function showResult(cv){
   var img=cv.toDataURL('image/png');
   document.getElementById('result').innerHTML='<canvas id="qrCanvas" style="display:none"></canvas><img src="'+img+'" alt="QR Code" style="max-width:100%;margin:1rem auto;display:block;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.1)"><br><div class="row" style="justify-content:center;gap:.5rem;flex-wrap:wrap"><button class="btn" onclick="dlQR(\'png\')">📥 Download PNG</button><button class="btn btn-outline" onclick="dlQR(\'svg\')">📥 Download SVG</button></div>';
-  var hidden=document.getElementById('qrCanvas');hidden.width=cv.width;hidden.height=cv.height;hidden.getContext('2d').drawImage(cv,0,0);}
+  var hidden=document.getElementById('qrCanvas');hidden.width=cv.width;hidden.height=cv.height;hidden.getContext('2d').drawImage(cv,0,0);
+  document.getElementById('copyRow').style.display='flex';}
 function dlQR(fmt){
   if(fmt==='svg'){var cv=document.getElementById('qrCanvas');var imgData=cv.toDataURL('image/png');var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+cv.width+'" height="'+cv.height+'"><image href="'+imgData+'" width="'+cv.width+'" height="'+cv.height+'"/></svg>';var blob=new Blob([svg],{type:'image/svg+xml'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='qrcode.svg';a.click();}
   else{var cv=document.getElementById('qrCanvas');var a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='qrcode.png';a.click();}}
+
+/* === COPY QR IMAGE TO CLIPBOARD ===
+   ClipboardItem only reliably accepts PNG, and the hidden #qrCanvas already
+   holds the rendered QR, so we convert it straight to a PNG blob. */
+function copyQR(){
+  var cv=document.getElementById('qrCanvas');
+  if(!cv||!cv.width){notify('Generate a QR code first.','warn');return}
+  if(!(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)){
+    notify('Your browser cannot copy images to the clipboard. Use Download PNG instead.','error');
+    return;
+  }
+  cv.toBlob(function(blob){
+    if(!blob){notify('Could not build the image to copy.','error');return}
+    try{
+      var item=new ClipboardItem({'image/png':blob});
+      navigator.clipboard.write([item]).then(function(){
+        notify('QR code copied to clipboard as a PNG.','ok');
+      },function(){
+        notify('Copy was blocked by the browser. Use Download PNG instead.','error');
+      });
+    }catch(e){
+      notify('Copy was blocked by the browser. Use Download PNG instead.','error');
+    }
+  },'image/png');
+}
+
+/* === BATCH MODE ===
+   Renders one QR per non-empty line using the current style options (no logo —
+   a per-line logo would need async image loads and rarely makes sense in bulk)
+   and packs them into a ZIP, with each entry named after its line. */
+var BATCH_MAX=100;
+function renderQRCanvas(text){
+  var size=+document.getElementById('qrSize').value||400;
+  var fg=document.getElementById('qrColor').value;var bg=document.getElementById('qrBg').value;
+  var shape=document.getElementById('dotShape').value;
+  var useGrad=document.getElementById('useGradient').checked;
+  var fg2=document.getElementById('qrColor2').value;
+  var qr=qrcode(0,'M');qr.addData(text);qr.make();
+  var count=qr.getModuleCount();var cv=document.createElement('canvas');cv.width=size;cv.height=size;var ctx=cv.getContext('2d');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,size,size);
+  var px=size/count;var grad=null;
+  if(useGrad){grad=ctx.createLinearGradient(0,0,size,size);grad.addColorStop(0,fg);grad.addColorStop(1,fg2);}
+  for(var r=0;r<count;r++){for(var c=0;c<count;c++){if(qr.isDark(r,c)){ctx.fillStyle=useGrad?grad:fg;var x=c*px,y2=r*px;
+    if(shape==='circle'){ctx.beginPath();ctx.arc(x+px/2,y2+px/2,px/2.2,0,Math.PI*2);ctx.fill();}
+    else if(shape==='rounded'){var rd=px*0.3;ctx.beginPath();ctx.moveTo(x+rd,y2);ctx.lineTo(x+px-rd,y2);ctx.quadraticCurveTo(x+px,y2,x+px,y2+rd);ctx.lineTo(x+px,y2+px-rd);ctx.quadraticCurveTo(x+px,y2+px,x+px-rd,y2+px);ctx.lineTo(x+rd,y2+px);ctx.quadraticCurveTo(x,y2+px,x,y2+px-rd);ctx.lineTo(x,y2+rd);ctx.quadraticCurveTo(x,y2,x+rd,y2);ctx.fill();}
+    else{ctx.fillRect(x,y2,px+0.5,px+0.5);}}}}
+  return cv;
+}
+function safeFileName(line,idx){
+  var base=String(line).trim().replace(/^https?:\/\//i,'').replace(/[^a-z0-9._-]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,40);
+  if(!base)base='qr_'+(idx+1);
+  return base+'.png';
+}
+function canvasToBlob(cv){return new Promise(function(res){cv.toBlob(function(b){res(b)},'image/png')})}
+function genBatchZip(){
+  if(typeof JSZip==='undefined'){notify('ZIP library not loaded. Check your connection and reload.','error');return}
+  var raw=document.getElementById('batchText').value||'';
+  var lines=raw.split(/\r?\n/).map(function(l){return l.trim()}).filter(function(l){return l.length});
+  if(!lines.length){notify('Paste at least one line of text or a URL for batch mode.','warn');return}
+  var capped=false;
+  if(lines.length>BATCH_MAX){lines=lines.slice(0,BATCH_MAX);capped=true;}
+  var zip=new JSZip();
+  var used={};
+  var jobs=lines.map(function(line,idx){
+    var cv=renderQRCanvas(line);
+    var fname=safeFileName(line,idx);
+    if(used[fname]){var n=used[fname]++;fname=fname.replace(/\.png$/,'')+'_'+n+'.png';}else{used[fname]=1;}
+    return canvasToBlob(cv).then(function(blob){zip.file(fname,blob)});
+  });
+  Promise.all(jobs).then(function(){
+    return zip.generateAsync({type:'blob'});
+  }).then(function(blob){
+    download(blob,'qr-codes.zip');
+    notify('Generated '+lines.length+' QR code'+(lines.length>1?'s':'')+(capped?' (capped at '+BATCH_MAX+')':'')+'.',capped?'warn':'ok');
+  }).catch(function(){
+    notify('Something went wrong building the ZIP.','error');
+  });
+}
+
+/* === STYLE PERSISTENCE ===
+   Remembers style choices only. qrText and the other payload fields are
+   per-use content and are deliberately NOT stored. */
+var QR_KEY='qr_prefs';
+function saveQRPrefs(){
+  storeSet(QR_KEY,{
+    qrSize:document.getElementById('qrSize').value,
+    qrColor:document.getElementById('qrColor').value,
+    qrColor2:document.getElementById('qrColor2').value,
+    qrBg:document.getElementById('qrBg').value,
+    dotShape:document.getElementById('dotShape').value
+  },true);
+}
+function restoreQRPrefs(){
+  var p=storeGet(QR_KEY,null);
+  if(!p||typeof p!=='object')return;
+  if(p.qrSize!=null)document.getElementById('qrSize').value=p.qrSize;
+  if(p.qrColor!=null)document.getElementById('qrColor').value=p.qrColor;
+  if(p.qrColor2!=null)document.getElementById('qrColor2').value=p.qrColor2;
+  if(p.qrBg!=null)document.getElementById('qrBg').value=p.qrBg;
+  if(p.dotShape!=null){var sel=document.getElementById('dotShape');for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===p.dotShape){sel.value=p.dotShape;break}}}
+}
+['qrSize','qrColor','qrColor2','qrBg','dotShape'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el)el.addEventListener('change',saveQRPrefs);
+});
+restoreQRPrefs();
   </script>
 </body></html>
