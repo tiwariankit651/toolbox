@@ -46,13 +46,13 @@
       <div class="row" style="margin-bottom:1rem;flex-wrap:wrap">
         <label>Template:</label>
         <select id="invTemplate"><option value="classic">📋 Classic</option><option value="modern">🎨 Modern Blue</option><option value="minimal">✨ Minimal</option></select>
-        <label>Accent:</label><input type="color" id="invAccent" value="#6366f1" style="width:40px;height:35px;border:none">
+        <label>Accent:</label><input type="color" id="invAccent" value="#4338ca" style="width:40px;height:35px;border:none">
       </div>
 
       <!-- Supplier Details -->
       <h2>Supplier Details</h2>
       <div class="row"><input type="text" id="bName" placeholder="Business Name" oninput="autoSaveInv()"><input type="text" id="bAddress" placeholder="Business Address" oninput="autoSaveInv()"></div>
-      <div class="row"><input type="text" id="bGstin" placeholder="Supplier GSTIN (15 chars)" maxlength="15" oninput="validateGSTIN(this,'bGstWarn');autoSaveInv()"><span id="bGstWarn" style="font-size:.75rem;color:#ff9800;min-width:120px"></span></div>
+      <div class="row"><input type="text" id="bGstin" placeholder="Supplier GSTIN (15 chars)" maxlength="15" oninput="validateGSTIN(this,'bGstWarn');autoSaveInv()"><span id="bGstWarn" style="font-size:.75rem;color:var(--warn);min-width:120px"></span></div>
       <div class="row">
         <select id="bState" onchange="calcTotals();autoSaveInv()"><option value="">-- Supplier State --</option></select>
         <input type="text" id="bPhone" placeholder="Phone (optional)" oninput="autoSaveInv()">
@@ -71,7 +71,7 @@
       <h2>Bill To (Customer)</h2>
       <div class="row"><input type="text" id="cName" placeholder="Customer Name"><input type="text" id="cEmail" placeholder="Customer Email"></div>
       <div class="row"><input type="text" id="cAddress" placeholder="Customer Address" style="flex:1"></div>
-      <div class="row"><input type="text" id="cGstin" placeholder="Customer GSTIN (optional)" maxlength="15" oninput="validateGSTIN(this,'cGstWarn')"><span id="cGstWarn" style="font-size:.75rem;color:#ff9800;min-width:120px"></span></div>
+      <div class="row"><input type="text" id="cGstin" placeholder="Customer GSTIN (optional)" maxlength="15" oninput="validateGSTIN(this,'cGstWarn')"><span id="cGstWarn" style="font-size:.75rem;color:var(--warn);min-width:120px"></span></div>
       <div class="row"><select id="cState" onchange="calcTotals()"><option value="">-- Customer State --</option></select></div>
 
       <!-- Items -->
@@ -234,15 +234,15 @@ function updateInvPreview(){var bName=document.getElementById('bName').value||'Y
   var rows=document.querySelectorAll('#items > div');var itemsHTML='';var calc=calcTotalsRaw();
   rows.forEach(function(r){var inp=r.querySelectorAll('input');var sel=r.querySelector('select');var desc=inp[0]?inp[0].value:'';var hsn=inp[1]?inp[1].value:'';var qty=inp[2]?inp[2].value:'';var rate=inp[3]?inp[3].value:'';var disc=inp[4]?inp[4].value:'0';var gst=sel?sel.value:'18';var amt=((+qty||0)*(+rate||0)*(1-(+disc||0)/100)).toFixed(2);
     itemsHTML+='<tr><td style="padding:.4rem;border-bottom:1px solid #eee">'+escH(desc)+'</td><td style="padding:.4rem;border-bottom:1px solid #eee;text-align:center">'+escH(hsn)+'</td><td style="text-align:center;padding:.4rem;border-bottom:1px solid #eee">'+qty+'</td><td style="text-align:right;padding:.4rem;border-bottom:1px solid #eee">\u20b9'+rate+'</td><td style="text-align:center;padding:.4rem;border-bottom:1px solid #eee">'+disc+'%</td><td style="text-align:center;padding:.4rem;border-bottom:1px solid #eee">'+gst+'%</td><td style="text-align:right;padding:.4rem;border-bottom:1px solid #eee">\u20b9'+amt+'</td></tr>';});
-  var html='<div style="border-bottom:3px solid '+ac+';padding-bottom:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center"><div>'+(logoDataUrl?'<img src="'+logoDataUrl+'" style="max-height:50px;max-width:120px;margin-bottom:.3rem"><br>':'')+'<strong style="font-size:1.2em">'+escH(bName)+'</strong><br><span style="font-size:.85em;color:#666">'+escH(bAddr)+'</span>'+(bGst?'<br><span style="font-size:.8em">GSTIN: '+escH(bGst)+'</span>':'')+'</div><div style="text-align:right"><h2 style="margin:0;color:'+ac+'">INVOICE</h2><p style="margin:.2rem 0;font-size:.9em">#'+escH(invNo)+'</p><p style="margin:0;font-size:.85em">Date: '+invDate+'</p>'+(dueDate?'<p style="margin:0;font-size:.85em">Due: '+dueDate+'</p>':'')+'</div></div>';
-  html+='<div style="margin-bottom:1rem"><strong>Bill To:</strong><br>'+escH(cName)+(cAddr?'<br>'+escH(cAddr):'')+(cGst?'<br><span style="font-size:.85em">GSTIN: '+escH(cGst)+'</span>':'')+'</div>';
-  html+='<table style="width:100%;border-collapse:collapse;font-size:.85em"><thead><tr style="background:'+ac+'22"><th style="padding:.5rem;text-align:left">Description</th><th>HSN/SAC</th><th>Qty</th><th style="text-align:right">Rate</th><th>Disc</th><th>GST</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+itemsHTML+'</tbody></table>';
+  var html='<div style="border-bottom:3px solid '+ac+';padding-bottom:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center"><div>'+(logoDataUrl?'<img src="'+logoDataUrl+'" style="max-height:50px;max-width:120px;margin-bottom:.3rem"><br>':'')+'<strong style="font-size:1.2em">'+escH(bName)+'</strong><br><span style="font-size:max(.75rem,.85em);color:#666">'+escH(bAddr)+'</span>'+(bGst?'<br><span style="font-size:max(.75rem,.8em)">GSTIN: '+escH(bGst)+'</span>':'')+'</div><div style="text-align:right"><h2 style="margin:0;color:'+ac+'">INVOICE</h2><p style="margin:.2rem 0;font-size:.9em">#'+escH(invNo)+'</p><p style="margin:0;font-size:max(.75rem,.85em)">Date: '+invDate+'</p>'+(dueDate?'<p style="margin:0;font-size:max(.75rem,.85em)">Due: '+dueDate+'</p>':'')+'</div></div>';
+  html+='<div style="margin-bottom:1rem"><strong>Bill To:</strong><br>'+escH(cName)+(cAddr?'<br>'+escH(cAddr):'')+(cGst?'<br><span style="font-size:max(.75rem,.85em)">GSTIN: '+escH(cGst)+'</span>':'')+'</div>';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:max(.75rem,.85em)"><thead><tr style="background:'+ac+'22"><th style="padding:.5rem;text-align:left">Description</th><th>HSN/SAC</th><th>Qty</th><th style="text-align:right">Rate</th><th>Disc</th><th>GST</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+itemsHTML+'</tbody></table>';
   html+='<div style="margin-top:1rem;text-align:right;font-size:.9em"><p>Subtotal: \u20b9'+calc.subtotal.toFixed(2)+'</p>'+(calc.overallDiscAmt>0?'<p>Discount: -\u20b9'+calc.overallDiscAmt.toFixed(2)+'</p>':'');
   Object.keys(calc.taxByRate).forEach(function(k){var t=calc.taxByRate[k];if(calc.isInter){html+='<p>IGST @'+k+'%: \u20b9'+t.tax.toFixed(2)+'</p>';}else{html+='<p>CGST @'+(+k/2)+'%: \u20b9'+(t.tax/2).toFixed(2)+'</p><p>SGST @'+(+k/2)+'%: \u20b9'+(t.tax/2).toFixed(2)+'</p>';}});
   html+='<p style="font-size:1.1em;font-weight:bold;color:'+ac+'">Grand Total: \u20b9'+calc.grandTotal.toFixed(2)+'</p></div>';
-  html+='<p style="font-style:italic;font-size:.85em;margin-top:.5rem">'+numToWordsIndian(Math.round(calc.grandTotal))+'</p>';
+  html+='<p style="font-style:italic;font-size:max(.75rem,.85em);margin-top:.5rem">'+numToWordsIndian(Math.round(calc.grandTotal))+'</p>';
   var bank=document.getElementById('bankName').value;var upi=document.getElementById('upiId').value;
-  if(bank||upi){html+='<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #eee;font-size:.85em"><strong>Payment Details:</strong><br>'+(bank?'Bank: '+escH(bank)+' | A/C: '+escH(document.getElementById('bankAcc').value)+' | IFSC: '+escH(document.getElementById('bankIfsc').value)+'<br>':'')+(upi?'UPI: '+escH(upi):'')+'</div>';}
+  if(bank||upi){html+='<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #eee;font-size:max(.75rem,.85em)"><strong>Payment Details:</strong><br>'+(bank?'Bank: '+escH(bank)+' | A/C: '+escH(document.getElementById('bankAcc').value)+' | IFSC: '+escH(document.getElementById('bankIfsc').value)+'<br>':'')+(upi?'UPI: '+escH(upi):'')+'</div>';}
   document.getElementById('invoicePreview').innerHTML=html;}
 function escH(s){if(!s)return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function calcTotalsRaw(){var isInter=false;var supState=document.getElementById('bState').value;var custState=document.getElementById('cState').value;var pos=document.getElementById('placeOfSupply').value;if(pos&&supState){isInter=(pos!==supState);}else if(supState&&custState){isInter=(supState!==custState);}

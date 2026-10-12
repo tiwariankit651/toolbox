@@ -476,3 +476,110 @@ function copyNow(text, okMsg) {
     }, 3000);
   });
 })();
+
+/* ---------------------------------------------------------------------------
+   Touch support for drawing and dragging.
+
+   Several tools were built with mousedown/mousemove/mouseup only. On a phone
+   those events never fire, so drawing a whiteout box, trimming audio or
+   repositioning a collage image did nothing at all — no error, just a dead
+   canvas. These helpers let a tool register one handler that works for both a
+   mouse and a finger.
+
+   onDragStart(el, begin)  begin(pos, ev) -> optional {move, end}
+     pos is {x, y} relative to el. Returning handlers keeps the per-gesture
+     closure the mouse code already used, so call sites barely change.
+
+   touchShim(el)  mirrors touch events onto the mouse events a tool already
+     listens for. Use where the existing code is too tangled to restructure.
+
+   Both call preventDefault on touchmove so the page does not scroll while a
+   gesture is in progress, but only once a drag has actually started, so
+   ordinary scrolling over a canvas still works.
+--------------------------------------------------------------------------- */
+function _ptPos(el, ev) {
+  var r = el.getBoundingClientRect();
+  var src = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]) || ev;
+  return { x: src.clientX - r.left, y: src.clientY - r.top,
+           clientX: src.clientX, clientY: src.clientY };
+}
+
+function onDragStart(el, begin) {
+  if (!el || typeof begin !== 'function') return;
+
+  function run(startEv, isTouch) {
+    var handlers = begin(_ptPos(el, startEv), startEv);
+    if (handlers === false) return;
+    handlers = handlers || {};
+    var moved = false;
+
+    function onMove(ev) {
+      moved = true;
+      /* Only block scrolling once the gesture is clearly a drag, so a plain
+         swipe to scroll the page is still possible. */
+      if (isTouch && ev.cancelable) ev.preventDefault();
+      if (handlers.move) handlers.move(_ptPos(el, ev), ev);
+    }
+    function onEnd(ev) {
+      if (isTouch) {
+        document.removeEventListener('touchmove', onMove, { passive: false });
+        document.removeEventListener('touchend', onEnd);
+        document.removeEventListener('touchcancel', onEnd);
+      } else {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+      }
+      if (handlers.end) handlers.end(_ptPos(el, ev), ev, moved);
+    }
+    if (isTouch) {
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+      document.addEventListener('touchcancel', onEnd);
+    } else {
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+    }
+  }
+
+  el.addEventListener('mousedown', function (e) { run(e, false) });
+  el.addEventListener('touchstart', function (e) {
+    /* Ignore pinch and other multi-finger gestures; let the browser zoom. */
+    if (e.touches && e.touches.length > 1) return;
+    run(e, true);
+  }, { passive: true });
+}
+
+function touchShim(el) {
+  if (!el || el._touchShimmed) return;
+  el._touchShimmed = true;
+  var active = false;
+
+  function forward(type, src) {
+    var t = (src.touches && src.touches[0]) || (src.changedTouches && src.changedTouches[0]);
+    if (!t) return;
+    el.dispatchEvent(new MouseEvent(type, {
+      bubbles: true, cancelable: true, view: window,
+      clientX: t.clientX, clientY: t.clientY, buttons: 1
+    }));
+  }
+
+  el.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches.length > 1) return;
+    active = true;
+    forward('mousedown', e);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function (e) {
+    if (!active) return;
+    if (e.cancelable) e.preventDefault();
+    forward('mousemove', e);
+  }, { passive: false });
+
+  function finish(e) {
+    if (!active) return;
+    active = false;
+    forward('mouseup', e);
+  }
+  el.addEventListener('touchend', finish);
+  el.addEventListener('touchcancel', finish);
+}

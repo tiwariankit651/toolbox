@@ -435,7 +435,7 @@ async function merge() {
     var pdfBytes = await merged.save();
     var blob = new Blob([pdfBytes], { type: 'application/pdf' });
     download(blob, 'merged.pdf');
-    document.getElementById('result').innerHTML = '<p class="info" style="color:#4caf50">✅ Merged PDF downloaded! ' + merged.getPageCount() + ' pages · ' + formatSize(pdfBytes.length) + '</p>';
+    document.getElementById('result').innerHTML = '<p class="info" style="color:var(--ok)">✅ Merged PDF downloaded! ' + merged.getPageCount() + ' pages · ' + formatSize(pdfBytes.length) + '</p>';
   } catch (err) {
     document.getElementById('result').innerHTML = '<p style="color:var(--danger)">❌ Error: ' + err.message + '</p>';
   }

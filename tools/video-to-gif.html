@@ -409,7 +409,7 @@ function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
     var playModeLabel=document.querySelector('input[name="playMode"]:checked').value;
     document.getElementById("result").innerHTML='<img src="'+URL.createObjectURL(blob)+'" style="max-width:100%;border-radius:8px;margin:.5rem 0"><br><p class="info">Size: '+sizeStr+' | '+gifW+'x'+gifH+' | '+document.getElementById("fps").value+' FPS'+(playModeLabel!=="normal"?" | "+playModeLabel:"")+'</p><div class="row" style="flex-wrap:wrap;gap:.4rem"><button class="btn" onclick="download(window._gifBlob,\'output.gif\')" style="flex:1;min-width:140px">💾 Download GIF</button><button class="btn btn-outline" onclick="copyGif()" style="flex:1;min-width:140px">📋 Copy</button><button class="btn btn-outline" onclick="exportFramesZip()" style="flex:1;min-width:140px">🗜️ GIF + frames (ZIP)</button></div>';
     window._gifBlob=blob;
-    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Done! Final size: '+sizeStr+'</p>';
+    document.getElementById("progress").innerHTML='<p class="info" style="color:var(--ok)">✅ Done! Final size: '+sizeStr+'</p>';
     document.getElementById("convertBtn").disabled=false;
   });
   gif.render();

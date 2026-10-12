@@ -241,7 +241,7 @@ function render(){
   var counts={};active.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
   var tc='';Object.keys(counts).forEach(function(t){tc+='<span style="display:inline-flex;align-items:center;gap:4px;background:'+TYPE_HEX[t]+'22;color:'+TYPE_HEX[t]+';padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600;margin:.2rem .3rem .2rem 0;text-transform:uppercase">'+t+': '+counts[t]+'</span>';});
   document.getElementById("typeCounts").innerHTML=tc;
-  if(active.length===0){document.getElementById("result").innerHTML='<p style="color:#4caf50;text-align:center;font-size:1.2rem;margin:1rem 0">✅ No issues found! Your text looks good.</p>';return;}
+  if(active.length===0){document.getElementById("result").innerHTML='<p style="color:var(--ok);text-align:center;font-size:1.2rem;margin:1rem 0">✅ No issues found! Your text looks good.</p>';return;}
   var html='<h3>Issues Found ('+active.length+')</h3>';
   issues.forEach(function(i,idx){
     if(i.ignored||i.applied)return;
@@ -251,7 +251,7 @@ function render(){
     html+='<strong>"'+esc(i.text)+'"</strong>';
     html+='<div style="margin:.4rem 0;font-size:.9rem;background:var(--surface);padding:.5rem;border-radius:6px">'+sentenceContext(text,i.pos,i.len)+'</div>';
     html+='<span class="info">'+esc(i.msg)+'</span><br>';
-    html+='<span style="color:#4caf50;font-size:.85rem">💡 '+esc(i.fix)+'</span>';
+    html+='<span style="color:var(--ok);font-size:.85rem">💡 '+esc(i.fix)+'</span>';
     html+='<div class="row" style="margin-top:.5rem">';
     if(i.rep!==null&&i.rep!==undefined)html+='<button class="btn btn-outline" style="flex:0 0 auto;padding:.4rem .9rem;font-size:.8rem" onclick="applyFix('+idx+')">✔ Apply fix</button>';
     html+='<button class="btn btn-outline" style="flex:0 0 auto;padding:.4rem .9rem;font-size:.8rem" onclick="ignoreIssue('+idx+')">✕ Ignore</button>';

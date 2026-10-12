@@ -56,6 +56,7 @@
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="6" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M120,10 L145,35 H120 Z" fill="#6366f1" opacity=".3"/><line x1="75" y1="50" x2="125" y2="50" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="65" x2="125" y2="65" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="80" x2="110" y2="80" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
       <p class="info">Edit any PDF — add text, draw, highlight, white-out sections, annotate graphs & charts. All in your browser.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop PDF here<input type="file" id="inp" accept=".pdf"></div>
+      <div id="fileInfo" style="display:none"></div>
       <div class="toolbar" id="toolbar" style="display:none">
         <select id="stylePreset" title="Annotation style preset" onchange="applyPreset(this.value)">
           <option value="">🎨 Preset…</option>
@@ -339,6 +340,9 @@ function setTool(t){
 
 function setupOverlay(canvas,ov){
   var drawing=false,sx,sy;
+  /* the drawing canvas had mouse handlers only, so brush, text and whiteout
+     were all dead on a phone. touchShim (common.js) mirrors touch onto mouse. */
+  if(typeof touchShim==="function")touchShim(canvas);
   canvas.addEventListener("mousedown",function(e){
     var r=canvas.getBoundingClientRect();
     sx=e.clientX-r.left;sy=e.clientY-r.top;
@@ -365,7 +369,9 @@ function setupOverlay(canvas,ov){
       ta.focus();
       updateAnnCount();
       var dragging2=false,dx2,dy2;
-      note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging2=true;dx2=ev.offsetX;dy2=ev.offsetY;ev.stopPropagation();});
+      /* sticky notes could not be dragged with a finger. touchShim (common.js) mirrors touch onto mouse. */
+  if(typeof touchShim==="function")touchShim(note);
+  note.addEventListener("mousedown",function(ev){if(ev.target===ta)return;dragging2=true;dx2=ev.offsetX;dy2=ev.offsetY;ev.stopPropagation();});
       document.addEventListener("mousemove",function(ev){if(!dragging2)return;var wr=wrap.getBoundingClientRect();note.style.left=(ev.clientX-wr.left-dx2)+"px";note.style.top=(ev.clientY-wr.top-dy2)+"px";});
       document.addEventListener("mouseup",function(){dragging2=false;});
       return;

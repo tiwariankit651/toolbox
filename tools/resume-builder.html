@@ -50,7 +50,7 @@
       <div class="row"><input type="email" id="email" placeholder="Email" oninput="autoSave();updatePreview()"><input type="text" id="phone" placeholder="Phone" oninput="autoSave();updatePreview()"></div>
       <div class="row"><input type="text" id="location" placeholder="City, Country" oninput="autoSave();updatePreview()"><input type="text" id="linkedin" placeholder="LinkedIn URL (optional)" oninput="autoSave();updatePreview()"></div>
       <div class="row"><input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)" oninput="autoSave();updatePreview()">
-        <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1"><img id="photoPreview" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
+        <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1 1 auto;min-width:0;max-width:100%"><img id="photoPreview" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
       </div>
       <div class="drop-zone" id="photoDrop" onclick="document.getElementById('photo').click()" style="margin:.3rem 0;padding:.8rem;font-size:.85rem">📷 Drop a profile photo here, or click to choose</div>
       <div class="row" style="margin:.3rem 0;align-items:center;flex-wrap:wrap">
@@ -98,7 +98,7 @@
         <button class="btn btn-outline" onclick="copyResumeText()">📋 Copy as plain text</button>
         <button class="btn btn-outline" onclick="downloadResumeText()">📄 Download .txt (ATS)</button>
         <button class="btn btn-outline" onclick="printResume()" style="flex:0">🖨️ Print</button>
-        <button class="btn btn-outline" onclick="clearAll()" style="flex:0;color:#e55">🗑️ Clear All</button>
+        <button class="btn btn-outline" onclick="clearAll()" style="flex:0;color:var(--danger)">🗑️ Clear All</button>
       </div>
       <div id="result"></div>
 
@@ -192,7 +192,7 @@ function clearAll(){if(!confirm('Clear all entered data? This cannot be undone.'
 function gv(id){return document.getElementById(id).value.trim();}
 function addSkill(){var name=document.getElementById('newSkill').value.trim();if(!name)return;var rating=parseInt(document.getElementById('newSkillRating').value);ratedSkills.push({name:name,rating:rating});document.getElementById('newSkill').value='';renderSkills();autoSave();}
 function removeSkill(i){ratedSkills.splice(i,1);renderSkills();autoSave();}
-function renderSkills(){var h='';ratedSkills.forEach(function(s,i){h+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);padding:.3rem .6rem;border-radius:8px;margin:.2rem">'+s.name+' <span style="color:#f5a623">'+'●'.repeat(s.rating)+'</span><span style="color:#ccc">'+'●'.repeat(5-s.rating)+'</span><button onclick="removeSkill('+i+')" style="border:none;background:none;cursor:pointer;color:#e55">✕</button></span>';});document.getElementById('skillsList').innerHTML=h;}
+function renderSkills(){var h='';ratedSkills.forEach(function(s,i){h+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:var(--card);padding:.3rem .6rem;border-radius:8px;margin:.2rem">'+s.name+' <span style="color:#f5a623">'+'●'.repeat(s.rating)+'</span><span style="color:#ccc">'+'●'.repeat(5-s.rating)+'</span><button onclick="removeSkill('+i+')" style="border:none;background:none;cursor:pointer;color:var(--danger)">✕</button></span>';});document.getElementById('skillsList').innerHTML=h;}
 function addExp(){addExpWith(null);}
 function addExpWith(data){var d=document.createElement('div');d.style.cssText='background:var(--card);padding:1rem;border-radius:12px;margin:.5rem 0';d.innerHTML='<div class="row"><input type="text" placeholder="Company" oninput="autoSave()"><input type="text" placeholder="Role" oninput="autoSave()"></div><div class="row"><input type="text" placeholder="Duration (e.g. 2022-2024)" oninput="autoSave()"></div><textarea placeholder="Key responsibilities..." style="min-height:60px" oninput="autoSave()"></textarea><button class="btn btn-outline" onclick="this.parentElement.remove();autoSave()" style="margin-top:.3rem">✕ Remove</button>';if(data){var inp=d.querySelectorAll('input');var ta=d.querySelector('textarea');if(data.company)inp[0].value=data.company;if(data.role)inp[1].value=data.role;if(data.duration)inp[2].value=data.duration;if(data.desc)ta.value=data.desc;}document.getElementById('exp').appendChild(d);}
 function addEdu(){addEduWith(null);}
@@ -413,7 +413,7 @@ async function genResume(){
     var bytes=await buildResumePdfBytes();
     download(new Blob([bytes],{type:'application/pdf'}),'resume.pdf');
     var sizeNote=(typeof formatSize==='function')?(' ('+formatSize(bytes.byteLength||bytes.length)+')'):'';
-    document.getElementById('result').innerHTML="<p class='info' style='color:#4caf50'>\u2705 Resume downloaded"+sizeNote+"! Template: "+tmpl+"</p>";
+    document.getElementById('result').innerHTML="<p class='info' style='color:var(--ok)'>\u2705 Resume downloaded"+sizeNote+"! Template: "+tmpl+"</p>";
   }catch(e){
     document.getElementById('result').innerHTML="<p class='info' style='color:var(--danger)'>\u274c Could not build the PDF: "+(e.message||'unknown error')+"</p>";
   }
@@ -473,7 +473,7 @@ async function downloadResumeZip(){
     zip.file('README.txt',readme);
     var blob=await zip.generateAsync({type:'blob'});
     download(blob,base+'-resume-bundle.zip');
-    res.innerHTML="<p class='info' style='color:#4caf50'>\u2705 ZIP downloaded"+((typeof formatSize==='function')?(' ('+formatSize(blob.size)+')'):'')+" — PDF, TXT, JSON and a README.</p>";
+    res.innerHTML="<p class='info' style='color:var(--ok)'>\u2705 ZIP downloaded"+((typeof formatSize==='function')?(' ('+formatSize(blob.size)+')'):'')+" — PDF, TXT, JSON and a README.</p>";
   }catch(e){
     res.innerHTML="<p class='info' style='color:var(--danger)'>\u274c Could not build the ZIP: "+(e.message||'unknown error')+"</p>";
   }

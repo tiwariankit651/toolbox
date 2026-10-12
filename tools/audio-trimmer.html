@@ -223,6 +223,9 @@ function onNumInput(){
 (function(){
   var canvas=document.getElementById("waveform");
   function xToTime(clientX){var r=canvas.getBoundingClientRect();return Math.max(0,Math.min(1,(clientX-r.left)/r.width))*duration}
+  /* the waveform selection was mouse-only, so a trim range could not be set
+     by touch at all. touchShim (common.js) mirrors touch onto mouse. */
+  if(typeof touchShim==="function")touchShim(canvas);
   canvas.addEventListener("mousedown",function(e){
     if(!audioBuffer)return;
     var t=xToTime(e.clientX);var W=canvas.getBoundingClientRect().width;
@@ -435,7 +438,7 @@ function exportTrim(){
     var out=buildProcessedBuffer(selStart,selEnd);
     var blob=encodeWav(out);
     download(blob,(audioFile.name.replace(/\.[^.]+$/,"")||"trimmed")+"-trimmed.wav");
-    document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Exported '+(selEnd-selStart).toFixed(3)+'s · '+formatSize(blob.size)+'</p>';
+    document.getElementById("progress").innerHTML='<p class="info" style="color:var(--ok)">✅ Exported '+(selEnd-selStart).toFixed(3)+'s · '+formatSize(blob.size)+'</p>';
   },50);
 }
 
@@ -454,7 +457,7 @@ function exportSegments(){
     }
     zip.generateAsync({type:"blob"}).then(function(z){
       download(z,"audio-segments.zip");
-      document.getElementById("progress").innerHTML='<p class="info" style="color:#4caf50">✅ Exported '+(bounds.length-1)+' segments</p>';
+      document.getElementById("progress").innerHTML='<p class="info" style="color:var(--ok)">✅ Exported '+(bounds.length-1)+' segments</p>';
     });
   },50);
 }

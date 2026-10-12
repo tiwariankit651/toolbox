@@ -10,7 +10,7 @@
   <meta property="og:title" content="Interactive Periodic Table — FreeToolHubs"><meta property="og:type" content="website"><meta property="og:url" content="https://freetoolhubs.com/tools/periodic-table"><meta name="twitter:card" content="summary"><meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Interactive Periodic Table","url":"https://freetoolhubs.com/tools/periodic-table","description":"Interactive periodic table with element properties","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
   <link rel="canonical" href="https://freetoolhubs.com/tools/periodic-table"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-  <style>.el{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;border-radius:4px;cursor:pointer;font-size:.75rem;min-width:38px;height:42px;transition:transform .15s,opacity .2s;border:1px solid rgba(255,255,255,.1)}.el:hover{transform:scale(1.3);z-index:10}.el .num{font-size:.5rem;opacity:.7}.el .sym{font-weight:700;font-size:.85rem}.el.dimmed{opacity:.2}.el.selected-compare{outline:3px solid #fff;transform:scale(1.15)}.filters{display:flex;flex-wrap:wrap;gap:8px;margin:.8rem 0}.filters select{padding:6px 10px;border-radius:8px;border:1px solid var(--border,#444);background:var(--card);color:var(--text);font-size:.8rem}.compare-box{background:var(--card);padding:1rem;border-radius:12px;margin:1rem 0;display:none}.compare-box table{width:100%;border-collapse:collapse;font-size:.85rem}.compare-box th,.compare-box td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--border,#333)}.compare-box th{opacity:.7;font-weight:400}.compare-btn{padding:6px 14px;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:.8rem;margin-left:8px}.compare-btn:hover{background:#3a6fd8}.legend-box{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem;font-size:.75rem}</style>
+  <style>.el{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;border-radius:4px;cursor:pointer;font-size:.75rem;min-width:38px;height:42px;transition:transform .15s,opacity .2s;border:1px solid rgba(255,255,255,.1)}.el:hover{transform:scale(1.3);z-index:10}.el .num{font-size:.75rem;opacity:.7}.el .sym{font-weight:700;font-size:.85rem}.el.dimmed{opacity:.2}.el.selected-compare{outline:3px solid #fff;transform:scale(1.15)}.filters{display:flex;flex-wrap:wrap;gap:8px;margin:.8rem 0}.filters select{padding:6px 10px;border-radius:8px;border:1px solid var(--border,#444);background:var(--card);color:var(--text);font-size:.8rem}.compare-box{background:var(--card);padding:1rem;border-radius:12px;margin:1rem 0;display:none}.compare-box table{width:100%;border-collapse:collapse;font-size:.85rem}.compare-box th,.compare-box td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--border,#333)}.compare-box th{opacity:.7;font-weight:400}.compare-btn{padding:6px 14px;border-radius:8px;border:none;background:var(--accent-strong);color:#fff;cursor:pointer;font-size:.8rem;margin-left:8px}.compare-btn:hover{background:#3a6fd8}.legend-box{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem;font-size:.75rem}</style>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -95,7 +95,16 @@
   <script src="../js/common.js"></script>
   <script>
 var cats={AM:"Alkali Metal",AEM:"Alkaline Earth",TM:"Transition Metal",PTM:"Post-Transition",ML:"Metalloid",NM:"Nonmetal",HL:"Halogen",NG:"Noble Gas",LA:"Lanthanide",AC:"Actinide",LN:"Lanthanide",AN:"Actinide",UN:"Unknown / Predicted"};
-var colors={AM:"#ff6b6b",AEM:"#ffa94d",TM:"#6366f1",PTM:"#69db7c",ML:"#da77f2",NM:"#38d9a9",HL:"#ffd43b",NG:"#a78bfa",LA:"#f783ac",AC:"#e599f7",LN:"#f783ac",AN:"#e599f7",UN:"#94a3b8"};
+/* Every element-category colour is a pastel whose luminance sits above the
+   WCAG 0.179 crossover, so white text on a tile reached only 1.80:1. Choose
+   the label colour from relative luminance instead of assuming white. */
+function tileInk(hex){
+  var r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+  var f=function(v){return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)};
+  var L=0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+  return L>0.179?'#14142b':'#ffffff';
+}
+var colors={AM:"#ff6b6b",AEM:"#ffa94d",TM:"#818cf8",PTM:"#69db7c",ML:"#da77f2",NM:"#38d9a9",HL:"#ffd43b",NG:"#a78bfa",LA:"#f783ac",AC:"#e599f7",LN:"#f783ac",AN:"#e599f7",UN:"#94a3b8"};
 // [num, sym, name, mass, cat, period, group, density(g/cm³), melt(°C), boil(°C), electronegativity, state, block, electronConfig]
 var E=[
 [1,"H","Hydrogen",1.008,"NM",1,1,0.00009,-259,-253,2.2,"Gas","s","1s¹"],
@@ -227,7 +236,7 @@ function isF(z){return (z>=57&&z<=71)||(z>=89&&z<=103)}
 function makeCell(el){
   var d=document.createElement("div");
   if(!el){grid.appendChild(d);elDoms.push(null);return}
-  d.className="el";d.style.background=colors[el[4]]||"#94a3b8";d.style.color="#fff";
+  d.className="el";var _bg=colors[el[4]]||"#94a3b8";d.style.background=_bg;d.style.color=tileInk(_bg);
   d.innerHTML='<span class="num">'+el[0]+'</span><span class="sym">'+el[1]+'</span>';
   d.dataset.idx=E.indexOf(el);
   d.dataset.z=el[0];            /* lets ptJump() find a cell by atomic number */
@@ -246,7 +255,7 @@ for(var r=1;r<=7;r++){
     if(c===3&&(r===6||r===7)){
       var ph=document.createElement("div");
       ph.className="el";ph.style.background="var(--card)";ph.style.color="var(--text2)";
-      ph.style.fontSize=".55rem";ph.style.display="flex";ph.style.alignItems="center";
+      ph.style.fontSize=".75rem";ph.style.display="flex";ph.style.alignItems="center";
       ph.style.justifyContent="center";ph.style.textAlign="center";
       ph.textContent=(r===6?"57-71":"89-103");
       ph.title=(r===6?"Lanthanides — see row below":"Actinides — see row below");
@@ -296,7 +305,7 @@ function showCompare(){
 function showInfo(e){
   ptCurrent=e;
   var info=document.getElementById("info");info.style.display="block";
-  info.innerHTML='<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><div style="width:60px;height:60px;border-radius:12px;background:'+colors[e[4]]+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">'+e[1]+'</div><div><div style="font-size:1.3rem;font-weight:700">'+e[2]+'</div><div class="info">Atomic Number: '+e[0]+' | Mass: '+e[3]+' u</div><div class="info">Category: '+cats[e[4]]+' | '+metalTypes[e[4]]+'</div><div class="info">Period: '+e[5]+' | Group: '+e[6]+' | Block: '+e[12]+'</div><div class="info">State: '+e[11]+' | Density: '+e[7]+' g/cm³</div><div class="info">Melting: '+e[8]+'°C | Boiling: '+e[9]+'°C | EN: '+(e[10]||"N/A")+'</div><div class="info" style="margin-top:4px;font-family:monospace;font-size:.9rem">⚡ '+e[13]+'</div></div></div>'+
+  info.innerHTML='<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap"><div style="width:60px;height:60px;border-radius:12px;background:'+colors[e[4]]+';display:flex;align-items:center;justify-content:center;color:'+tileInk(colors[e[4]])+';font-size:1.5rem;font-weight:700">'+e[1]+'</div><div><div style="font-size:1.3rem;font-weight:700">'+e[2]+'</div><div class="info">Atomic Number: '+e[0]+' | Mass: '+e[3]+' u</div><div class="info">Category: '+cats[e[4]]+' | '+metalTypes[e[4]]+'</div><div class="info">Period: '+e[5]+' | Group: '+e[6]+' | Block: '+e[12]+'</div><div class="info">State: '+e[11]+' | Density: '+e[7]+' g/cm³</div><div class="info">Melting: '+e[8]+'°C | Boiling: '+e[9]+'°C | EN: '+(e[10]||"N/A")+'</div><div class="info" style="margin-top:4px;font-family:monospace;font-size:.9rem">⚡ '+e[13]+'</div></div></div>'+
     '<div class="row" style="gap:.4rem;flex-wrap:wrap;margin-top:.7rem">'+
       '<button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="ptCopy(\'text\')">📋 Copy details</button>'+
       '<button class="btn btn-outline" style="margin:0;padding:.4rem .8rem;font-size:.82rem" onclick="ptCopy(\'csv\')">📋 Copy as CSV row</button>'+

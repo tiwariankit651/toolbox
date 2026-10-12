@@ -433,6 +433,8 @@ function updateFileSize(){
     }
   });
 
+  /* images could not be repositioned with a finger. touchShim (common.js) mirrors touch onto mouse. */
+  if(typeof touchShim==="function")touchShim(canvas);
   canvas.addEventListener("mousedown",function(e){
     var rect=canvas.getBoundingClientRect();
     var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;

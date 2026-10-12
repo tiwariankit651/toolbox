@@ -457,6 +457,7 @@ function renderImage(it,idx,layer){
   // scale handle (bottom-right)
   var handle=document.createElement("div");
   handle.style.cssText="position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:var(--accent);border:2px solid #fff;border-radius:50%;cursor:nwse-resize;z-index:20";
+  if(typeof touchShim==="function")touchShim(handle);
   handle.addEventListener("mousedown",function(e){
     e.preventDefault();e.stopPropagation();
     pushHistory();
@@ -496,6 +497,7 @@ function renderLine(it,idx,layer){
   var div=document.createElement("div");
   div.style.cssText="position:absolute;left:"+a.x+"px;top:"+(a.y-(it.thickness*scale)/2)+"px;width:"+len+"px;height:"+(it.thickness*scale)+"px;background:"+it.color+";opacity:"+it.opacity+";transform-origin:left center;transform:rotate("+ang+"deg);cursor:move";
   // dragging a line moves both endpoints together
+  if(typeof touchShim==="function")touchShim(div);
   div.addEventListener("mousedown",function(e){
     if(e.target!==div)return;
     e.preventDefault();
@@ -512,6 +514,7 @@ function renderLine(it,idx,layer){
 
 // Generic drag for items with x,y bottom-left anchor (rect/image) or top-left (text).
 function makeDraggable(el,it,idx,bottomLeft){
+  if(typeof touchShim==="function")touchShim(el);
   el.addEventListener("mousedown",function(e){
     if(e.target!==el&&e.target.tagName!=="IMG")return;
     e.preventDefault();
@@ -631,6 +634,10 @@ document.getElementById("stampImg").addEventListener("change",function(){
 
 /* ---- placing annotations ---- */
 var layerEl=document.getElementById("textLayer");
+/* The draw layer only ever listened for mouse events, so on a phone drawing a
+   whiteout box did nothing at all. touchShim (common.js) mirrors touch onto the
+   mouse events the handlers below already expect. */
+if(typeof touchShim==="function")touchShim(layerEl);
 function layerPos(e){var r=layerEl.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
 
 layerEl.addEventListener("mousedown",function(e){
