@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel to CSV Converter - XLSX to CSV &amp; CSV to Excel Free | FreeToolHubs</title>
+  <meta name="description" content="Convert Excel to CSV or CSV to Excel free. Pick any sheet, choose the delimiter, keep Hindi and rupee text intact. Runs in your browser — your spreadsheet is never uploaded.">
+  <meta property="og:title" content="Excel ↔ CSV Converter — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Convert XLSX to CSV and CSV to Excel in your browser. Multi-sheet support, nothing uploaded.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/excel-csv">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Excel ↔ CSV Converter — FreeToolHubs">
+  <meta name="twitter:description" content="Convert XLSX to CSV and CSV to Excel in your browser">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Excel to CSV Converter","url":"https://freetoolhubs.com/tools/excel-csv","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Convert Excel (XLSX/XLS) files to CSV and CSV files back to Excel, entirely in the browser."}
+  </script>
+  <meta name="keywords" content="excel to csv, csv to excel, xlsx to csv, convert excel to csv online, csv to xlsx, excel csv converter free, sheet to csv">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/excel-csv">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📊 Excel ↔ CSV Converter</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>📊 Excel ↔ CSV Converter</h1>
+      <p class="info">Convert an Excel workbook to CSV, or turn a CSV back into a real <code>.xlsx</code> file. Pick which sheet to use, choose the separator, and preview before you download. Your file is read in this tab and never uploaded anywhere.</p>
+
+      <div class="row" style="margin-bottom:.6rem">
+        <button class="btn" id="tabX2C" onclick="setMode('x2c')">📊 Excel → CSV</button>
+        <button class="btn btn-outline" id="tabC2X" onclick="setMode('c2x')">📄 CSV → Excel</button>
+      </div>
+
+      <!-- ===== Excel to CSV ===== -->
+      <div id="paneX2C">
+        <div id="xDrop" class="drop-zone" style="padding:1.2rem;margin:.4rem 0" onclick="document.getElementById('xFile').click()">
+          📥 Drop an .xlsx, .xlsm or .xls file here, or click to browse
+          <input type="file" id="xFile" accept=".xlsx,.xlsm,.xls,.csv" style="display:none">
+        </div>
+        <div id="xInfo" class="info" style="display:none"></div>
+
+        <div class="row" id="xSheetRow" style="display:none">
+          <label style="flex:1">Sheet
+            <select id="xSheet" onchange="renderExcel()"></select>
+          </label>
+          <label style="flex:1">Separator
+            <select id="xSep" onchange="renderExcel()">
+              <option value=",">Comma ( , )</option>
+              <option value=";">Semicolon ( ; )</option>
+              <option value="&#9;">Tab</option>
+              <option value="|">Pipe ( | )</option>
+            </select>
+          </label>
+        </div>
+        <div class="row" id="xOptRow" style="display:none">
+          <label style="flex:1"><input type="checkbox" id="xTrim" checked onchange="renderExcel()"> Trim empty rows and columns</label>
+          <label style="flex:1"><input type="checkbox" id="xBom" checked onchange="renderExcel()"> Excel-friendly (UTF-8 BOM)</label>
+        </div>
+
+        <div id="xPreviewWrap" style="display:none">
+          <h3 role="heading" aria-level="2">Preview</h3>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table id="xPreview" style="border-collapse:collapse;font-size:.8rem;min-width:100%"></table>
+          </div>
+          <p class="info" id="xPreviewNote"></p>
+          <div class="row">
+            <button class="btn" onclick="downloadCsv()">💾 Download CSV</button>
+            <button class="btn btn-outline" onclick="copyCsv()">📋 Copy CSV</button>
+            <button class="btn btn-outline" onclick="downloadAllSheetsZip()">📦 All sheets as ZIP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CSV to Excel ===== -->
+      <div id="paneC2X" style="display:none">
+        <div id="cDrop" class="drop-zone" style="padding:1.2rem;margin:.4rem 0" onclick="document.getElementById('cFile').click()">
+          📥 Drop a .csv, .tsv or .txt file here, or click to browse
+          <input type="file" id="cFile" accept=".csv,.tsv,.txt,text/csv" style="display:none">
+        </div>
+        <p class="info">Or paste rows directly:</p>
+        <textarea id="cText" rows="7" placeholder="name,marks,city&#10;Asha,88,Pune&#10;Ravi,74,Delhi" oninput="csvLive()"></textarea>
+        <div class="row">
+          <label style="flex:1">Separator
+            <select id="cSep" onchange="csvLive()">
+              <option value="auto">Detect automatically</option>
+              <option value=",">Comma ( , )</option>
+              <option value=";">Semicolon ( ; )</option>
+              <option value="&#9;">Tab</option>
+              <option value="|">Pipe ( | )</option>
+            </select>
+          </label>
+          <label style="flex:1">Sheet name
+            <input type="text" id="cSheetName" value="Sheet1" oninput="csvLive()" maxlength="31">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1"><input type="checkbox" id="cHeaderBold" checked> Bold the first row as a header</label>
+          <label style="flex:1"><input type="checkbox" id="cAutoWidth" checked> Fit column widths to content</label>
+        </div>
+        <div id="cInfo" class="info" style="display:none"></div>
+        <div id="cPreviewWrap" style="display:none">
+          <h3 role="heading" aria-level="2">Preview</h3>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table id="cPreview" style="border-collapse:collapse;font-size:.8rem;min-width:100%"></table>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="downloadXlsx()">💾 Download .xlsx</button>
+            <button class="btn btn-outline" onclick="clearCsv()">🗑️ Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>S</kbd> download · <kbd>Ctrl</kbd>+<kbd>K</kbd> focus the paste box · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Excel → CSV:</strong> Drop your workbook in. If it has several sheets, pick the one you need from the dropdown — each sheet becomes its own CSV.</li>
+    <li><strong>Choose the separator:</strong> Comma is standard, but if your Excel uses Indian or European regional settings, semicolon is often what it expects back.</li>
+    <li><strong>Keep the BOM on</strong> if you plan to reopen the CSV in Excel. Without it, Excel can mangle Hindi text, names with accents and the ₹ symbol.</li>
+    <li><strong>CSV → Excel:</strong> Drop a CSV or paste rows, then download a real <code>.xlsx</code> that opens cleanly in Excel, Google Sheets or LibreOffice.</li>
+    <li><strong>Check the preview</strong> before downloading — if the columns look wrong, the separator is usually the reason.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>College marksheet or attendance register in Excel, but the portal only accepts CSV upload</li>
+    <li>Bank or UPI statement downloaded as CSV that you want as a proper Excel file to filter and sum</li>
+    <li>Shop or dukaan daily sales register — type it as CSV, hand it over as Excel</li>
+    <li>Contact or student list exported from one system and needed in the other format</li>
+    <li>A CSV where Excel broke the Hindi names — re-export it with the BOM so the text survives</li>
+    <li>A multi-sheet workbook where you need every sheet as a separate CSV at once</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>Convert between Excel and CSV without installing anything or signing up. The file is parsed by your own browser using the SheetJS library, so a salary sheet, student list or sales register never leaves your device — there is no server to upload it to. Supports <code>.xlsx</code>, <code>.xlsm</code> and older <code>.xls</code> workbooks, picks up every sheet in the file, and writes CSV with an optional UTF-8 byte order mark so Excel reopens Hindi, Marathi, Tamil and ₹ amounts correctly instead of turning them into question marks. Going the other way, it writes a genuine <code>.xlsx</code> with a bold header row and column widths fitted to your content, not a CSV renamed with a different extension.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>Nothing is uploaded</strong> — the conversion happens in this tab, which matters for salary, marks and customer data</li>
+    <li><strong>Every sheet, not just the first</strong> — convert one sheet or export them all as a ZIP in a single click</li>
+    <li><strong>Indian-language text survives</strong> — the UTF-8 BOM option stops Excel garbling Devanagari and the rupee sign</li>
+    <li><strong>Real .xlsx output</strong> — opens in Excel, Google Sheets and LibreOffice without a format warning</li>
+    <li><strong>Works offline</strong> after the first visit, so you can convert on a patchy connection</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>Is my spreadsheet uploaded to a server?</summary><p>No. The file is read and converted by your browser. There is no upload step, which is why it also works offline.</p></details>
+    <details><summary>Why does Excel show my Hindi text as question marks?</summary><p>Excel assumes a plain CSV is in your system's regional encoding, not UTF-8. Keep the "Excel-friendly (UTF-8 BOM)" option ticked and it will read the file as UTF-8, so Devanagari and ₹ stay intact.</p></details>
+    <details><summary>My columns all landed in one column. What went wrong?</summary><p>The separator does not match. Indian and European Excel installs often use semicolon rather than comma. Switch the separator and check the preview again.</p></details>
+    <details><summary>Does it keep formulas and formatting?</summary><p>CSV is a plain-text format, so it stores the calculated values rather than the formulas, and no colours or fonts. That is a limitation of CSV itself, not of this tool.</p></details>
+    <details><summary>What is the largest file it can handle?</summary><p>It is limited by your device's memory rather than a fixed cap. Workbooks up to a few tens of thousands of rows are comfortable on a typical phone; very large files are better split first.</p></details>
+    <details><summary>Does it work on mobile?</summary><p>Yes. The preview table scrolls sideways and the buttons are sized for touch.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/json-csv" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON ↔ CSV</a><a href="/tools/text-tools" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Tools</a><a href="/tools/invoice-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Invoice Generator</a><a href="/tools/budget-tracker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Budget Tracker</a><a href="/tools/salary-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Calculator</a><a href="/tools/cgpa-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">CGPA Calculator</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/json-format-kaise-kare-developers-guide">JSON Format Kaise Kare — Developer's Guide</a></li><li><a href="/blog/create-weekly-timetable-students">How to Create a Weekly Timetable for Students</a></li><li><a href="/blog/json-to-csv-conversion-guide">JSON to CSV Conversion — Complete Guide</a></li><li><a href="/blog/how-to-create-professional-invoice-gst-free">Create a Professional GST Invoice Free</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+/* Excel <-> CSV. Both directions run entirely in the page: SheetJS parses the
+   workbook and also writes the .xlsx, so nothing is uploaded. */
+
+var PREF_KEY = 'excelCsvPrefs';
+var workbook = null;      // the parsed workbook, when one is loaded
+var csvRows = null;       // rows parsed from the CSV side
+var mode = 'x2c';
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('paneX2C').style.display = m === 'x2c' ? 'block' : 'none';
+  document.getElementById('paneC2X').style.display = m === 'c2x' ? 'block' : 'none';
+  document.getElementById('tabX2C').className = m === 'x2c' ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabC2X').className = m === 'c2x' ? 'btn' : 'btn btn-outline';
+  savePrefs();
+}
+
+/* ---------- preferences (never the file contents) ---------- */
+function savePrefs() {
+  storeSet(PREF_KEY, {
+    mode: mode,
+    xSep: val('xSep'), xTrim: chk('xTrim'), xBom: chk('xBom'),
+    cSep: val('cSep'), cSheetName: val('cSheetName'),
+    cHeaderBold: chk('cHeaderBold'), cAutoWidth: chk('cAutoWidth')
+  }, true);
+}
+function val(id) { var e = document.getElementById(id); return e ? e.value : '' }
+function chk(id) { var e = document.getElementById(id); return e ? e.checked : false }
+function setSelIfOption(id, v) {
+  var e = document.getElementById(id);
+  if (!e || v === undefined || v === null) return;
+  /* assigning a value the select does not have silently blanks it */
+  for (var i = 0; i < e.options.length; i++) if (e.options[i].value === v) { e.value = v; return }
+}
+function restorePrefs() {
+  var p = storeGet(PREF_KEY, null);
+  if (!p) return;
+  setSelIfOption('xSep', p.xSep);
+  setSelIfOption('cSep', p.cSep);
+  if (typeof p.xTrim === 'boolean') document.getElementById('xTrim').checked = p.xTrim;
+  if (typeof p.xBom === 'boolean') document.getElementById('xBom').checked = p.xBom;
+  if (typeof p.cHeaderBold === 'boolean') document.getElementById('cHeaderBold').checked = p.cHeaderBold;
+  if (typeof p.cAutoWidth === 'boolean') document.getElementById('cAutoWidth').checked = p.cAutoWidth;
+  if (p.cSheetName) document.getElementById('cSheetName').value = p.cSheetName;
+  if (p.mode === 'c2x') setMode('c2x');
+}
+
+/* ---------- Excel -> CSV ---------- */
+function handleExcelFile(file) {
+  if (!file) return;
+  if (file.size > 30 * 1024 * 1024) {
+    notify('That file is ' + formatSize(file.size) + '. Files above 30 MB may not fit in memory on a phone.', 'warn');
+  }
+  var r = new FileReader();
+  /* A read can fail before the parser is ever reached, so guard both. */
+  r.onerror = function () {
+    notify('"' + file.name + '" could not be read. It may be corrupt.', 'error');
+  };
+  r.onload = function (e) {
+    try {
+      workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+    } catch (err) {
+      workbook = null;
+      notify('"' + file.name + '" is not a readable spreadsheet. Try an .xlsx, .xls or .csv file.', 'error');
+      document.getElementById('xInfo').style.display = 'none';
+      document.getElementById('xSheetRow').style.display = 'none';
+      document.getElementById('xOptRow').style.display = 'none';
+      document.getElementById('xPreviewWrap').style.display = 'none';
+      return;
+    }
+    if (!workbook.SheetNames || !workbook.SheetNames.length) {
+      notify('That workbook has no sheets in it.', 'error');
+      return;
+    }
+    var sel = document.getElementById('xSheet');
+    sel.innerHTML = workbook.SheetNames.map(function (n) {
+      return '<option value="' + n.replace(/"/g, '&quot;') + '">' + n + '</option>';
+    }).join('');
+    var info = document.getElementById('xInfo');
+    info.style.display = 'block';
+    info.textContent = '📊 ' + file.name + ' · ' + formatSize(file.size) + ' · ' +
+      workbook.SheetNames.length + (workbook.SheetNames.length === 1 ? ' sheet' : ' sheets') +
+      ': ' + workbook.SheetNames.join(', ');
+    document.getElementById('xSheetRow').style.display = 'flex';
+    document.getElementById('xOptRow').style.display = 'flex';
+    renderExcel();
+    notify('Loaded ' + workbook.SheetNames.length +
+      (workbook.SheetNames.length === 1 ? ' sheet.' : ' sheets.'), 'ok');
+  };
+  r.readAsArrayBuffer(file);
+}
+
+/* Rows as arrays, so an empty cell stays an empty column rather than vanishing. */
+function sheetRows(name) {
+  var ws = workbook.Sheets[name];
+  if (!ws) return [];
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, blankrows: true });
+  if (!chk('xTrim')) return rows;
+
+  /* drop rows that are entirely empty */
+  rows = rows.filter(function (r) {
+    return r.some(function (c) { return String(c).trim() !== '' });
+  });
+  if (!rows.length) return rows;
+  /* and columns that are empty in every row */
+  var width = rows.reduce(function (m, r) { return Math.max(m, r.length) }, 0);
+  var keep = [];
+  for (var c = 0; c < width; c++) {
+    var used = rows.some(function (r) { return String(r[c] === undefined ? '' : r[c]).trim() !== '' });
+    if (used) keep.push(c);
+  }
+  return rows.map(function (r) {
+    return keep.map(function (c) { return r[c] === undefined ? '' : r[c] });
+  });
+}
+
+function csvEscape(v, sep) {
+  var s = v === null || v === undefined ? '' : String(v);
+  /* quote when the value contains the separator, a quote or a line break */
+  if (s.indexOf(sep) >= 0 || s.indexOf('"') >= 0 || /[\r\n]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+function rowsToCsv(rows, sep) {
+  return rows.map(function (r) {
+    return r.map(function (c) { return csvEscape(c, sep) }).join(sep);
+  }).join('\r\n');
+}
+
+function renderExcel() {
+  if (!workbook) return;
+  savePrefs();
+  var name = val('xSheet');
+  var rows = sheetRows(name);
+  var wrap = document.getElementById('xPreviewWrap');
+  if (!rows.length) {
+    wrap.style.display = 'none';
+    notify('Sheet "' + name + '" is empty.', 'warn');
+    return;
+  }
+  wrap.style.display = 'block';
+
+  /* Preview is capped so a huge sheet does not freeze the page. */
+  var MAXR = 20, MAXC = 12;
+  var shown = rows.slice(0, MAXR);
+  var tbl = document.getElementById('xPreview');
+  tbl.innerHTML = shown.map(function (r, ri) {
+    var cells = r.slice(0, MAXC).map(function (c) {
+      var tag = ri === 0 ? 'th' : 'td';
+      var style = 'border:1px solid var(--border);padding:.3rem .5rem;white-space:nowrap' +
+        (ri === 0 ? ';background:rgba(99,102,241,.12);text-align:left' : '');
+      return '<' + tag + ' style="' + style + '">' +
+        String(c).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</' + tag + '>';
+    }).join('');
+    return '<tr>' + cells + '</tr>';
+  }).join('');
+
+  var width = rows.reduce(function (m, r) { return Math.max(m, r.length) }, 0);
+  var csv = rowsToCsv(rows, val('xSep'));
+  var bytes = new Blob([csv]).size;
+  document.getElementById('xPreviewNote').textContent =
+    rows.length + ' rows × ' + width + ' columns · CSV size ' + formatSize(bytes) +
+    (rows.length > MAXR || width > MAXC
+      ? ' · showing the first ' + Math.min(MAXR, rows.length) + ' rows and ' +
+        Math.min(MAXC, width) + ' columns'
+      : '');
+}
+
+function currentCsv() {
+  if (!workbook) { notify('Load a spreadsheet first.', 'warn'); return null }
+  var rows = sheetRows(val('xSheet'));
+  if (!rows.length) { notify('That sheet is empty, so there is nothing to convert.', 'warn'); return null }
+  return rowsToCsv(rows, val('xSep'));
+}
+
+function downloadCsv() {
+  var csv = currentCsv();
+  if (csv === null) return;
+  /* Excel reads a plain CSV in the system's regional encoding, so without a
+     BOM it mangles Devanagari and the rupee sign. */
+  var parts = chk('xBom') ? ['\ufeff', csv] : [csv];
+  var base = (val('xSheet') || 'sheet').replace(/[^\w\- ]+/g, '_').trim() || 'sheet';
+  download(new Blob(parts, { type: 'text/csv;charset=utf-8' }), base + '.csv');
+  notify('CSV downloaded.', 'ok');
+}
+
+async function copyCsv() {
+  var csv = currentCsv();
+  if (csv === null) return;
+  await copyNow(csv, 'CSV copied to the clipboard.');
+}
+
+async function downloadAllSheetsZip() {
+  if (!workbook) { notify('Load a spreadsheet first.', 'warn'); return }
+  if (typeof JSZip === 'undefined') { notify('The ZIP library did not load. Check your connection.', 'error'); return }
+  var zip = new JSZip();
+  var sep = val('xSep'), added = 0, skipped = [];
+  workbook.SheetNames.forEach(function (n) {
+    var rows = sheetRows(n);
+    if (!rows.length) { skipped.push(n); return }
+    var csv = rowsToCsv(rows, sep);
+    var safe = n.replace(/[^\w\- ]+/g, '_').trim() || ('sheet' + (added + 1));
+    zip.file(safe + '.csv', (chk('xBom') ? '\ufeff' : '') + csv);
+    added++;
+  });
+  if (!added) { notify('Every sheet in this workbook is empty.', 'warn'); return }
+  var readme = 'Sheets exported as CSV\r\n\r\n' +
+    'Separator: ' + (sep === '\t' ? 'tab' : sep) + '\r\n' +
+    'UTF-8 BOM: ' + (chk('xBom') ? 'yes (Excel-friendly)' : 'no') + '\r\n' +
+    'Sheets included: ' + added + '\r\n' +
+    (skipped.length ? 'Skipped because they were empty: ' + skipped.join(', ') + '\r\n' : '') +
+    '\r\nConverted with https://freetoolhubs.com/tools/excel-csv — in your browser, nothing uploaded.\r\n';
+  zip.file('README.txt', readme);
+  var blob = await zip.generateAsync({ type: 'blob' });
+  download(blob, 'sheets-as-csv.zip');
+  notify(added + (added === 1 ? ' sheet' : ' sheets') + ' exported as CSV.' +
+    (skipped.length ? ' ' + skipped.length + ' empty sheet(s) skipped.' : ''), 'ok');
+}
+
+/* ---------- CSV -> Excel ---------- */
+function detectSep(text) {
+  /* Count candidates on the first non-empty line, outside quotes. */
+  var line = (text.split(/\r?\n/).find(function (l) { return l.trim() }) || '');
+  var best = ',', bestN = 0;
+  [',', ';', '\t', '|'].forEach(function (s) {
+    var n = 0, inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') inQ = !inQ;
+      else if (!inQ && ch === s) n++;
+    }
+    if (n > bestN) { bestN = n; best = s }
+  });
+  return best;
+}
+
+/* A real CSV parser: quoted fields may contain the separator and line breaks. */
+function parseCsv(text, sep) {
+  var rows = [], row = [], field = '', inQ = false, i = 0;
+  text = text.replace(/^\ufeff/, '');   // strip a BOM if the file has one
+  while (i < text.length) {
+    var ch = text[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue }
+        inQ = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQ = true; i++; continue }
+    if (ch === sep) { row.push(field); field = ''; i++; continue }
+    if (ch === '\r') { i++; continue }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue }
+    field += ch; i++;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row) }
+  return rows.filter(function (r) {
+    return r.some(function (c) { return String(c).trim() !== '' });
+  });
+}
+
+var csvTimer = null;
+function csvLive() {
+  savePrefs();
+  clearTimeout(csvTimer);
+  /* debounced: parsing on every keystroke of a pasted sheet is wasteful */
+  csvTimer = setTimeout(buildCsvPreview, 250);
+}
+
+function buildCsvPreview() {
+  var text = document.getElementById('cText').value;
+  var info = document.getElementById('cInfo');
+  var wrap = document.getElementById('cPreviewWrap');
+  if (!text.trim()) {
+    csvRows = null;
+    info.style.display = 'none';
+    wrap.style.display = 'none';
+    return;
+  }
+  var sep = val('cSep') === 'auto' ? detectSep(text) : val('cSep');
+  csvRows = parseCsv(text, sep);
+  if (!csvRows.length) {
+    csvRows = null;
+    info.style.display = 'block';
+    info.textContent = 'No rows found in that text.';
+    wrap.style.display = 'none';
+    return;
+  }
+  var width = csvRows.reduce(function (m, r) { return Math.max(m, r.length) }, 0);
+  var ragged = csvRows.filter(function (r) { return r.length !== width }).length;
+  info.style.display = 'block';
+  info.innerHTML = '📄 ' + csvRows.length + ' rows × ' + width + ' columns · separator ' +
+    (sep === '\t' ? 'tab' : '<code>' + sep + '</code>') +
+    (val('cSep') === 'auto' ? ' (detected)' : '') +
+    (ragged ? ' · <span style="color:var(--warn)">' + ragged +
+      ' row(s) have a different number of columns — short rows will be padded</span>' : '');
+
+  var MAXR = 20, MAXC = 12;
+  var tbl = document.getElementById('cPreview');
+  tbl.innerHTML = csvRows.slice(0, MAXR).map(function (r, ri) {
+    var cells = [];
+    for (var c = 0; c < Math.min(width, MAXC); c++) {
+      var tag = ri === 0 ? 'th' : 'td';
+      var style = 'border:1px solid var(--border);padding:.3rem .5rem;white-space:nowrap' +
+        (ri === 0 ? ';background:rgba(99,102,241,.12);text-align:left' : '');
+      var v = r[c] === undefined ? '' : r[c];
+      cells.push('<' + tag + ' style="' + style + '">' +
+        String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</' + tag + '>');
+    }
+    return '<tr>' + cells.join('') + '</tr>';
+  }).join('');
+  wrap.style.display = 'block';
+}
+
+function handleCsvFile(file) {
+  if (!file) return;
+  if (!/\.(csv|tsv|txt)$/i.test(file.name) && !/^text\//.test(file.type || '')) {
+    notify('"' + file.name + '" is not a text file. Use a .csv, .tsv or .txt file.', 'error');
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    notify('That file is ' + formatSize(file.size) + '. Very large CSVs may be slow in a browser tab.', 'warn');
+  }
+  var r = new FileReader();
+  r.onerror = function () {
+    notify('"' + file.name + '" could not be read. It may be corrupt.', 'error');
+  };
+  r.onload = function (e) {
+    document.getElementById('cText').value = e.target.result;
+    /* name the sheet after the file, which is what someone expects to see */
+    var base = file.name.replace(/\.[^.]+$/, '').replace(/[\\\/\?\*\[\]:]/g, '_').slice(0, 31);
+    if (base) document.getElementById('cSheetName').value = base;
+    buildCsvPreview();
+    notify('Loaded ' + file.name + '.', 'ok');
+  };
+  r.readAsText(file);
+}
+
+function downloadXlsx() {
+  if (!csvRows || !csvRows.length) { notify('Paste some rows or load a CSV first.', 'warn'); return }
+  if (typeof XLSX === 'undefined') { notify('The spreadsheet library did not load. Check your connection.', 'error'); return }
+
+  var width = csvRows.reduce(function (m, r) { return Math.max(m, r.length) }, 0);
+  /* pad short rows so Excel does not shift cells left */
+  var rows = csvRows.map(function (r) {
+    var out = r.slice();
+    while (out.length < width) out.push('');
+    return out;
+  });
+
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+
+  if (chk('cAutoWidth')) {
+    ws['!cols'] = [];
+    for (var c = 0; c < width; c++) {
+      var longest = 8;
+      for (var r2 = 0; r2 < rows.length; r2++) {
+        var len = String(rows[r2][c] === undefined ? '' : rows[r2][c]).length;
+        if (len > longest) longest = len;
+      }
+      ws['!cols'].push({ wch: Math.min(longest + 2, 60) });
+    }
+  }
+  if (chk('cHeaderBold')) {
+    for (var c2 = 0; c2 < width; c2++) {
+      var ref = XLSX.utils.encode_cell({ r: 0, c: c2 });
+      if (ws[ref]) ws[ref].s = { font: { bold: true } };
+    }
+  }
+
+  var sheetName = (val('cSheetName') || 'Sheet1').replace(/[\\\/\?\*\[\]:]/g, '_').slice(0, 31) || 'Sheet1';
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  var out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  var blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  download(blob, sheetName + '.xlsx');
+  notify('Excel file downloaded · ' + rows.length + ' rows × ' + width + ' columns · ' +
+    formatSize(blob.size), 'ok');
+}
+
+function clearCsv() {
+  document.getElementById('cText').value = '';
+  csvRows = null;
+  document.getElementById('cInfo').style.display = 'none';
+  document.getElementById('cPreviewWrap').style.display = 'none';
+  notify('Cleared.', 'info');
+}
+
+/* ---------- wiring ---------- */
+setupDrop('xDrop', 'xFile', function (files) { handleExcelFile(files[0]) });
+setupDrop('cDrop', 'cFile', function (files) { handleCsvFile(files[0]) });
+document.getElementById('xFile').addEventListener('change', function () {
+  if (this.files && this.files[0]) handleExcelFile(this.files[0]);
+});
+document.getElementById('cFile').addEventListener('change', function () {
+  if (this.files && this.files[0]) handleCsvFile(this.files[0]);
+});
+['xSep', 'xTrim', 'xBom', 'cSep', 'cHeaderBold', 'cAutoWidth'].forEach(function (id) {
+  var e = document.getElementById(id);
+  if (e) e.addEventListener('change', savePrefs);
+});
+
+restorePrefs();
+  </script>
+</body>
+</html>
