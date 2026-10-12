@@ -325,7 +325,8 @@ function loadAB(side){
   var inp=document.getElementById("ab"+side);
   if(inp.files[0]){
     var url=URL.createObjectURL(inp.files[0]);
-    var img=new Image();img.onload=function(){abImg[side]=img;renderAB();};img.src=url;
+    var img=new Image();img.onerror=function(){notify("That image could not be read. Try a PNG, JPG or WEBP file.","error")};
+  img.onload=function(){abImg[side]=img;renderAB();};img.src=url;
   }
 }
 function renderAB(){
@@ -468,7 +469,8 @@ function restoreTP(){
 setupDrop("drop","inp",function(f){
   if(!f||!f[0])return;
   var url=URL.createObjectURL(f[0]);
-  var img=new Image();img.onload=function(){mainImg=img;render();};img.src=url;
+  var img=new Image();img.onerror=function(){notify("That image could not be read. Try a PNG, JPG or WEBP file.","error")};
+  img.onload=function(){mainImg=img;render();};img.src=url;
 });
 populateCopySelect();
 restoreTP();

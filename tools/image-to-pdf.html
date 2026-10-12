@@ -315,6 +315,12 @@ function renderThumbs(){
         '<button onclick="moveImage('+i+',1)" title="Move down">▼</button>'+
         '<button onclick="rotateImage('+i+')" title="Rotate 90°">↻</button>'+
       '</div>';
+    /* The inline onerror above only hides the thumbnail. Say why, and name the
+       file, so the user knows it will not be in the PDF. */
+    var _thumb=div.querySelector("img");
+    if(_thumb) _thumb.addEventListener("error",function(){
+      notify('"'+f.name+'" is not a readable image and will be skipped.',"warn");
+    });
     // Drag events
     div.addEventListener("dragstart",function(e){e.dataTransfer.setData("text/plain",i);div.classList.add("dragging")});
     div.addEventListener("dragend",function(){div.classList.remove("dragging")});

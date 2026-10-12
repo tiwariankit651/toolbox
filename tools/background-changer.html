@@ -180,7 +180,15 @@ setupDrop("drop","inp",function(f){
   files=Array.from(f);
   document.getElementById("goBtn").disabled=false;
   if(files.length===1){
-    document.getElementById("previewImg").src=URL.createObjectURL(files[0]);
+    var _pv=document.getElementById("previewImg");
+    /* A corrupt image fires onerror and never onload, so without this the
+       preview stays blank and nothing is ever reported. */
+    _pv.onerror=function(){
+      notify('"'+files[0].name+'" is not a readable image. Try a PNG, JPG or WEBP file.',"error");
+      document.getElementById("preview").style.display="none";
+      document.getElementById("goBtn").disabled=true;
+    };
+    _pv.src=URL.createObjectURL(files[0]);
     document.getElementById("preview").style.display="block";
   }else{
     document.getElementById("preview").style.display="none";

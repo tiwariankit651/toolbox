@@ -193,8 +193,10 @@ function selEmoji(e){if(e)selectedEmoji=e;gen()}
 function loadImg(input){
   if(!input.files[0])return;
   var r=new FileReader();
+  r.onerror=function(){notify("That file could not be read. It may be corrupt.","error")};
   r.onload=function(e){
-    var img=new Image();img.onload=function(){uploadedImg=img;document.getElementById("imgControls").style.display="block";gen()};img.src=e.target.result;
+    var img=new Image();img.onerror=function(){notify('"'+(input.files[0]&&input.files[0].name||"That file")+'" is not a readable image. Try a PNG, JPG or WEBP file.',"error")};
+  img.onload=function(){uploadedImg=img;document.getElementById("imgControls").style.display="block";gen()};img.src=e.target.result;
   };r.readAsDataURL(input.files[0]);
 }
 

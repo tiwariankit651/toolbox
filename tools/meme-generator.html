@@ -385,7 +385,14 @@ setupDrop("drop","inp",function(files){
     var reader=new FileReader();
     reader.onload=function(){
       var im=new Image();
-      im.onload=function(){loaded[idx]=im;remaining--;if(remaining===0)onImagesLoaded(loaded)};
+      im.onerror=function(){
+          /* Without this the counter never reaches zero and the whole batch
+             stalls silently, including the images that were readable. */
+          notify('"'+f.name+'" could not be read and was skipped.',"warn");
+          remaining--;
+          if(remaining===0)onImagesLoaded(loaded.filter(Boolean));
+        };
+        im.onload=function(){loaded[idx]=im;remaining--;if(remaining===0)onImagesLoaded(loaded.filter(Boolean))};
       im.src=reader.result;
     };
     reader.readAsDataURL(f);

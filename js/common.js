@@ -114,7 +114,11 @@ if(document.querySelectorAll('.tool-card').length>5){document.querySelectorAll('
 },2000);
 
 // Ctrl+K search shortcut
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();var s=document.getElementById('searchTools');if(s){s.focus();s.scrollIntoView({behavior:'smooth'})}}});
+/* Ctrl+K focuses the homepage tool search. preventDefault must only be
+   called when that field exists, otherwise this swallows the key on every
+   tool page and the shared keyboard layer — which deliberately bails on
+   e.defaultPrevented so tool bindings win — never gets a turn. */
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){var s=document.getElementById('searchTools');if(s){e.preventDefault();s.focus();s.scrollIntoView({behavior:'smooth'})}}});
 
 /* ---------------------------------------------------------------------------
    Unicode-safe PDF text helpers (shared by the pdf-lib based tools)
