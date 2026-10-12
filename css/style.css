@@ -10,6 +10,17 @@
 body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background-color .4s ease,color .3s ease;background-image:radial-gradient(circle at 15% 15%,rgba(99,102,241,.08),transparent 40%),radial-gradient(circle at 85% 20%,rgba(236,72,153,.06),transparent 40%),radial-gradient(circle at 50% 90%,rgba(139,92,246,.06),transparent 45%)}
 a{color:var(--accent-text);text-decoration:none}
 nav{display:flex;align-items:center;padding:1rem 2rem;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.06);gap:1rem;flex-wrap:nowrap;backdrop-filter:blur(10px)}
+/* Nav and footer links had no padding, so their hit area was only as tall as
+   the text — 14px, under the 24px touch minimum, on the links that are the
+   main way out of any page. Padding rather than a fixed height so they
+   still sit inline and wrap. */
+nav>div a,footer a{display:inline-flex;align-items:center;min-height:24px;padding:.25rem .15rem}
+/* The logo is nav's direct child, so the selector above does not reach it,
+   and at phone width it lands at 23px. It is the home link, so it needs the
+   same floor. */
+nav>a.logo{display:inline-flex;align-items:center;min-height:28px}
+@media(max-width:600px){nav>div a,footer a{min-height:28px;padding:.35rem .2rem}}
+
 .logo{font-size:1.5rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px;white-space:nowrap}
 .tagline{color:var(--text2);font-size:.85rem;flex:1}
 #themeToggle{background:var(--card);border:1px solid rgba(255,255,255,.1);font-size:1.1rem;cursor:pointer;transition:all .3s;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0}

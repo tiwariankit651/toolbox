@@ -381,6 +381,22 @@ function convert(){
   };
 }
 
+/* Workers cannot be constructed from a cross-origin URL: the browser rejects
+   it even though the CDN returns 200 with CORS headers. gif.js was given the
+   jsdelivr URL directly, so `new GIF(...)` threw and conversion never ran.
+   Fetch the worker source once and serve it from a same-origin blob instead. */
+var GIF_WORKER_URL = "https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js";
+var _gifWorkerBlob = null;
+function gifWorkerUrl(){
+  if(_gifWorkerBlob) return Promise.resolve(_gifWorkerBlob);
+  return fetch(GIF_WORKER_URL).then(function(r){
+    if(!r.ok) throw new Error("worker " + r.status);
+    return r.text();
+  }).then(function(src){
+    _gifWorkerBlob = URL.createObjectURL(new Blob([src],{type:"application/javascript"}));
+    return _gifWorkerBlob;
+  });
+}
 function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
   if(playMode==="reverse"){frames.reverse();}
   else if(playMode==="boomerang"){var rev=frames.slice(1,-1).reverse();frames=frames.concat(rev);}
@@ -393,7 +409,8 @@ function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
 
   var canvas=document.createElement("canvas");canvas.width=gifW;canvas.height=gifH;
   var ctx=canvas.getContext("2d");
-  var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,repeat:loopCount,workerScript:"https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js"});
+  gifWorkerUrl().then(function(_wUrl){
+  var gif=new GIF({workers:2,quality:10,width:gifW,height:gifH,repeat:loopCount,workerScript:_wUrl});
   frames.forEach(function(f){ctx.putImageData(f,0,0);gif.addFrame(ctx,{copy:true,delay:delay});});
 
   document.getElementById("progress").querySelector("p").textContent="Encoding GIF...";
@@ -413,6 +430,13 @@ function encodeGif(frames,gifW,gifH,delay,playMode,loopCount){
     document.getElementById("convertBtn").disabled=false;
   });
   gif.render();
+  }).catch(function(e){
+    notify("Could not start the GIF encoder: "+(e.message||e),"error");
+    var pb=document.getElementById("progress");
+    if(pb)pb.innerHTML='<p class="info" style="color:var(--danger)">Could not load the GIF encoder. Check your connection and try again.</p>';
+    var cb=document.getElementById("convertBtn");
+    if(cb)cb.disabled=false;
+  });
 }
 
 /* Copy the result to the clipboard. ClipboardItem support for image/gif is poor
