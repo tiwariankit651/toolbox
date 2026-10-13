@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bigha Gaj Katha Converter - Desi Land &amp; Weight Units Free | FreeToolHubs</title>
+  <meta name="description" content="Convert bigha, katha, gaj, biswa, guntha, kanal, marla to square feet and acre — state-wise, because a bigha is not the same size everywhere. Plus quintal, tola, maund weight units.">
+  <meta property="og:title" content="Desi Units Converter — Bigha, Gaj, Katha, Quintal | FreeToolHubs">
+  <meta property="og:description" content="State-aware land unit converter plus Indian weight units. A bigha varies four times between states.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/desi-units">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Desi Units Converter — FreeToolHubs">
+  <meta name="twitter:description" content="Bigha, katha, gaj, guntha, quintal, tola — state-aware conversion">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Desi Units Converter","url":"https://freetoolhubs.com/tools/desi-units","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"State-aware converter for Indian land units such as bigha, katha, gaj, biswa, guntha, kanal and marla, plus traditional weight units."}
+  </script>
+  <meta name="keywords" content="bigha to square feet, bigha to acre, katha to square feet, gaj to square feet, guntha to acre, kanal marla converter, quintal to kg, tola to gram, desi units converter">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/desi-units">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📐 Desi Units Converter</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>📐 Desi Units Converter — Bigha, Gaj, Katha, Quintal</h1>
+      <p class="info"><strong>A bigha is not one fixed size.</strong> It is 27,225 sq ft in Uttar Pradesh and 6,806 sq ft in the Uttarakhand hills — four times the difference for the same word. So this converter asks for your state first. Ordinary unit converters give one national number, which is wrong almost everywhere.</p>
+
+      <div class="row" style="margin-bottom:.6rem">
+        <button class="btn" id="tabLand" onclick="setDuMode('land')">🏞️ Land / area</button>
+        <button class="btn btn-outline" id="tabWeight" onclick="setDuMode('weight')">⚖️ Weight</button>
+      </div>
+
+      <!-- ===== land ===== -->
+      <div id="paneLand">
+        <label>Your state <span class="badge" id="stateHint"></span>
+          <select id="duState" onchange="duLive()"></select>
+        </label>
+        <div id="stateNote" class="info" style="font-size:.85rem"></div>
+
+        <div class="row">
+          <label style="flex:1">Amount
+            <input type="number" id="landVal" value="1" min="0" step="any" oninput="duLive()">
+          </label>
+          <label style="flex:1">From
+            <select id="landFrom" onchange="duLive()"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">To
+            <select id="landTo" onchange="duLive()"></select>
+          </label>
+          <label style="flex:1" style="display:flex;align-items:flex-end">
+            <button class="btn btn-outline" onclick="swapLand()" style="width:100%">⇅ Swap</button>
+          </label>
+        </div>
+
+        <div id="landOut"></div>
+
+        <h3 role="heading" aria-level="2">Same amount in every unit</h3>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table id="landTable" style="border-collapse:collapse;font-size:.85rem;min-width:100%"></table>
+        </div>
+      </div>
+
+      <!-- ===== weight ===== -->
+      <div id="paneWeight" style="display:none">
+        <div class="row">
+          <label style="flex:1">Amount
+            <input type="number" id="wVal" value="1" min="0" step="any" oninput="duLive()">
+          </label>
+          <label style="flex:1">From
+            <select id="wFrom" onchange="duLive()"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">To
+            <select id="wTo" onchange="duLive()"></select>
+          </label>
+          <label style="flex:1">
+            <button class="btn btn-outline" onclick="swapWeight()" style="width:100%">⇅ Swap</button>
+          </label>
+        </div>
+        <div id="wOut"></div>
+        <h3 role="heading" aria-level="2">Same amount in every unit</h3>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table id="wTable" style="border-collapse:collapse;font-size:.85rem;min-width:100%"></table>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="duLive()">🔄 Convert</button>
+        <button class="btn btn-outline" onclick="copyResult()">📋 Copy result</button>
+        <button class="btn btn-outline" onclick="copyTableCsv()">📊 Copy table as CSV</button>
+      </div>
+
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">⚠️ These are commonly-cited reference values, not legal standards — the bigha is a customary unit with no central authority defining it. For registration, mutation or a loan, use the area recorded by your district land revenue office or a licensed surveyor.</p>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> convert · <kbd>Ctrl</kbd>+<kbd>K</kbd> amount field · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Pick your state first.</strong> This is the step that decides the answer. Leaving it on the general reference gives you the North Indian pucca bigha, which understates land by half or more in Bengal, Himachal and the Uttarakhand hills.</li>
+    <li><strong>Read the state note.</strong> Where a state has two live conventions — pucca and kaccha, hill and plain — both are shown, so you know which question to ask the seller.</li>
+    <li><strong>Enter the amount and the units.</strong> The result updates as you type; there is no submit step.</li>
+    <li><strong>Check the full table.</strong> It shows the same area in every unit at once, including square feet and acre, which is what your paperwork will use even if the listing is in bigha.</li>
+    <li><strong>Copy as CSV</strong> if you are comparing several plots in a spreadsheet.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>A listing quoted in bigha, your budget in square feet, and a price per unit that only makes sense once both agree</li>
+    <li>Family land in an old record stated in katha or biswa that a bank now wants in square metres</li>
+    <li>Plot in Gujarat quoted in vigha when the stable local unit is actually guntha</li>
+    <li>Punjab or Haryana paperwork in kanal and marla that needs converting to acre</li>
+    <li>Mandi rate quoted per quintal when you bought in kilograms</li>
+    <li>Jewellery weight in tola that you need in grams to compare a price</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>Indian land measurement was never standardised. The acre and hectare are fixed worldwide, but the bigha, katha and biswa came from local revenue surveys that each used their own measuring rod — which is why one bigha is 27,225 square feet in Uttar Pradesh, 14,400 in West Bengal, 17,424 in Gujarat and only 6,806 in the Uttarakhand hills. Most online converters publish a single national figure, almost always the North Indian pucca bigha, and that figure is simply wrong in the majority of states. This converter starts from the state instead, shows the square footage behind each answer, and lists competing local conventions rather than silently choosing one. It also covers the stable units that paperwork actually uses — square yard or gaj, guntha, kanal, marla, cent, shatak, ground — plus traditional weights like quintal, maund, tola and seer, which still appear in mandi rates and jewellery pricing. Everything runs in your browser from a lookup table shipped with the page.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>State-aware</strong> — thirteen states plus a clearly labelled general reference, not one average that fits nowhere</li>
+    <li><strong>Competing conventions shown</strong> — pucca versus kaccha, hill versus plain, so you can ask the right question</li>
+    <li><strong>Every unit at once</strong> — the same area in square feet, acre, hectare and the local sub-unit together</li>
+    <li><strong>Honest about its limits</strong> — these are reference values for understanding a listing, not evidence for registration</li>
+    <li><strong>Nothing uploaded</strong> and works offline after the first visit</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>How many bigha are in one acre?</summary><p>It depends on the state — there is no national answer. Roughly 1.6 bigha in Uttar Pradesh, Bihar and pucca Rajasthan, 2 in Punjab and Haryana, 2.5 in Gujarat, 3.025 in West Bengal and Assam, 5 in Himachal Pradesh and about 6.4 in the Uttarakhand hills.</p></details>
+    <details><summary>Why does the bigha vary so much?</summary><p>Because it predates both the metric system and India's current state boundaries. Each regional revenue survey defined it from its own measuring rod, and those definitions survived into modern records. Unlike the acre, no authority ever standardised it.</p></details>
+    <details><summary>What is the difference between pucca and kaccha bigha?</summary><p>Pucca is the larger, officially recorded measure; kaccha is a smaller local one, often a half or a third of it. In Rajasthan the gap is 27,225 against 17,424 square feet, so ten bigha can mean two quite different plots.</p></details>
+    <details><summary>Can I use these figures for property registration?</summary><p>No. Treat them as planning estimates. Registration, mutation and mortgage paperwork must use the area recorded by your district land revenue office or measured by a licensed surveyor. Use this to understand a listing and to know what to verify.</p></details>
+    <details><summary>Which units are actually fixed?</summary><p>Square yard (gaj) is always 9 square feet, guntha is 1,089, kanal is 5,445, marla is 272.25, cent and shatak are 435.6, and killa is simply another name for the acre. These do not vary, which is why paperwork prefers them.</p></details>
+    <details><summary>Is one quintal the same everywhere?</summary><p>Yes. A quintal is 100 kg by definition and does not vary. The older maund did vary regionally; the figure here is the common 37.324 kg standard. Tola is 11.6638 grams, which is the standard used for gold.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/unit-converter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Unit Converter</a><a href="/tools/interest-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Interest Calculator</a><a href="/tools/percentage-calc" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Percentage Calculator</a><a href="/tools/calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Calculator</a><a href="/tools/loan-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Loan Calculator</a><a href="/tools/number-converter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Number Converter</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/bigha-katha-gaj-land-units-guide">Bigha, Katha Aur Gaj — State-Wise Land Units Guide</a></li><li><a href="/blog/percentage-calculation-tricks-shortcut">Percentage Kaise Nikale — Shortcut Tricks</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* Indian land and weight units. The whole point of this tool is that a bigha
+   has no single size, so every area answer is derived from the selected
+   state's own convention rather than one national figure.
+
+   Every square-foot value below is the traditional definition converted to
+   square feet. They come out clean because they are exact: 27,225 sq ft is
+   exactly 1.6 bigha to an acre, 21,780 is exactly 2, 8,712 is exactly 5.
+   These are commonly-cited reference values, not legal standards. */
+
+var DU_KEY = 'desiUnitsPrefs';
+var SQFT_PER_ACRE = 43560;
+
+/* Units that are the same everywhere, so they anchor every conversion. */
+var FIXED_AREA = {
+  sqft:    { label: 'Square feet',          sqft: 1,          note: 'fixed' },
+  sqyd:    { label: 'Square yard (gaj)',    sqft: 9,          note: '4,840 to an acre' },
+  sqm:     { label: 'Square metre',         sqft: 10.7639104, note: 'fixed' },
+  marla:   { label: 'Marla',                sqft: 272.25,     note: 'Punjab, Haryana — 160 to an acre' },
+  cent:    { label: 'Cent / shatak',        sqft: 435.6,      note: 'exactly 1/100 acre' },
+  guntha:  { label: 'Guntha',               sqft: 1089,       note: 'Gujarat, Maharashtra — 40 to an acre' },
+  are:     { label: 'Are',                  sqft: 1076.39104, note: '100 sq m' },
+  ground:  { label: 'Ground',               sqft: 2400,       note: 'Tamil Nadu — 18.15 to an acre' },
+  kanal:   { label: 'Kanal',                sqft: 5445,       note: 'Punjab, Haryana, Himachal — 8 to an acre' },
+  acre:    { label: 'Acre (killa)',         sqft: SQFT_PER_ACRE, note: 'fixed worldwide' },
+  hectare: { label: 'Hectare',              sqft: 107639.104, note: '2.471 acres' }
+};
+
+/* Per state: the bigha and its sub-unit, plus any competing convention worth
+   naming. sub is the local katha/biswa where one is in use. */
+var STATES = {
+  general: { name: 'General reference (no state)', bigha: 27225,
+             sub: { key: 'biswa', label: 'Biswa', sqft: 1361.25 },
+             note: 'This is the North Indian pucca bigha behind the popular "1 acre = 1.6 bigha" shorthand. It is NOT correct for West Bengal, Assam, Gujarat, Punjab, Haryana, Madhya Pradesh, Himachal Pradesh or Uttarakhand. Pick your state for a usable figure.' },
+  up:      { name: 'Uttar Pradesh', bigha: 27225,
+             sub: { key: 'biswa', label: 'Biswa', sqft: 1361.25 },
+             note: 'Pucca bigha of 27,225 sq ft, 20 biswa, so 1 acre = 1.6 bigha. Western and eastern UP differ — some western districts use a smaller kaccha bigha, so confirm locally.' },
+  bihar:   { name: 'Bihar', bigha: 27225,
+             sub: { key: 'katha', label: 'Katha', sqft: 1361.25 },
+             note: '20 katha to a bigha, 1 acre = 1.6 bigha. The katha varies by district in Bihar, so if a deal is quoted in katha, pin that down first.' },
+  jh:      { name: 'Jharkhand', bigha: 27225,
+             sub: { key: 'katha', label: 'Katha', sqft: 1361.25 },
+             note: 'Follows the Bihar convention — 20 katha to a bigha.' },
+  raj:     { name: 'Rajasthan (pucca)', bigha: 27225,
+             sub: { key: 'biswa', label: 'Biswa', sqft: 1361.25 },
+             note: 'Rajasthan has two live conventions: pucca bigha 27,225 sq ft and kaccha bigha 17,424 sq ft. Ten bigha can mean two quite different plots, so always ask which one.' },
+  wb:      { name: 'West Bengal', bigha: 14400,
+             sub: { key: 'katha', label: 'Katha', sqft: 720 },
+             note: '1 bigha = 1,600 sq yd = 20 katha, exactly 40/121 acre, so 1 acre = 3.025 bigha. The Bengal katha is 720 sq ft — a quarter of the Assam katha.' },
+  assam:   { name: 'Assam', bigha: 14400,
+             sub: { key: 'katha', label: 'Katha', sqft: 2880 },
+             note: 'Same bigha as West Bengal but only 5 katha to it, so the Assam katha is 2,880 sq ft — four times the Bengal katha. This catches people out constantly.' },
+  guj:     { name: 'Gujarat', bigha: 17424,
+             sub: { key: 'guntha', label: 'Guntha', sqft: 1089 },
+             note: 'Bigha and vigha are used interchangeably: 16 guntha, 17,424 sq ft, 1 acre = 2.5 bigha. The guntha is the stable unit here — prefer it when the vigha is disputed.' },
+  pb:      { name: 'Punjab', bigha: 21780,
+             sub: { key: 'marla', label: 'Marla', sqft: 272.25 },
+             note: 'Exactly 2 bigha to an acre. Paperwork here normally uses kanal and marla: 8 kanal to an acre, 20 marla to a kanal.' },
+  hr:      { name: 'Haryana', bigha: 21780,
+             sub: { key: 'marla', label: 'Marla', sqft: 272.25 },
+             note: 'Same as Punjab — exactly 2 bigha to an acre, with kanal and marla used in records. Killa is another name for the acre.' },
+  mp:      { name: 'Madhya Pradesh', bigha: 12000,
+             sub: { key: 'sqyd', label: 'Square yard', sqft: 9 },
+             note: 'About 3.63 bigha to an acre. Applying the North Indian 1.6 figure here overstates land by more than double.' },
+  cg:      { name: 'Chhattisgarh', bigha: 12000,
+             sub: { key: 'sqyd', label: 'Square yard', sqft: 9 },
+             note: 'Follows the Madhya Pradesh convention.' },
+  hp:      { name: 'Himachal Pradesh', bigha: 8712,
+             sub: { key: 'biswa', label: 'Biswa', sqft: 435.6 },
+             note: 'Exactly 5 bigha to an acre, 20 biswa to a bigha. One of the smallest bighas in the country.' },
+  uk:      { name: 'Uttarakhand (hills)', bigha: 6806.25,
+             sub: { key: 'biswa', label: 'Biswa', sqft: 340.3125 },
+             note: 'The hill bigha is 6,806 sq ft in districts such as Pauri, while Haridwar and the plains use 17,424 — two and a half times the land for the same word. Confirm the district, not just the state.' }
+};
+
+var WEIGHTS = {
+  gram:     { label: 'Gram',            kg: 0.001,      note: 'fixed' },
+  tola:     { label: 'Tola',            kg: 0.0116638,  note: '11.6638 g — the gold standard' },
+  chhatak:  { label: 'Chhatak',         kg: 0.0583,     note: '16 to a seer' },
+  pav:      { label: 'Pav',             kg: 0.25,       note: 'quarter kilo in common use' },
+  seer:     { label: 'Seer',            kg: 0.9331,     note: '80 tola; roughly a kilo' },
+  kg:       { label: 'Kilogram',        kg: 1,          note: 'fixed' },
+  maund:    { label: 'Maund',           kg: 37.3242,    note: '40 seer; varied regionally in the past' },
+  quintal:  { label: 'Quintal',         kg: 100,        note: 'exactly 100 kg — mandi rates use this' },
+  tonne:    { label: 'Tonne (metric)',  kg: 1000,       note: '10 quintal' }
+};
+
+var duMode = 'land';
+
+function dv(id) { var e = document.getElementById(id); return e ? e.value : '' }
+function dn(id) { var v = parseFloat(dv(id)); return isFinite(v) ? v : 0 }
+
+/* Trim to something a human reads: 4 significant decimals, no trailing zeros,
+   with Indian digit grouping on the integer part. */
+function fmt(n) {
+  if (!isFinite(n)) return '—';
+  var abs = Math.abs(n);
+  var dec = abs >= 1000 ? 2 : (abs >= 1 ? 4 : 6);
+  var s = n.toFixed(dec).replace(/\.?0+$/, '');
+  var parts = s.split('.');
+  var ip = parts[0], neg = ip[0] === '-';
+  if (neg) ip = ip.slice(1);
+  var last3 = ip.slice(-3), rest = ip.slice(0, -3);
+  if (rest) last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + rest + last3 + (parts[1] ? '.' + parts[1] : '');
+}
+
+/* The unit set depends on the state, because its bigha and sub-unit differ. */
+function areaUnits() {
+  var st = STATES[dv('duState')] || STATES.general;
+  var u = {};
+  u.sqft = FIXED_AREA.sqft;
+  u.sqyd = FIXED_AREA.sqyd;
+  if (st.sub && !u[st.sub.key]) {
+    u[st.sub.key] = { label: st.sub.label + ' (' + st.name.split(' (')[0] + ')', sqft: st.sub.sqft,
+                      note: 'local sub-unit' };
+  }
+  ['marla', 'cent', 'guntha', 'are', 'ground', 'kanal'].forEach(function (k) {
+    if (!u[k]) u[k] = FIXED_AREA[k];
+  });
+  u.bigha = { label: 'Bigha (' + st.name.split(' (')[0] + ')', sqft: st.bigha,
+              note: fmt(SQFT_PER_ACRE / st.bigha) + ' to an acre' };
+  u.sqm = FIXED_AREA.sqm;
+  u.acre = FIXED_AREA.acre;
+  u.hectare = FIXED_AREA.hectare;
+  return u;
+}
+
+function setDuMode(m) {
+  duMode = m;
+  document.getElementById('paneLand').style.display = m === 'land' ? 'block' : 'none';
+  document.getElementById('paneWeight').style.display = m === 'weight' ? 'block' : 'none';
+  document.getElementById('tabLand').className = m === 'land' ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabWeight').className = m === 'weight' ? 'btn' : 'btn btn-outline';
+  savePrefs();
+  duLive();
+}
+
+/* Rebuild the unit dropdowns whenever the state changes, preserving the
+   current selection where that unit still exists. */
+function rebuildLandSelects() {
+  var u = areaUnits();
+  var keys = Object.keys(u);
+  ['landFrom', 'landTo'].forEach(function (id) {
+    var sel = document.getElementById(id);
+    var prev = sel.value;
+    sel.innerHTML = keys.map(function (k) {
+      return '<option value="' + k + '">' + u[k].label + '</option>';
+    }).join('');
+    if (keys.indexOf(prev) >= 0) sel.value = prev;
+  });
+}
+
+function swapLand() {
+  var a = document.getElementById('landFrom'), b = document.getElementById('landTo');
+  var t = a.value; a.value = b.value; b.value = t;
+  duLive();
+}
+function swapWeight() {
+  var a = document.getElementById('wFrom'), b = document.getElementById('wTo');
+  var t = a.value; a.value = b.value; b.value = t;
+  duLive();
+}
+
+function duLive() {
+  savePrefs();
+  if (duMode === 'land') renderLand();
+  else renderWeight();
+}
+
+function renderLand() {
+  var st = STATES[dv('duState')] || STATES.general;
+  var hint = document.getElementById('stateHint');
+  hint.textContent = fmt(st.bigha) + ' sq ft per bigha';
+  hint.style.background = dv('duState') === 'general' ? 'var(--warn-fill)' : 'var(--accent-strong)';
+  hint.style.color = '#fff';
+  document.getElementById('stateNote').textContent = st.note;
+
+  var u = areaUnits();
+  var from = dv('landFrom'), to = dv('landTo');
+  if (!u[from]) from = 'bigha';
+  if (!u[to]) to = 'sqft';
+  var val = dn('landVal');
+  var sqft = val * u[from].sqft;
+  var out = sqft / u[to].sqft;
+
+  document.getElementById('landOut').innerHTML =
+    '<div class="info" style="padding:1rem;font-size:1.05rem">' +
+      '<strong>' + fmt(val) + ' ' + u[from].label + ' = ' +
+      '<span style="color:var(--accent-text)">' + fmt(out) + ' ' + u[to].label + '</span></strong>' +
+      '<div style="font-size:.85rem;color:var(--text2);margin-top:.4rem">' +
+        '= ' + fmt(sqft) + ' sq ft = ' + fmt(sqft / SQFT_PER_ACRE) + ' acre' +
+        (u[from].note ? ' · ' + u[from].label + ': ' + u[from].note : '') +
+      '</div>' +
+    '</div>';
+
+  var rows = Object.keys(u).map(function (k) {
+    var hi = (k === to);
+    return '<tr' + (hi ? ' style="background:rgba(99,102,241,.12);font-weight:700"' : '') + '>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem">' + u[k].label + '</td>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem;text-align:right;white-space:nowrap">' +
+        fmt(sqft / u[k].sqft) + '</td>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem;color:var(--text2);font-size:.8rem">' +
+        (u[k].note || '') + '</td></tr>';
+  }).join('');
+  document.getElementById('landTable').innerHTML =
+    '<tr><th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:left;background:rgba(99,102,241,.12)">Unit</th>' +
+    '<th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:right;background:rgba(99,102,241,.12)">Amount</th>' +
+    '<th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:left;background:rgba(99,102,241,.12)">Note</th></tr>' + rows;
+}
+
+function renderWeight() {
+  var from = dv('wFrom') || 'kg', to = dv('wTo') || 'quintal';
+  if (!WEIGHTS[from]) from = 'kg';
+  if (!WEIGHTS[to]) to = 'quintal';
+  var val = dn('wVal');
+  var kg = val * WEIGHTS[from].kg;
+  var out = kg / WEIGHTS[to].kg;
+
+  document.getElementById('wOut').innerHTML =
+    '<div class="info" style="padding:1rem;font-size:1.05rem">' +
+      '<strong>' + fmt(val) + ' ' + WEIGHTS[from].label + ' = ' +
+      '<span style="color:var(--accent-text)">' + fmt(out) + ' ' + WEIGHTS[to].label + '</span></strong>' +
+      '<div style="font-size:.85rem;color:var(--text2);margin-top:.4rem">' +
+        '= ' + fmt(kg) + ' kg · ' + WEIGHTS[from].label + ': ' + WEIGHTS[from].note +
+      '</div></div>';
+
+  var rows = Object.keys(WEIGHTS).map(function (k) {
+    var hi = (k === to);
+    return '<tr' + (hi ? ' style="background:rgba(99,102,241,.12);font-weight:700"' : '') + '>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem">' + WEIGHTS[k].label + '</td>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem;text-align:right;white-space:nowrap">' +
+        fmt(kg / WEIGHTS[k].kg) + '</td>' +
+      '<td style="border:1px solid var(--border);padding:.4rem .6rem;color:var(--text2);font-size:.8rem">' +
+        WEIGHTS[k].note + '</td></tr>';
+  }).join('');
+  document.getElementById('wTable').innerHTML =
+    '<tr><th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:left;background:rgba(99,102,241,.12)">Unit</th>' +
+    '<th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:right;background:rgba(99,102,241,.12)">Amount</th>' +
+    '<th style="border:1px solid var(--border);padding:.4rem .6rem;text-align:left;background:rgba(99,102,241,.12)">Note</th></tr>' + rows;
+}
+
+async function copyResult() {
+  if (duMode === 'land') {
+    var st = STATES[dv('duState')] || STATES.general;
+    var u = areaUnits();
+    var from = u[dv('landFrom')] ? dv('landFrom') : 'bigha';
+    var to = u[dv('landTo')] ? dv('landTo') : 'sqft';
+    var val = dn('landVal');
+    if (!val) { notify('Enter an amount first.', 'warn'); return }
+    var sqft = val * u[from].sqft;
+    await copyNow(
+      fmt(val) + ' ' + u[from].label + ' = ' + fmt(sqft / u[to].sqft) + ' ' + u[to].label + '\r\n' +
+      '= ' + fmt(sqft) + ' sq ft = ' + fmt(sqft / SQFT_PER_ACRE) + ' acre\r\n' +
+      'State: ' + st.name + ' (1 bigha = ' + fmt(st.bigha) + ' sq ft)\r\n' +
+      'Reference value — confirm with your district land revenue office.\r\n',
+      'Result copied.');
+  } else {
+    var v = dn('wVal');
+    if (!v) { notify('Enter an amount first.', 'warn'); return }
+    var f = WEIGHTS[dv('wFrom')] || WEIGHTS.kg, t = WEIGHTS[dv('wTo')] || WEIGHTS.quintal;
+    var kg = v * f.kg;
+    await copyNow(fmt(v) + ' ' + f.label + ' = ' + fmt(kg / t.kg) + ' ' + t.label +
+      '\r\n= ' + fmt(kg) + ' kg\r\n', 'Result copied.');
+  }
+}
+
+async function copyTableCsv() {
+  var lines = [];
+  if (duMode === 'land') {
+    var st = STATES[dv('duState')] || STATES.general;
+    var u = areaUnits();
+    var from = u[dv('landFrom')] ? dv('landFrom') : 'bigha';
+    var val = dn('landVal');
+    if (!val) { notify('Enter an amount first.', 'warn'); return }
+    var sqft = val * u[from].sqft;
+    lines.push('Unit,Amount,Note');
+    Object.keys(u).forEach(function (k) {
+      lines.push('"' + u[k].label + '",' + (sqft / u[k].sqft) + ',"' + (u[k].note || '') + '"');
+    });
+    lines.push('');
+    lines.push('"State","' + st.name + '"');
+    lines.push('"1 bigha (sq ft)",' + st.bigha);
+  } else {
+    var v = dn('wVal');
+    if (!v) { notify('Enter an amount first.', 'warn'); return }
+    var f = WEIGHTS[dv('wFrom')] || WEIGHTS.kg;
+    var kg = v * f.kg;
+    lines.push('Unit,Amount,Note');
+    Object.keys(WEIGHTS).forEach(function (k) {
+      lines.push('"' + WEIGHTS[k].label + '",' + (kg / WEIGHTS[k].kg) + ',"' + WEIGHTS[k].note + '"');
+    });
+  }
+  await copyNow(lines.join('\r\n') + '\r\n', 'Table copied as CSV.');
+}
+
+function savePrefs() {
+  storeSet(DU_KEY, {
+    mode: duMode, state: dv('duState'),
+    landFrom: dv('landFrom'), landTo: dv('landTo'),
+    wFrom: dv('wFrom'), wTo: dv('wTo')
+  }, true);
+}
+function setSelIfOption(id, v) {
+  var e = document.getElementById(id);
+  if (!e || !v) return;
+  for (var i = 0; i < e.options.length; i++) {
+    if (e.options[i].value === v) { e.value = v; return }
+  }
+}
+
+(function init() {
+  var sSel = document.getElementById('duState');
+  sSel.innerHTML = Object.keys(STATES).map(function (k) {
+    return '<option value="' + k + '">' + STATES[k].name + '</option>';
+  }).join('');
+
+  var wKeys = Object.keys(WEIGHTS);
+  ['wFrom', 'wTo'].forEach(function (id) {
+    document.getElementById(id).innerHTML = wKeys.map(function (k) {
+      return '<option value="' + k + '">' + WEIGHTS[k].label + '</option>';
+    }).join('');
+  });
+  document.getElementById('wFrom').value = 'quintal';
+  document.getElementById('wTo').value = 'kg';
+
+  rebuildLandSelects();
+  document.getElementById('landFrom').value = 'bigha';
+  document.getElementById('landTo').value = 'sqft';
+
+  var p = storeGet(DU_KEY, null);
+  if (p) {
+    setSelIfOption('duState', p.state);
+    rebuildLandSelects();
+    setSelIfOption('landFrom', p.landFrom);
+    setSelIfOption('landTo', p.landTo);
+    setSelIfOption('wFrom', p.wFrom);
+    setSelIfOption('wTo', p.wTo);
+    if (p.mode === 'weight') { setDuMode('weight'); return }
+  }
+  duLive();
+})();
+
+/* The unit list depends on the state, so rebuild before converting. */
+document.getElementById('duState').addEventListener('change', function () {
+  rebuildLandSelects();
+  duLive();
+});
+  </script>
+</body>
+</html>

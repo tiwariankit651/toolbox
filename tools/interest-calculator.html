@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Byaj Calculator - Sainkda Rate, Simple &amp; Compound Interest Free | FreeToolHubs</title>
+  <meta name="description" content="Byaj calculator with sainkda rate — ₹2 sainkda means 24% a year. Simple and compound interest, monthly or yearly rate, full payment schedule. Shows what a 'small' rate really costs.">
+  <meta property="og:title" content="Byaj Calculator — Sainkda Rate Simple &amp; Compound | FreeToolHubs">
+  <meta property="og:description" content="Enter interest the way it is actually quoted — rupees per hundred per month — and see the real annual cost">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/interest-calculator">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Byaj Calculator — FreeToolHubs">
+  <meta name="twitter:description" content="Sainkda rate, simple and compound interest with a full schedule">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Byaj / Interest Calculator","url":"https://freetoolhubs.com/tools/interest-calculator","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Simple and compound interest calculator supporting the Indian sainkda convention of rupees per hundred per month."}
+  </script>
+  <meta name="keywords" content="byaj calculator, sainkda interest, 2 rupaye sainkda, simple interest calculator, compound interest india, monthly interest rate calculator, paisa byaj">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/interest-calculator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 💰 Byaj Calculator</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>💰 Byaj Calculator — Sainkda, Simple Aur Compound</h1>
+      <p class="info">Interest ko wahi tareeke se daalo jaise baat hoti hai. "<strong>₹2 sainkda</strong>" matlab ₹100 pe ₹2 <em>mahine</em> ka — jo saal ka <strong>24%</strong> banta hai. Ye tool wo conversion dikhata hai, aur saath mein poora schedule.</p>
+
+      <div class="row" style="margin-bottom:.6rem">
+        <button class="btn" id="tabSI" onclick="setIcMode('si')">📊 Simple (sadharan)</button>
+        <button class="btn btn-outline" id="tabCI" onclick="setIcMode('ci')">📈 Compound (chakravridhi)</button>
+        <button class="btn btn-outline" id="tabCmp" onclick="setIcMode('cmp')">⚖️ Dono compare</button>
+      </div>
+
+      <div class="row">
+        <label style="flex:1">Principal — mool rakam (₹)
+          <input type="number" id="principal" placeholder="50000" min="0" step="any" oninput="icLive()">
+        </label>
+        <label style="flex:1">Rate kaise diya hai?
+          <select id="rateMode" onchange="icLive()">
+            <option value="sainkda">Sainkda — ₹ per 100 per month</option>
+            <option value="monthly">Percent per month</option>
+            <option value="yearly">Percent per year</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label style="flex:1"><span id="rateLabel">Rate</span>
+          <input type="number" id="rate" placeholder="2" min="0" step="any" oninput="icLive()">
+        </label>
+        <label style="flex:1">Time
+          <input type="number" id="timeVal" placeholder="12" min="0" step="any" oninput="icLive()">
+        </label>
+        <label style="flex:1">&nbsp;
+          <select id="timeUnit" onchange="icLive()">
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+            <option value="days">Days</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row" id="ciRow" style="display:none">
+        <label style="flex:1">Compounding
+          <select id="compFreq" onchange="icLive()">
+            <option value="12">Monthly</option>
+            <option value="4">Quarterly</option>
+            <option value="2">Half-yearly</option>
+            <option value="1">Yearly</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-outline" onclick="icPreset(2,'sainkda',12)">₹2 sainkda, 1 saal</button>
+        <button class="btn btn-outline" onclick="icPreset(5,'sainkda',12)">₹5 sainkda, 1 saal</button>
+        <button class="btn btn-outline" onclick="icPreset(12,'yearly',24)">12% yearly, 2 saal</button>
+      </div>
+
+      <div id="rateEcho" class="info" style="font-size:.9rem"></div>
+      <div id="icResult"></div>
+
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="icLive()">🔢 Calculate</button>
+        <button class="btn btn-outline" onclick="copyIc()">📋 Copy breakdown</button>
+        <button class="btn btn-outline" onclick="downloadCsv()">💾 Schedule as CSV</button>
+        <button class="btn btn-outline" onclick="clearIc()">🗑️ Clear</button>
+      </div>
+
+      <div id="scheduleWrap" style="display:none;margin-top:1rem">
+        <h3 role="heading" aria-level="2">Period-by-period schedule</h3>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table id="schedule" style="border-collapse:collapse;font-size:.82rem;min-width:100%"></table>
+        </div>
+        <p class="info" id="schedNote" style="font-size:.8rem"></p>
+      </div>
+
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> calculate · <kbd>Ctrl</kbd>+<kbd>K</kbd> principal · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Rate kaise diya hai, wahi chuno.</strong> Agar kisi ne "do rupaye sainkda" bola hai, toh Sainkda chuno aur 2 likho. Tool khud batayega ki ye 24% annual hai.</li>
+    <li><strong>Simple ya compound.</strong> Gaon-shehar ke udhaar mein aksar simple byaj hota hai. Bank aur chit fund compound karte hain — fark time ke saath bahut bada ho jaata hai.</li>
+    <li><strong>Time ka unit dhyan se.</strong> Months, years ya days — ek hi rakam pe mahine aur saal ka jawab bahut alag hoga.</li>
+    <li><strong>Schedule dekho.</strong> Har mahine kitna byaj bana, total kitna hua — poora table, CSV mein download bhi kar sakte ho.</li>
+    <li><strong>Dono compare karo</strong> tab mein dekho simple aur compound ka asli fark — ye wo number hai jo baat karte waqt kaam aata hai.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>Kisi se udhaar liya ya diya hai "sainkda" rate pe, aur asli saalana cost jaanni hai</li>
+    <li>Gold loan ya personal loan ka monthly rate yearly mein convert karna</li>
+    <li>Dukaan ka udhaar — kitne mahine ka kitna byaj bana, month-wise</li>
+    <li>Chit fund ya committee mein byaj ka hisaab</li>
+    <li>Student: simple aur compound interest ka homework, step-by-step schedule ke saath</li>
+    <li>Do offers compare karna — ek monthly percent mein, doosra yearly mein</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>India mein byaj aksar "sainkda" mein bola jaata hai — ₹100 pe kitna rupaya <em>mahine</em> ka. Ye sunne mein chhota lagta hai: "sirf do rupaye sainkda". Lekin ₹2 sainkda ka matlab hai 2% monthly, jo <strong>24% annual</strong> hai, aur ₹5 sainkda <strong>60% annual</strong>. Zyadatar interest calculators sirf annual percent lete hain, isliye wo is conversion mein hi kaam nahi aate. Ye tool teenon tarah se rate leta hai — sainkda, monthly percent, yearly percent — aur hamesha dono equivalent dikhata hai, taaki "chhota" rate ka asli size saaf ho jaye. Simple aur compound dono, period-by-period schedule ke saath jo CSV mein download ho jaata hai. Sab kuch browser mein chalta hai, koi rakam server pe nahi jaati.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>Sainkda rate seedha</strong> — jaise baat hoti hai waise daalo, conversion tool karega</li>
+    <li><strong>Asli annual cost dikhti hai</strong> — ₹5 sainkda = 60% a year, chhupta nahi</li>
+    <li><strong>Simple vs compound ka fark</strong> rupees mein, percent mein nahi</li>
+    <li><strong>Poora schedule</strong> — har period ka byaj aur balance, CSV download ke saath</li>
+    <li><strong>Kuch upload nahi hota</strong>, aur pehli visit ke baad offline bhi chalta hai</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>₹2 sainkda ka matlab kya hai?</summary><p>₹100 pe ₹2 per month — matlab 2% monthly. Saal ka 24% simple interest. Agar compound ho toh effective annual rate 26.8% ban jaata hai.</p></details>
+    <details><summary>Sainkda monthly hota hai ya yearly?</summary><p>Aam bol-chaal mein sainkda <strong>monthly</strong> hota hai. Phir bhi lene-dene se pehle confirm kar lena chahiye, kyunki fark 12 guna ka hai. Ye tool monthly maanta hai aur yearly equivalent saaf likhta hai.</p></details>
+    <details><summary>Simple aur compound mein kya fark hai?</summary><p>Simple byaj sirf mool rakam pe lagta hai. Compound mein pichhle byaj pe bhi byaj lagta hai. Chhote time mein fark kam hota hai, lambe time mein bahut bada — schedule table mein ye saaf dikh jaata hai.</p></details>
+    <details><summary>Kya ye legal rate limit batata hai?</summary><p>Nahi. Ye sirf hisaab karta hai. Money lending ke rules state ke hisaab se alag hain aur bahut jagah licence aur maximum rate decide hote hain. Agar rate bahut zyada lage toh legal advice lein.</p></details>
+    <details><summary>Days wale option mein saal kitne din ka maana jaata hai?</summary><p>365 din. Kuch banks 360 use karte hain, jisse answer thoda badal jaata hai — agar aapka lender 360 use karta hai toh months mein hisaab karna behtar hai.</p></details>
+    <details><summary>Meri rakam kahin save hoti hai?</summary><p>Settings yaad rehti hain par rakam nahi. Hisaab browser mein hota hai, kuch bhi server pe nahi jaata.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/emi-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">EMI Calculator</a><a href="/tools/loan-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Loan Comparison</a><a href="/tools/sip-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">SIP Calculator</a><a href="/tools/percentage-calc" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Percentage Calculator</a><a href="/tools/budget-tracker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Budget Tracker</a><a href="/tools/desi-units" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Desi Units</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/byaj-sainkda-interest-calculation-guide">Sainkda Byaj Kaise Nikale — Complete Guide</a></li><li><a href="/blog/percentage-calculation-tricks-shortcut">Percentage Kaise Nikale — Shortcut Tricks</a></li><li><a href="/blog/best-budgeting-methods-for-beginners-india">Budgeting Methods for Beginners</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* Byaj calculator. The reason this exists separately from the EMI and loan
+   tools is the sainkda convention: interest quoted as rupees per hundred per
+   MONTH. People hear "two rupees" and think it is small; it is 24% a year. */
+
+var IC_KEY = 'interestCalcPrefs';
+var icMode = 'si';
+var lastSchedule = null;
+
+function iv(id) { var e = document.getElementById(id); return e ? e.value.trim() : '' }
+function inum(id) { var v = parseFloat(iv(id)); return isFinite(v) ? v : 0 }
+
+function inr(n) {
+  if (!isFinite(n)) return '—';
+  var s = Math.abs(n).toFixed(2).replace(/\.00$/, '');
+  var parts = s.split('.');
+  var ip = parts[0];
+  var last3 = ip.slice(-3), rest = ip.slice(0, -3);
+  if (rest) last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (n < 0 ? '-₹' : '₹') + rest + last3 + (parts[1] ? '.' + parts[1] : '');
+}
+function pct(n) { return (Math.round(n * 100) / 100) + '%' }
+
+function setIcMode(m) {
+  icMode = m;
+  document.getElementById('ciRow').style.display = (m === 'si') ? 'none' : 'flex';
+  document.getElementById('tabSI').className  = m === 'si'  ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabCI').className  = m === 'ci'  ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabCmp').className = m === 'cmp' ? 'btn' : 'btn btn-outline';
+  savePrefs();
+  icLive();
+}
+
+function icPreset(rate, mode, months) {
+  document.getElementById('rate').value = rate;
+  var sel = document.getElementById('rateMode');
+  /* only assign a value the select really offers */
+  for (var i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === mode) { sel.value = mode; break }
+  }
+  document.getElementById('timeVal').value = months;
+  document.getElementById('timeUnit').value = 'months';
+  if (!inum('principal')) document.getElementById('principal').value = 50000;
+  icLive();
+  notify('Preset applied.', 'info');
+}
+
+/* Everything is normalised to a monthly rate and a number of months, because
+   that is the unit the sainkda convention is actually spoken in. */
+function monthlyRate() {
+  var r = inum('rate');
+  var mode = iv('rateMode');
+  if (mode === 'sainkda') return r;            /* ₹r per 100 per month = r% monthly */
+  if (mode === 'monthly') return r;
+  return r / 12;                                /* yearly percent spread over months */
+}
+function annualRate() { return monthlyRate() * 12 }
+
+function months() {
+  var t = inum('timeVal');
+  var u = iv('timeUnit');
+  if (u === 'years') return t * 12;
+  if (u === 'days') return t * 12 / 365;        /* 365-day year, stated in the FAQ */
+  return t;
+}
+
+function rateLabelText() {
+  var mode = iv('rateMode');
+  if (mode === 'sainkda') return 'Rate — ₹ per 100 per month (sainkda)';
+  if (mode === 'monthly') return 'Rate — percent per month';
+  return 'Rate — percent per year';
+}
+
+function icLive() {
+  document.getElementById('rateLabel').textContent = rateLabelText();
+  savePrefs();
+
+  var P = inum('principal'), m = monthlyRate(), n = months();
+  var echo = document.getElementById('rateEcho');
+
+  if (!inum('rate')) {
+    echo.textContent = 'Rate daalo — agar "do rupaye sainkda" hai toh 2 likho.';
+  } else {
+    var eff = (Math.pow(1 + m / 100, 12) - 1) * 100;
+    echo.innerHTML = '<strong>' + pct(m) + ' per month = ' + pct(annualRate()) +
+      ' per year</strong> (simple). Compound hone par effective annual rate ' + pct(eff) + '.' +
+      (iv('rateMode') === 'sainkda'
+        ? ' Sainkda ₹' + inum('rate') + ' matlab ₹100 pe ₹' + inum('rate') + ' har mahine.'
+        : '');
+  }
+
+  var box = document.getElementById('icResult');
+  if (!P || !inum('rate') || !n) {
+    box.innerHTML = '<p class="info">Principal, rate aur time — teeno daalo.</p>';
+    document.getElementById('scheduleWrap').style.display = 'none';
+    lastSchedule = null;
+    return;
+  }
+
+  var si = P * (m / 100) * n;
+  var cf = parseFloat(iv('compFreq')) || 12;
+  /* convert the monthly rate to the chosen compounding period */
+  var periods = n / (12 / cf);
+  var ratePerPeriod = (annualRate() / 100) / cf;
+  var ciTotal = P * Math.pow(1 + ratePerPeriod, periods);
+  var ci = ciTotal - P;
+
+  if (icMode === 'si') {
+    box.innerHTML = resultCard('Simple byaj', P, si, P + si, n);
+    buildSchedule('si', P, m, n);
+  } else if (icMode === 'ci') {
+    box.innerHTML = resultCard('Compound byaj', P, ci, ciTotal, n);
+    buildSchedule('ci', P, ratePerPeriod * 100, periods, cf);
+  } else {
+    var diff = ci - si;
+    box.innerHTML =
+      '<div class="row">' +
+        '<div style="flex:1">' + resultCard('Simple', P, si, P + si, n) + '</div>' +
+        '<div style="flex:1">' + resultCard('Compound', P, ci, ciTotal, n) + '</div>' +
+      '</div>' +
+      '<div class="info" style="padding:1rem;margin-top:.4rem">' +
+        '<strong>Fark: ' + inr(Math.abs(diff)) + '</strong> — compound mein ' +
+        (diff >= 0 ? 'itna zyada' : 'itna kam') + ' byaj banta hai. ' +
+        'Jitna lamba time, utna bada fark.' +
+      '</div>';
+    buildSchedule('cmp', P, m, n, cf);
+  }
+}
+
+function resultCard(title, P, interest, total, n) {
+  return '<div class="info" style="padding:1rem">' +
+    '<div style="font-weight:700;margin-bottom:.5rem">' + title + '</div>' +
+    row('Principal', inr(P)) +
+    row('Byaj (' + fmtMonths(n) + ')', inr(interest)) +
+    '<hr style="border:none;border-top:1px solid var(--border);margin:.5rem 0">' +
+    '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:1.05rem">' +
+      '<span>Total dena hoga</span><span style="color:var(--accent-text)">' + inr(total) + '</span></div>' +
+    (P > 0 ? '<div style="font-size:.8rem;color:var(--text2);margin-top:.3rem">Byaj principal ka ' +
+      pct(interest / P * 100) + '</div>' : '') +
+    '</div>';
+}
+function row(k, v) {
+  return '<div style="display:flex;justify-content:space-between;gap:1rem;padding:.2rem 0">' +
+    '<span>' + k + '</span><span>' + v + '</span></div>';
+}
+function fmtMonths(n) {
+  if (n >= 12 && n % 12 === 0) return (n / 12) + (n / 12 === 1 ? ' saal' : ' saal');
+  var r = Math.round(n * 100) / 100;
+  return r + (r === 1 ? ' mahina' : ' mahine');
+}
+
+/* A period-by-period table, which is what someone settling a loan actually
+   wants to see rather than a single total. */
+function buildSchedule(kind, P, ratePct, n, cf) {
+  var rows = [];
+  var cap = 120;                       /* keep the table usable */
+  var count = Math.min(Math.ceil(n), cap);
+  if (kind === 'si') {
+    var per = P * (ratePct / 100);
+    for (var i = 1; i <= count; i++) {
+      var acc = per * Math.min(i, n);
+      rows.push({ p: i, interest: per, cum: acc, bal: P + acc });
+    }
+  } else if (kind === 'ci') {
+    var bal = P;
+    for (var j = 1; j <= count; j++) {
+      var ii = bal * (ratePct / 100);
+      bal += ii;
+      rows.push({ p: j, interest: ii, cum: bal - P, bal: bal });
+    }
+  } else {
+    var perS = P * (ratePct / 100), balC = P;
+    for (var k = 1; k <= count; k++) {
+      var iC = balC * (ratePct / 100);
+      balC += iC;
+      rows.push({ p: k, interest: perS, cum: perS * k, bal: P + perS * k,
+                  cumC: balC - P, balC: balC });
+    }
+  }
+  lastSchedule = { kind: kind, rows: rows, truncated: Math.ceil(n) > cap, total: Math.ceil(n) };
+
+  var head = kind === 'cmp'
+    ? ['#', 'Simple byaj', 'Simple total', 'Compound byaj', 'Compound total']
+    : ['#', 'Is period ka byaj', 'Total byaj', 'Total dena'];
+  var th = head.map(function (h, idx) {
+    return '<th style="border:1px solid var(--border);padding:.35rem .55rem;background:rgba(99,102,241,.12);' +
+      (idx ? 'text-align:right' : 'text-align:left') + '">' + h + '</th>';
+  }).join('');
+  var body = rows.map(function (r) {
+    var cells = kind === 'cmp'
+      ? [r.p, inr(r.interest), inr(r.bal), inr(r.cumC / r.p ? r.cumC - (rows[r.p - 2] ? rows[r.p - 2].cumC : 0) : 0), inr(r.balC)]
+      : [r.p, inr(r.interest), inr(r.cum), inr(r.bal)];
+    return '<tr>' + cells.map(function (c, idx) {
+      return '<td style="border:1px solid var(--border);padding:.3rem .55rem;white-space:nowrap;' +
+        (idx ? 'text-align:right' : '') + '">' + c + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  document.getElementById('schedule').innerHTML = '<tr>' + th + '</tr>' + body;
+  document.getElementById('scheduleWrap').style.display = 'block';
+  document.getElementById('schedNote').textContent =
+    (kind === 'ci' && cf && cf !== 12
+      ? 'Periods are ' + ({ 1: 'yearly', 2: 'half-yearly', 4: 'quarterly' }[cf] || 'monthly') + '. '
+      : 'Periods are monthly. ') +
+    (lastSchedule.truncated
+      ? 'Showing the first ' + cap + ' of ' + lastSchedule.total + ' periods; the CSV has all of them.'
+      : '');
+}
+
+async function copyIc() {
+  var P = inum('principal'), m = monthlyRate(), n = months();
+  if (!P || !inum('rate') || !n) { notify('Principal, rate aur time pehle daalo.', 'warn'); return }
+  var si = P * (m / 100) * n;
+  var cf = parseFloat(iv('compFreq')) || 12;
+  var ciTotal = P * Math.pow(1 + ((annualRate() / 100) / cf), n / (12 / cf));
+  var ci = ciTotal - P;
+  var eff = (Math.pow(1 + m / 100, 12) - 1) * 100;
+  await copyNow(
+    'BYAJ CALCULATION\r\n' +
+    'Principal: ' + inr(P) + '\r\n' +
+    'Rate: ' + (iv('rateMode') === 'sainkda' ? '₹' + inum('rate') + ' sainkda (per 100 per month)' :
+               iv('rateMode') === 'monthly' ? inum('rate') + '% per month' : inum('rate') + '% per year') + '\r\n' +
+    '  = ' + pct(m) + ' per month = ' + pct(annualRate()) + ' per year (simple)\r\n' +
+    '  = ' + pct(eff) + ' effective annual rate if compounded monthly\r\n' +
+    'Time: ' + fmtMonths(n) + '\r\n\r\n' +
+    'SIMPLE\r\n  Byaj: ' + inr(si) + '\r\n  Total: ' + inr(P + si) + '\r\n\r\n' +
+    'COMPOUND (' + ({ 12: 'monthly', 4: 'quarterly', 2: 'half-yearly', 1: 'yearly' }[cf] || 'monthly') + ')\r\n' +
+    '  Byaj: ' + inr(ci) + '\r\n  Total: ' + inr(ciTotal) + '\r\n\r\n' +
+    'Fark: ' + inr(Math.abs(ci - si)) + '\r\n\r\n' +
+    'Calculated with https://freetoolhubs.com/tools/interest-calculator\r\n',
+    'Breakdown copy ho gaya.');
+}
+
+function downloadCsv() {
+  var P = inum('principal'), m = monthlyRate(), n = months();
+  if (!P || !inum('rate') || !n) { notify('Principal, rate aur time pehle daalo.', 'warn'); return }
+  var cf = parseFloat(iv('compFreq')) || 12;
+  var total = Math.ceil(n);
+  var lines = [];
+  lines.push('Period,Simple interest this period,Simple interest total,Simple amount due,' +
+             'Compound interest this period,Compound interest total,Compound amount due');
+  var perS = P * (m / 100);
+  var ratePerPeriod = (annualRate() / 100) / cf;
+  var balC = P, prevCumC = 0;
+  for (var i = 1; i <= total; i++) {
+    var iC = balC * ratePerPeriod;
+    balC += iC;
+    var cumC = balC - P;
+    lines.push([i, perS.toFixed(2), (perS * i).toFixed(2), (P + perS * i).toFixed(2),
+                (cumC - prevCumC).toFixed(2), cumC.toFixed(2), balC.toFixed(2)].join(','));
+    prevCumC = cumC;
+  }
+  lines.push('');
+  lines.push('Principal,' + P);
+  lines.push('Rate (monthly %),' + m);
+  lines.push('Rate (annual %),' + annualRate());
+  lines.push('Time (months),' + n);
+  /* BOM so Excel reads the rupee sign and any Indian-language text correctly */
+  download(new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'],
+    { type: 'text/csv;charset=utf-8' }), 'byaj-schedule.csv');
+  notify('Schedule CSV download ho gaya — ' + total + ' periods.', 'ok');
+}
+
+function clearIc() {
+  ['principal', 'rate', 'timeVal'].forEach(function (id) {
+    document.getElementById(id).value = '';
+  });
+  lastSchedule = null;
+  icLive();
+  notify('Clear ho gaya.', 'info');
+}
+
+function savePrefs() {
+  /* settings only — the amounts themselves are not kept */
+  storeSet(IC_KEY, { mode: icMode, rateMode: iv('rateMode'),
+                     timeUnit: iv('timeUnit'), compFreq: iv('compFreq') }, true);
+}
+function setSelIfOption(id, v) {
+  var e = document.getElementById(id);
+  if (!e || !v) return;
+  for (var i = 0; i < e.options.length; i++) {
+    if (e.options[i].value === v) { e.value = v; return }
+  }
+}
+(function init() {
+  var p = storeGet(IC_KEY, null);
+  if (p) {
+    setSelIfOption('rateMode', p.rateMode);
+    setSelIfOption('timeUnit', p.timeUnit);
+    setSelIfOption('compFreq', p.compFreq);
+    if (p.mode === 'ci' || p.mode === 'cmp') { setIcMode(p.mode); return }
+  }
+  icLive();
+})();
+  </script>
+</body>
+</html>

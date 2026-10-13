@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salary Slip Generator - Free Payslip PDF with PF &amp; ESI | FreeToolHubs</title>
+  <meta name="description" content="Generate salary slips free as PDF. Auto PF, ESI and professional tax, bulk slips from CSV, company logo, amount in words. Nothing uploaded — runs in your browser.">
+  <meta property="og:title" content="Salary Slip Generator — Free Payslip PDF | FreeToolHubs">
+  <meta property="og:description" content="Payslips with automatic PF, ESI and PT, bulk generation from CSV, nothing uploaded">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/salary-slip">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Salary Slip Generator — FreeToolHubs">
+  <meta name="twitter:description" content="Free payslip PDF with PF, ESI and bulk CSV support">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Salary Slip Generator","url":"https://freetoolhubs.com/tools/salary-slip","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Generate salary slips as PDF with automatic PF, ESI and professional tax, and bulk generation from a CSV of employees."}
+  </script>
+  <meta name="keywords" content="salary slip generator, payslip format india, salary slip pdf, free payslip maker, pf esi calculation payslip, bulk salary slip csv">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/salary-slip">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🧾 Salary Slip Generator</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>🧾 Salary Slip Generator</h1>
+      <p class="info">Payslips as proper PDFs, with PF, ESI and professional tax worked out for you. One employee, or the whole team at once from a CSV. Salary data is sensitive, so everything is built in this tab — nothing is uploaded.</p>
+
+      <div class="row" style="margin-bottom:.6rem">
+        <button class="btn" id="tabOne" onclick="setSsMode('one')">👤 One employee</button>
+        <button class="btn btn-outline" id="tabMany" onclick="setSsMode('many')">👥 Bulk from CSV</button>
+      </div>
+
+      <h3 role="heading" aria-level="2">Company</h3>
+      <div class="row">
+        <label style="flex:1">Company name
+          <input type="text" id="coName" placeholder="Sharma Enterprises" oninput="ssLive()">
+        </label>
+        <label style="flex:1">Month / year
+          <input type="month" id="payMonth" oninput="ssLive()">
+        </label>
+      </div>
+      <label>Company address <span style="font-weight:400;color:var(--text2)">(optional)</span>
+        <input type="text" id="coAddr" placeholder="12 MG Road, Pune 411001" oninput="ssLive()">
+      </label>
+      <div id="logoDrop" class="drop-zone" style="padding:.9rem;margin:.4rem 0;font-size:.85rem" onclick="document.getElementById('logoFile').click()">
+        🖼️ Drop a company logo here, or click to browse <span style="color:var(--text2)">(optional)</span>
+        <input type="file" id="logoFile" accept="image/png,image/jpeg" style="display:none">
+      </div>
+      <div id="logoInfo" class="info" style="display:none;font-size:.85rem"></div>
+
+      <!-- ===== single ===== -->
+      <div id="paneOne">
+        <h3 role="heading" aria-level="2">Employee</h3>
+        <div class="row">
+          <label style="flex:1">Name
+            <input type="text" id="empName" placeholder="Asha Rao" oninput="ssLive()">
+          </label>
+          <label style="flex:1">Employee ID
+            <input type="text" id="empId" placeholder="EMP001" oninput="ssLive()">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Designation
+            <input type="text" id="empRole" placeholder="Accounts Executive" oninput="ssLive()">
+          </label>
+          <label style="flex:1">Days paid / total
+            <input type="text" id="empDays" placeholder="30 / 30" oninput="ssLive()">
+          </label>
+        </div>
+
+        <h3 role="heading" aria-level="2">Earnings (monthly ₹)</h3>
+        <div class="row">
+          <label style="flex:1">Basic
+            <input type="number" id="eBasic" placeholder="20000" min="0" step="any" oninput="ssLive()">
+          </label>
+          <label style="flex:1">HRA
+            <input type="number" id="eHra" placeholder="8000" min="0" step="any" oninput="ssLive()">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Conveyance
+            <input type="number" id="eConv" placeholder="1600" min="0" step="any" oninput="ssLive()">
+          </label>
+          <label style="flex:1">Special / other allowance
+            <input type="number" id="eSpecial" placeholder="4000" min="0" step="any" oninput="ssLive()">
+          </label>
+        </div>
+
+        <h3 role="heading" aria-level="2">Deductions</h3>
+        <div class="row">
+          <label style="flex:1"><input type="checkbox" id="dPfAuto" checked onchange="ssLive()"> PF — 12% of basic, capped at ₹15,000 wage</label>
+          <label style="flex:1"><input type="checkbox" id="dEsiAuto" checked onchange="ssLive()"> ESI — 0.75% if gross ≤ ₹21,000</label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Professional tax
+            <input type="number" id="dPt" placeholder="200" min="0" step="any" oninput="ssLive()">
+          </label>
+          <label style="flex:1">TDS / income tax
+            <input type="number" id="dTds" placeholder="0" min="0" step="any" oninput="ssLive()">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Advance / loan recovery
+            <input type="number" id="dAdvance" placeholder="0" min="0" step="any" oninput="ssLive()">
+          </label>
+          <label style="flex:1">Other deduction
+            <input type="number" id="dOther" placeholder="0" min="0" step="any" oninput="ssLive()">
+          </label>
+        </div>
+      </div>
+
+      <!-- ===== bulk ===== -->
+      <div id="paneMany" style="display:none">
+        <h3 role="heading" aria-level="2">Employee list</h3>
+        <p class="info">Paste rows or drop a CSV. Columns: <code>name, id, designation, basic, hra, conveyance, special, pt, tds, advance</code> — only <code>name</code> and <code>basic</code> are required.</p>
+        <div id="csvDrop" class="drop-zone" style="padding:.9rem;margin:.4rem 0;font-size:.85rem" onclick="document.getElementById('csvFile').click()">
+          📥 Drop a .csv file here, or click to browse
+          <input type="file" id="csvFile" accept=".csv,.txt,text/csv" style="display:none">
+        </div>
+        <textarea id="csvText" rows="6" placeholder="name,id,designation,basic,hra,conveyance,special,pt&#10;Asha Rao,EMP001,Accounts,20000,8000,1600,4000,200&#10;Ravi Kumar,EMP002,Sales,18000,7200,1600,3000,200" oninput="ssCsvLive()"></textarea>
+        <div class="row">
+          <button class="btn btn-outline" onclick="loadSampleCsv()">📋 Load a sample</button>
+          <label style="flex:1">Output
+            <select id="bulkFmt" onchange="ssLive()">
+              <option value="pdf">One PDF, one page each</option>
+              <option value="zip">ZIP of separate PDFs</option>
+            </select>
+          </label>
+        </div>
+        <div id="csvInfo" class="info" style="display:none;font-size:.85rem"></div>
+      </div>
+
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" id="ssGen" onclick="ssGenerate()">📄 Generate PDF</button>
+        <button class="btn btn-outline" onclick="ssCopy()">📋 Copy as text</button>
+        <button class="btn btn-outline" onclick="ssClear()">🗑️ Clear</button>
+      </div>
+
+      <div id="ssPreview" style="display:none;margin-top:1rem">
+        <h3 role="heading" aria-level="2">Preview</h3>
+        <div id="ssPreviewBox" style="background:#fff;color:#111;padding:1.2rem;border-radius:8px;font-size:.82rem;overflow-x:auto"></div>
+      </div>
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> generate · <kbd>Ctrl</kbd>+<kbd>K</kbd> first field · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Company and month first.</strong> These appear on every slip, so with bulk generation you enter them once for the whole team.</li>
+    <li><strong>Earnings, then deductions.</strong> Leave PF and ESI on automatic and they are worked out from the figures you enter — PF at 12% of basic with the ₹15,000 wage ceiling, ESI at 0.75% only while gross stays within ₹21,000.</li>
+    <li><strong>Watch the live totals.</strong> Gross, deductions and net update as you type, so a wrong figure is obvious before you generate anything.</li>
+    <li><strong>Bulk from CSV</strong> when you run payroll for a team. Paste the rows or drop a file; you get one PDF with a page per employee, or a ZIP of separate files to email individually.</li>
+    <li><strong>Check the preview</strong> — it is the same layout as the PDF, including the amount written in words.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>Small business or shop that pays staff but has no payroll software</li>
+    <li>An employee who needs a payslip for a loan, visa or rental application</li>
+    <li>Monthly payroll for a team of five to fifty, from a spreadsheet you already keep</li>
+    <li>Reissuing a slip for a past month after a correction</li>
+    <li>A consultant or agency issuing slips to contract staff</li>
+    <li>Checking PF and ESI arithmetic before sending figures to a CA</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>A salary slip is the document an employee needs for a loan, a visa, a rental agreement or simply as a record of what was paid and what was deducted. Many small businesses still build them by hand in Word, which is slow and easy to get wrong. This generator produces a standard payslip layout — company header, employee details, earnings and deductions in two columns, net pay, and the amount written out in words, which is what makes a slip acceptable as a document rather than a printout. PF is calculated at 12% of basic with the statutory ₹15,000 wage ceiling applied, and ESI at 0.75% of gross while the employee remains within the ₹21,000 eligibility limit, with both shown as editable so you can override them for your own arrangement. Bulk mode takes the employee list you already keep in a spreadsheet and produces every slip in one pass. Names in Hindi, Marathi, Tamil and other Indian scripts print correctly because the PDF embeds a Unicode font. Nothing is uploaded, which matters a great deal when the data is everyone's salary.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>PF and ESI computed</strong> with the real ceilings applied, not left as blank boxes</li>
+    <li><strong>Whole team in one pass</strong> from the spreadsheet you already have</li>
+    <li><strong>Amount in words</strong> generated automatically in the Indian numbering system</li>
+    <li><strong>Indian scripts print properly</strong> instead of becoming blank boxes</li>
+    <li><strong>Salary data never leaves your device</strong> — there is no upload step at all</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>How is PF calculated here?</summary><p>12% of basic salary, with basic capped at ₹15,000 for the calculation — so the employee contribution stops at ₹1,800 a month. That is the statutory ceiling. If your organisation contributes on full basic without the cap, untick the automatic option and enter the figure yourself.</p></details>
+    <details><summary>When does ESI apply?</summary><p>ESI applies while gross monthly wages are ₹21,000 or less, at 0.75% from the employee. Above that threshold the employee stops being covered, and the tool stops adding it. The employer's 3.25% share is not an employee deduction, so it does not appear on the slip.</p></details>
+    <details><summary>What should professional tax be?</summary><p>It varies by state and by salary slab, and some states do not levy it at all. ₹200 a month is common in Maharashtra and Karnataka for mid salaries. Check your state's slab rather than assuming.</p></details>
+    <details><summary>Is a slip from this tool legally valid?</summary><p>A payslip's standing comes from being issued by the employer with correct figures, not from the software that formatted it. Fill it accurately, and have it signed or stamped if your organisation does that. This tool does the layout and the arithmetic; the accuracy of the figures is yours.</p></details>
+    <details><summary>Can I generate slips for past months?</summary><p>Yes — set the month field to whichever month you need. Nothing is tied to the current date.</p></details>
+    <details><summary>Is the salary data stored anywhere?</summary><p>Company name and your preferences are remembered for convenience. Employee names and salary figures are not persisted, and nothing is transmitted — the PDF is built in your browser, which is why it also works offline.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/salary-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Calculator</a><a href="/tools/rent-receipt" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Rent Receipt</a><a href="/tools/tax-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Tax Calculator</a><a href="/tools/invoice-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Invoice Generator</a><a href="/tools/excel-csv" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Excel ↔ CSV</a><a href="/tools/doc-expiry" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Document Expiry</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/salary-slip-format-pf-esi-guide">Salary Slip Format — PF, ESI Aur Deductions Guide</a></li><li><a href="/blog/rent-receipt-hra-claim-guide">Rent Receipt Aur HRA Claim Guide</a></li><li><a href="/blog/excel-to-csv-conversion-guide">Excel to CSV Conversion Guide</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+/* Salary slips. Everyone's pay is in this form, so there is deliberately no
+   upload path and the figures are not persisted between visits. */
+
+var SS_KEY = 'salarySlipPrefs';
+var ssMode = 'one';
+var logoBytes = null, logoType = '';
+var csvRows = null;
+
+/* Statutory ceilings. Both are editable in the UI because organisations
+   sometimes contribute differently, but these are the defaults. */
+var PF_WAGE_CEILING = 15000;
+var PF_RATE = 0.12;
+var ESI_GROSS_LIMIT = 21000;
+var ESI_RATE = 0.0075;
+
+function sv(id) { var e = document.getElementById(id); return e ? e.value.trim() : '' }
+function snum(id) { var v = parseFloat(sv(id)); return isFinite(v) ? v : 0 }
+function schk(id) { var e = document.getElementById(id); return e ? e.checked : false }
+
+function inr(n) {
+  var s = Math.abs(Math.round(n * 100) / 100).toFixed(2).replace(/\.00$/, '');
+  var parts = s.split('.');
+  var ip = parts[0];
+  var last3 = ip.slice(-3), rest = ip.slice(0, -3);
+  if (rest) last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (n < 0 ? '-' : '') + '₹' + rest + last3 + (parts[1] ? '.' + parts[1] : '');
+}
+
+/* Indian numbering: thousand, lakh, crore — not million. */
+var ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+  'Seventeen', 'Eighteen', 'Nineteen'];
+var TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+function twoDigit(n) {
+  if (n < 20) return ONES[n];
+  return TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + ONES[n % 10] : '');
+}
+function words(n) {
+  n = Math.floor(Math.abs(n));
+  if (n === 0) return 'Zero';
+  var out = [];
+  var crore = Math.floor(n / 10000000); n %= 10000000;
+  var lakh = Math.floor(n / 100000);   n %= 100000;
+  var thousand = Math.floor(n / 1000); n %= 1000;
+  var hundred = Math.floor(n / 100);   n %= 100;
+  if (crore) out.push(twoDigit(crore) + ' Crore');
+  if (lakh) out.push(twoDigit(lakh) + ' Lakh');
+  if (thousand) out.push(twoDigit(thousand) + ' Thousand');
+  if (hundred) out.push(ONES[hundred] + ' Hundred');
+  if (n) out.push((out.length ? 'and ' : '') + twoDigit(n));
+  return out.join(' ');
+}
+function rupeesInWords(amount) {
+  var whole = Math.floor(amount);
+  var paise = Math.round((amount - whole) * 100);
+  return 'Rupees ' + words(whole) + (paise ? ' and ' + twoDigit(paise) + ' Paise' : '') + ' Only';
+}
+
+function setSsMode(m) {
+  ssMode = m;
+  document.getElementById('paneOne').style.display  = m === 'one'  ? 'block' : 'none';
+  document.getElementById('paneMany').style.display = m === 'many' ? 'block' : 'none';
+  document.getElementById('tabOne').className  = m === 'one'  ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabMany').className = m === 'many' ? 'btn' : 'btn btn-outline';
+  document.getElementById('ssGen').textContent = m === 'many' ? '📄 Generate all slips' : '📄 Generate PDF';
+  savePrefs();
+  ssLive();
+}
+
+/* One employee's figures, from either the form or a CSV row. */
+function computeSlip(src) {
+  var basic = src.basic || 0, hra = src.hra || 0, conv = src.conveyance || 0,
+      special = src.special || 0;
+  var gross = basic + hra + conv + special;
+
+  var pf = src.pfAuto
+    ? Math.round(Math.min(basic, PF_WAGE_CEILING) * PF_RATE)
+    : (src.pf || 0);
+  /* ESI eligibility is on gross wages, and it stops entirely above the limit */
+  var esi = src.esiAuto
+    ? (gross <= ESI_GROSS_LIMIT ? Math.round(gross * ESI_RATE) : 0)
+    : (src.esi || 0);
+
+  var pt = src.pt || 0, tds = src.tds || 0, adv = src.advance || 0, other = src.other || 0;
+  var deductions = pf + esi + pt + tds + adv + other;
+  return {
+    basic: basic, hra: hra, conv: conv, special: special, gross: gross,
+    pf: pf, esi: esi, pt: pt, tds: tds, advance: adv, other: other,
+    deductions: deductions, net: gross - deductions,
+    esiEligible: gross <= ESI_GROSS_LIMIT
+  };
+}
+
+function formSource() {
+  return {
+    name: sv('empName'), id: sv('empId'), role: sv('empRole'), days: sv('empDays'),
+    basic: snum('eBasic'), hra: snum('eHra'), conveyance: snum('eConv'), special: snum('eSpecial'),
+    pfAuto: schk('dPfAuto'), esiAuto: schk('dEsiAuto'),
+    pt: snum('dPt'), tds: snum('dTds'), advance: snum('dAdvance'), other: snum('dOther')
+  };
+}
+
+function monthLabel() {
+  var v = sv('payMonth');
+  if (!v) return '';
+  var p = v.split('-');
+  var names = ['January','February','March','April','May','June',
+               'July','August','September','October','November','December'];
+  var mi = parseInt(p[1], 10) - 1;
+  return (names[mi] || '') + ' ' + p[0];
+}
+
+function ssLive() {
+  savePrefs();
+  if (ssMode === 'many') { ssCsvLive(); return }
+  var src = formSource();
+  var s = computeSlip(src);
+  var wrap = document.getElementById('ssPreview');
+  if (!s.gross) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  document.getElementById('ssPreviewBox').innerHTML = slipHtml(src, s);
+}
+
+function slipHtml(src, s) {
+  var line = function (l, v, bold) {
+    return '<tr><td style="padding:.22rem .4rem">' + l + '</td>' +
+      '<td style="padding:.22rem .4rem;text-align:right' + (bold ? ';font-weight:700' : '') + '">' +
+      (v === null ? '' : inr(v)) + '</td></tr>';
+  };
+  var earn = [['Basic', s.basic], ['HRA', s.hra], ['Conveyance', s.conv], ['Special allowance', s.special]]
+    .filter(function (r) { return r[1] });
+  var ded = [['PF', s.pf], ['ESI', s.esi], ['Professional tax', s.pt],
+             ['TDS', s.tds], ['Advance', s.advance], ['Other', s.other]]
+    .filter(function (r) { return r[1] });
+  var esc = function (t) { return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;') };
+
+  return '' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;border-bottom:2px solid #333;padding-bottom:.5rem">' +
+      '<div><div style="font-weight:700;font-size:1.05rem">' + (esc(sv('coName')) || 'Company name') + '</div>' +
+      (sv('coAddr') ? '<div style="font-size:.78rem;color:#555">' + esc(sv('coAddr')) + '</div>' : '') + '</div>' +
+      '<div style="text-align:right;font-size:.8rem">Salary Slip<br><strong>' + (monthLabel() || '—') + '</strong></div>' +
+    '</div>' +
+    '<table style="width:100%;font-size:.8rem;margin:.6rem 0">' +
+      '<tr><td style="padding:.2rem 0;color:#555">Employee</td><td style="padding:.2rem 0"><strong>' + (esc(src.name) || '—') + '</strong></td>' +
+          '<td style="padding:.2rem 0;color:#555">ID</td><td style="padding:.2rem 0">' + (esc(src.id) || '—') + '</td></tr>' +
+      '<tr><td style="padding:.2rem 0;color:#555">Designation</td><td style="padding:.2rem 0">' + (esc(src.role) || '—') + '</td>' +
+          '<td style="padding:.2rem 0;color:#555">Days paid</td><td style="padding:.2rem 0">' + (esc(src.days) || '—') + '</td></tr>' +
+    '</table>' +
+    '<div style="display:flex;gap:1rem;flex-wrap:wrap">' +
+      '<table style="flex:1;min-width:220px;border-collapse:collapse;font-size:.8rem">' +
+        '<tr><th colspan="2" style="text-align:left;background:#eef;padding:.3rem .4rem">Earnings</th></tr>' +
+        earn.map(function (r) { return line(r[0], r[1]) }).join('') +
+        '<tr style="border-top:1px solid #333">' + line('Gross', s.gross, true).slice(4) +
+      '</table>' +
+      '<table style="flex:1;min-width:220px;border-collapse:collapse;font-size:.8rem">' +
+        '<tr><th colspan="2" style="text-align:left;background:#fee;padding:.3rem .4rem">Deductions</th></tr>' +
+        (ded.length ? ded.map(function (r) { return line(r[0], r[1]) }).join('')
+                    : '<tr><td style="padding:.22rem .4rem;color:#777" colspan="2">None</td></tr>') +
+        '<tr style="border-top:1px solid #333">' + line('Total', s.deductions, true).slice(4) +
+      '</table>' +
+    '</div>' +
+    '<div style="margin-top:.7rem;padding:.55rem .7rem;background:#eef;border-radius:6px;display:flex;justify-content:space-between;font-weight:700">' +
+      '<span>Net pay</span><span>' + inr(s.net) + '</span></div>' +
+    '<div style="font-size:.78rem;color:#444;margin-top:.35rem">' + rupeesInWords(s.net) + '</div>' +
+    (!s.esiEligible && schk('dEsiAuto')
+      ? '<div style="font-size:.75rem;color:#8a5a00;margin-top:.4rem">Gross is above ₹' +
+        ESI_GROSS_LIMIT.toLocaleString('en-IN') + ', so ESI does not apply.</div>' : '') +
+    '<div style="margin-top:1.3rem;display:flex;justify-content:space-between;font-size:.75rem;color:#555">' +
+      '<span>This is a computer-generated salary slip.</span>' +
+      '<span style="text-align:center"><span style="display:block;border-top:1px solid #333;width:140px"></span>Authorised signatory</span>' +
+    '</div>';
+}
+
+/* ---------- CSV ---------- */
+function parseCsv(text) {
+  var rows = [], row = [], field = '', inQ = false, i = 0;
+  text = text.replace(/^\ufeff/, '');
+  while (i < text.length) {
+    var ch = text[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue }
+        inQ = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQ = true; i++; continue }
+    if (ch === ',') { row.push(field); field = ''; i++; continue }
+    if (ch === '\r') { i++; continue }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue }
+    field += ch; i++;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row) }
+  return rows.filter(function (r) { return r.some(function (c) { return String(c).trim() }) });
+}
+
+function ssCsvLive() {
+  var text = document.getElementById('csvText').value;
+  var info = document.getElementById('csvInfo');
+  var wrap = document.getElementById('ssPreview');
+  if (!text.trim()) {
+    csvRows = null;
+    info.style.display = 'none';
+    wrap.style.display = 'none';
+    return;
+  }
+  var rows = parseCsv(text);
+  if (rows.length < 2) {
+    csvRows = null;
+    info.style.display = 'block';
+    info.textContent = 'Need a header row and at least one employee row.';
+    wrap.style.display = 'none';
+    return;
+  }
+  var head = rows[0].map(function (h) { return h.trim().toLowerCase() });
+  var idx = function (names) {
+    for (var i = 0; i < names.length; i++) {
+      var p = head.indexOf(names[i]);
+      if (p >= 0) return p;
+    }
+    return -1;
+  };
+  var cols = {
+    name: idx(['name', 'employee', 'employee name']),
+    id: idx(['id', 'empid', 'employee id', 'code']),
+    role: idx(['designation', 'role', 'title']),
+    basic: idx(['basic', 'basic salary']),
+    hra: idx(['hra']),
+    conveyance: idx(['conveyance', 'conv', 'transport']),
+    special: idx(['special', 'special allowance', 'other allowance', 'allowance']),
+    pt: idx(['pt', 'professional tax']),
+    tds: idx(['tds', 'income tax', 'tax']),
+    advance: idx(['advance', 'loan', 'recovery']),
+    days: idx(['days', 'days paid'])
+  };
+  if (cols.name < 0 || cols.basic < 0) {
+    csvRows = null;
+    info.style.display = 'block';
+    info.innerHTML = '<span style="color:var(--danger)">The header needs at least <code>name</code> and <code>basic</code>. ' +
+      'Found: ' + head.join(', ') + '</span>';
+    wrap.style.display = 'none';
+    return;
+  }
+
+  var num = function (r, c) {
+    if (c < 0) return 0;
+    var v = parseFloat(String(r[c] || '').replace(/[₹,\s]/g, ''));
+    return isFinite(v) ? v : 0;
+  };
+  var out = [], skipped = 0;
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var nm = (r[cols.name] || '').trim();
+    var bs = num(r, cols.basic);
+    if (!nm || !bs) { skipped++; continue }
+    out.push({
+      name: nm,
+      id: cols.id >= 0 ? (r[cols.id] || '').trim() : '',
+      role: cols.role >= 0 ? (r[cols.role] || '').trim() : '',
+      days: cols.days >= 0 ? (r[cols.days] || '').trim() : '',
+      basic: bs, hra: num(r, cols.hra), conveyance: num(r, cols.conveyance),
+      special: num(r, cols.special), pt: num(r, cols.pt), tds: num(r, cols.tds),
+      advance: num(r, cols.advance), other: 0,
+      pfAuto: schk('dPfAuto'), esiAuto: schk('dEsiAuto')
+    });
+  }
+  csvRows = out.length ? out : null;
+
+  info.style.display = 'block';
+  if (!out.length) {
+    info.innerHTML = '<span style="color:var(--danger)">No usable rows — every row needs a name and a basic amount.</span>';
+    wrap.style.display = 'none';
+    return;
+  }
+  var totalNet = out.reduce(function (a, e) { return a + computeSlip(e).net }, 0);
+  info.innerHTML = '👥 <strong>' + out.length + '</strong> employee' + (out.length === 1 ? '' : 's') +
+    ' · total net payout <strong>' + inr(totalNet) + '</strong>' +
+    (skipped ? ' · <span style="color:var(--warn)">' + skipped +
+      ' row(s) skipped for a missing name or basic</span>' : '');
+
+  wrap.style.display = 'block';
+  document.getElementById('ssPreviewBox').innerHTML =
+    slipHtml(out[0], computeSlip(out[0])) +
+    (out.length > 1 ? '<p style="margin-top:.8rem;font-size:.78rem;color:#555">Showing ' +
+      out[0].name + ' — ' + (out.length - 1) + ' more will be generated.</p>' : '');
+}
+
+function loadSampleCsv() {
+  document.getElementById('csvText').value =
+    'name,id,designation,basic,hra,conveyance,special,pt\r\n' +
+    'Asha Rao,EMP001,Accounts Executive,20000,8000,1600,4000,200\r\n' +
+    'Ravi Kumar,EMP002,Sales Officer,18000,7200,1600,3000,200\r\n' +
+    'सीमा शर्मा,EMP003,Office Assistant,12000,4800,1600,1500,0\r\n';
+  ssCsvLive();
+  notify('Sample loaded — including a Devanagari name to show the PDF handles it.', 'info');
+}
+
+/* ---------- logo ---------- */
+function handleLogo(file) {
+  if (!file) return;
+  if (!/^image\/(png|jpeg)$/.test(file.type || '')) {
+    notify('The logo must be a PNG or JPG. pdf-lib cannot embed other formats.', 'error');
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    notify('That logo is ' + formatSize(file.size) + '. Something under 500 KB keeps the PDF small.', 'warn');
+  }
+  var r = new FileReader();
+  r.onerror = function () {
+    notify('"' + file.name + '" could not be read. Try a different file.', 'error');
+  };
+  r.onload = function (e) {
+    var bytes = new Uint8Array(e.target.result);
+    /* A FileReader succeeds on any bytes at all, so the file has to be decoded
+       before it can be called a logo. Without this a corrupt PNG reported
+       "Logo added" and only failed later inside embedPng. */
+    loadImage(file).then(function () {
+      logoBytes = bytes;
+      logoType = file.type;
+      var info = document.getElementById('logoInfo');
+      info.style.display = 'block';
+      info.textContent = '🖼️ ' + file.name + ' · ' + formatSize(file.size) +
+        ' — will appear on every slip.';
+      notify('Logo added.', 'ok');
+    }).catch(function () {
+      logoBytes = null;
+      logoType = '';
+      document.getElementById('logoInfo').style.display = 'none';
+      notify('"' + file.name + '" is not a readable image. Try a PNG or JPG file.', 'error');
+    });
+  };
+  r.readAsArrayBuffer(file);
+}
+
+/* ---------- PDF ---------- */
+async function drawSlip(doc, page, font, bold, uniFont, logoImg, src, s) {
+  var W = page.getWidth(), H = page.getHeight(), rgb = PDFLib.rgb;
+  var pick = function (t, wantBold) {
+    /* the standard 14 fonts are WinAnsi only, so Indian scripts need the
+       embedded Unicode font or drawText throws */
+    if (uniFont && uniNeeded(t)) return uniFont;
+    return wantBold ? bold : font;
+  };
+  var put = function (t, x, y, size, opts) {
+    opts = opts || {};
+    var str = String(t == null ? '' : t);
+    if (!str) return;
+    var f = pick(str, opts.bold);
+    var safe = (f === uniFont) ? str : uniSafe(str, font);
+    page.drawText(safe, { x: x, y: y, size: size || 10, font: f,
+      color: opts.color || rgb(0.08, 0.08, 0.13) });
+  };
+  var right = function (t, xRight, y, size, opts) {
+    opts = opts || {};
+    var str = String(t == null ? '' : t);
+    var f = pick(str, opts.bold);
+    var safe = (f === uniFont) ? str : uniSafe(str, font);
+    var w = f.widthOfTextAtSize(safe, size || 10);
+    page.drawText(safe, { x: xRight - w, y: y, size: size || 10, font: f,
+      color: opts.color || rgb(0.08, 0.08, 0.13) });
+  };
+
+  var M = 46;
+  page.drawRectangle({ x: M - 10, y: 40, width: W - 2 * (M - 10), height: H - 80,
+    borderColor: rgb(0.82, 0.82, 0.88), borderWidth: 1 });
+
+  var y = H - 72;
+  if (logoImg) {
+    var dims = logoImg.scale(1);
+    var h = 36, w = dims.width * (h / dims.height);
+    if (w > 130) { w = 130; h = dims.height * (w / dims.width) }
+    page.drawImage(logoImg, { x: M, y: y - h + 12, width: w, height: h });
+    put(sv('coName') || 'Company', M + w + 12, y, 14, { bold: true });
+    if (sv('coAddr')) put(sv('coAddr'), M + w + 12, y - 15, 8.5, { color: rgb(0.4, 0.4, 0.47) });
+  } else {
+    put(sv('coName') || 'Company', M, y, 14, { bold: true });
+    if (sv('coAddr')) put(sv('coAddr'), M, y - 15, 8.5, { color: rgb(0.4, 0.4, 0.47) });
+  }
+  right('SALARY SLIP', W - M, y, 11, { bold: true, color: rgb(0.31, 0.27, 0.9) });
+  right(monthLabel() || '—', W - M, y - 15, 10, { bold: true });
+
+  y -= 38;
+  page.drawLine({ start: { x: M, y: y }, end: { x: W - M, y: y }, thickness: 1.2,
+    color: rgb(0.25, 0.25, 0.3) });
+  y -= 22;
+
+  var col2 = M + (W - 2 * M) / 2;
+  var pairs = [['Employee', src.name || '—', 'Employee ID', src.id || '—'],
+               ['Designation', src.role || '—', 'Days paid', src.days || '—']];
+  pairs.forEach(function (p) {
+    put(p[0], M, y, 9, { color: rgb(0.42, 0.42, 0.5) });
+    put(p[1], M + 76, y, 10, { bold: true });
+    put(p[2], col2, y, 9, { color: rgb(0.42, 0.42, 0.5) });
+    put(p[3], col2 + 76, y, 10);
+    y -= 17;
+  });
+  y -= 10;
+
+  /* two columns of figures, the layout a payslip is expected to have */
+  var tableTop = y;
+  var colW = (W - 2 * M - 16) / 2;
+  var drawBlock = function (x, title, rows, totalLabel, totalVal, tint) {
+    var yy = tableTop;
+    page.drawRectangle({ x: x, y: yy - 14, width: colW, height: 18, color: tint });
+    put(title, x + 6, yy - 10, 9.5, { bold: true });
+    yy -= 28;
+    if (!rows.length) {
+      put('None', x + 6, yy, 9.5, { color: rgb(0.55, 0.55, 0.6) });
+      yy -= 15;
+    }
+    rows.forEach(function (r) {
+      put(r[0], x + 6, yy, 9.5);
+      right(inr(r[1]), x + colW - 6, yy, 9.5);
+      yy -= 15;
+    });
+    page.drawLine({ start: { x: x, y: yy + 5 }, end: { x: x + colW, y: yy + 5 },
+      thickness: 0.8, color: rgb(0.3, 0.3, 0.36) });
+    yy -= 10;
+    put(totalLabel, x + 6, yy, 10, { bold: true });
+    right(inr(totalVal), x + colW - 6, yy, 10, { bold: true });
+    return yy;
+  };
+
+  var earn = [['Basic', s.basic], ['HRA', s.hra], ['Conveyance', s.conv],
+              ['Special allowance', s.special]].filter(function (r) { return r[1] });
+  var ded = [['PF', s.pf], ['ESI', s.esi], ['Professional tax', s.pt], ['TDS', s.tds],
+             ['Advance', s.advance], ['Other', s.other]].filter(function (r) { return r[1] });
+
+  var y1 = drawBlock(M, 'EARNINGS', earn, 'Gross', s.gross, rgb(0.92, 0.93, 1));
+  var y2 = drawBlock(M + colW + 16, 'DEDUCTIONS', ded, 'Total deductions', s.deductions,
+    rgb(1, 0.93, 0.93));
+  y = Math.min(y1, y2) - 26;
+
+  page.drawRectangle({ x: M, y: y - 8, width: W - 2 * M, height: 26,
+    color: rgb(0.92, 0.93, 1) });
+  put('NET PAY', M + 8, y, 11, { bold: true });
+  right(inr(s.net), W - M - 8, y, 12, { bold: true });
+  y -= 24;
+  put(rupeesInWords(s.net), M, y, 8.5, { color: rgb(0.3, 0.3, 0.37) });
+  y -= 16;
+  if (!s.esiEligible && src.esiAuto) {
+    put('Gross is above the \u20B9' + ESI_GROSS_LIMIT + ' ESI limit, so ESI does not apply.',
+      M, y, 8, { color: rgb(0.55, 0.38, 0.05) });
+    y -= 14;
+  }
+
+  page.drawLine({ start: { x: W - M - 150, y: 112 }, end: { x: W - M, y: 112 },
+    thickness: 1, color: rgb(0.25, 0.25, 0.3) });
+  put('Authorised signatory', W - M - 150, 98, 8.5, { color: rgb(0.4, 0.4, 0.47) });
+  put('This is a computer-generated salary slip.', M, 98, 8,
+    { color: rgb(0.5, 0.5, 0.57) });
+  put('Generated with freetoolhubs.com/tools/salary-slip', M, 60, 7.5,
+    { color: rgb(0.63, 0.63, 0.7) });
+}
+
+async function buildDoc(list) {
+  var doc = await PDFLib.PDFDocument.create();
+  var font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  var bold = await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+  var allText = [sv('coName'), sv('coAddr')].concat(
+    list.map(function (e) { return [e.name, e.role, e.id].join(' ') })).join(' ');
+  var uniFont = null;
+  if (uniNeeded(allText)) {
+    try { uniFont = await uniEmbed(doc) }
+    catch (e) {
+      notify('Indian-script names could not be embedded, so they are transliterated in the PDF.', 'warn');
+    }
+  }
+
+  var logoImg = null;
+  if (logoBytes) {
+    try {
+      logoImg = logoType === 'image/png' ? await doc.embedPng(logoBytes)
+                                         : await doc.embedJpg(logoBytes);
+    } catch (e) {
+      notify('The logo could not be embedded, so the slip is generated without it.', 'warn');
+    }
+  }
+
+  for (var i = 0; i < list.length; i++) {
+    var page = doc.addPage([595, 842]);
+    await drawSlip(doc, page, font, bold, uniFont, logoImg, list[i], computeSlip(list[i]));
+  }
+  return doc;
+}
+
+function safeName(s) {
+  /* JS \w is ASCII-only, so a character class based on it strips Devanagari
+     and every other Indian script, turning a Hindi name into underscores.
+     Remove only what actually breaks a filename. */
+  return String(s || 'slip')
+    .replace(/[\\\/:*?"<>|\u0000-\u001f]+/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim().slice(0, 40) || 'slip';
+}
+
+async function ssGenerate() {
+  if (typeof PDFLib === 'undefined') {
+    notify('The PDF library did not load. Check your connection and reload.', 'error');
+    return;
+  }
+  var list;
+  if (ssMode === 'one') {
+    var src = formSource();
+    var missing = [];
+    if (!src.name) missing.push('employee name');
+    if (!src.basic) missing.push('basic salary');
+    if (!sv('coName')) missing.push('company name');
+    if (!sv('payMonth')) missing.push('month');
+    if (missing.length) { notify('Still needed: ' + missing.join(', ') + '.', 'warn'); return }
+    var s = computeSlip(src);
+    if (s.net < 0) {
+      notify('Deductions exceed gross pay, so net pay is negative. Check the figures.', 'warn');
+    }
+    list = [src];
+  } else {
+    if (!csvRows || !csvRows.length) { notify('Paste or load an employee list first.', 'warn'); return }
+    if (!sv('coName')) { notify('Company name is needed on the slips.', 'warn'); return }
+    if (!sv('payMonth')) { notify('Pick the salary month.', 'warn'); return }
+    list = csvRows;
+  }
+
+  var btn = document.getElementById('ssGen');
+  var label = btn.textContent;
+  btn.disabled = true;
+  try {
+    if (ssMode === 'many' && sv('bulkFmt') === 'zip') {
+      if (typeof JSZip === 'undefined') {
+        notify('The ZIP library did not load. Use the single-PDF option instead.', 'error');
+        return;
+      }
+      var zip = new JSZip();
+      for (var i = 0; i < list.length; i++) {
+        btn.textContent = 'Building ' + (i + 1) + ' of ' + list.length + '…';
+        /* yield so the counter paints rather than freezing on a long list */
+        await new Promise(function (r) { requestAnimationFrame(function () { setTimeout(r, 0) }) });
+        var d = await buildDoc([list[i]]);
+        zip.file(String(i + 1).padStart(2, '0') + '-' + safeName(list[i].name) + '.pdf',
+          await d.save());
+      }
+      var totalNet = list.reduce(function (a, e) { return a + computeSlip(e).net }, 0);
+      zip.file('README.txt',
+        'Salary slips — ' + (monthLabel() || '') + '\r\n' +
+        'Company: ' + sv('coName') + '\r\n' +
+        'Employees: ' + list.length + '\r\n' +
+        'Total net payout: ' + inr(totalNet).replace('\u20B9', 'Rs. ') + '\r\n\r\n' +
+        'PF: 12% of basic, basic capped at Rs. ' + PF_WAGE_CEILING + '\r\n' +
+        'ESI: 0.75% of gross while gross is Rs. ' + ESI_GROSS_LIMIT + ' or less\r\n' +
+        'Professional tax varies by state — check your slab.\r\n\r\n' +
+        'Generated with https://freetoolhubs.com/tools/salary-slip\r\n');
+      download(await zip.generateAsync({ type: 'blob' }),
+        'salary-slips-' + (sv('payMonth') || 'month') + '.zip');
+      notify(list.length + ' slips as separate PDFs in a ZIP.', 'ok');
+    } else {
+      btn.textContent = 'Building…';
+      var doc = await buildDoc(list);
+      var bytes = await doc.save();
+      var fname = ssMode === 'one'
+        ? 'salary-slip-' + safeName(list[0].name) + '-' + (sv('payMonth') || '') + '.pdf'
+        : 'salary-slips-' + (sv('payMonth') || 'month') + '.pdf';
+      download(new Blob([bytes], { type: 'application/pdf' }), fname);
+      notify(list.length === 1 ? 'Slip downloaded.' : list.length + ' slips in one PDF.', 'ok');
+    }
+  } catch (err) {
+    notify('Could not build the PDF: ' + (err && err.message ? err.message : err), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+async function ssCopy() {
+  var src, s;
+  if (ssMode === 'one') {
+    src = formSource();
+    if (!src.basic) { notify('Enter the earnings first.', 'warn'); return }
+  } else {
+    if (!csvRows || !csvRows.length) { notify('Load an employee list first.', 'warn'); return }
+    src = csvRows[0];
+  }
+  s = computeSlip(src);
+  var L = [];
+  L.push('SALARY SLIP — ' + (monthLabel() || ''));
+  L.push(sv('coName') || '');
+  L.push('');
+  L.push('Employee: ' + (src.name || '') + (src.id ? '  (' + src.id + ')' : ''));
+  if (src.role) L.push('Designation: ' + src.role);
+  if (src.days) L.push('Days paid: ' + src.days);
+  L.push('');
+  L.push('EARNINGS');
+  [['Basic', s.basic], ['HRA', s.hra], ['Conveyance', s.conv], ['Special allowance', s.special]]
+    .forEach(function (r) { if (r[1]) L.push('  ' + r[0] + ': ' + inr(r[1])) });
+  L.push('  Gross: ' + inr(s.gross));
+  L.push('');
+  L.push('DEDUCTIONS');
+  var any = false;
+  [['PF', s.pf], ['ESI', s.esi], ['Professional tax', s.pt], ['TDS', s.tds],
+   ['Advance', s.advance], ['Other', s.other]]
+    .forEach(function (r) { if (r[1]) { any = true; L.push('  ' + r[0] + ': ' + inr(r[1])) } });
+  if (!any) L.push('  None');
+  L.push('  Total: ' + inr(s.deductions));
+  L.push('');
+  L.push('NET PAY: ' + inr(s.net));
+  L.push(rupeesInWords(s.net));
+  if (ssMode === 'many' && csvRows.length > 1) {
+    L.push('');
+    L.push('(' + (csvRows.length - 1) + ' more employees in the list)');
+  }
+  await copyNow(L.join('\r\n') + '\r\n', 'Slip copied as text.');
+}
+
+function ssClear() {
+  ['empName','empId','empRole','empDays','eBasic','eHra','eConv','eSpecial',
+   'dPt','dTds','dAdvance','dOther','csvText'].forEach(function (id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  csvRows = null;
+  logoBytes = null;
+  document.getElementById('logoInfo').style.display = 'none';
+  document.getElementById('csvInfo').style.display = 'none';
+  document.getElementById('ssPreview').style.display = 'none';
+  notify('Cleared.', 'info');
+}
+
+/* ---------- preferences, deliberately not the salary figures ---------- */
+function savePrefs() {
+  storeSet(SS_KEY, {
+    mode: ssMode, coName: sv('coName'), coAddr: sv('coAddr'),
+    pfAuto: schk('dPfAuto'), esiAuto: schk('dEsiAuto'), bulkFmt: sv('bulkFmt')
+  }, true);
+}
+function setSelIfOption(id, v) {
+  var e = document.getElementById(id);
+  if (!e || !v) return;
+  for (var i = 0; i < e.options.length; i++) {
+    if (e.options[i].value === v) { e.value = v; return }
+  }
+}
+(function init() {
+  var now = new Date();
+  document.getElementById('payMonth').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+  var p = storeGet(SS_KEY, null);
+  if (p) {
+    if (p.coName) document.getElementById('coName').value = p.coName;
+    if (p.coAddr) document.getElementById('coAddr').value = p.coAddr;
+    if (typeof p.pfAuto === 'boolean') document.getElementById('dPfAuto').checked = p.pfAuto;
+    if (typeof p.esiAuto === 'boolean') document.getElementById('dEsiAuto').checked = p.esiAuto;
+    setSelIfOption('bulkFmt', p.bulkFmt);
+    if (p.mode === 'many') { setSsMode('many'); return }
+  }
+  ssLive();
+})();
+
+setupDrop('logoDrop', 'logoFile', function (files) { handleLogo(files[0]) });
+setupDrop('csvDrop', 'csvFile', function (files) { handleCsvFile(files[0]) });
+document.getElementById('logoFile').addEventListener('change', function () {
+  if (this.files && this.files[0]) handleLogo(this.files[0]);
+});
+document.getElementById('csvFile').addEventListener('change', function () {
+  if (this.files && this.files[0]) handleCsvFile(this.files[0]);
+});
+
+function handleCsvFile(file) {
+  if (!file) return;
+  if (!/\.(csv|txt)$/i.test(file.name) && !/^text\//.test(file.type || '')) {
+    notify('"' + file.name + '" is not a text file. Use a .csv or .txt file.', 'error');
+    return;
+  }
+  var r = new FileReader();
+  r.onerror = function () {
+    notify('"' + file.name + '" could not be read. It may be corrupt.', 'error');
+  };
+  r.onload = function (e) {
+    document.getElementById('csvText').value = e.target.result;
+    ssCsvLive();
+    notify('Loaded ' + file.name + '.', 'ok');
+  };
+  r.readAsText(file);
+}
+  </script>
+</body>
+</html>

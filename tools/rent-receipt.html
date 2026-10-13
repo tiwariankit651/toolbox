@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rent Receipt Generator - HRA Claim Receipts Free PDF | FreeToolHubs</title>
+  <meta name="description" content="Generate rent receipts for HRA claim free. Monthly or 12-month bulk receipts, landlord PAN field, revenue stamp space, HRA exemption calculator. PDF download, nothing uploaded.">
+  <meta property="og:title" content="Rent Receipt Generator — Free HRA Receipts | FreeToolHubs">
+  <meta property="og:description" content="Monthly or yearly rent receipts for HRA claim, with the HRA exemption calculated for you">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/rent-receipt">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Rent Receipt Generator — FreeToolHubs">
+  <meta name="twitter:description" content="Free rent receipts for HRA claim with exemption calculator">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Rent Receipt Generator","url":"https://freetoolhubs.com/tools/rent-receipt","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Generate rent receipts for HRA claim with landlord PAN, revenue stamp space and an HRA exemption calculator."}
+  </script>
+  <meta name="keywords" content="rent receipt generator, hra rent receipt, rent receipt format, rent receipt pdf, hra claim receipt, 12 month rent receipt, landlord pan rent receipt">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/rent-receipt">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🏠 Rent Receipt Generator</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>🏠 Rent Receipt Generator</h1>
+      <p class="info">Make rent receipts for your HRA claim — one month or all twelve at once. Includes the landlord PAN field your employer asks for above ₹1 lakh annual rent, space for a revenue stamp, and an HRA exemption calculator so you know what you can actually claim. Everything is generated in your browser; no detail is uploaded.</p>
+
+      <div class="row" style="margin-bottom:.6rem">
+        <button class="btn" id="tabSingle" onclick="setRRMode('single')">📄 Single receipt</button>
+        <button class="btn btn-outline" id="tabBulk" onclick="setRRMode('bulk')">📅 Full year (12)</button>
+        <button class="btn btn-outline" id="tabHra" onclick="setRRMode('hra')">🧮 HRA exemption</button>
+      </div>
+
+      <!-- ===== shared details ===== -->
+      <div id="paneDetails">
+        <h3 role="heading" aria-level="2">Tenant and landlord</h3>
+        <div class="row">
+          <label style="flex:1">Tenant name (you)
+            <input type="text" id="tenant" placeholder="Asha Rao" oninput="rrLive()">
+          </label>
+          <label style="flex:1">Landlord name
+            <input type="text" id="landlord" placeholder="Ramesh Gupta" oninput="rrLive()">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Landlord PAN <span id="panHint" class="badge"></span>
+            <input type="text" id="landlordPan" placeholder="ABCDE1234F" maxlength="10" oninput="rrLive()">
+          </label>
+          <label style="flex:1">Monthly rent (₹)
+            <input type="number" id="rent" placeholder="15000" min="0" step="1" oninput="rrLive()">
+          </label>
+        </div>
+        <label>Rented property address
+          <textarea id="address" rows="2" placeholder="Flat 302, Shanti Apartments, FC Road, Pune 411004" oninput="rrLive()"></textarea>
+        </label>
+        <div class="row">
+          <label style="flex:1">Paid by
+            <select id="payMode" onchange="rrLive()">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Bank transfer">Bank transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          </label>
+          <label style="flex:1">Reference / UTR <span style="font-weight:400;color:var(--text2)">(optional)</span>
+            <input type="text" id="payRef" placeholder="UPI ref or cheque no." oninput="rrLive()">
+          </label>
+        </div>
+      </div>
+
+      <!-- ===== single receipt ===== -->
+      <div id="paneSingle">
+        <h3 role="heading" aria-level="2">Receipt period</h3>
+        <div class="row">
+          <label style="flex:1">Month
+            <select id="rMonth" onchange="rrLive()"></select>
+          </label>
+          <label style="flex:1">Year
+            <select id="rYear" onchange="rrLive()"></select>
+          </label>
+        </div>
+      </div>
+
+      <!-- ===== bulk ===== -->
+      <div id="paneBulk" style="display:none">
+        <h3 role="heading" aria-level="2">Financial year</h3>
+        <div class="row">
+          <label style="flex:1">Period
+            <select id="fyPick" onchange="rrLive()"></select>
+          </label>
+          <label style="flex:1">Output
+            <select id="bulkOut" onchange="rrLive()">
+              <option value="pdf">One PDF, 12 pages</option>
+              <option value="zip">ZIP of 12 separate PDFs</option>
+            </select>
+          </label>
+        </div>
+        <p class="info" id="bulkNote"></p>
+      </div>
+
+      <!-- ===== HRA ===== -->
+      <div id="paneHra" style="display:none">
+        <h3 role="heading" aria-level="2">HRA exemption calculator</h3>
+        <p class="info">Section 10(13A) — exemption is the <strong>least</strong> of three amounts. Available under the old tax regime only; the new regime has no HRA exemption.</p>
+        <div class="row">
+          <label style="flex:1">Basic salary + DA, per year (₹)
+            <input type="number" id="hraBasic" placeholder="600000" min="0" oninput="rrLive()">
+          </label>
+          <label style="flex:1">HRA received, per year (₹)
+            <input type="number" id="hraReceived" placeholder="240000" min="0" oninput="rrLive()">
+          </label>
+        </div>
+        <div class="row">
+          <label style="flex:1">Rent paid, per year (₹)
+            <input type="number" id="hraRent" placeholder="180000" min="0" oninput="rrLive()">
+          </label>
+          <label style="flex:1">City category
+            <select id="hraCity" onchange="rrLive()">
+              <option value="50">Metro — 50% of basic</option>
+              <option value="40">Non-metro — 40% of basic</option>
+            </select>
+          </label>
+        </div>
+        <div id="hraResult"></div>
+      </div>
+
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" id="genBtn" onclick="generate()">📄 Generate PDF</button>
+        <button class="btn btn-outline" onclick="copyText2()">📋 Copy as text</button>
+        <button class="btn btn-outline" onclick="clearAll()">🗑️ Clear</button>
+      </div>
+
+      <div id="preview" style="display:none;margin-top:1rem">
+        <h3 role="heading" aria-level="2">Preview</h3>
+        <div id="previewBox" style="background:#fff;color:#111;padding:1.4rem;border-radius:8px;font-size:.85rem;line-height:1.7;overflow-x:auto"></div>
+      </div>
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> generate · <kbd>Ctrl</kbd>+<kbd>K</kbd> first field · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Fill tenant, landlord and rent.</strong> These appear on every receipt, so you only enter them once.</li>
+    <li><strong>Add the landlord's PAN</strong> if your annual rent crosses ₹1 lakh — ₹8,334 a month. Above that figure most employers will not process the HRA exemption without it. The tool warns you when your rent crosses the line.</li>
+    <li><strong>Single or full year.</strong> One month for a missed receipt, or all twelve for the financial year at submission time. Twelve can come as one PDF or as a ZIP of separate files, depending on what your employer's portal accepts.</li>
+    <li><strong>Check the HRA tab</strong> to see what you can actually claim before you submit. The exemption is the least of three amounts, and it is often lower than people expect.</li>
+    <li><strong>Print and get it signed.</strong> A receipt above ₹5,000 should carry a ₹1 revenue stamp with the landlord's signature across it. The PDF leaves space for this.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>January–February rush when HR asks for the whole year's rent receipts at once</li>
+    <li>Paying rent to a parent or relative and needing proper receipts for the claim</li>
+    <li>Landlord who will sign a receipt but will not type one out</li>
+    <li>Filing ITR and reconstructing receipts you never collected month by month</li>
+    <li>Changed flats mid-year and need two sets of receipts with different addresses</li>
+    <li>Checking whether your HRA claim is worth staying on the old tax regime for</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>A rent receipt is the document your employer or the Income Tax Department accepts as proof that you paid rent, which is what makes the HRA exemption under Section 10(13A) claimable. This generator produces receipts in the standard format — tenant, landlord, address, period, amount, payment mode and a signature line — and lets you make all twelve months of a financial year in one go, which is when most people actually need them. The landlord's PAN field is included because annual rent above ₹1 lakh requires it, and a declaration if the landlord has no PAN. The built-in calculator works out the exemption as the least of the three statutory amounts so you can see the real benefit before submitting anything. Names and addresses in Hindi, Marathi, Tamil and other Indian scripts print correctly, because the PDF embeds a Unicode font rather than dropping the characters. Nothing is uploaded — your landlord's PAN and your salary figures stay in this tab.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>Twelve receipts in one click</strong> — the whole financial year, not one month at a time</li>
+    <li><strong>Warns you about the PAN threshold</strong> instead of letting the claim fail at HR</li>
+    <li><strong>Shows the real exemption</strong> — the least of three amounts, with each one spelled out</li>
+    <li><strong>Indian scripts print properly</strong> — a Devanagari name does not become blank boxes</li>
+    <li><strong>Nothing uploaded</strong> — PAN and salary are sensitive, and they never leave your device</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>Is a rent receipt enough, or do I need a rent agreement too?</summary><p>Receipts are the basic requirement. Many employers also ask for the rent agreement, and some ask for bank transfer proof, particularly for higher rents. Keeping all three is the safest approach.</p></details>
+    <details><summary>When is the landlord's PAN mandatory?</summary><p>When annual rent exceeds ₹1 lakh, which is about ₹8,334 a month. Without it the HRA exemption is usually disallowed. If the landlord genuinely has no PAN, a signed declaration to that effect is the accepted substitute.</p></details>
+    <details><summary>Do I need a revenue stamp on the receipt?</summary><p>Conventionally a ₹1 revenue stamp is affixed on cash receipts above ₹5,000, with the landlord signing across it. Payments made by bank transfer or UPI are usually accepted without a stamp since the transfer itself is the evidence. The PDF leaves space either way.</p></details>
+    <details><summary>Can I claim HRA for rent paid to my parents?</summary><p>Yes, if the arrangement is genuine. The parent must actually own the property and must declare the rent as income in their own return. Keep receipts and transfer records, because this arrangement attracts scrutiny.</p></details>
+    <details><summary>Is HRA available under the new tax regime?</summary><p>No. The HRA exemption applies under the old regime only. If you have opted for the new regime, rent receipts do not reduce your tax, and the comparison between regimes is worth running before you choose.</p></details>
+    <details><summary>Can I claim without any receipts at all?</summary><p>If annual rent is under ₹36,000 — ₹3,000 a month — employers commonly accept the claim without receipts. Above that, receipts are expected.</p></details>
+    <details><summary>Are my details stored anywhere?</summary><p>No. The PDF is built in your browser. Your landlord's PAN, your address and your salary figures are not transmitted anywhere, which is also why the tool works offline.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/salary-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Calculator</a><a href="/tools/salary-slip" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Slip</a><a href="/tools/tax-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Tax Calculator</a><a href="/tools/invoice-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Invoice Generator</a><a href="/tools/budget-tracker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Budget Tracker</a><a href="/tools/interest-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Interest Calculator</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/rent-receipt-hra-claim-guide">Rent Receipt Aur HRA Claim — Complete Guide</a></li><li><a href="/blog/how-to-create-professional-invoice-gst-free">Create a Professional GST Invoice Free</a></li><li><a href="/blog/how-to-track-expenses-monthly-budget-app">Monthly Budget Aur Expense Tracking</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script>
+/* Rent receipts for an HRA claim. Everything is built in the page: the PAN and
+   salary figures here are sensitive, so there is deliberately no upload path. */
+
+var RR_KEY = 'rentReceiptDraft';
+var MONTHS = ['April','May','June','July','August','September',
+              'October','November','December','January','February','March'];
+var CAL_MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+/* Annual rent above this requires the landlord's PAN for the exemption. */
+var PAN_THRESHOLD = 100000;
+var rrMode = 'single';
+
+function gv(id) { var e = document.getElementById(id); return e ? e.value.trim() : '' }
+function gn(id) { var v = parseFloat(gv(id)); return isFinite(v) ? v : 0 }
+
+function inr(n) {
+  /* Indian digit grouping: 12,34,567 rather than 1,234,567 */
+  var s = Math.round(n).toString();
+  var neg = s[0] === '-'; if (neg) s = s.slice(1);
+  var last3 = s.slice(-3), rest = s.slice(0, -3);
+  if (rest) last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + '₹' + rest + last3;
+}
+
+function setRRMode(m) {
+  rrMode = m;
+  document.getElementById('paneSingle').style.display = m === 'single' ? 'block' : 'none';
+  document.getElementById('paneBulk').style.display   = m === 'bulk'   ? 'block' : 'none';
+  document.getElementById('paneHra').style.display    = m === 'hra'    ? 'block' : 'none';
+  /* the shared tenant/landlord block is irrelevant to the pure calculator */
+  document.getElementById('paneDetails').style.display = m === 'hra' ? 'none' : 'block';
+  document.getElementById('tabSingle').className = m === 'single' ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabBulk').className   = m === 'bulk'   ? 'btn' : 'btn btn-outline';
+  document.getElementById('tabHra').className    = m === 'hra'    ? 'btn' : 'btn btn-outline';
+  document.getElementById('genBtn').textContent =
+    m === 'hra' ? '🧮 Calculate' : (m === 'bulk' ? '📄 Generate 12 receipts' : '📄 Generate PDF');
+  rrLive();
+  saveDraft();
+}
+
+/* ---------- live feedback ---------- */
+function rrLive() {
+  var rent = gn('rent');
+  var annual = rent * 12;
+  var hint = document.getElementById('panHint');
+  var pan = gv('landlordPan').toUpperCase();
+
+  if (rent > 0 && annual > PAN_THRESHOLD) {
+    if (!pan) {
+      hint.textContent = 'required above ' + inr(PAN_THRESHOLD) + '/yr';
+      hint.style.background = 'var(--warn-fill)';
+      hint.style.color = '#fff';
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+      hint.textContent = 'check the format';
+      hint.style.background = 'var(--danger-fill)';
+      hint.style.color = '#fff';
+    } else {
+      hint.textContent = 'looks valid';
+      hint.style.background = 'var(--ok-fill)';
+      hint.style.color = '#fff';
+    }
+  } else if (pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+    hint.textContent = 'check the format';
+    hint.style.background = 'var(--danger-fill)';
+    hint.style.color = '#fff';
+  } else {
+    hint.textContent = '';
+    hint.style.background = 'transparent';
+  }
+
+  if (rrMode === 'bulk') {
+    var note = document.getElementById('bulkNote');
+    note.innerHTML = rent > 0
+      ? '12 receipts × ' + inr(rent) + ' = <strong>' + inr(annual) + '</strong> for the year' +
+        (annual > PAN_THRESHOLD
+          ? ' · <span style="color:var(--warn)">above ' + inr(PAN_THRESHOLD) +
+            ', so the landlord PAN is needed</span>'
+          : ' · below the ' + inr(PAN_THRESHOLD) + ' PAN threshold')
+      : 'Enter the monthly rent to see the yearly total.';
+  }
+
+  if (rrMode === 'hra') renderHra();
+  else renderPreview();
+  saveDraft();
+}
+
+/* ---------- HRA exemption ---------- */
+function hraParts() {
+  var basic = gn('hraBasic'), received = gn('hraReceived'),
+      rent = gn('hraRent'), pct = parseFloat(gv('hraCity')) / 100;
+  var tenPct = basic * 0.10;
+  /* Section 10(13A): the exemption is the least of these three. */
+  var a = received;
+  var b = Math.max(0, rent - tenPct);
+  var c = basic * pct;
+  return { basic: basic, received: received, rent: rent, pct: pct,
+           a: a, b: b, c: c, exempt: Math.min(a, b, c), tenPct: tenPct };
+}
+
+function renderHra() {
+  var box = document.getElementById('hraResult');
+  var p = hraParts();
+  if (!p.basic || !p.received || !p.rent) {
+    box.innerHTML = '<p class="info">Fill basic salary, HRA received and rent paid to see the exemption.</p>';
+    return;
+  }
+  var which = p.exempt === p.a ? 'a' : (p.exempt === p.b ? 'b' : 'c');
+  var row = function (key, label, value) {
+    var win = key === which;
+    return '<div style="display:flex;justify-content:space-between;gap:1rem;padding:.45rem .6rem;border-radius:6px;' +
+      (win ? 'background:rgba(99,102,241,.14);font-weight:700' : '') + '">' +
+      '<span>' + label + (win ? ' ← lowest, so this applies' : '') + '</span>' +
+      '<span>' + inr(value) + '</span></div>';
+  };
+  box.innerHTML =
+    '<div class="info" style="padding:1rem">' +
+      row('a', '1. Actual HRA received', p.a) +
+      row('b', '2. Rent paid − 10% of basic (' + inr(p.rent) + ' − ' + inr(p.tenPct) + ')', p.b) +
+      row('c', '3. ' + Math.round(p.pct * 100) + '% of basic salary', p.c) +
+      '<hr style="border:none;border-top:1px solid var(--border);margin:.7rem 0">' +
+      '<div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700">' +
+        '<span>Exempt from tax</span><span style="color:var(--ok)">' + inr(p.exempt) + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-top:.3rem">' +
+        '<span>Taxable part of your HRA</span><span>' + inr(Math.max(0, p.received - p.exempt)) + '</span></div>' +
+      (p.b <= 0
+        ? '<p style="margin:.7rem 0 0;color:var(--warn)">Your rent is less than 10% of basic salary, so no HRA exemption is available.</p>'
+        : '') +
+      '<p style="margin:.7rem 0 0;font-size:.8rem;color:var(--text2)">Old tax regime only — the new regime has no HRA exemption. ' +
+      'Metro means Delhi, Mumbai, Kolkata and Chennai; four more cities were added from FY 2026-27. ' +
+      'Confirm your city category with your employer.</p>' +
+    '</div>';
+}
+
+/* ---------- receipt text ---------- */
+function periodLabel(monthName, year) { return monthName + ' ' + year }
+
+function receiptLines(monthName, year) {
+  var tenant = gv('tenant') || '____________________';
+  var landlord = gv('landlord') || '____________________';
+  var rent = gn('rent');
+  var pan = gv('landlordPan').toUpperCase();
+  var addr = gv('address') || '____________________';
+  var mode = gv('payMode');
+  var ref = gv('payRef');
+  var L = [];
+  L.push('RENT RECEIPT');
+  L.push('');
+  L.push('Received with thanks from ' + tenant);
+  L.push('the sum of ' + (rent ? inr(rent) : '₹__________') +
+         ' towards rent for the period ' + periodLabel(monthName, year) + ',');
+  L.push('in respect of the premises:');
+  L.push(addr);
+  L.push('');
+  L.push('Payment mode: ' + mode + (ref ? ' (' + ref + ')' : ''));
+  L.push('');
+  L.push('Landlord: ' + landlord);
+  if (pan) L.push('Landlord PAN: ' + pan);
+  return L;
+}
+
+function renderPreview() {
+  var box = document.getElementById('previewBox');
+  var wrap = document.getElementById('preview');
+  if (rrMode === 'hra') { wrap.style.display = 'none'; return }
+  var name = rrMode === 'single'
+    ? (gv('rMonth') || CAL_MONTHS[0])
+    : MONTHS[0];
+  var year = rrMode === 'single' ? (gv('rYear') || String(new Date().getFullYear()))
+                                 : fyFirstYear();
+  wrap.style.display = 'block';
+  var lines = receiptLines(name, year);
+  box.innerHTML =
+    '<div style="font-weight:700;font-size:1.1rem;text-align:center;margin-bottom:.8rem">' + lines[0] + '</div>' +
+    lines.slice(2).map(function (l) {
+      return '<div>' + (l === '' ? '&nbsp;' : l.replace(/&/g, '&amp;').replace(/</g, '&lt;')) + '</div>';
+    }).join('') +
+    '<div style="margin-top:1.6rem;display:flex;justify-content:space-between;align-items:flex-end;gap:2rem">' +
+      '<div style="border:1px dashed #999;padding:.6rem .8rem;font-size:.75rem;color:#555;text-align:center">' +
+        'Affix ₹1<br>revenue stamp</div>' +
+      '<div style="text-align:center"><div style="border-top:1px solid #333;width:160px"></div>' +
+        '<div style="font-size:.75rem">Landlord signature</div></div>' +
+    '</div>' +
+    (rrMode === 'bulk'
+      ? '<p style="margin-top:1rem;font-size:.78rem;color:#555">Showing ' +
+        MONTHS[0] + ' ' + fyFirstYear() + ' — 11 more months will be generated.</p>'
+      : '');
+}
+
+/* ---------- financial year helpers ---------- */
+function fyFirstYear() {
+  var v = gv('fyPick');
+  var m = v.match(/^(\d{4})/);
+  return m ? m[1] : String(new Date().getFullYear());
+}
+/* April to March, so months Jan-Mar belong to the following calendar year */
+function fyMonthYear(index) {
+  var start = parseInt(fyFirstYear(), 10);
+  return index <= 8 ? start : start + 1;
+}
+
+/* ---------- PDF ---------- */
+async function drawReceipt(doc, page, font, uniFont, monthName, year) {
+  var W = page.getWidth(), H = page.getHeight();
+  var rgb = PDFLib.rgb;
+  var pick = function (t) {
+    /* A Devanagari or Tamil name needs the embedded Unicode font; the standard
+       14 fonts are WinAnsi only and drawText would throw. */
+    return (uniFont && uniNeeded(t)) ? uniFont : font;
+  };
+  var put = function (t, x, y, size, color) {
+    var s = String(t == null ? '' : t);
+    if (!s) return;
+    var f = pick(s);
+    /* uniSafe folds ₹ to "Rs." and transliterates anything else WinAnsi
+       cannot encode, so the standard font never throws. */
+    page.drawText(f === font ? uniSafe(s, font) : s,
+      { x: x, y: y, size: size || 11, font: f, color: color || rgb(0.07, 0.07, 0.12) });
+  };
+
+  page.drawRectangle({ x: 36, y: 36, width: W - 72, height: H - 72,
+    borderColor: rgb(0.8, 0.8, 0.86), borderWidth: 1 });
+
+  var title = 'RENT RECEIPT';
+  var tw = font.widthOfTextAtSize(title, 18);
+  page.drawText(title, { x: (W - tw) / 2, y: H - 92, size: 18, font: font,
+    color: rgb(0.31, 0.27, 0.9) });
+  page.drawLine({ start: { x: 60, y: H - 104 }, end: { x: W - 60, y: H - 104 },
+    thickness: 1, color: rgb(0.85, 0.85, 0.9) });
+
+  var y = H - 140;
+  var rent = gn('rent');
+  var pan = gv('landlordPan').toUpperCase();
+  var ref = gv('payRef');
+
+  put('Received with thanks from', 60, y, 11, rgb(0.35, 0.35, 0.42)); y -= 20;
+  put(gv('tenant') || '____________________', 60, y, 13); y -= 26;
+  put('the sum of', 60, y, 11, rgb(0.35, 0.35, 0.42));
+  put(rent ? inr(rent) : '₹__________', 118, y, 13); y -= 22;
+  put('towards rent for the period ' + periodLabel(monthName, year), 60, y, 11); y -= 26;
+  put('Premises', 60, y, 11, rgb(0.35, 0.35, 0.42)); y -= 18;
+
+  /* wrap the address so a long one does not run off the page */
+  var addr = gv('address') || '____________________';
+  var maxW = W - 130;
+  var words = addr.split(/\s+/), line = '';
+  words.forEach(function (w) {
+    var test = line ? line + ' ' + w : w;
+    var f = pick(test);
+    var width = f === font ? font.widthOfTextAtSize(uniSafe(test, font), 11)
+                           : f.widthOfTextAtSize(test, 11);
+    if (width > maxW && line) { put(line, 60, y, 11); y -= 16; line = w }
+    else line = test;
+  });
+  if (line) { put(line, 60, y, 11); y -= 16 }
+  y -= 12;
+
+  put('Payment mode', 60, y, 11, rgb(0.35, 0.35, 0.42));
+  put(gv('payMode') + (ref ? '  (' + ref + ')' : ''), 160, y, 11); y -= 22;
+  put('Landlord', 60, y, 11, rgb(0.35, 0.35, 0.42));
+  put(gv('landlord') || '____________________', 160, y, 11); y -= 20;
+  if (pan) { put('Landlord PAN', 60, y, 11, rgb(0.35, 0.35, 0.42)); put(pan, 160, y, 11); y -= 20 }
+
+  /* revenue stamp box and signature line */
+  page.drawRectangle({ x: 60, y: 110, width: 110, height: 58,
+    borderColor: rgb(0.6, 0.6, 0.66), borderWidth: 1, borderDashArray: [3, 3] });
+  /* "Rs." rather than ₹: this label is drawn with the standard WinAnsi font
+     directly, which cannot encode the rupee sign. */
+  page.drawText('Affix Rs.1', { x: 82, y: 146, size: 9, font: font, color: rgb(0.4, 0.4, 0.46) });
+  page.drawText('revenue stamp', { x: 70, y: 132, size: 9, font: font, color: rgb(0.4, 0.4, 0.46) });
+
+  page.drawLine({ start: { x: W - 230, y: 128 }, end: { x: W - 70, y: 128 },
+    thickness: 1, color: rgb(0.2, 0.2, 0.26) });
+  page.drawText('Landlord signature', { x: W - 205, y: 112, size: 9, font: font,
+    color: rgb(0.35, 0.35, 0.42) });
+
+  page.drawText('Generated with freetoolhubs.com/tools/rent-receipt', { x: 60, y: 54, size: 7.5,
+    font: font, color: rgb(0.62, 0.62, 0.68) });
+}
+
+function validateForReceipt() {
+  var problems = [];
+  if (!gv('tenant')) problems.push('tenant name');
+  if (!gv('landlord')) problems.push('landlord name');
+  if (!gn('rent')) problems.push('monthly rent');
+  if (!gv('address')) problems.push('property address');
+  if (problems.length) {
+    notify('Still needed: ' + problems.join(', ') + '.', 'warn');
+    return false;
+  }
+  var pan = gv('landlordPan').toUpperCase();
+  if (pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+    notify('That PAN does not look right. The format is five letters, four digits, one letter — like ABCDE1234F.', 'error');
+    return false;
+  }
+  if (gn('rent') * 12 > PAN_THRESHOLD && !pan) {
+    /* a warning rather than a block: the receipt is still valid, the claim is
+       the part at risk, and the user may be adding the PAN later */
+    notify('Annual rent is above ' + inr(PAN_THRESHOLD) +
+      ', so most employers will need the landlord PAN. Generating anyway.', 'warn');
+  }
+  return true;
+}
+
+async function buildPdf(entries) {
+  var doc = await PDFLib.PDFDocument.create();
+  var font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  var uniFont = null;
+  /* Only pay the font-download cost when a field actually needs it. */
+  /* The amount always contains ₹, which WinAnsi cannot encode, so the Unicode
+     font is needed even for an otherwise plain English receipt. */
+  var allText = [gv('tenant'), gv('landlord'), gv('address'), gv('payRef'), '\u20B9'].join(' ');
+  if (uniNeeded(allText)) {
+    try { uniFont = await uniEmbed(doc) }
+    catch (e) { notify('Indian-script text could not be embedded, so it is transliterated in the PDF.', 'warn') }
+  }
+  for (var i = 0; i < entries.length; i++) {
+    var page = doc.addPage([595, 842]);
+    await drawReceipt(doc, page, font, uniFont, entries[i].month, entries[i].year);
+  }
+  return doc;
+}
+
+async function generate() {
+  if (rrMode === 'hra') {
+    var p = hraParts();
+    if (!p.basic || !p.received || !p.rent) {
+      notify('Fill basic salary, HRA received and rent paid first.', 'warn');
+      return;
+    }
+    renderHra();
+    notify('Exempt amount: ' + inr(p.exempt) + '.', 'ok');
+    return;
+  }
+  if (!validateForReceipt()) return;
+  if (typeof PDFLib === 'undefined') {
+    notify('The PDF library did not load. Check your connection and reload.', 'error');
+    return;
+  }
+  var btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  var original = btn.textContent;
+  btn.textContent = 'Building…';
+  try {
+    if (rrMode === 'single') {
+      var doc = await buildPdf([{ month: gv('rMonth'), year: gv('rYear') }]);
+      var bytes = await doc.save();
+      download(new Blob([bytes], { type: 'application/pdf' }),
+        'rent-receipt-' + gv('rMonth') + '-' + gv('rYear') + '.pdf');
+      notify('Receipt downloaded.', 'ok');
+    } else {
+      var entries = MONTHS.map(function (m, i) { return { month: m, year: fyMonthYear(i) } });
+      if (gv('bulkOut') === 'pdf') {
+        var doc2 = await buildPdf(entries);
+        var bytes2 = await doc2.save();
+        download(new Blob([bytes2], { type: 'application/pdf' }),
+          'rent-receipts-fy-' + gv('fyPick').replace(/[^\d-]/g, '') + '.pdf');
+        notify('12 receipts in one PDF.', 'ok');
+      } else {
+        if (typeof JSZip === 'undefined') {
+          notify('The ZIP library did not load. Use the single-PDF option instead.', 'error');
+          return;
+        }
+        var zip = new JSZip();
+        for (var i = 0; i < entries.length; i++) {
+          btn.textContent = 'Building ' + (i + 1) + ' of 12…';
+          /* yield so the label actually paints between receipts */
+          await new Promise(function (r) { requestAnimationFrame(function () { setTimeout(r, 0) }) });
+          var d = await buildPdf([entries[i]]);
+          var b = await d.save();
+          zip.file(String(i + 1).padStart(2, '0') + '-' + entries[i].month + '-' +
+                   entries[i].year + '.pdf', b);
+        }
+        zip.file('README.txt',
+          'Rent receipts for FY ' + gv('fyPick') + '\r\n\r\n' +
+          'Tenant: ' + gv('tenant') + '\r\n' +
+          'Landlord: ' + gv('landlord') +
+          (gv('landlordPan') ? ' (PAN ' + gv('landlordPan').toUpperCase() + ')' : '') + '\r\n' +
+          'Monthly rent: ' + inr(gn('rent')) + '\r\n' +
+          'Annual total: ' + inr(gn('rent') * 12) + '\r\n\r\n' +
+          'A receipt above \u20B95,000 paid in cash should carry a \u20B91 revenue stamp\r\n' +
+          'signed across by the landlord. Bank or UPI payments are usually\r\n' +
+          'accepted without a stamp because the transfer is itself the proof.\r\n\r\n' +
+          'Generated with https://freetoolhubs.com/tools/rent-receipt\r\n');
+        var blob = await zip.generateAsync({ type: 'blob' });
+        download(blob, 'rent-receipts-fy-' + gv('fyPick').replace(/[^\d-]/g, '') + '.zip');
+        notify('12 receipts as separate PDFs in a ZIP.', 'ok');
+      }
+    }
+  } catch (err) {
+    notify('Could not build the PDF: ' + (err && err.message ? err.message : err), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function copyText2() {
+  if (rrMode === 'hra') {
+    var p = hraParts();
+    if (!p.basic || !p.received || !p.rent) { notify('Fill the three figures first.', 'warn'); return }
+    await copyNow(
+      'HRA EXEMPTION\r\n' +
+      'Basic + DA (year): ' + inr(p.basic) + '\r\n' +
+      'HRA received: ' + inr(p.received) + '\r\n' +
+      'Rent paid: ' + inr(p.rent) + '\r\n' +
+      'City: ' + Math.round(p.pct * 100) + '% of basic\r\n\r\n' +
+      '1. Actual HRA received: ' + inr(p.a) + '\r\n' +
+      '2. Rent - 10% of basic: ' + inr(p.b) + '\r\n' +
+      '3. ' + Math.round(p.pct * 100) + '% of basic: ' + inr(p.c) + '\r\n\r\n' +
+      'Exempt (least of the three): ' + inr(p.exempt) + '\r\n' +
+      'Taxable HRA: ' + inr(Math.max(0, p.received - p.exempt)) + '\r\n\r\n' +
+      'Old tax regime only. Section 10(13A).\r\n',
+      'HRA breakdown copied.');
+    return;
+  }
+  if (!validateForReceipt()) return;
+  var name = rrMode === 'single' ? gv('rMonth') : MONTHS[0];
+  var year = rrMode === 'single' ? gv('rYear') : fyMonthYear(0);
+  await copyNow(receiptLines(name, year).join('\r\n') +
+    '\r\n\r\n_________________________\r\nLandlord signature\r\n', 'Receipt copied as text.');
+}
+
+function clearAll() {
+  ['tenant','landlord','landlordPan','rent','address','payRef',
+   'hraBasic','hraReceived','hraRent'].forEach(function (id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  storeDel(RR_KEY);
+  rrLive();
+  notify('Cleared.', 'info');
+}
+
+/* ---------- draft, deliberately excluding the PAN ---------- */
+function saveDraft() {
+  /* The landlord's PAN is somebody else's tax identifier, so it is not kept
+     between visits even though the rest of the form is. */
+  storeSet(RR_KEY, {
+    mode: rrMode,
+    tenant: gv('tenant'), landlord: gv('landlord'),
+    rent: gv('rent'), address: gv('address'),
+    payMode: gv('payMode'), payRef: gv('payRef'),
+    rMonth: gv('rMonth'), rYear: gv('rYear'),
+    fyPick: gv('fyPick'), bulkOut: gv('bulkOut'),
+    hraBasic: gv('hraBasic'), hraReceived: gv('hraReceived'),
+    hraRent: gv('hraRent'), hraCity: gv('hraCity')
+  }, true);
+}
+
+function setSelIfOption(id, v) {
+  var e = document.getElementById(id);
+  if (!e || !v) return;
+  for (var i = 0; i < e.options.length; i++) {
+    if (e.options[i].value === v) { e.value = v; return }
+  }
+}
+
+function restoreDraft() {
+  var d = storeGet(RR_KEY, null);
+  if (!d) return;
+  ['tenant','landlord','rent','address','payRef',
+   'hraBasic','hraReceived','hraRent'].forEach(function (k) {
+    if (d[k]) { var e = document.getElementById(k); if (e) e.value = d[k] }
+  });
+  ['payMode','rMonth','rYear','fyPick','bulkOut','hraCity'].forEach(function (k) {
+    setSelIfOption(k, d[k]);
+  });
+  if (d.mode === 'bulk' || d.mode === 'hra') setRRMode(d.mode);
+}
+
+/* ---------- build the month and year options ---------- */
+(function init() {
+  var now = new Date();
+  var mSel = document.getElementById('rMonth');
+  mSel.innerHTML = CAL_MONTHS.map(function (m) {
+    return '<option value="' + m + '">' + m + '</option>';
+  }).join('');
+  mSel.value = CAL_MONTHS[now.getMonth()];
+
+  var ySel = document.getElementById('rYear');
+  var years = [];
+  for (var y = now.getFullYear() + 1; y >= now.getFullYear() - 4; y--) years.push(y);
+  ySel.innerHTML = years.map(function (y) {
+    return '<option value="' + y + '">' + y + '</option>';
+  }).join('');
+  ySel.value = String(now.getFullYear());
+
+  /* A financial year runs April to March, so before April the current FY
+     started in the previous calendar year. */
+  var fySel = document.getElementById('fyPick');
+  var fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  var opts = [];
+  for (var i = 0; i < 5; i++) {
+    var s = fyStart - i;
+    opts.push('<option value="' + s + '-' + String(s + 1).slice(-2) + '">' +
+      s + '-' + String(s + 1).slice(-2) + ' (April ' + s + ' to March ' + (s + 1) + ')</option>');
+  }
+  fySel.innerHTML = opts.join('');
+
+  restoreDraft();
+  rrLive();
+})();
+  </script>
+</body>
+</html>

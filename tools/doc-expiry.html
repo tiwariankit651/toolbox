@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Expiry Tracker - Passport Licence Insurance Reminder Free | FreeToolHubs</title>
+  <meta name="description" content="Track passport, driving licence, insurance, PUC, warranty and AMC expiry dates in one place. Calendar .ics export for real reminders, CSV backup. Everything stays on your device.">
+  <meta property="og:title" content="Document Expiry Tracker — Free Reminder Tool | FreeToolHubs">
+  <meta property="og:description" content="Passport, licence, insurance, PUC, warranty — one list, with calendar reminders you actually get">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/doc-expiry">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Document Expiry Tracker — FreeToolHubs">
+  <meta name="twitter:description" content="Track every expiry date and export calendar reminders">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Document Expiry Tracker","url":"https://freetoolhubs.com/tools/doc-expiry","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Track document and policy expiry dates with calendar reminder export, stored only on your own device."}
+  </script>
+  <meta name="keywords" content="document expiry tracker, passport expiry reminder, driving licence renewal reminder, insurance expiry tracker, puc expiry, warranty tracker, amc reminder">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/doc-expiry">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📅 Document Expiry Tracker</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>📅 Document Expiry Tracker</h1>
+      <p class="info">Passport, driving licence, insurance, PUC, warranty, AMC — one list with the number of days left on each. Export the dates as a calendar file so you get a real reminder before renewal, not after. Your document numbers stay on this device; nothing is uploaded and there is no account.</p>
+
+      <h3 role="heading" aria-level="2">Add a document</h3>
+      <div class="row">
+        <label style="flex:1">What is it?
+          <input type="text" id="dName" placeholder="Passport — Asha" oninput="deLive()">
+        </label>
+        <label style="flex:1">Type
+          <select id="dType" onchange="deTypePicked()"></select>
+        </label>
+      </div>
+      <div class="row">
+        <label style="flex:1">Expires on
+          <input type="date" id="dDate" oninput="deLive()">
+        </label>
+        <label style="flex:1">Remind me
+          <select id="dLead" onchange="deLive()">
+            <option value="7">7 days before</option>
+            <option value="15">15 days before</option>
+            <option value="30" selected>30 days before</option>
+            <option value="60">60 days before</option>
+            <option value="90">90 days before</option>
+            <option value="180">180 days before</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label style="flex:1">Reference / number <span style="font-weight:400;color:var(--text2)">(optional)</span>
+          <input type="text" id="dRef" placeholder="Policy or document number">
+        </label>
+        <label style="flex:1">Note <span style="font-weight:400;color:var(--text2)">(optional)</span>
+          <input type="text" id="dNote" placeholder="Renew at RTO Pune">
+        </label>
+      </div>
+      <div id="deHint" class="info" style="font-size:.85rem"></div>
+      <div class="row">
+        <button class="btn" onclick="addDoc()">➕ Add to list</button>
+        <button class="btn btn-outline" onclick="loadSamples()">📋 Load examples</button>
+      </div>
+
+      <h3 role="heading" aria-level="2">Your documents <span class="badge" id="countBadge"></span></h3>
+      <div class="row">
+        <label style="flex:1">Show
+          <select id="deFilter" onchange="renderList()">
+            <option value="all">All</option>
+            <option value="expired">Expired</option>
+            <option value="soon">Due within the reminder window</option>
+            <option value="ok">Not due yet</option>
+          </select>
+        </label>
+        <label style="flex:1">Sort by
+          <select id="deSort" onchange="renderList()">
+            <option value="date">Soonest first</option>
+            <option value="name">Name</option>
+            <option value="type">Type</option>
+          </select>
+        </label>
+      </div>
+      <div id="deList"></div>
+
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="exportIcs()">📅 Calendar reminders (.ics)</button>
+        <button class="btn btn-outline" onclick="copyList()">📋 Copy list</button>
+        <button class="btn btn-outline" onclick="exportCsv()">💾 CSV backup</button>
+        <button class="btn btn-outline" onclick="exportJson()">🗂️ JSON backup</button>
+      </div>
+      <div id="importDrop" class="drop-zone" style="padding:.9rem;margin:.6rem 0;font-size:.85rem" onclick="document.getElementById('importFile').click()">
+        📥 Restore a backup — drop a .json file here, or click to browse
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      </div>
+      <div class="row">
+        <button class="btn btn-outline" onclick="clearAllDocs()">🗑️ Clear the whole list</button>
+      </div>
+
+      <div id="result"></div>
+      <p class="info" style="font-size:.8rem">Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> add · <kbd>Ctrl</kbd>+<kbd>K</kbd> name field · <kbd>?</kbd> all shortcuts</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Pick a type</strong> and the reminder window is set to something sensible for it — 180 days for a passport because renewal takes weeks, 15 for a PUC certificate because it is a same-day job.</li>
+    <li><strong>Add the expiry date.</strong> The list shows days remaining and colours anything inside its reminder window, so what needs attention is obvious at a glance.</li>
+    <li><strong>Export the calendar file.</strong> This is the step that matters — a list you have to remember to open is not a reminder. The .ics file adds an all-day event with an alarm to Google Calendar, Apple Calendar or Outlook.</li>
+    <li><strong>Keep a backup.</strong> The list lives in this browser only, so if you clear site data it is gone. The JSON backup restores it exactly; the CSV is for a spreadsheet.</li>
+    <li><strong>Reference numbers are optional</strong> and stay on your device. Add them if it helps you renew faster, leave them out if you would rather not store them.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>Passport expiring within six months, which many countries refuse entry on</li>
+    <li>Vehicle insurance and PUC, where lapsed cover is both a fine and a real risk</li>
+    <li>Driving licence renewal, easy to forget until a traffic stop</li>
+    <li>Appliance warranty and AMC dates that are worth claiming before they lapse</li>
+    <li>Rent agreement renewal, which needs lead time to negotiate</li>
+    <li>Professional licence, certification or visa with a fixed validity</li>
+    <li>Fixed deposit maturity so it is not auto-renewed at a poor rate</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>Most expiry dates are missed for the same reason: they are written somewhere nobody looks until it is too late. A spreadsheet only helps if you open it, and a phone note gives no warning. This tracker does two things — it shows every document with days remaining and highlights what has entered its reminder window, and it exports a proper calendar file so the reminder arrives on your phone without you doing anything. The .ics file is a valid VCALENDAR with one VEVENT per document and a VALARM set to your chosen lead time, which is what makes Google Calendar, Apple Calendar and Outlook all notify you. Default lead times reflect how long each renewal actually takes rather than one generic number: a passport gets 180 days, vehicle insurance 30, a PUC certificate 15. Everything is stored in your browser only. There is no account, no sync and no upload, which is deliberate given that the list may hold policy and licence numbers — but it also means the backup button is not optional.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>Real reminders</strong> — a calendar file with alarms, not a list you must remember to check</li>
+    <li><strong>Sensible lead times per type</strong> — a passport needs months, a PUC needs days</li>
+    <li><strong>Days remaining at a glance</strong>, with expired and due-soon items separated</li>
+    <li><strong>Backup and restore</strong> in JSON, plus CSV for a spreadsheet</li>
+    <li><strong>Nothing uploaded</strong> — policy and licence numbers never leave your device</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>Frequently Asked Questions</h2>
+    <details><summary>Will this send me an email or an SMS?</summary><p>No, and it is worth being clear about why: sending you anything would mean uploading your document list to a server. Instead it generates a calendar file, so the reminder comes from your own phone's calendar. That keeps the data with you and still gets you the alert.</p></details>
+    <details><summary>Where is my list stored?</summary><p>In this browser's local storage on this device. It is not synced and not uploaded. If you clear site data, use a different browser or switch devices, the list will not follow — which is what the JSON backup is for.</p></details>
+    <details><summary>How do I add the .ics file to my calendar?</summary><p>On a phone, open the downloaded file and your calendar app will offer to import it. On a desktop, use Import in Google Calendar settings, or open the file directly in Apple Calendar or Outlook.</p></details>
+    <details><summary>Why 180 days for a passport?</summary><p>Many countries require at least six months of validity remaining on arrival, so a passport can become unusable for travel well before it actually expires. Renewal also takes time. The default reflects both.</p></details>
+    <details><summary>Can I track things that renew every year?</summary><p>Yes. Add the next expiry date, and when you renew, update the date to the new one. The calendar export reflects whatever dates are in the list at the time you export.</p></details>
+    <details><summary>Is it safe to enter policy numbers?</summary><p>They stay in your browser and are never transmitted. That said, they are optional — the tracker works perfectly well with just a name and a date if you would rather not store them at all.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid"><a href="/tools/countdown" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Countdown Timer</a><a href="/tools/exam-calendar" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Exam Calendar</a><a href="/tools/age-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Age Calculator</a><a href="/tools/todo" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">To-Do List</a><a href="/tools/habit-tracker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Habit Tracker</a><a href="/tools/salary-slip" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Slip</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/document-expiry-tracking-guide">Document Expiry Kaise Track Kare — Complete Guide</a></li><li><a href="/blog/create-digital-signature-for-documents">Digital Signature Kaise Banaye — Documents Guide</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy.html">Privacy</a> <a href="/terms.html">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* Document expiry tracker. The list can hold policy and licence numbers, so it
+   is stored in this browser only — there is no server to upload it to. The
+   trade-off is that the backup button genuinely matters, which the UI says. */
+
+var DE_KEY = 'docExpiryV1';
+
+/* Default lead times reflect how long each renewal actually takes rather than
+   one generic number. A passport needs months; a PUC is a same-day job. */
+var DOC_TYPES = [
+  { key: 'passport',  label: '🛂 Passport',              lead: 180 },
+  { key: 'visa',      label: '🌍 Visa / permit',         lead: 60 },
+  { key: 'licence',   label: '🚗 Driving licence',       lead: 60 },
+  { key: 'vinsure',   label: '🛡️ Vehicle insurance',     lead: 30 },
+  { key: 'puc',       label: '💨 PUC certificate',       lead: 15 },
+  { key: 'rc',        label: '📋 Vehicle RC / fitness',  lead: 60 },
+  { key: 'hinsure',   label: '🏥 Health insurance',      lead: 30 },
+  { key: 'linsure',   label: '💗 Life insurance premium', lead: 30 },
+  { key: 'warranty',  label: '🔧 Warranty',              lead: 30 },
+  { key: 'amc',       label: '🛠️ AMC / service contract', lead: 30 },
+  { key: 'rent',      label: '🏠 Rent agreement',        lead: 60 },
+  { key: 'fd',        label: '🏦 FD / deposit maturity', lead: 15 },
+  { key: 'cert',      label: '🎓 Certification',         lead: 60 },
+  { key: 'subs',      label: '💳 Subscription',          lead: 7 },
+  { key: 'other',     label: '📄 Other',                 lead: 30 }
+];
+
+var docs = [];
+
+function dv(id) { var e = document.getElementById(id); return e ? e.value.trim() : '' }
+
+/* Compare by calendar day, not by timestamp, so "today" is 0 days and not a
+   fraction that rounds the wrong way. */
+function dayStart(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x }
+function daysUntil(iso) {
+  if (!iso) return null;
+  var target = dayStart(new Date(iso + 'T00:00:00'));
+  var today = dayStart(new Date());
+  return Math.round((target - today) / 86400000);
+}
+function typeOf(key) {
+  for (var i = 0; i < DOC_TYPES.length; i++) if (DOC_TYPES[i].key === key) return DOC_TYPES[i];
+  return DOC_TYPES[DOC_TYPES.length - 1];
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso + 'T00:00:00');
+  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear();
+}
+function statusOf(doc) {
+  var d = daysUntil(doc.date);
+  if (d === null) return { key: 'ok', label: '', days: null };
+  if (d < 0) return { key: 'expired', label: 'expired ' + Math.abs(d) + ' day' + (Math.abs(d) === 1 ? '' : 's') + ' ago', days: d };
+  if (d === 0) return { key: 'expired', label: 'expires today', days: 0 };
+  if (d <= (doc.lead || 30)) return { key: 'soon', label: d + ' day' + (d === 1 ? '' : 's') + ' left', days: d };
+  return { key: 'ok', label: d + ' days left', days: d };
+}
+
+function deTypePicked() {
+  /* choosing a type sets its sensible default lead time */
+  var t = typeOf(dv('dType'));
+  var sel = document.getElementById('dLead');
+  for (var i = 0; i < sel.options.length; i++) {
+    if (parseInt(sel.options[i].value, 10) === t.lead) { sel.value = sel.options[i].value; break }
+  }
+  deLive();
+}
+
+function deLive() {
+  var hint = document.getElementById('deHint');
+  var iso = dv('dDate');
+  if (!iso) {
+    hint.textContent = 'Pick the expiry date to see how long is left.';
+    return;
+  }
+  var d = daysUntil(iso);
+  var lead = parseInt(dv('dLead'), 10) || 30;
+  if (d < 0) {
+    hint.innerHTML = '<span style="color:var(--danger)">That date has already passed — ' +
+      Math.abs(d) + ' day' + (Math.abs(d) === 1 ? '' : 's') + ' ago.</span>';
+  } else if (d <= lead) {
+    hint.innerHTML = '<span style="color:var(--warn)">' + d + ' day' + (d === 1 ? '' : 's') +
+      ' left — already inside your ' + lead + '-day reminder window.</span>';
+  } else {
+    hint.innerHTML = d + ' days left · reminder would be on <strong>' +
+      fmtDate(isoMinusDays(iso, lead)) + '</strong>';
+  }
+}
+
+function isoMinusDays(iso, n) {
+  var d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() - n);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+
+function addDoc() {
+  var name = dv('dName'), iso = dv('dDate');
+  if (!name) { notify('Give the document a name so you recognise it in the list.', 'warn'); return }
+  if (!iso) { notify('Pick the expiry date.', 'warn'); return }
+  var when = new Date(iso + 'T00:00:00');
+  if (isNaN(when.getTime())) { notify('That date could not be read.', 'error'); return }
+
+  var dup = docs.filter(function (d) {
+    return d.name.toLowerCase() === name.toLowerCase() && d.date === iso;
+  });
+  if (dup.length) {
+    /* a silent duplicate is worse than a question — this pattern has bitten
+       other tools in this project */
+    if (!confirm('"' + name + '" with the same date is already in the list. Add it again?')) return;
+  }
+
+  docs.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    name: name, type: dv('dType'), date: iso,
+    lead: parseInt(dv('dLead'), 10) || 30,
+    ref: dv('dRef'), note: dv('dNote')
+  });
+  save();
+  ['dName', 'dRef', 'dNote'].forEach(function (id) { document.getElementById(id).value = '' });
+  document.getElementById('dDate').value = '';
+  renderList();
+  deLive();
+  notify('Added "' + name + '".', 'ok');
+}
+
+function removeDoc(id) {
+  var d = docs.filter(function (x) { return x.id === id })[0];
+  docs = docs.filter(function (x) { return x.id !== id });
+  save();
+  renderList();
+  notify(d ? 'Removed "' + d.name + '".' : 'Removed.', 'info');
+}
+
+function renderList() {
+  var box = document.getElementById('deList');
+  var badge = document.getElementById('countBadge');
+  var filter = dv('deFilter'), sort = dv('deSort');
+
+  var list = docs.slice();
+  if (filter !== 'all') list = list.filter(function (d) { return statusOf(d).key === filter });
+  list.sort(function (a, b) {
+    if (sort === 'name') return a.name.localeCompare(b.name);
+    if (sort === 'type') return typeOf(a.type).label.localeCompare(typeOf(b.type).label);
+    return (daysUntil(a.date) || 0) - (daysUntil(b.date) || 0);
+  });
+
+  var expired = docs.filter(function (d) { return statusOf(d).key === 'expired' }).length;
+  var soon = docs.filter(function (d) { return statusOf(d).key === 'soon' }).length;
+  badge.textContent = docs.length + ' tracked' +
+    (expired ? ' · ' + expired + ' expired' : '') +
+    (soon ? ' · ' + soon + ' due soon' : '');
+  badge.style.background = expired ? 'var(--danger-fill)' : (soon ? 'var(--warn-fill)' : 'var(--ok-fill)');
+  badge.style.color = '#fff';
+
+  if (!docs.length) {
+    box.innerHTML = '<p class="info">Nothing tracked yet. Add a document above, or load the examples to see how it works.</p>';
+    return;
+  }
+  if (!list.length) {
+    box.innerHTML = '<p class="info">No documents match that filter.</p>';
+    return;
+  }
+
+  var esc = function (t) { return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;') };
+  box.innerHTML = list.map(function (d) {
+    var s = statusOf(d);
+    var colour = s.key === 'expired' ? 'var(--danger)' : (s.key === 'soon' ? 'var(--warn)' : 'var(--ok)');
+    var pipColour = s.key === 'expired' ? 'var(--danger-fill)' : (s.key === 'soon' ? 'var(--warn-fill)' : 'var(--ok-fill)');
+    return '<div style="display:flex;gap:.8rem;align-items:flex-start;padding:.7rem .8rem;margin:.4rem 0;' +
+      'background:var(--card);border:1px solid var(--border);border-left:4px solid ' + pipColour + ';border-radius:10px">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-weight:600">' + esc(d.name) + '</div>' +
+        '<div style="font-size:.82rem;color:var(--text2)">' +
+          typeOf(d.type).label + ' · ' + fmtDate(d.date) +
+          ' · <span style="color:' + colour + ';font-weight:600">' + s.label + '</span>' +
+          ' · reminder ' + d.lead + 'd before' +
+        '</div>' +
+        (d.ref ? '<div style="font-size:.78rem;color:var(--text2)">Ref: ' + esc(d.ref) + '</div>' : '') +
+        (d.note ? '<div style="font-size:.78rem;color:var(--text2)">' + esc(d.note) + '</div>' : '') +
+      '</div>' +
+      '<button class="btn btn-outline icon-btn" onclick="removeDoc(\'' + d.id + '\')" ' +
+        'aria-label="Remove ' + esc(d.name) + '" title="Remove">🗑️</button>' +
+    '</div>';
+  }).join('');
+}
+
+/* ---------- calendar export ---------- */
+function icsStamp(d) {
+  var p = function (n) { return String(n).padStart(2, '0') };
+  return d.getUTCFullYear() + p(d.getUTCMonth() + 1) + p(d.getUTCDate()) + 'T' +
+         p(d.getUTCHours()) + p(d.getUTCMinutes()) + '00Z';
+}
+function icsDate(iso) { return iso.replace(/-/g, '') }
+function icsEscape(s) {
+  return String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
+}
+
+function buildIcs() {
+  var now = new Date();
+  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0',
+           'PRODID:-//FreeToolHubs//Document Expiry//EN', 'CALSCALE:GREGORIAN',
+           'METHOD:PUBLISH'];
+  docs.forEach(function (d, i) {
+    var end = new Date(d.date + 'T00:00:00');
+    end.setDate(end.getDate() + 1);          /* DTEND is exclusive for all-day events */
+    var endIso = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') +
+                 '-' + String(end.getDate()).padStart(2, '0');
+    L.push('BEGIN:VEVENT');
+    L.push('UID:' + d.id + '-' + i + '@freetoolhubs.com');
+    L.push('DTSTAMP:' + icsStamp(now));
+    /* an all-day event, so it shows on the date itself rather than at a time */
+    L.push('DTSTART;VALUE=DATE:' + icsDate(d.date));
+    L.push('DTEND;VALUE=DATE:' + icsDate(endIso));
+    L.push('SUMMARY:' + icsEscape(d.name + ' expires'));
+    var desc = typeOf(d.type).label.replace(/^[^\w]+/, '') +
+      (d.ref ? ' · Ref: ' + d.ref : '') + (d.note ? ' · ' + d.note : '');
+    L.push('DESCRIPTION:' + icsEscape(desc));
+    L.push('TRANSP:TRANSPARENT');
+    /* the alarm is the point: a calendar entry without one is just a note */
+    L.push('BEGIN:VALARM');
+    L.push('TRIGGER:-P' + (d.lead || 30) + 'D');
+    L.push('ACTION:DISPLAY');
+    L.push('DESCRIPTION:' + icsEscape(d.name + ' expires in ' + (d.lead || 30) + ' days'));
+    L.push('END:VALARM');
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  /* CRLF is required by the iCalendar spec */
+  return L.join('\r\n') + '\r\n';
+}
+
+function exportIcs() {
+  if (!docs.length) { notify('Add at least one document first.', 'warn'); return }
+  download(new Blob([buildIcs()], { type: 'text/calendar;charset=utf-8' }),
+    'document-expiry-reminders.ics');
+  notify(docs.length + ' reminder' + (docs.length === 1 ? '' : 's') +
+    ' exported. Open the file to add them to your calendar.', 'ok');
+}
+
+async function copyList() {
+  if (!docs.length) { notify('Nothing to copy yet.', 'warn'); return }
+  var sorted = docs.slice().sort(function (a, b) {
+    return (daysUntil(a.date) || 0) - (daysUntil(b.date) || 0);
+  });
+  var L = ['DOCUMENT EXPIRY LIST', ''];
+  sorted.forEach(function (d) {
+    var s = statusOf(d);
+    var mark = s.key === 'expired' ? '[!]' : (s.key === 'soon' ? '[~]' : '[ ]');
+    L.push(mark + ' ' + d.name + ' — ' + fmtDate(d.date) + ' (' + s.label + ')');
+    if (d.ref) L.push('      Ref: ' + d.ref);
+    if (d.note) L.push('      ' + d.note);
+  });
+  L.push('');
+  L.push('[!] expired  [~] due soon  [ ] not due yet');
+  await copyNow(L.join('\r\n') + '\r\n', 'List copied.');
+}
+
+function exportCsv() {
+  if (!docs.length) { notify('Nothing to export yet.', 'warn'); return }
+  var lines = ['Name,Type,Expires,Days left,Status,Reminder days before,Reference,Note'];
+  var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"' };
+  docs.forEach(function (d) {
+    var s = statusOf(d);
+    lines.push([q(d.name), q(typeOf(d.type).label), q(d.date), s.days,
+      q(s.key === 'expired' ? 'Expired' : (s.key === 'soon' ? 'Due soon' : 'OK')),
+      d.lead, q(d.ref), q(d.note)].join(','));
+  });
+  /* BOM so Excel reads the rupee sign and Indian-language text correctly */
+  download(new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'],
+    { type: 'text/csv;charset=utf-8' }), 'document-expiry.csv');
+  notify('CSV exported.', 'ok');
+}
+
+function exportJson() {
+  if (!docs.length) { notify('Nothing to back up yet.', 'warn'); return }
+  download(new Blob([JSON.stringify({ version: 1, docs: docs }, null, 2)],
+    { type: 'application/json' }), 'document-expiry-backup.json');
+  notify('Backup saved. Keep it — the list lives only in this browser.', 'ok');
+}
+
+function handleImport(file) {
+  if (!file) return;
+  if (!/\.json$/i.test(file.name) && !/json/.test(file.type || '')) {
+    notify('"' + file.name + '" is not a JSON backup. Only .json files can be restored here.', 'error');
+    return;
+  }
+  var r = new FileReader();
+  r.onerror = function () {
+    notify('"' + file.name + '" could not be read. It may be corrupt.', 'error');
+  };
+  r.onload = function (e) {
+    var data;
+    try { data = JSON.parse(e.target.result) }
+    catch (err) {
+      notify('That file is not valid JSON, so nothing was imported.', 'error');
+      return;
+    }
+    var incoming = Array.isArray(data) ? data : (data && Array.isArray(data.docs) ? data.docs : null);
+    if (!incoming) {
+      notify('That JSON does not look like a backup from this tool.', 'error');
+      return;
+    }
+    var clean = incoming.filter(function (d) {
+      return d && typeof d.name === 'string' && typeof d.date === 'string' &&
+             /^\d{4}-\d{2}-\d{2}$/.test(d.date);
+    }).map(function (d) {
+      return {
+        id: d.id || (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+        name: String(d.name).slice(0, 120),
+        type: typeOf(d.type).key,
+        date: d.date,
+        lead: parseInt(d.lead, 10) || 30,
+        ref: d.ref ? String(d.ref).slice(0, 120) : '',
+        note: d.note ? String(d.note).slice(0, 200) : ''
+      };
+    });
+    if (!clean.length) {
+      notify('No usable entries in that backup — each one needs a name and a date.', 'error');
+      return;
+    }
+    var skipped = incoming.length - clean.length;
+    if (docs.length && !confirm('Replace the ' + docs.length +
+        ' document(s) currently in the list with ' + clean.length + ' from the backup?')) return;
+    docs = clean;
+    save();
+    renderList();
+    notify('Restored ' + clean.length + ' document' + (clean.length === 1 ? '' : 's') + '.' +
+      (skipped ? ' ' + skipped + ' entry(ies) skipped as incomplete.' : ''), 'ok');
+  };
+  r.readAsText(file);
+}
+
+function clearAllDocs() {
+  if (!docs.length) { notify('The list is already empty.', 'info'); return }
+  if (!confirm('Delete all ' + docs.length + ' tracked document(s)? Export a backup first if you need one.')) return;
+  docs = [];
+  save();
+  renderList();
+  notify('List cleared.', 'info');
+}
+
+function loadSamples() {
+  var today = new Date();
+  var plus = function (days) {
+    var d = new Date(today);
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+           String(d.getDate()).padStart(2, '0');
+  };
+  var samples = [
+    { name: 'Passport — Asha', type: 'passport', date: plus(120), lead: 180, ref: '', note: 'Six-month rule for travel' },
+    { name: 'Car insurance', type: 'vinsure', date: plus(22), lead: 30, ref: '', note: '' },
+    { name: 'PUC certificate', type: 'puc', date: plus(-5), lead: 15, ref: '', note: 'Already lapsed' },
+    { name: 'Fridge warranty', type: 'warranty', date: plus(300), lead: 30, ref: '', note: '' }
+  ];
+  if (docs.length && !confirm('Add 4 example documents to your existing list?')) return;
+  samples.forEach(function (s) {
+    docs.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                name: s.name, type: s.type, date: s.date, lead: s.lead, ref: s.ref, note: s.note });
+  });
+  save();
+  renderList();
+  notify('Examples added — one expired, one due soon, two fine.', 'info');
+}
+
+function save() { storeSet(DE_KEY, { version: 1, docs: docs }, true) }
+
+(function init() {
+  var sel = document.getElementById('dType');
+  sel.innerHTML = DOC_TYPES.map(function (t) {
+    return '<option value="' + t.key + '">' + t.label + '</option>';
+  }).join('');
+
+  var stored = storeGet(DE_KEY, null);
+  if (stored && Array.isArray(stored.docs)) {
+    docs = stored.docs.filter(function (d) {
+      return d && d.name && /^\d{4}-\d{2}-\d{2}$/.test(d.date || '');
+    });
+  }
+  renderList();
+  deLive();
+})();
+
+setupDrop('importDrop', 'importFile', function (files) { handleImport(files[0]) });
+document.getElementById('importFile').addEventListener('change', function () {
+  if (this.files && this.files[0]) handleImport(this.files[0]);
+});
+  </script>
+</body>
+</html>
