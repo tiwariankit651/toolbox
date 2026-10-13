@@ -230,17 +230,48 @@ function currentBrush(){return +document.getElementById("brushSize").value;}
 setupDrop("drop","inp",function(files){
   if(!files||!files.length)return;
   batch=[];currentIndex=0;regions=[];
-  var arr=Array.prototype.slice.call(files).filter(function(f){return /^image\//.test(f.type)||/\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name);});
+  var all=Array.prototype.slice.call(files);
+  var arr=all.filter(function(f){return /^image\//.test(f.type)||/\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name);});
+  var rejected=all.filter(function(f){return arr.indexOf(f)<0;});
+  if(rejected.length){
+    /* Returning silently here meant dropping a PDF looked like nothing had
+       happened: no message, a blank canvas, and a download button that still
+       produced an empty image. Say what was refused and what to use instead. */
+    notify(rejected.length===1
+      ? '"'+rejected[0].name+'" is not an image. This tool blurs and blacks out areas of a picture, so it needs a PNG, JPG or WEBP. To redact a PDF, use the PDF editor instead.'
+      : rejected.length+' files were not images and were skipped. This tool works on PNG, JPG and WEBP pictures.',
+      "error");
+  }
   if(!arr.length)return;
   var loaded=0;
   arr.forEach(function(f,idx){
     var reader=new FileReader();
+    /* A corrupt or mislabelled file fires onerror and never onload, so without
+       these the counter never reached arr.length and the batch stalled with no
+       message at all. */
+    var settle=function(){
+      loaded++;
+      if(loaded===arr.length){
+        if(!batch.filter(Boolean).length){
+          notify("None of those files could be read as an image. Try a PNG, JPG or WEBP.","error");
+          return;
+        }
+        finishLoad();
+      }
+    };
+    reader.onerror=function(){
+      notify('"'+f.name+'" could not be read and was skipped.',"warn");
+      settle();
+    };
     reader.onload=function(){
       var i=new Image();
+      i.onerror=function(){
+        notify('"'+f.name+'" is not a readable image and was skipped.',"warn");
+        settle();
+      };
       i.onload=function(){
         batch[idx]={name:f.name,dataUrl:reader.result,width:i.width,height:i.height};
-        loaded++;
-        if(loaded===arr.length){finishLoad();}
+        settle();
       };
       i.src=reader.result;
     };
@@ -256,7 +287,16 @@ function finishLoad(){
 function loadToCanvas(idx){
   currentIndex=idx;
   var b=batch[idx];
+  if(!b||!b.dataUrl){
+    notify("That image could not be loaded.","error");
+    return;
+  }
   var i=new Image();
+  /* Without this the canvas silently stayed blank and every later edit, and
+     the download, operated on an empty image. */
+  i.onerror=function(){
+    notify('"'+(b.name||"That file")+'" could not be displayed. Try a PNG, JPG or WEBP.',"error");
+  };
   i.onload=function(){
     canvas.width=i.width;canvas.height=i.height;
     overlay.width=i.width;overlay.height=i.height;
@@ -642,6 +682,13 @@ function estimateSize(){
 }
 
 function downloadClean(){
+  /* With no image loaded the canvas is blank and undoStack is empty, yet this
+     still exported a file — which looked exactly like "my edits were lost".
+     Refuse instead, and say why. */
+  if(!batch.filter(Boolean).length||!undoStack.length||!canvas.width||!canvas.height){
+    notify("Load an image first — there is nothing to clean yet.","warn");
+    return;
+  }
   exportCanvasToBlob(function(b){
     var base=(batch[currentIndex]&&batch[currentIndex].name?batch[currentIndex].name.replace(/\.[^.]+$/,""):"cleaned_image");
     download(b,base+"_cleaned."+currentExt());
