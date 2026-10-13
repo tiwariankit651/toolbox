@@ -882,28 +882,78 @@ async function buildPdfBytes(){
     }
   }
 
+  /* --- Bridge the editor's coordinate space to pdf-lib's -------------------
+     pdf.js getViewport() applies the page's /Rotate and normalises the
+     MediaBox to the origin, so everything the editor stored is in "what the
+     user sees" space. pdf-lib draws in the raw, unrotated page space. Without
+     this mapping a whiteout on a rotated page landed somewhere else entirely
+     and still looked correct on screen, because the preview and the PNG
+     export both live in the rotated space too. */
+  function pageGeom(pg){
+    var mb=pg.getMediaBox();
+    var rot=((pg.getRotation().angle%360)+360)%360;
+    return {x0:mb.x,y0:mb.y,w:mb.width,h:mb.height,rot:rot};
+  }
+  /* A point in rotated/display space -> unrotated absolute page space. */
+  function mapPt(g,xr,yr){
+    var x,y;
+    if(g.rot===90){x=g.w-yr;y=xr}
+    else if(g.rot===180){x=g.w-xr;y=g.h-yr}
+    else if(g.rot===270){x=yr;y=g.h-xr}
+    else{x=xr;y=yr}
+    return {x:x+g.x0,y:y+g.y0};
+  }
+  /* The viewer rotates the page clockwise by /Rotate, so anything we draw must
+     be pre-rotated counter-clockwise by the same amount to come out upright.
+     pdf-lib rotates about the anchor point, which is exactly the point mapPt
+     returns, so width and height stay in their original order. */
+  function drawAngle(g,extra){return PDFLib.degrees(((extra||0)+g.rot)%360)}
+
   var ordered=items.slice().sort(function(a,b){var r={image:0,whiteout:1,highlight:1,rect:1,line:1,text:2};return (r[a.type]||1)-(r[b.type]||1)});
 
   for(var i=0;i<ordered.length;i++){
     var it=ordered[i];
     var pg=pages[it.page-1];if(!pg)continue;
+    var G=pageGeom(pg);
+    /* An axis-aligned box in display space is still axis-aligned in page
+       space, only with its corner moved and, at 90 or 270, its width and
+       height swapped. It needs no rotation — giving it one as well as a mapped
+       anchor swung the box around its own corner. */
+    var pageBox=function(x,y,w,h){
+      var a=mapPt(G,x,y),b=mapPt(G,x+w,y+h);
+      return {x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),
+              w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};
+    };
     if(it.type==="text"){
       var font=uniFont||await getFont(it.font);
       var baselineY=it.y-it.size*0.8;
-      pg.drawText(it._draw!=null?it._draw:it.text,{x:it.x,y:baselineY,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:PDFLib.degrees(it.rotation||0)});
+      /* The baseline is a single point, so it maps directly; the page rotation
+         is added to whatever rotation the user chose for the text itself. */
+      var tp=mapPt(G,it.x,baselineY);
+      pg.drawText(it._draw!=null?it._draw:it.text,{x:tp.x,y:tp.y,size:it.size,font:font,color:hexToRgb(it.color),opacity:it.opacity,rotate:drawAngle(G,it.rotation||0)});
     }else if(it.type==="image"){
       var ibytes=await (await fetch(it.dataURL)).arrayBuffer();
       var emb=it.imgType==="png"?await doc.embedPng(ibytes):await doc.embedJpg(ibytes);
-      pg.drawImage(emb,{x:it.x,y:it.y,width:it.w,height:it.h,opacity:it.opacity!=null?it.opacity:1});
+      /* An image has an orientation, so unlike a plain box it anchors at the
+         mapped display origin and is pre-rotated; pdf-lib rotates about that
+         anchor, which lands the result on the mapped box exactly. */
+      var ipt=mapPt(G,it.x,it.y);
+      pg.drawImage(emb,{x:ipt.x,y:ipt.y,width:it.w,height:it.h,
+        opacity:it.opacity!=null?it.opacity:1,rotate:drawAngle(G,0)});
     }else if(it.type==="line"){
-      pg.drawLine({start:{x:it.x1,y:it.y1},end:{x:it.x2,y:it.y2},thickness:it.thickness,color:hexToRgb(it.color),opacity:it.opacity});
+      var l1=mapPt(G,it.x1,it.y1),l2=mapPt(G,it.x2,it.y2);
+      pg.drawLine({start:{x:l1.x,y:l1.y},end:{x:l2.x,y:l2.y},thickness:it.thickness,color:hexToRgb(it.color),opacity:it.opacity});
     }else if(it.type==="whiteout"){
-      pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:PDFLib.rgb(1,1,1)});
+      var wb=pageBox(it.x,it.y,it.w,it.h);
+      pg.drawRectangle({x:wb.x,y:wb.y,width:wb.w,height:wb.h,color:PDFLib.rgb(1,1,1)});
     }else if(it.type==="highlight"){
       var hp=rgbaToParts(it.color);
-      pg.drawRectangle({x:it.x,y:it.y,width:it.w,height:it.h,color:hp.color,opacity:hp.opacity});
+      var hb=pageBox(it.x,it.y,it.w,it.h);
+      pg.drawRectangle({x:hb.x,y:hb.y,width:hb.w,height:hb.h,
+        color:hp.color,opacity:hp.opacity});
     }else if(it.type==="rect"){
-      var opts={x:it.x,y:it.y,width:it.w,height:it.h,borderWidth:it.thickness,borderColor:hexToRgb(it.color),opacity:it.opacity,borderOpacity:it.opacity};
+      var rb=pageBox(it.x,it.y,it.w,it.h);
+      var opts={x:rb.x,y:rb.y,width:rb.w,height:rb.h,borderWidth:it.thickness,borderColor:hexToRgb(it.color),opacity:it.opacity,borderOpacity:it.opacity};
       if(it.fill)opts.color=hexToRgb(it.color);
       pg.drawRectangle(opts);
     }
