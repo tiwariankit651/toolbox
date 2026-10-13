@@ -890,9 +890,35 @@ async function buildPdfBytes(){
      and still looked correct on screen, because the preview and the PNG
      export both live in the rotated space too. */
   function pageGeom(pg){
-    var mb=pg.getMediaBox();
+    /* A box may be written with its corners reversed, e.g. [600 800 0 0],
+       which is legal and which readers normalise. pdf-lib reports it verbatim,
+       so width and height can come back negative; left unchecked the mapping
+       sent marks off the page and they vanished from the saved file. */
+    var norm=function(r){
+      if(!r)return r;
+      var x=r.width<0?r.x+r.width:r.x, y=r.height<0?r.y+r.height:r.y;
+      return {x:x,y:y,width:Math.abs(r.width),height:Math.abs(r.height)};
+    };
+    /* pdf.js lays the page out using its "view" box, which is the CropBox when
+       the page has one and the MediaBox otherwise, clipped to the MediaBox.
+       Reading MediaBox alone put every mark out by the CropBox offset on any
+       document carrying one — which is most real PDFs, and is why this looked
+       fixed in testing while a real file was still wrong. */
+    var mb=norm(pg.getMediaBox());
+    var box=mb;
+    try{
+      if(typeof pg.getCropBox==="function"){
+        var cb=norm(pg.getCropBox());
+        if(cb&&cb.width>0&&cb.height>0){
+          var x1=Math.max(mb.x,cb.x), y1=Math.max(mb.y,cb.y);
+          var x2=Math.min(mb.x+mb.width,cb.x+cb.width);
+          var y2=Math.min(mb.y+mb.height,cb.y+cb.height);
+          if(x2-x1>0&&y2-y1>0)box={x:x1,y:y1,width:x2-x1,height:y2-y1};
+        }
+      }
+    }catch(e){/* no CropBox on this page; the MediaBox is the view box */}
     var rot=((pg.getRotation().angle%360)+360)%360;
-    return {x0:mb.x,y0:mb.y,w:mb.width,h:mb.height,rot:rot};
+    return {x0:box.x,y0:box.y,w:box.width,h:box.height,rot:rot};
   }
   /* A point in rotated/display space -> unrotated absolute page space. */
   function mapPt(g,xr,yr){
