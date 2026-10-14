@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Zone Planner - Meeting Times Across Cities | FreeToolHubs</title>
+  <meta name="description" content="Find a meeting time that works across cities. See the same moment in every zone, spot working hours, handle DST automatically and export the plan. Free, runs in your browser.">
+  <meta property="og:title" content="Time Zone Planner — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Compare times across cities and find a meeting slot everyone can attend">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/timezone-planner">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Time Zone Planner — FreeToolHubs">
+  <meta name="twitter:description" content="Compare times across cities and find a meeting slot everyone can attend">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Time Zone Planner","url":"https://freetoolhubs.com/tools/timezone-planner","description":"Compare times across cities and find a meeting slot everyone can attend","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <link rel="canonical" href="https://freetoolhubs.com/tools/timezone-planner">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .tz-row{display:grid;grid-template-columns:1fr auto auto;gap:.6rem;align-items:center;background:var(--card);border-radius:10px;padding:.6rem .8rem;margin:.4rem 0}
+    .tz-name{font-weight:600;font-size:.92rem;overflow:hidden;text-overflow:ellipsis}
+    .tz-sub{color:var(--text2);font-size:.78rem}
+    .tz-time{font-size:1.1rem;font-weight:700;text-align:right;white-space:nowrap}
+    .tz-del{background:none;border:1px solid var(--border);color:var(--text2);border-radius:8px;cursor:pointer;min-width:40px;min-height:40px;font-size:.9rem}
+    .tz-badge{display:inline-block;font-size:.75rem;padding:.1rem .45rem;border-radius:6px;margin-left:.3rem;font-weight:700}
+    .tz-work{background:var(--ok-fill);color:#fff}
+    .tz-edge{background:var(--warn-fill);color:#fff}
+    .tz-off{background:var(--danger-fill);color:#fff}
+    .tz-strip{display:grid;grid-template-columns:repeat(24,1fr);gap:1px;margin-top:.35rem}
+    .tz-cell{height:26px;border-radius:2px;font-size:.75rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .tz-legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.78rem;color:var(--text2);margin-top:.6rem}
+    .tz-key{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:.3rem}
+    .tz-best{background:var(--card);border-radius:10px;padding:.7rem .9rem;margin:.4rem 0;border-left:4px solid var(--ok-fill)}
+    .tz-none{border-left-color:var(--warn-fill)}
+    @media(max-width:600px){
+      /* On a narrow screen 24 cells cannot carry a legible number, so the
+         hour labels are dropped and the colour band does the work. The title
+         attribute still names the hour for anyone who taps. */
+      .tz-cell{font-size:0;height:30px}
+      .tz-time{font-size:.95rem}
+    }
+  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🌍 Time Zone Planner</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section">
+      <h1>🌍 Time Zone Planner</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="44" fill="none" stroke="#6366f1" stroke-width="3"/><ellipse cx="100" cy="60" rx="44" ry="17" fill="none" stroke="#8b5cf6" stroke-width="2"/><path d="M100 16v88" stroke="#8b5cf6" stroke-width="2"/><path d="M68 26a52 52 0 0 0 0 68M132 26a52 52 0 0 1 0 68" fill="none" stroke="#8b5cf6" stroke-width="2"/><circle cx="100" cy="60" r="4" fill="#ec4899"/></svg></div>
+      <p class="info">Pick a moment in one city and see it in every other city at once. Daylight saving is applied automatically, so a time that looks right in March still looks right in July.</p>
+
+      <h2 style="font-size:1rem;margin-top:1rem">Reference time</h2>
+      <div class="row">
+        <select id="baseZone" style="flex:2" onchange="render()"></select>
+        <input type="date" id="baseDate" style="flex:1" onchange="render()">
+        <input type="time" id="baseTime" style="flex:1" onchange="render()">
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn" onclick="setNow()" style="flex:1">🕐 Use right now</button>
+        <button class="btn btn-outline" onclick="roundToHour()" style="flex:1">⏱️ Round to the hour</button>
+      </div>
+
+      <h2 style="font-size:1rem;margin-top:1.2rem">Cities to compare</h2>
+      <div class="row">
+        <select id="addZone" style="flex:2"></select>
+        <button class="btn" onclick="addZone()" style="flex:1">➕ Add city</button>
+      </div>
+      <div id="zoneList"></div>
+      <p id="emptyNote" class="info" style="display:none">No cities yet. Add one above, or load a preset.</p>
+
+      <div class="row" style="margin-top:.6rem">
+        <button class="btn btn-outline" onclick="loadPreset('india-us')" style="flex:1;font-size:.8rem">India + US</button>
+        <button class="btn btn-outline" onclick="loadPreset('india-gulf-uk')" style="flex:1;font-size:.8rem">India + Gulf + UK</button>
+        <button class="btn btn-outline" onclick="loadPreset('apac')" style="flex:1;font-size:.8rem">APAC</button>
+      </div>
+
+      <div id="result" style="margin-top:1rem"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2 style="font-size:1rem">Working hours</h2>
+      <p class="info">A slot only works if everyone is awake. Set the window you consider acceptable and the planner will mark each city and suggest hours that suit all of them.</p>
+      <div class="row">
+        <label style="flex:1;font-size:.85rem">Day starts<input type="time" id="workStart" value="09:30" onchange="render()"></label>
+        <label style="flex:1;font-size:.85rem">Day ends<input type="time" id="workEnd" value="18:30" onchange="render()"></label>
+      </div>
+      <div id="overlap" style="margin-top:.8rem"></div>
+      <div class="tz-legend">
+        <span><span class="tz-key" style="background:var(--ok-fill)"></span>Inside working hours</span>
+        <span><span class="tz-key" style="background:var(--warn-fill)"></span>Within an hour of the edge</span>
+        <span><span class="tz-key" style="background:var(--danger-fill)"></span>Outside working hours</span>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2 style="font-size:1rem">Share and save</h2>
+      <div class="row">
+        <button class="btn" onclick="copyPlan()" style="flex:1">📋 Copy as text</button>
+        <button class="btn btn-outline" onclick="exportIcs()" style="flex:1">📅 Calendar invite (.ics)</button>
+        <button class="btn btn-outline" onclick="exportCsv()" style="flex:1">📊 CSV</button>
+      </div>
+      <p class="info" style="margin-top:.5rem;font-size:.8rem">The calendar file carries the exact moment in UTC, so every attendee's calendar shows it in their own zone without anyone converting anything by hand.</p>
+    </div>
+
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>How to Use This Tool</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Set the reference time</strong> — choose the city, date and time you are thinking in. This is usually your own.</li>
+        <li><strong>Add the other cities</strong> — the people you need on the call. Use a preset to add several at once.</li>
+        <li><strong>Check the working hours row</strong> — green means the slot is inside that city's day, red means somebody is being asked to join at a bad hour.</li>
+        <li><strong>Use the overlap strip</strong> — it scans all 24 hours of your reference day and marks the ones that fall inside everybody's working window.</li>
+        <li><strong>Send it</strong> — copy the text into a message, or download the .ics so each attendee's calendar does the conversion itself.</li>
+      </ol>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>Why daylight saving breaks meeting plans</h2>
+      <p>India does not observe daylight saving, so an IST clock never moves. Most of Europe and North America do, and they do not switch on the same dates — the United States moves in March and November, the European Union in late March and late October. For a few weeks each year the gap between Delhi and London or Delhi and New York is an hour different from what it was the week before.</p>
+      <p>That is why a recurring call set up in January starts arriving an hour early in April, and why a conversion you did once and wrote down stops being right. This planner asks the browser for the offset <strong>at the specific moment you chose</strong>, so the answer is correct for that date rather than for the date you happened to work it out on.</p>
+      <p>The southern hemisphere inverts it. Sydney is eleven hours ahead of UTC in January and ten in July, because its summer is the northern winter. A mental rule like "Australia is five and a half hours ahead of India" is right for part of the year and wrong for the rest.</p>
+      <h3 style="margin-top:1rem">Half-hour and quarter-hour zones</h3>
+      <p>Not every zone is a whole number of hours from UTC. India is +5:30, Nepal is +5:45, parts of Australia are +9:30. If you plan by counting whole hours you will be thirty or forty-five minutes out for a large part of Asia. The times here are computed from the real offset, so these zones are handled the same as any other.</p>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>Common Use Cases</h2>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Client calls from India</strong> — find the window that is still afternoon in Delhi and already morning in New York, which is usually a narrow band.</li>
+        <li><strong>Remote work and freelancing</strong> — check whether a posted "9 to 5 EST" role is actually workable from your city before applying.</li>
+        <li><strong>Interview scheduling</strong> — confirm what a recruiter's "3pm" means in your time before you confirm the slot.</li>
+        <li><strong>Exam and application deadlines</strong> — a deadline stated in one zone can fall on the previous day in yours. The date column makes that visible.</li>
+        <li><strong>Family calls abroad</strong> — find the hour that is not the middle of the night for either side.</li>
+        <li><strong>Release and deployment windows</strong> — a low-traffic hour in one region is peak in another.</li>
+      </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>About This Tool</h2>
+      <p>Everything runs in your browser using its built-in time zone database, which is the same data your operating system uses. No times are sent anywhere, there is no account, and the tool works offline once the page has loaded.</p>
+      <p>Your chosen cities and working hours are remembered on your own device, so the planner opens with your usual set next time. Clearing your browser data clears them.</p>
+    </div>
+
+    <div class="faq" style="margin-top:1.5rem">
+      <h2>❓ Frequently Asked Questions</h2>
+      <details><summary>Does this handle daylight saving automatically?</summary><p>Yes. The offset is read for the exact date and time you chose, not for today, so a meeting planned for a date after a clock change shows the correct time for that date.</p></details>
+      <details><summary>Why does the date differ between cities?</summary><p>Because a single moment can fall on different calendar days either side of the globe. When a city is on a different date the row shows it, which is the detail most often missed when a deadline is stated in another zone.</p></details>
+      <details><summary>Why is the suggested slot sometimes empty?</summary><p>Because no hour of that day falls inside everyone's working window — which is genuinely the case for some combinations, such as India with the US west coast. The tool says so rather than suggesting an hour that does not work. Widening your acceptable hours will usually produce a slot.</p></details>
+      <details><summary>What does the .ics file contain?</summary><p>One event at the exact moment you selected, stored in UTC, with the city list in the description. Each attendee's calendar converts it to their own zone, so nobody has to do the arithmetic.</p></details>
+      <details><summary>Are half-hour zones like India and Nepal supported?</summary><p>Yes. Offsets are taken from the browser's time zone data rather than assumed to be whole hours, so +5:30 and +5:45 are exact.</p></details>
+      <details><summary>Is my data uploaded anywhere?</summary><p>No. The calculation is local and the saved city list stays in your own browser storage.</p></details>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>🔗 Related Tools</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <a href="/tools/age-calculator" class="btn btn-outline" style="flex:1;min-width:150px">🎂 Age Calculator</a>
+        <a href="/tools/unit-converter" class="btn btn-outline" style="flex:1;min-width:150px">📐 Unit Converter</a>
+        <a href="/tools/stopwatch" class="btn btn-outline" style="flex:1;min-width:150px">⏱️ Stopwatch</a>
+        <a href="/tools/doc-expiry" class="btn btn-outline" style="flex:1;min-width:150px">📅 Document Expiry</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><a href="/">Home</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/blog/">Blog</a></p>
+    <p style="margin-top:.5rem">© 2026 FreeToolHubs · Made in India 🇮🇳</p>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* ===== Time Zone Planner =====
+   Offsets come from the browser's own IANA database via Intl, asked for the
+   SPECIFIC instant being planned. That matters: a fixed offset written down in
+   January is wrong after a daylight saving change, and the southern hemisphere
+   moves the opposite way to the northern. Nothing here assumes whole-hour
+   offsets either, because India is +5:30 and Nepal is +5:45. */
+
+/* A curated city list. The full IANA set runs to over 400 zones, most of them
+   aliases or places nobody schedules a call with, so these are the ones people
+   working from India actually deal with, each with a recognisable city name. */
+var CITIES=[
+  ["Asia/Kolkata","India (IST)"],
+  ["Asia/Kathmandu","Kathmandu, Nepal"],
+  ["Asia/Dhaka","Dhaka, Bangladesh"],
+  ["Asia/Colombo","Colombo, Sri Lanka"],
+  ["Asia/Karachi","Karachi, Pakistan"],
+  ["Asia/Dubai","Dubai, UAE"],
+  ["Asia/Riyadh","Riyadh, Saudi Arabia"],
+  ["Asia/Qatar","Doha, Qatar"],
+  ["Asia/Kuwait","Kuwait City"],
+  ["Asia/Muscat","Muscat, Oman"],
+  ["Asia/Singapore","Singapore"],
+  ["Asia/Hong_Kong","Hong Kong"],
+  ["Asia/Shanghai","Shanghai, China"],
+  ["Asia/Tokyo","Tokyo, Japan"],
+  ["Asia/Seoul","Seoul, South Korea"],
+  ["Asia/Jakarta","Jakarta, Indonesia"],
+  ["Asia/Manila","Manila, Philippines"],
+  ["Asia/Bangkok","Bangkok, Thailand"],
+  ["Asia/Jerusalem","Tel Aviv, Israel"],
+  ["Europe/London","London, UK"],
+  ["Europe/Dublin","Dublin, Ireland"],
+  ["Europe/Paris","Paris, France"],
+  ["Europe/Berlin","Berlin, Germany"],
+  ["Europe/Amsterdam","Amsterdam, Netherlands"],
+  ["Europe/Zurich","Zurich, Switzerland"],
+  ["Europe/Madrid","Madrid, Spain"],
+  ["Europe/Rome","Rome, Italy"],
+  ["Europe/Stockholm","Stockholm, Sweden"],
+  ["Europe/Warsaw","Warsaw, Poland"],
+  ["Europe/Moscow","Moscow, Russia"],
+  ["Europe/Istanbul","Istanbul, Turkey"],
+  ["Africa/Cairo","Cairo, Egypt"],
+  ["Africa/Nairobi","Nairobi, Kenya"],
+  ["Africa/Lagos","Lagos, Nigeria"],
+  ["Africa/Johannesburg","Johannesburg, South Africa"],
+  ["America/New_York","New York (Eastern)"],
+  ["America/Toronto","Toronto, Canada"],
+  ["America/Chicago","Chicago (Central)"],
+  ["America/Denver","Denver (Mountain)"],
+  ["America/Phoenix","Phoenix (no DST)"],
+  ["America/Los_Angeles","Los Angeles (Pacific)"],
+  ["America/Vancouver","Vancouver, Canada"],
+  ["America/Mexico_City","Mexico City"],
+  ["America/Bogota","Bogota, Colombia"],
+  ["America/Sao_Paulo","Sao Paulo, Brazil"],
+  ["America/Argentina/Buenos_Aires","Buenos Aires, Argentina"],
+  ["Australia/Perth","Perth, Australia"],
+  ["Australia/Adelaide","Adelaide, Australia"],
+  ["Australia/Sydney","Sydney, Australia"],
+  ["Australia/Brisbane","Brisbane (no DST)"],
+  ["Pacific/Auckland","Auckland, New Zealand"],
+  ["UTC","UTC"]
+];
+
+var zones=[];
+var K={z:"tzp_zones",b:"tzp_base",w:"tzp_work"};
+
+function cityLabel(tz){
+  for(var i=0;i<CITIES.length;i++)if(CITIES[i][0]===tz)return CITIES[i][1];
+  return tz.replace(/_/g," ").replace(/^.*\//,"");
+}
+
+/* ---- offset handling ---------------------------------------------------- */
+
+/* Minutes that `tz` is ahead of UTC at the given instant. Derived by asking
+   Intl to format the instant in that zone and comparing the result read back
+   as if it were UTC — this is the standard trick and it is exact, including
+   for half-hour zones and across daylight saving boundaries. */
+function offsetMinutes(tz,date){
+  var dtf=new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",
+    year:"numeric",month:"2-digit",day:"2-digit",
+    hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var p={};
+  dtf.formatToParts(date).forEach(function(x){if(x.type!=="literal")p[x.type]=x.value;});
+  var asUtc=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);
+  return Math.round((asUtc-Math.floor(date.getTime()/1000)*1000)/60000);
+}
+
+function fmtOffset(mins){
+  var sign=mins<0?"-":"+",a=Math.abs(mins);
+  return "UTC"+sign+String(Math.floor(a/60)).padStart(2,"0")+":"+String(a%60).padStart(2,"0");
+}
+
+/* The instant corresponding to a wall-clock time typed for a given zone.
+   Guessing from the local offset and correcting once is enough because the
+   correction only shifts by at most a day, and offsets do not change twice
+   within that window. */
+function instantFrom(tz,y,mo,d,h,mi){
+  var guess=Date.UTC(y,mo-1,d,h,mi,0);
+  var off=offsetMinutes(tz,new Date(guess));
+  var real=guess-off*60000;
+  var off2=offsetMinutes(tz,new Date(real));
+  if(off2!==off)real=guess-off2*60000;
+  return new Date(real);
+}
+
+function parts(tz,date){
+  var dtf=new Intl.DateTimeFormat("en-GB",{timeZone:tz,hourCycle:"h23",
+    weekday:"short",day:"2-digit",month:"short",year:"numeric",
+    hour:"2-digit",minute:"2-digit"});
+  var p={};
+  dtf.formatToParts(date).forEach(function(x){if(x.type!=="literal")p[x.type]=x.value;});
+  return p;
+}
+
+/* ---- the reference instant ---------------------------------------------- */
+
+function baseInstant(){
+  var tz=document.getElementById("baseZone").value;
+  var d=document.getElementById("baseDate").value;
+  var t=document.getElementById("baseTime").value;
+  if(!tz||!d||!t)return null;
+  var dp=d.split("-"),tp=t.split(":");
+  return instantFrom(tz,+dp[0],+dp[1],+dp[2],+tp[0],+tp[1]);
+}
+
+function setNow(){
+  var now=new Date();
+  var tz=document.getElementById("baseZone").value||"Asia/Kolkata";
+  var p=parts(tz,now);
+  document.getElementById("baseDate").value=
+    p.year+"-"+String(monthNum(p.month)).padStart(2,"0")+"-"+p.day;
+  document.getElementById("baseTime").value=p.hour+":"+p.minute;
+  render();
+  notify("Set to the current time in "+cityLabel(tz)+".","ok");
+}
+
+function monthNum(abbr){
+  var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var i=m.indexOf(abbr);
+  return i<0?1:i+1;
+}
+
+function roundToHour(){
+  var t=document.getElementById("baseTime").value;
+  if(!t)return notify("Set a time first.","warn");
+  var tp=t.split(":");
+  var h=+tp[0],mi=+tp[1];
+  if(mi>=30)h=(h+1)%24;
+  document.getElementById("baseTime").value=String(h).padStart(2,"0")+":00";
+  render();
+  notify("Rounded to "+String(h).padStart(2,"0")+":00.","ok");
+}
+
+/* ---- city list ---------------------------------------------------------- */
+
+function addZone(){
+  var tz=document.getElementById("addZone").value;
+  if(!tz)return;
+  if(zones.indexOf(tz)>=0){notify(cityLabel(tz)+" is already in the list.","info");return;}
+  if(zones.length>=12){notify("Twelve cities is the practical limit for one plan.","warn");return;}
+  zones.push(tz);
+  persist();render();
+  notify(cityLabel(tz)+" added.","ok");
+}
+
+function removeZone(i){
+  var name=cityLabel(zones[i]);
+  zones.splice(i,1);
+  persist();render();
+  notify(name+" removed.","info");
+}
+
+function loadPreset(kind){
+  var sets={
+    "india-us":["Asia/Kolkata","America/New_York","America/Chicago","America/Los_Angeles"],
+    "india-gulf-uk":["Asia/Kolkata","Asia/Dubai","Europe/London","Europe/Berlin"],
+    "apac":["Asia/Kolkata","Asia/Singapore","Asia/Tokyo","Australia/Sydney"]
+  };
+  zones=sets[kind].slice();
+  persist();render();
+  notify("Loaded "+zones.length+" cities. Remove any you do not need.","ok");
+}
+
+function persist(){
+  storeSet(K.z,zones,true);
+  storeSet(K.b,{tz:document.getElementById("baseZone").value},true);
+  storeSet(K.w,{s:document.getElementById("workStart").value,
+                e:document.getElementById("workEnd").value},true);
+}
+
+/* ---- working hours ------------------------------------------------------ */
+
+function workWindow(){
+  var s=(document.getElementById("workStart").value||"09:30").split(":");
+  var e=(document.getElementById("workEnd").value||"18:30").split(":");
+  return {start:+s[0]*60+ +s[1], end:+e[0]*60+ +e[1]};
+}
+
+/* 'in' inside the window, 'edge' within an hour of it, 'out' beyond that.
+   The edge band exists because a 9am start does not mean 8:45 is unthinkable,
+   and flagging it separately is more useful than a hard pass or fail. */
+function hourClass(minsOfDay,win){
+  if(minsOfDay>=win.start&&minsOfDay<=win.end)return "in";
+  if(minsOfDay>=win.start-60&&minsOfDay<=win.end+60)return "edge";
+  return "out";
+}
+
+/* ---- render ------------------------------------------------------------- */
+
+function render(){
+  var list=document.getElementById("zoneList");
+  var inst=baseInstant();
+  document.getElementById("emptyNote").style.display=zones.length?"none":"block";
+
+  if(!inst){
+    list.innerHTML="";
+    document.getElementById("result").innerHTML=
+      "<p class='info'>Choose a reference city, date and time to begin.</p>";
+    document.getElementById("overlap").innerHTML="";
+    return;
+  }
+
+  var baseTz=document.getElementById("baseZone").value;
+  var win=workWindow();
+  var bp=parts(baseTz,inst);
+  var html="";
+
+  zones.forEach(function(tz,i){
+    var p=parts(tz,inst);
+    var off=offsetMinutes(tz,inst);
+    var mins=+p.hour*60+ +p.minute;
+    var cls=hourClass(mins,win);
+    var badge=cls==="in"?"<span class='tz-badge tz-work'>working hours</span>":
+              cls==="edge"?"<span class='tz-badge tz-edge'>just outside</span>":
+              "<span class='tz-badge tz-off'>outside hours</span>";
+    var dayNote=(p.day!==bp.day)?
+      (" · <strong>"+p.weekday+" "+p.day+" "+p.month+"</strong>"):
+      (" · "+p.weekday);
+    html+="<div class='tz-row'>"+
+      "<div><div class='tz-name'>"+cityLabel(tz)+badge+"</div>"+
+      "<div class='tz-sub'>"+fmtOffset(off)+dayNote+"</div></div>"+
+      "<div class='tz-time'>"+p.hour+":"+p.minute+"</div>"+
+      "<button class='tz-del' onclick='removeZone("+i+")' aria-label='Remove "+
+      cityLabel(tz).replace(/'/g,"")+"'>✕</button></div>";
+  });
+  list.innerHTML=html;
+
+  var refOff=offsetMinutes(baseTz,inst);
+  document.getElementById("result").innerHTML=
+    "<p class='info'><strong>"+bp.weekday+" "+bp.day+" "+bp.month+" "+bp.year+
+    ", "+bp.hour+":"+bp.minute+"</strong> in "+cityLabel(baseTz)+
+    " ("+fmtOffset(refOff)+") is the moment shown above."+
+    (zones.length?"":" Add cities to compare it against.")+"</p>";
+
+  renderOverlap(inst,win);
+  persist();
+}
+
+/* Scan all 24 hours of the reference day and classify each one for every city.
+   An hour only counts as workable when it is inside the window everywhere —
+   and when no such hour exists the tool says so instead of offering a
+   compromise nobody asked for. */
+function renderOverlap(inst,win){
+  var box=document.getElementById("overlap");
+  if(!zones.length){box.innerHTML="<p class='info'>Add at least one city to see overlapping hours.</p>";return;}
+
+  var baseTz=document.getElementById("baseZone").value;
+  var d=document.getElementById("baseDate").value.split("-");
+  var rows="",good=[];
+
+  for(var h=0;h<24;h++){
+    var moment=instantFrom(baseTz,+d[0],+d[1],+d[2],h,0);
+    var worst="in";
+    zones.forEach(function(tz){
+      var p=parts(tz,moment);
+      var c=hourClass(+p.hour*60+ +p.minute,win);
+      if(c==="out")worst="out";
+      else if(c==="edge"&&worst!=="out")worst="edge";
+    });
+    if(worst==="in")good.push(h);
+  }
+
+  var strip="<div class='tz-strip'>";
+  for(var h2=0;h2<24;h2++){
+    var moment2=instantFrom(baseTz,+d[0],+d[1],+d[2],h2,0);
+    var worst2="in";
+    zones.forEach(function(tz){
+      var p=parts(tz,moment2);
+      var c=hourClass(+p.hour*60+ +p.minute,win);
+      if(c==="out")worst2="out";
+      else if(c==="edge"&&worst2!=="out")worst2="edge";
+    });
+    var bg=worst2==="in"?"var(--ok-fill)":worst2==="edge"?"var(--warn-fill)":"var(--danger-fill)";
+    strip+="<div class='tz-cell' style='background:"+bg+"' title='"+
+      String(h2).padStart(2,"0")+":00 in "+cityLabel(baseTz)+"'>"+h2+"</div>";
+  }
+  strip+="</div>";
+
+  var summary;
+  if(good.length){
+    var ranges=[],start=good[0],prev=good[0];
+    for(var i=1;i<good.length;i++){
+      if(good[i]!==prev+1){ranges.push([start,prev]);start=good[i];}
+      prev=good[i];
+    }
+    ranges.push([start,prev]);
+    var txt=ranges.map(function(r){
+      return r[0]===r[1]?(String(r[0]).padStart(2,"0")+":00")
+        :(String(r[0]).padStart(2,"0")+":00 to "+String(r[1]+1).padStart(2,"0")+":00");
+    }).join(", ");
+    summary="<div class='tz-best'><strong>"+good.length+
+      (good.length===1?" hour":" hours")+" work for everyone</strong><br>"+
+      "<span class='tz-sub'>"+txt+" in "+cityLabel(baseTz)+
+      " — inside working hours in all "+zones.length+
+      (zones.length===1?" city":" cities")+".</span></div>";
+  }else{
+    summary="<div class='tz-best tz-none'><strong>No hour suits everyone</strong><br>"+
+      "<span class='tz-sub'>With these cities and this window there is no hour that falls "+
+      "inside everybody's working day. Widen the hours above, or accept that one "+
+      "side joins outside theirs — the amber band shows who is closest.</span></div>";
+  }
+
+  box.innerHTML=summary+"<p class='tz-sub' style='margin-top:.6rem'>Each cell is one hour of "+
+    document.getElementById("baseDate").value+" in "+cityLabel(baseTz)+
+    ", coloured by the worst case across your cities.</p>"+strip;
+}
+
+/* ---- export ------------------------------------------------------------- */
+
+function planLines(){
+  var inst=baseInstant();
+  if(!inst)return null;
+  var baseTz=document.getElementById("baseZone").value;
+  var bp=parts(baseTz,inst);
+  var out=[];
+  out.push("Meeting time across cities");
+  out.push("Reference: "+cityLabel(baseTz)+" — "+bp.weekday+" "+bp.day+" "+
+           bp.month+" "+bp.year+", "+bp.hour+":"+bp.minute+
+           " ("+fmtOffset(offsetMinutes(baseTz,inst))+")");
+  out.push("");
+  zones.forEach(function(tz){
+    var p=parts(tz,inst);
+    out.push(cityLabel(tz)+": "+p.hour+":"+p.minute+" on "+p.weekday+" "+
+             p.day+" "+p.month+" ("+fmtOffset(offsetMinutes(tz,inst))+")");
+  });
+  return {inst:inst,lines:out,baseTz:baseTz};
+}
+
+function copyPlan(){
+  var p=planLines();
+  if(!p){notify("Set a reference time first.","warn");return;}
+  if(!zones.length){notify("Add at least one city before copying.","warn");return;}
+  copyNow(p.lines.join("\n"),"Plan copied — paste it into your message.");
+}
+
+function exportCsv(){
+  var p=planLines();
+  if(!p){notify("Set a reference time first.","warn");return;}
+  if(!zones.length){notify("Add at least one city before exporting.","warn");return;}
+  var win=workWindow();
+  /* BOM so Excel reads any accented city name correctly */
+  var out="\uFEFF";
+  out+="Reference city,"+cityLabel(p.baseTz)+"\n";
+  out+="Reference moment (UTC),"+p.inst.toISOString()+"\n\n";
+  out+="City,Time zone,Local date,Local time,UTC offset,Inside working hours\n";
+  zones.forEach(function(tz){
+    var q=parts(tz,p.inst);
+    var cls=hourClass(+q.hour*60+ +q.minute,win);
+    out+='"'+cityLabel(tz)+'",'+tz+","+q.year+"-"+
+      String(monthNum(q.month)).padStart(2,"0")+"-"+q.day+","+
+      q.hour+":"+q.minute+","+fmtOffset(offsetMinutes(tz,p.inst))+","+
+      (cls==="in"?"yes":cls==="edge"?"just outside":"no")+"\n";
+  });
+  download(new Blob([out],{type:"text/csv;charset=utf-8"}),"timezone-plan.csv");
+  notify("CSV downloaded with all "+zones.length+" cities.","ok");
+}
+
+/* An .ics carrying the instant in UTC is the only share format that cannot be
+   misread: every attendee's calendar renders it in their own zone, so nobody
+   repeats the conversion by hand. */
+function exportIcs(){
+  var p=planLines();
+  if(!p){notify("Set a reference time first.","warn");return;}
+  if(!zones.length){notify("Add at least one city before exporting.","warn");return;}
+
+  var z=function(n){return String(n).padStart(2,"0")};
+  var stamp=function(d){
+    return d.getUTCFullYear()+z(d.getUTCMonth()+1)+z(d.getUTCDate())+"T"+
+           z(d.getUTCHours())+z(d.getUTCMinutes())+z(d.getUTCSeconds())+"Z";
+  };
+  var end=new Date(p.inst.getTime()+30*60000);
+  var desc=p.lines.slice(2).filter(Boolean).join("\\n");
+  var uid="tzp-"+p.inst.getTime()+"@freetoolhubs.com";
+
+  var ics=[
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//FreeToolHubs//Time Zone Planner//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    "UID:"+uid,
+    "DTSTAMP:"+stamp(new Date()),
+    "DTSTART:"+stamp(p.inst),
+    "DTEND:"+stamp(end),
+    "SUMMARY:Meeting",
+    "DESCRIPTION:"+desc,
+    "BEGIN:VALARM",
+    "TRIGGER:-PT15M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Meeting in 15 minutes",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n")+"\r\n";
+
+  download(new Blob([ics],{type:"text/calendar;charset=utf-8"}),"meeting.ics");
+  notify("Calendar file downloaded — open it to add the meeting.","ok");
+}
+
+/* ---- init --------------------------------------------------------------- */
+
+function fillSelects(){
+  var opts=CITIES.map(function(c){
+    return "<option value='"+c[0]+"'>"+c[1]+"</option>";
+  }).join("");
+  document.getElementById("baseZone").innerHTML=opts;
+  document.getElementById("addZone").innerHTML=opts;
+}
+
+(function init(){
+  fillSelects();
+
+  var savedBase=storeGet(K.b,null);
+  var baseSel=document.getElementById("baseZone");
+  /* Only assign a saved zone if it is still one of the listed options —
+     setting a select to an unlisted value silently blanks it. */
+  var wanted=(savedBase&&savedBase.tz)||
+    (Intl.DateTimeFormat().resolvedOptions().timeZone)||"Asia/Kolkata";
+  var found=false;
+  for(var i=0;i<baseSel.options.length;i++){
+    if(baseSel.options[i].value===wanted){found=true;break;}
+  }
+  baseSel.value=found?wanted:"Asia/Kolkata";
+
+  var savedWork=storeGet(K.w,null);
+  if(savedWork){
+    if(savedWork.s)document.getElementById("workStart").value=savedWork.s;
+    if(savedWork.e)document.getElementById("workEnd").value=savedWork.e;
+  }
+
+  var savedZones=storeGet(K.z,null);
+  if(savedZones&&savedZones.length){
+    /* drop anything the browser no longer recognises rather than throwing later */
+    zones=savedZones.filter(function(tz){
+      try{new Intl.DateTimeFormat("en",{timeZone:tz});return true;}
+      catch(e){return false;}
+    });
+  }else{
+    zones=["America/New_York","Europe/London","Asia/Dubai"];
+  }
+
+  var now=new Date();
+  var p=parts(baseSel.value,now);
+  document.getElementById("baseDate").value=
+    p.year+"-"+String(monthNum(p.month)).padStart(2,"0")+"-"+p.day;
+  document.getElementById("baseTime").value=p.hour+":00";
+
+  render();
+
+  if(typeof touchShim==="function"){
+    var strip=document.getElementById("overlap");
+    if(strip)touchShim(strip);
+  }
+})();
+
+document.addEventListener("keydown",function(e){
+  if(e.defaultPrevented)return;
+  var t=(e.target&&e.target.tagName)||"";
+  if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA")return;
+  if(e.key==="n"||e.key==="N"){setNow();}
+});
+
+window.addZone=addZone;
+window.removeZone=removeZone;
+window.loadPreset=loadPreset;
+window.setNow=setNow;
+window.roundToHour=roundToHour;
+window.render=render;
+window.copyPlan=copyPlan;
+window.exportCsv=exportCsv;
+window.exportIcs=exportIcs;
+  </script>
+</body>
+</html>

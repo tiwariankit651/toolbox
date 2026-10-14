@@ -72,6 +72,11 @@
 
       <h3 style="margin-top:1rem" role="heading" aria-level="2">📅 Year-wise Summary</h3>
       <div style="overflow-x:auto"><table id="yearTable" style="width:100%;border-collapse:collapse;font-size:.85rem"></table></div>
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="exportSchedulePdf()" style="flex:1">📄 Download schedule as PDF</button>
+        <button class="btn btn-outline" onclick="exportScheduleCsv()" style="flex:1">📊 Download CSV</button>
+      </div>
+      <p class="info" style="margin-top:.5rem;font-size:.8rem">The PDF and CSV carry the full month-by-month repayment schedule, not just the yearly summary shown above.</p>
       <p class="info">Want every single month plus prepayment savings? See the full <a href="/tools/loan-calculator">Loan Calculator</a>.</p>
 
       <h3 style="margin-top:1.2rem" role="heading" aria-level="2">💡 Affordability Helper</h3>
@@ -126,6 +131,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 /* ===== EMI core ===== */
@@ -335,6 +341,152 @@ function load(){
 /* init */
 load();
 calc();
-  </script>
+  
+/* ===== Export the repayment schedule =====
+   The tool already computed a yearly summary on screen, but a borrower
+   checking a bank's figures needs the month-by-month split: how much of each
+   instalment is interest, and what the balance is after it. That is the number
+   people dispute with lenders, so the export carries it. */
+
+/* Read the inputs the same way calc() does, so the export can never disagree
+   with what is displayed. */
+function scheduleInputs(){
+  var p=+document.getElementById("amt").value||0;
+  var annual=+document.getElementById("rate").value||0;
+  var t=+document.getElementById("tenure").value||0;
+  var unit=document.getElementById("tenureUnit");
+  var months=(unit&&unit.value==="years")?Math.round(t*12):Math.round(t);
+  var r=annual/12/100;
+  if(p<=0||months<=0)return null;
+  var emi;
+  if(r===0){emi=p/months;}
+  else{var f=Math.pow(1+r,months);emi=p*r*f/(f-1);}
+  return {p:p,annual:annual,months:months,r:r,emi:emi};
+}
+
+/* Month-by-month rows. The final instalment is adjusted so the balance lands
+   exactly on zero rather than a few paise either side, which is what a lender
+   statement does. */
+function monthlySchedule(inp){
+  var bal=inp.p,rows=[];
+  for(var m=1;m<=inp.months;m++){
+    var interest=bal*inp.r;
+    var principal=inp.emi-interest;
+    if(m===inp.months||principal>bal){principal=bal;}
+    var pay=principal+interest;
+    bal-=principal;
+    if(bal<0.005)bal=0;
+    rows.push({m:m,pay:pay,principal:principal,interest:interest,balance:bal});
+  }
+  return rows;
+}
+
+function inr(n){
+  /* Indian digit grouping: 12,34,567 rather than 1,234,567 */
+  var s=Math.round(n).toString();
+  var neg=s.charAt(0)==="-";if(neg)s=s.slice(1);
+  var last=s.slice(-3),rest=s.slice(0,-3);
+  if(rest)last=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+last;
+  return (neg?"-":"")+last;
+}
+
+function exportScheduleCsv(){
+  var inp=scheduleInputs();
+  if(!inp){notify("Enter a loan amount, rate and tenure first.","warn");return;}
+  var rows=monthlySchedule(inp);
+  var totalInt=rows.reduce(function(s,r){return s+r.interest},0);
+  /* A UTF-8 BOM so Excel does not mangle the rupee sign, the same reason the
+     Excel converter defaults it on. */
+  var out="\uFEFF";
+  out+="Loan amount,"+Math.round(inp.p)+"\n";
+  out+="Annual interest rate (%),"+inp.annual+"\n";
+  out+="Tenure (months),"+inp.months+"\n";
+  out+="Monthly EMI,"+Math.round(inp.emi)+"\n";
+  out+="Total interest,"+Math.round(totalInt)+"\n";
+  out+="Total payable,"+Math.round(inp.p+totalInt)+"\n\n";
+  out+="Month,EMI,Principal,Interest,Balance\n";
+  rows.forEach(function(r){
+    out+=r.m+","+r.pay.toFixed(2)+","+r.principal.toFixed(2)+","+
+         r.interest.toFixed(2)+","+r.balance.toFixed(2)+"\n";
+  });
+  download(new Blob([out],{type:"text/csv;charset=utf-8"}),"emi-schedule.csv");
+  notify("CSV downloaded with all "+rows.length+" instalments.","ok");
+}
+
+async function exportSchedulePdf(){
+  var inp=scheduleInputs();
+  if(!inp){notify("Enter a loan amount, rate and tenure first.","warn");return;}
+  if(typeof PDFLib==="undefined"){notify("PDF library is still loading — try again in a moment.","warn");return;}
+  try{
+    var rows=monthlySchedule(inp);
+    var totalInt=rows.reduce(function(s,r){return s+r.interest},0);
+    var doc=await PDFLib.PDFDocument.create();
+    var font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+    var bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    var W=595,H=842,margin=40;
+    var page=null,y=0;
+
+    /* The standard fonts are WinAnsi only, so a rupee sign would throw inside
+       drawText. Rs. is used in the PDF for that reason. */
+    var newPage=function(){
+      page=doc.addPage([W,H]);
+      y=H-margin;
+    };
+    var line=function(text,size,useBold,indent){
+      if(y<margin+30)newPage();
+      page.drawText(String(text),{x:margin+(indent||0),y:y,size:size||10,
+        font:useBold?bold:font,color:PDFLib.rgb(0.1,0.1,0.15)});
+      y-=(size||10)+5;
+    };
+
+    newPage();
+    line("Loan Repayment Schedule",16,true);
+    y-=6;
+    line("Loan amount: Rs. "+inr(inp.p),10);
+    line("Interest rate: "+inp.annual+"% per year",10);
+    line("Tenure: "+inp.months+" months"+(inp.months%12===0?" ("+(inp.months/12)+" years)":""),10);
+    line("Monthly EMI: Rs. "+inr(inp.emi),11,true);
+    line("Total interest: Rs. "+inr(totalInt),10);
+    line("Total payable: Rs. "+inr(inp.p+totalInt),10);
+    y-=4;
+    line("Interest is "+Math.round(totalInt/inp.p*100)+"% of the amount borrowed.",9);
+    y-=10;
+
+    /* table header */
+    var cols=[margin,margin+60,margin+170,margin+290,margin+400];
+    var header=function(){
+      if(y<margin+40)newPage();
+      page.drawText("Month",{x:cols[0],y:y,size:9,font:bold});
+      page.drawText("EMI",{x:cols[1],y:y,size:9,font:bold});
+      page.drawText("Principal",{x:cols[2],y:y,size:9,font:bold});
+      page.drawText("Interest",{x:cols[3],y:y,size:9,font:bold});
+      page.drawText("Balance",{x:cols[4],y:y,size:9,font:bold});
+      y-=4;
+      page.drawLine({start:{x:margin,y:y},end:{x:W-margin,y:y},
+        thickness:0.7,color:PDFLib.rgb(0.4,0.4,0.5)});
+      y-=11;
+    };
+    header();
+    rows.forEach(function(r){
+      if(y<margin+20){newPage();header();}
+      page.drawText(String(r.m),{x:cols[0],y:y,size:8.5,font:font});
+      page.drawText(inr(r.pay),{x:cols[1],y:y,size:8.5,font:font});
+      page.drawText(inr(r.principal),{x:cols[2],y:y,size:8.5,font:font});
+      page.drawText(inr(r.interest),{x:cols[3],y:y,size:8.5,font:font});
+      page.drawText(inr(r.balance),{x:cols[4],y:y,size:8.5,font:font});
+      y-=11;
+    });
+
+    var bytes=await doc.save();
+    download(new Blob([bytes],{type:"application/pdf"}),"emi-schedule.pdf");
+    notify("PDF downloaded with all "+rows.length+" instalments.","ok");
+  }catch(err){
+    notify("Could not build the PDF: "+(err.message||"unknown error"),"error");
+  }
+}
+
+window.exportSchedulePdf=exportSchedulePdf;
+window.exportScheduleCsv=exportScheduleCsv;
+</script>
 </body>
 </html>

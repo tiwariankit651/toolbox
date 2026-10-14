@@ -74,6 +74,11 @@
           <span id="copyMsg" class="info"></span>
         </div>
         <div id="compareBox" style="margin-top:1rem"></div>
+        <div class="row" style="margin-top:.8rem">
+          <button class="btn" onclick="exportSipPdf()" style="flex:1">📄 Download projection as PDF</button>
+          <button class="btn btn-outline" onclick="exportSipCsv()" style="flex:1">📊 Download CSV</button>
+        </div>
+        <p class="info" style="margin-top:.5rem;font-size:.8rem">Year-by-year invested amount, value and gain. Available for SIP, Step-up SIP and Lumpsum.</p>
       </div>
     </div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
@@ -132,6 +137,7 @@
       <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
     </div>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="../js/common.js"></script>
   <script>
 function inr(n){n=Math.round(n||0);var neg=n<0;n=Math.abs(n);var s=n.toString();var last3=s.length>3?s.substring(s.length-3):s;var rest=s.length>3?s.substring(0,s.length-3):"";if(rest)last3=","+last3;rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",");return (neg?"-":"")+rest+last3}
@@ -305,5 +311,168 @@ var FIELDS=["sip","lump","stepupSip","stepupPct","swpCorpus","swpWithdraw","goal
 function save(){try{var o={mode:calcMode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});storeSet("sipCalc", o)}catch(e){}}
 function load(){try{var o=storeGet("sipCalc", {});FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setCalcMode(o.mode)}catch(e){}}
 document.addEventListener("DOMContentLoaded",function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener("input",save)})});
-  </script>
+  
+/* ===== Export the year-by-year growth =====
+   The screen shows the final corpus, which answers "how much will I have" but
+   not "when does the compounding actually start pulling away from what I put
+   in". That crossover is the thing worth seeing, so the export is year-wise
+   with invested, value and gain side by side. */
+
+function sipInr(n){
+  var s=Math.round(n).toString();
+  var neg=s.charAt(0)==="-";if(neg)s=s.slice(1);
+  var last=s.slice(-3),rest=s.slice(0,-3);
+  if(rest)last=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+last;
+  return (neg?"-":"")+last;
+}
+
+/* Build the yearly series for whichever mode is active, using the same inputs
+   and the same monthly compounding the on-screen result uses. */
+function sipSeries(){
+  var years=+document.getElementById("years").value||0;
+  var annual=+document.getElementById("rate").value||0;
+  if(years<=0)return null;
+  var r=annual/12/100;
+  var rows=[],invested=0,value=0,label="",monthly=0,stepPct=0;
+
+  if(calcMode==="stepup"){
+    monthly=+document.getElementById("stepupSip").value||0;
+    stepPct=+document.getElementById("stepupPct").value||0;
+    label="Step-up SIP";
+  }else if(calcMode==="lump"){
+    label="Lumpsum";
+  }else{
+    monthly=+document.getElementById("sip").value||0;
+    label="SIP";
+  }
+
+  if(calcMode==="lump"){
+    var lumpEl=document.getElementById("lump");
+    var principal=lumpEl?(+lumpEl.value||0):0;
+    if(principal<=0)return null;
+    invested=principal;value=principal;
+    for(var y=1;y<=years;y++){
+      for(var m=0;m<12;m++){value*=(1+r);}
+      rows.push({year:y,invested:invested,value:value,gain:value-invested});
+    }
+  }else{
+    if(monthly<=0)return null;
+    var cur=monthly;
+    for(var y2=1;y2<=years;y2++){
+      for(var m2=0;m2<12;m2++){
+        value=(value+cur)*(1+r);
+        invested+=cur;
+      }
+      rows.push({year:y2,invested:invested,value:value,gain:value-invested});
+      if(calcMode==="stepup"&&stepPct>0)cur=cur*(1+stepPct/100);
+    }
+  }
+  return {rows:rows,label:label,annual:annual,years:years,
+          monthly:monthly,stepPct:stepPct};
+}
+
+function exportSipCsv(){
+  if(calcMode==="goal"||calcMode==="swp"){
+    notify("Switch to SIP, Step-up SIP or Lumpsum to export a growth schedule.","info");
+    return;
+  }
+  var s=sipSeries();
+  if(!s){notify("Enter an amount, rate and number of years first.","warn");return;}
+  var fin=s.rows[s.rows.length-1];
+  var out="\uFEFF";
+  out+="Mode,"+s.label+"\n";
+  if(s.monthly>0)out+="Monthly investment,"+Math.round(s.monthly)+"\n";
+  if(s.stepPct>0)out+="Annual step-up (%),"+s.stepPct+"\n";
+  out+="Expected return (% per year),"+s.annual+"\n";
+  out+="Duration (years),"+s.years+"\n";
+  out+="Total invested,"+Math.round(fin.invested)+"\n";
+  out+="Final value,"+Math.round(fin.value)+"\n";
+  out+="Wealth gained,"+Math.round(fin.gain)+"\n\n";
+  out+="Year,Invested so far,Value,Gain\n";
+  s.rows.forEach(function(r){
+    out+=r.year+","+r.invested.toFixed(2)+","+r.value.toFixed(2)+","+r.gain.toFixed(2)+"\n";
+  });
+  download(new Blob([out],{type:"text/csv;charset=utf-8"}),"investment-growth.csv");
+  notify("CSV downloaded with "+s.rows.length+" years of growth.","ok");
+}
+
+async function exportSipPdf(){
+  if(calcMode==="goal"||calcMode==="swp"){
+    notify("Switch to SIP, Step-up SIP or Lumpsum to export a growth schedule.","info");
+    return;
+  }
+  var s=sipSeries();
+  if(!s){notify("Enter an amount, rate and number of years first.","warn");return;}
+  if(typeof PDFLib==="undefined"){notify("PDF library is still loading — try again in a moment.","warn");return;}
+  try{
+    var doc=await PDFLib.PDFDocument.create();
+    var font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+    var bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    var W=595,H=842,margin=40,page=null,y=0;
+    var newPage=function(){page=doc.addPage([W,H]);y=H-margin;};
+    /* Standard fonts are WinAnsi only, so Rs. is used rather than the symbol */
+    var line=function(t,size,useBold){
+      if(y<margin+30)newPage();
+      page.drawText(String(t),{x:margin,y:y,size:size||10,
+        font:useBold?bold:font,color:PDFLib.rgb(0.1,0.1,0.15)});
+      y-=(size||10)+5;
+    };
+    var fin=s.rows[s.rows.length-1];
+
+    newPage();
+    line("Investment Growth Projection",16,true);
+    y-=6;
+    line(s.label+(s.stepPct>0?" with "+s.stepPct+"% annual step-up":""),11,true);
+    if(s.monthly>0)line("Monthly investment: Rs. "+sipInr(s.monthly),10);
+    line("Expected return: "+s.annual+"% per year",10);
+    line("Duration: "+s.years+" years",10);
+    y-=4;
+    line("Total invested: Rs. "+sipInr(fin.invested),10);
+    line("Final value: Rs. "+sipInr(fin.value),11,true);
+    line("Wealth gained: Rs. "+sipInr(fin.gain),10);
+    y-=4;
+    /* The year the gain overtakes the money put in is the single most useful
+       line on this page, so it is stated rather than left to be inferred. */
+    var cross=null;
+    for(var i=0;i<s.rows.length;i++){
+      if(s.rows[i].gain>s.rows[i].invested){cross=s.rows[i].year;break;}
+    }
+    line(cross?("Returns overtake the amount invested in year "+cross+".")
+              :("Returns do not overtake the amount invested within "+s.years+" years."),9);
+    line("This is a projection at a constant rate, not a guaranteed return.",9);
+    y-=10;
+
+    var cols=[margin,margin+70,margin+230,margin+390];
+    var header=function(){
+      if(y<margin+40)newPage();
+      page.drawText("Year",{x:cols[0],y:y,size:9,font:bold});
+      page.drawText("Invested",{x:cols[1],y:y,size:9,font:bold});
+      page.drawText("Value",{x:cols[2],y:y,size:9,font:bold});
+      page.drawText("Gain",{x:cols[3],y:y,size:9,font:bold});
+      y-=4;
+      page.drawLine({start:{x:margin,y:y},end:{x:W-margin,y:y},
+        thickness:0.7,color:PDFLib.rgb(0.4,0.4,0.5)});
+      y-=11;
+    };
+    header();
+    s.rows.forEach(function(r){
+      if(y<margin+20){newPage();header();}
+      page.drawText(String(r.year),{x:cols[0],y:y,size:8.5,font:font});
+      page.drawText(sipInr(r.invested),{x:cols[1],y:y,size:8.5,font:font});
+      page.drawText(sipInr(r.value),{x:cols[2],y:y,size:8.5,font:font});
+      page.drawText(sipInr(r.gain),{x:cols[3],y:y,size:8.5,font:font});
+      y-=11;
+    });
+
+    var bytes=await doc.save();
+    download(new Blob([bytes],{type:"application/pdf"}),"investment-growth.pdf");
+    notify("PDF downloaded with "+s.rows.length+" years of growth.","ok");
+  }catch(err){
+    notify("Could not build the PDF: "+(err.message||"unknown error"),"error");
+  }
+}
+
+window.exportSipCsv=exportSipCsv;
+window.exportSipPdf=exportSipPdf;
+</script>
 </body></html>
