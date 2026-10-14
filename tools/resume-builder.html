@@ -43,7 +43,7 @@
       <p class="info">Fill the form, choose a template, preview live, check ATS score, and download a professional PDF resume.</p>
       <div class="row" style="margin-bottom:1rem;flex-wrap:wrap"><label>Template:</label>
         <select id="template" onchange="updatePreview()"><option value="classic">📋 Classic (Single Column)</option><option value="modern">🎨 Modern (Two-Column Sidebar)</option><option value="minimal">✨ Minimal (Clean)</option><option value="ats">🤖 ATS-Safe (Plain)</option></select>
-        <label>Accent Color:</label><input type="color" id="accentColor" value="#6366f1" style="width:40px;height:35px;border:none" onchange="updatePreview()">
+        <label>Accent Color:</label><input type="color" id="accentColor" value="#4338ca" style="width:40px;height:35px;border:none" onchange="updatePreview();checkAccent()" oninput="checkAccent()"><span id="accentWarn" class="info" style="font-size:.78rem"></span>
       </div>
       <h2>Personal Info</h2>
       <div class="row"><input type="text" id="name" placeholder="Full Name" oninput="autoSave();updatePreview()"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)" oninput="autoSave();updatePreview()"></div>
@@ -188,7 +188,7 @@ function loadSaved(){var raw=storeGetRaw('resumeBuilderData', null);if(!raw)retu
   if(d.exps&&d.exps.length){d.exps.forEach(function(ex){addExpWith(ex)});}else{addExp();}
   if(d.edus&&d.edus.length){d.edus.forEach(function(ed){addEduWith(ed)});}else{addEdu();}
 }catch(e){}}
-function clearAll(){if(!confirm('Clear all entered data? This cannot be undone.'))return;localStorage.removeItem('resumeBuilderData');ratedSkills=[];renderSkills();['name','title','email','phone','location','linkedin','portfolio','summary','skills','certs','languages'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('exp').innerHTML='';document.getElementById('edu').innerHTML='';addExp();addEdu();document.getElementById('template').value='classic';document.getElementById('accentColor').value='#6366f1';calcATS();updatePreview();}
+function clearAll(){if(!confirm('Clear all entered data? This cannot be undone.'))return;localStorage.removeItem('resumeBuilderData');ratedSkills=[];renderSkills();['name','title','email','phone','location','linkedin','portfolio','summary','skills','certs','languages'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('exp').innerHTML='';document.getElementById('edu').innerHTML='';addExp();addEdu();document.getElementById('template').value='classic';document.getElementById('accentColor').value='#4338ca';calcATS();updatePreview();}
 function gv(id){return document.getElementById(id).value.trim();}
 function addSkill(){var name=document.getElementById('newSkill').value.trim();if(!name)return;var rating=parseInt(document.getElementById('newSkillRating').value);ratedSkills.push({name:name,rating:rating});document.getElementById('newSkill').value='';renderSkills();autoSave();}
 function removeSkill(i){ratedSkills.splice(i,1);renderSkills();autoSave();}
@@ -497,6 +497,33 @@ setupDrop('photoDrop','photo',function(files){
 updatePhotoQualityNote();
 loadSaved();if(!document.querySelectorAll('#exp > div').length)addExp();if(!document.querySelectorAll('#edu > div').length)addEdu();calcATS();updatePreview();
 updatePhotoQualityNote();
-  </script>
+  
+/* The accent is drawn on the white resume sheet, so a pale choice becomes
+   hard to read on paper and in whatever the recruiter prints it with. Measure
+   the user's pick against white and say so, rather than letting them discover
+   it after sending the file. */
+function accentRatio(hex){
+  var h=hex.replace("#","");
+  if(h.length===3)h=h.split("").map(function(x){return x+x}).join("");
+  var ch=[0,2,4].map(function(i){return parseInt(h.substr(i,2),16)/255});
+  ch=ch.map(function(v){return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
+  var L=0.2126*ch[0]+0.7152*ch[1]+0.0722*ch[2];
+  return (1.05)/(L+0.05);
+}
+function checkAccent(){
+  var el=document.getElementById("accentColor");
+  var warn=document.getElementById("accentWarn");
+  if(!el||!warn)return;
+  var r=accentRatio(el.value);
+  if(r>=4.5){
+    warn.textContent="Contrast "+r.toFixed(1)+":1 on white — reads clearly.";
+    warn.style.color="var(--ok)";
+  }else{
+    warn.textContent="Contrast only "+r.toFixed(1)+":1 on white. A darker shade reads better in print and on screen.";
+    warn.style.color="var(--warn)";
+  }
+}
+window.checkAccent=checkAccent;
+</script>
 </body>
 </html>

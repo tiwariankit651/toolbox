@@ -278,7 +278,7 @@ function showValidation(msgs){
   box.innerHTML="";
   msgs.forEach(function(m){
     var p=document.createElement("p");p.className="info";p.style.margin=".2rem 0";
-    p.style.color=m.level==="error"?"#e06c75":"#e5c07b";
+    p.style.color=m.level==="error"?"var(--danger)":"#e5c07b";
     p.textContent=(m.level==="error"?"❌ ":"⚠️ ")+m.text;
     box.appendChild(p);
   });
@@ -332,8 +332,8 @@ function analyse(){
   // SELECT *
   if(/SELECT\s+\*/i.test(raw))lines.push("<span style='color:#e5c07b'>⚠️ Uses SELECT * — prefer explicit columns for performance and clarity.</span>");
   // dangerous UPDATE/DELETE without WHERE
-  if(/\bUPDATE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:#e06c75'>❌ UPDATE without WHERE — this updates every row! Add a WHERE clause.</span>");
-  if(/\bDELETE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:#e06c75'>❌ DELETE without WHERE — this deletes every row! Add a WHERE clause.</span>");
+  if(/\bUPDATE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:var(--danger)'>❌ UPDATE without WHERE — this updates every row! Add a WHERE clause.</span>");
+  if(/\bDELETE\b/.test(up)&&!/\bWHERE\b/.test(up))lines.push("<span style='color:var(--danger)'>❌ DELETE without WHERE — this deletes every row! Add a WHERE clause.</span>");
   // complexity
   var subq=(raw.match(/\(\s*SELECT/gi)||[]).length;
   var complexity=subq>1||joins.length>2?"High":subq>0||joins.length?"Moderate":"Low";
