@@ -8,7 +8,93 @@
 <link rel="canonical" href="https://freetoolhubs.com/blog/html-live-editor-free-online"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head><body>
 <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
-<div class="container"><div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → HTML Editor</div><div class="tool-section" style="line-height:1.8"><h1>💻 HTML Live Editor</h1><p class="info">April 2026 · 3 min read</p><p>Learn web development by writing code and seeing results instantly. Our <a href='../tools/html-editor' style='color:var(--accent-text)'>HTML Live Editor</a> has a split-screen view.</p><h2>Features</h2><ul style='margin-left:1.5rem'><li>Write HTML, CSS, and JavaScript</li><li>Live preview updates as you type</li><li>Copy code or download as HTML file</li><li>No setup needed — works in browser</li></ul><p>Perfect for beginners learning web development, testing code snippets, and quick prototyping.</p><div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Start coding!</strong></p><a href="/tools/html-editor" class="btn" style="display:inline-block;text-decoration:none">💻 Open HTML Editor</a></div></div></div>
+<div class="container"><div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → HTML Editor</div><div class="tool-section" style="line-height:1.8"><h1>💻 HTML Live Editor</h1><p class="info">October 2026 · 9 min read</p>
+<p>A live HTML editor — type markup on one side, see the result on the other — is one of the fastest ways to learn front-end development and one of the fastest ways to test an idea. The immediate feedback removes the save-and-refresh cycle, which matters more for learning than it sounds, because the connection between a change and its effect stays obvious.</p>
+
+      <p>This guide covers what to use one for, the mistakes that make the preview behave unexpectedly, and the limits worth knowing before you rely on it.</p>
+
+      <h2>What a live preview is genuinely good for</h2>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Learning how a property behaves.</strong> Reading that <code>flex-grow</code> distributes free space is one thing; changing the value and watching the boxes move is another.</li>
+        <li><strong>Reproducing a bug in isolation.</strong> Stripping a broken layout down to twenty lines usually reveals the cause, and a live editor is the quickest place to do the stripping.</li>
+        <li><strong>Testing an email template.</strong> Email clients need table layouts and inline styles, which nobody writes from memory.</li>
+        <li><strong>Checking a snippet before pasting it in.</strong> Code from an answer online may be for a different framework version entirely.</li>
+        <li><strong>Teaching.</strong> Showing the effect of one changed line is far more effective than describing it.</li>
+      </ul>
+
+      <h2>The mistakes that make a preview misbehave</h2>
+
+      <h3>Styles leaking, or not applying at all</h3>
+
+      <p>A preview usually renders inside an iframe, which is its own document. A stylesheet in the parent page does not apply inside it, and vice versa. If your CSS seems to be ignored, check that it is inside the preview's own <code>&lt;style&gt;</code> block rather than relying on the page around it.</p>
+
+      <p>The same isolation is why a preview will not inherit your site's font or reset. Blank-slate rendering is correct behaviour, and a layout that looks right in the editor can look different on a page that has a CSS reset.</p>
+
+      <h3>Unclosed tags fail silently</h3>
+
+      <p>HTML has no syntax errors in the way a programming language does. A missing <code>&lt;/div&gt;</code> does not produce an error message — the browser guesses where it should have gone, and the guess is often somewhere you did not expect. The symptom is a layout where everything after a certain point is nested one level too deep.</p>
+
+      <p>If a layout breaks after a particular element, count your closing tags from that element backwards. The browser recovering from your mistake is what makes this hard to see.</p>
+
+      <h3>Self-closing tags that are not</h3>
+
+      <p><code>&lt;div /&gt;</code> is not a self-closing div. In HTML, only void elements — <code>img</code>, <code>br</code>, <code>input</code>, <code>hr</code>, <code>meta</code>, <code>link</code> — have no closing tag, and the trailing slash on those is optional. Writing <code>&lt;div /&gt;</code> opens a div that is never closed, which is the previous problem with a different cause.</p>
+
+      <p>This catches people coming from JSX, where self-closing any element is required.</p>
+
+      <h3>Scripts and the preview boundary</h3>
+
+      <p>Script inside a preview runs in the iframe, not in your page. That is the point — it cannot interfere with the editor. But it also means <code>document.getElementById</code> inside the preview will not find elements in the editor around it, and a console error from the preview appears attributed to the frame.</p>
+
+      <p>Many previews also sandbox the frame, which blocks some APIs deliberately. If something works on your own page and not in a preview, sandboxing is a likely cause.</p>
+
+      <h2>CSS specificity, which explains most "why is this ignored"</h2>
+
+      <p>When two rules target the same element, the more specific one wins — not the later one. The hierarchy, from weakest:</p>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Selector</th><th style="padding:.5rem;text-align:left">Weight</th><th style="padding:.5rem;text-align:left">Example</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Element</td><td style="padding:.5rem">lowest</td><td style="padding:.5rem"><code>p { }</code></td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Class, attribute, pseudo-class</td><td style="padding:.5rem">medium</td><td style="padding:.5rem"><code>.note { }</code></td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">ID</td><td style="padding:.5rem">high</td><td style="padding:.5rem"><code>#main { }</code></td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Inline style</td><td style="padding:.5rem">higher</td><td style="padding:.5rem"><code>style="color:red"</code></td></tr>
+        <tr><td style="padding:.5rem">!important</td><td style="padding:.5rem">highest</td><td style="padding:.5rem">avoid</td></tr>
+      </table>
+
+      <p>So <code>#main p { color: blue }</code> beats <code>.highlight { color: red }</code> even if the class rule comes later in the file. Only when specificity is equal does source order decide.</p>
+
+      <p><code>!important</code> wins everything, which is why it should be a last resort — once one rule uses it, overriding that rule requires another, and the cascade stops being predictable.</p>
+
+      <h2>Box model: the other half of layout confusion</h2>
+
+      <p>By default, <code>width</code> sets the content box, and padding and border are added outside it. So an element with <code>width: 200px; padding: 20px</code> occupies 240 pixels.</p>
+
+      <p>Setting <code>box-sizing: border-box</code> makes <code>width</code> include padding and border, which is what almost everyone expects. Most modern stylesheets apply it globally for exactly that reason:</p>
+
+      <p><code>*, *::before, *::after { box-sizing: border-box }</code></p>
+
+      <p>If your boxes are consistently wider than you set them, this is why.</p>
+
+      <h2>What a browser editor cannot do</h2>
+
+      <p>Worth knowing so you do not waste time:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>No server.</strong> Anything needing a backend, a database or a server-side language will not run.</li>
+        <li><strong>Cross-origin requests are blocked</strong> unless the other server explicitly allows them, so fetching from most APIs will fail with a CORS error that is not your bug.</li>
+        <li><strong>No build step.</strong> JSX, TypeScript, SCSS and bundler imports need compilation first.</li>
+        <li><strong>Not a cross-browser test.</strong> You are seeing your own browser's rendering. Something that works in Chrome may differ in Safari.</li>
+      </ul>
+
+      <h2>Where your code goes</h2>
+
+      <p>Many online editors save your work to their servers so you can share a link. Convenient, and worth a moment's thought if the snippet contains an API key, a client's markup, or anything from a private codebase.</p>
+
+      <p>A browser-only editor keeps the code on your device. You lose the shareable link; you keep the certainty that nothing was transmitted.</p>
+
+      <p>Our <a href="/tools/html-editor" style="color:var(--accent-text)">HTML Live Editor</a> renders the preview as you type with HTML, CSS and JavaScript in one place, and runs entirely in your browser — nothing is uploaded, and it works offline after the first visit. For related work, the <a href="/tools/color-picker" style="color:var(--accent-text)">Color Picker</a> generates values you can paste straight in, and the <a href="/tools/contrast-checker" style="color:var(--accent-text)">Contrast Checker</a> tells you whether a colour pair you have chosen is actually readable.</p>
+      <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Start coding!</strong></p><a href="/tools/html-editor" class="btn" style="display:inline-block;text-decoration:none">💻 Open HTML Editor</a></div></div></div>
 <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">

@@ -8,7 +8,93 @@
 <link rel="canonical" href="https://freetoolhubs.com/blog/regex-tester-guide"><link rel="stylesheet" href="../css/style.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 </head><body>
 <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
-<div class="container"><div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Regex Tester</div><div class="tool-section" style="line-height:1.8"><h1>🔍 Regex Tester Guide</h1><p class="info">April 2026 · 3 min read</p><p>Regular expressions are powerful but tricky. Our <a href='../tools/regex-tester' style='color:var(--accent-text)'>Regex Tester</a> helps you test patterns in real-time.</p><h2>Features</h2><ul style='margin-left:1.5rem'><li>Real-time matching with highlights</li><li>Match count display</li><li>Common pattern presets (email, phone, URL, IP)</li><li>JavaScript regex flags support</li><li>Error messages for invalid patterns</li></ul><div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Test your regex!</strong></p><a href="/tools/regex-tester" class="btn" style="display:inline-block;text-decoration:none">🔍 Open Regex Tester</a></div></div></div>
+<div class="container"><div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Regex Tester</div><div class="tool-section" style="line-height:1.8"><h1>🔍 Regex Tester Guide</h1><p class="info">October 2026 · 9 min read</p>
+<p>A regular expression that compiles without error and still does the wrong thing is the hardest kind of bug to find, because there is nothing to read. The pattern looks right, the test string looks right, and the match count is simply not what you expected. Almost always the cause is one of a small number of behaviours that are easy to forget and impossible to infer from the result.</p>
+
+      <p>This guide covers those behaviours, with the specific symptom each one produces, so you can recognise the failure rather than rebuild the pattern from scratch.</p>
+
+      <h2>The dot does not cross a line break</h2>
+
+      <p>By default <code>.</code> matches any character <em>except</em> a newline. So this pattern:</p>
+
+      <p><code>a.b</code> &nbsp;against&nbsp; <code>a\nb</code> &nbsp;→&nbsp; <strong>no match</strong></p>
+
+      <p>which is surprising, because "any character" sounds like it should include a newline. Adding the <code>s</code> flag — dotAll — changes that and the same pattern matches. The symptom to watch for is a pattern that works on a single line and finds nothing in a multi-line block.</p>
+
+      <p>This matters most when extracting from HTML or log files, where the thing you want routinely spans lines. If a pattern suddenly stops matching when you paste in real data rather than a one-line sample, the <code>s</code> flag is the first thing to check.</p>
+
+      <h2>Anchors match the whole string, not each line</h2>
+
+      <p><code>^</code> and <code>$</code> mean start and end of the <em>subject</em>, not of a line. Against a three-line block, <code>^error</code> will only match if the very first line begins with "error". The second and third lines are invisible to it.</p>
+
+      <p>The <code>m</code> flag — multiline — redefines both anchors to mean start and end of a line. This is the flag most often missing when someone is filtering log lines and getting one result instead of several.</p>
+
+      <p>A related trap: <code>$</code> matches <em>before</em> a trailing newline as well as at the very end, so a pattern ending in <code>$</code> can match a line that still has its line break attached. If you are capturing with <code>$</code> and getting a stray newline in the result, that is why.</p>
+
+      <h2>Without the g flag you get one match, and replace changes one thing</h2>
+
+      <p>This is the single most common surprise. <code>"a1b2c3".replace(/\d/, "x")</code> gives <code>"axb2c3"</code> — only the first digit. With <code>/\d/g</code> it gives <code>"axbxcx"</code>.</p>
+
+      <p>It also affects counting. Without <code>g</code>, <code>match()</code> returns a rich object describing one match with its capture groups. With <code>g</code>, it returns a plain array of every matched string and <strong>no</strong> capture groups at all. If your capture groups suddenly become undefined after you add the <code>g</code> flag, that is the reason, and <code>matchAll()</code> is the fix.</p>
+
+      <h2>Nested quantifiers can hang the browser</h2>
+
+      <p>A pattern like <code>(a+)+b</code> looks harmless. Against <code>"aaaaaaaaaaaaaaaaaaaaaaaaaaaa"</code> with no <code>b</code> at the end, the engine tries every way of dividing those characters between the inner and outer repetition before concluding there is no match. The number of combinations grows exponentially with the input length.</p>
+
+      <p>This is catastrophic backtracking, and it is a real denial-of-service vector when a pattern is applied to user input on a server. The shape to recognise is a quantifier applied to a group that itself contains a quantifier: <code>(x+)*</code>, <code>(x*)+</code>, <code>(a|aa)+</code>. If a pattern of that shape is unavoidable, make the inner part unambiguous so there is only one way to match.</p>
+
+      <h2>Inside square brackets, most characters stop being special</h2>
+
+      <p>A character class is a different language. <code>[.]</code> matches a literal dot — no escaping needed, and <code>[\.]</code> works but is redundant. The characters that remain special inside a class are <code>^</code> (only as the first character, where it negates), <code>-</code> (between two characters, where it makes a range), <code>]</code> and <code>\</code>.</p>
+
+      <p>Which means <code>[a-z-]</code> is valid, with the trailing hyphen literal, and <code>[1-3-5]</code> is probably not what you intended. A hyphen you want taken literally is safest at the start or the end of the class.</p>
+
+      <h2>\d and \w are ASCII-only, even with the u flag</h2>
+
+      <p>This one matters a great deal for Indian-language text. <code>\d</code> matches <code>0-9</code> and nothing else — not Devanagari digits. <code>\w</code> matches <code>[A-Za-z0-9_]</code> only, so a name written in Hindi matches none of it.</p>
+
+      <p>Adding the <code>u</code> flag does <strong>not</strong> change this. What <code>u</code> gives you is correct handling of characters outside the basic plane, plus access to Unicode property escapes: <code>\p{L}</code> for any letter in any script, <code>\p{Nd}</code> for any decimal digit, <code>\p{Script=Devanagari}</code> for that script specifically. If you are validating names or addresses for an Indian audience, <code>\w</code> will silently reject legitimate input and <code>\p{L}</code> will not.</p>
+
+      <p>The same gap catches filename sanitising. A routine that strips everything matching <code>[^\w]</code> will remove every Devanagari character, leaving an empty name.</p>
+
+      <h2>Greedy by default, and what that costs</h2>
+
+      <p><code>&lt;.+&gt;</code> against <code>&lt;a&gt;text&lt;/a&gt;</code> matches the entire string, not just <code>&lt;a&gt;</code>, because <code>+</code> takes as much as it can and then gives back only what it must. Adding <code>?</code> makes it lazy: <code>&lt;.+?&gt;</code> matches <code>&lt;a&gt;</code> alone.</p>
+
+      <p>Lazy quantifiers are not automatically better. They are slower on long non-matching input, because the engine extends one character at a time. For a bounded case a negated class is usually the best of the three: <code>&lt;[^&gt;]+&gt;</code> expresses "up to the next closing bracket" directly, with no backtracking at all.</p>
+
+      <h2>Capture groups, and when not to capture</h2>
+
+      <p>Every <code>( )</code> creates a numbered group and stores what it matched. If you only need the grouping for a quantifier or an alternation, <code>(?: )</code> does the same job without the storage, which keeps your group numbers stable when you edit the pattern.</p>
+
+      <p>Named groups — <code>(?&lt;year&gt;\d{4})</code> — are worth the extra characters as soon as a pattern has more than two captures, because <code>m.groups.year</code> survives a reordering that would break <code>m[3]</code>.</p>
+
+      <h2>Lookahead and lookbehind assert without consuming</h2>
+
+      <p><code>\d+(?= kg)</code> matches the digits in "70 kg" but not the " kg" itself, so the match is just <code>70</code>. That is the point: you can require context without including it in the result.</p>
+
+      <p>Lookbehind — <code>(?&lt;=Rs\.)\d+</code> — works in current browsers and Node, and in Safari from version 16.4. If you need to support older Safari, a capture group is the portable alternative.</p>
+
+      <p>Negative forms are often the clearest way to express "not followed by": <code>foo(?!bar)</code> matches "foo" in "foobaz" and not in "foobar".</p>
+
+      <h2>A pattern is not a parser</h2>
+
+      <p>Regular expressions cannot count nesting depth, which means they genuinely cannot parse HTML, JSON or arbitrary nested brackets. A pattern can extract from a known, fixed shape, and that is a perfectly good use. A pattern that tries to handle every valid case of a nested format will be long, slow and still wrong on an input you have not thought of yet.</p>
+
+      <p>The practical line: if the format can nest, use a parser. If you are pulling a date out of a log line whose shape you control, a pattern is the right tool.</p>
+
+      <h2>Testing well</h2>
+
+      <p>Three habits catch most mistakes before they ship:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Test the near-miss, not just the hit.</strong> A pattern that matches what you want is half the job; a pattern that <em>also</em> matches something you did not want is the bug you will find in production.</li>
+        <li><strong>Paste real data.</strong> Hand-typed samples are too clean — no trailing spaces, no stray tabs, no line breaks in awkward places.</li>
+        <li><strong>Check the flags before the pattern.</strong> When a pattern behaves oddly, the flags are wrong more often than the pattern is.</li>
+      </ul>
+
+      <p>Our <a href="/tools/regex-tester" style="color:var(--accent-text)">Regex Tester</a> runs the pattern as you type, shows every match highlighted in place with a count, and warns about the specific traps above — a dot that will not cross a newline in text that has line breaks, anchors without the <code>m</code> flag, a missing <code>g</code>, nested quantifiers, and <code>\d</code> under <code>u</code> still being ASCII. It keeps the patterns that matched something so you can return to one without rebuilding it, and everything runs in your browser.</p>
+      <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Test your regex!</strong></p><a href="/tools/regex-tester" class="btn" style="display:inline-block;text-decoration:none">🔍 Open Regex Tester</a></div></div></div>
 <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
