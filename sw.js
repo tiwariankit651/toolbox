@@ -4,7 +4,7 @@
    storage helpers were added kept getting the old common.js forever and every
    tool threw "storeGet is not defined". Keep this name in step with any change
    to the files in PRECACHE. */
-const CACHE = 'fth-v4';
+const CACHE = 'fth-v5';
 const PRECACHE = ['/', '/css/style.css', '/js/common.js'];
 
 /* Our own JS and CSS must never be served from cache without checking the
@@ -23,6 +23,22 @@ self.addEventListener('activate', e => {
       /* Take over open tabs immediately so a stale worker cannot keep serving
          the old bundle for the rest of the session. */
       .then(() => self.clients.claim())
+      /* A worker does not control the navigation that registered it, so the
+         page someone FIRST lands on was fetched before this worker existed and
+         the fetch handler never saw it — it was the one page not in the cache.
+         Every tool's FAQ promises offline use "after your first visit", so
+         fetch the open clients' own URLs now and cache them. */
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => caches.open(CACHE).then(cache => Promise.all(
+        clients.map(client => {
+          const url = new URL(client.url);
+          if (url.origin !== self.location.origin) return null;
+          return fetch(client.url, { credentials: 'same-origin' })
+            .then(res => (res && res.ok) ? cache.put(client.url, res) : null)
+            .catch(() => null);
+        })
+      )))
+      .catch(() => null)
   );
 });
 
@@ -55,8 +71,15 @@ self.addEventListener('fetch', e => {
         return res;
       }).catch(() => caches.match(e.request))
     );
+  } else if (!sameOrigin) {
+    /* Never cache third-party requests. The previous version stored anything
+       that was not our own JS or CSS, so Google's ad script and its
+       per-request sodar config URLs ended up in our cache — not ours to keep,
+       meaningless once their tokens expire, and a new permanent entry for
+       every unique URL. Let them go straight to the network. */
+    return;
   } else {
-    /* Cache-first for everything else, refreshing the entry in the background
+    /* Cache-first for our own remaining assets, refreshing in the background
        so a cached asset cannot go stale indefinitely either. */
     e.respondWith(
       caches.match(e.request).then(cached => {
