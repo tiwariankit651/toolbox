@@ -27,48 +27,92 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Compress PDF for Government Portals</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>📄 How to Compress PDF for Government Portal Uploads</h1>
-      <p class="info">April 2026 · 3 min read</p>
+      <p class="info">October 2026 · 9 min read</p>
+<p>Government portals cap uploads at 1, 2 or 5 MB, and a scanned document routinely exceeds that by a factor of five. The instinct is to compress the finished PDF, which works badly. The large gains are available earlier, at the scan, and knowing where the size comes from makes the difference between a legible 400 KB file and an illegible 900 KB one.</p>
 
-      <p>Many government portals in India have strict file size limits for document uploads. Whether you're applying for a passport, filing income tax returns, or submitting forms on DigiLocker, UMANG, or state government websites, you'll often encounter upload limits between <strong>200 KB and 2 MB</strong>.</p>
+      <h2>A scanned PDF is a folder of photographs</h2>
 
-      <p>Scanned documents and certificates often exceed these limits. Here's how to compress your PDFs quickly and for free.</p>
+      <p>This is the fact that explains everything else. When you scan a document, each page becomes an image, and the PDF is a container holding those images. There is no text in it — the words are pixels.</p>
 
-      <h2>Common File Size Limits</h2>
-      <ul style="margin-left:1.5rem">
-        <li><strong>Income Tax Portal:</strong> 1 MB per document</li>
-        <li><strong>Passport Seva:</strong> 300 KB - 1 MB</li>
-        <li><strong>EPFO / PF Portal:</strong> 1 MB</li>
-        <li><strong>University Applications:</strong> 200 KB - 500 KB</li>
-        <li><strong>Job Applications:</strong> 1 - 2 MB</li>
+      <p>So the size is governed by image rules, not document rules. A text-based PDF exported from a word processor holds characters and font references and is tiny. The same document scanned is twenty times larger, because it is now photographs of characters.</p>
+
+      <h2>The four levers, in order of effect</h2>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Lever</th><th style="padding:.5rem;text-align:left">Effect</th><th style="padding:.5rem;text-align:left">Cost</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Scan DPI</td><td style="padding:.5rem">Largest by far</td><td style="padding:.5rem">Detail, below ~150</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Colour vs greyscale</td><td style="padding:.5rem">Roughly two-thirds</td><td style="padding:.5rem">Loses colour</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">JPEG quality</td><td style="padding:.5rem">Moderate</td><td style="padding:.5rem">Artefacts around text</td></tr>
+        <tr><td style="padding:.5rem">Page count</td><td style="padding:.5rem">Linear</td><td style="padding:.5rem">Only if pages are optional</td></tr>
+      </table>
+
+      <p>DPI dominates because it is quadratic. Doubling DPI quadruples the pixels, so 400 DPI is four times the data of 200 DPI for the same page. A 400 DPI colour scan of one A4 page can be 3 MB; the same page at 200 DPI greyscale is often under 300 KB and perfectly legible.</p>
+
+      <p><strong>200 DPI is the right default for documents.</strong> It is enough for a printed page to be read clearly and to survive being printed again at the other end. 300 DPI is worth it only for a document with fine detail — a signature, small print on a certificate.</p>
+
+      <h2>Greyscale unless colour carries meaning</h2>
+
+      <p>A colour scan stores three channels. A printed document is black ink on white paper, so two of those channels describe nothing.</p>
+
+      <p>Switch to greyscale and the file drops by roughly two-thirds with no visible loss. Keep colour only where it matters: a certificate with a coloured seal, a photograph, a document where a coloured stamp is part of the verification.</p>
+
+      <p>Avoid pure black-and-white (1-bit) for documents with a signature or a stamp. It produces the smallest file and turns grey tones into speckle, which can make a signature look broken.</p>
+
+      <h2>Why compressing afterwards helps less</h2>
+
+      <p>Compressing a finished PDF re-encodes the images inside it. You are compressing something that has already been compressed once, so you pay the artefact cost twice and gain less than you would have by scanning smaller in the first place.</p>
+
+      <p>It is still worth doing when rescanning is not possible — a document someone emailed you, or a scan from a shop. Just expect the result to look worse at the same size than a correctly made scan would.</p>
+
+      <h2>What over-compression does to text</h2>
+
+      <p>JPEG was designed for photographs — smooth gradients. Text is the opposite: hard black edges on white, everywhere. Pushed hard, JPEG produces grey halos around every letter and the thin parts of characters break up.</p>
+
+      <p>The symptoms, at 100% zoom:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li>Grey fringing around letters that should be clean black on white.</li>
+        <li>Letter strokes breaking into dots, particularly in small print.</li>
+        <li>Blocky squares in blank areas of the page.</li>
       </ul>
 
-      <h2>How to Compress PDF — Step by Step</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2">
-        <li>Open <a href="/tools/pdf-compressor" style="color:var(--accent-text)">FreeToolHubs PDF Compressor</a></li>
-        <li>Click "Choose File" or drag and drop your PDF</li>
-        <li>The tool automatically compresses embedded images</li>
-        <li>Download the compressed file</li>
+      <p>If you can see these on your own screen, the official at the other end — who may print it — will see worse. A document that cannot be read is a rejected document regardless of its file size.</p>
+
+      <h2>Merging does not compress</h2>
+
+      <p>A frequent misunderstanding. Merging five 1 MB scans produces a roughly 5 MB file. Merging combines; it does not reduce.</p>
+
+      <p>If a portal wants one file under 2 MB and you have five scans, the sequence is: get each scan small enough that the total fits, <em>then</em> merge. Working the other way round means compressing a merged file hard enough to damage every page.</p>
+
+      <h2>A reliable sequence</h2>
+
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Read the portal's limit and format</strong> before preparing anything.</li>
+        <li><strong>Scan at 200 DPI, greyscale,</strong> unless a specific document needs colour or more detail.</li>
+        <li><strong>Check one page's size.</strong> Multiply by the page count to predict the total before building the file.</li>
+        <li><strong>Compress individual pages if needed,</strong> targeting a per-page figure rather than guessing.</li>
+        <li><strong>Merge in the right order</strong> — name files with zero-padded numbers so sorting cannot reorder them.</li>
+        <li><strong>Verify the page count and the final size.</strong></li>
+        <li><strong>Open it and read the smallest print on each page.</strong> This is the check that matters.</li>
       </ol>
 
-      <p><strong>Your file never leaves your device</strong> — everything is processed in your browser. No upload to any server, so your documents stay private and secure.</p>
+      <h2>Common mistakes</h2>
 
-      <h2>Tips for Best Results</h2>
-      <ul style="margin-left:1.5rem">
-        <li><strong>Scan at 150-200 DPI</strong> instead of 300 DPI — this significantly reduces file size while keeping text readable</li>
-        <li><strong>Use grayscale</strong> for text documents — color scans are 3-4x larger</li>
-        <li><strong>Merge then compress</strong> — if you have multiple documents, use our <a href="/tools/pdf-merger" style="color:var(--accent-text)">PDF Merger</a> first, then compress the combined file</li>
-        <li><strong>Convert images to PDF</strong> with our <a href="/tools/image-to-pdf" style="color:var(--accent-text)">Image to PDF</a> tool which lets you set custom dimensions</li>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Photographing instead of scanning,</strong> at an angle, so the page is a trapezium. Many phone scanner apps correct this; a plain camera photo does not.</li>
+        <li><strong>Scanning at 600 DPI "for quality"</strong> and then compressing hard. Worse than 200 DPI with light compression, and much slower.</li>
+        <li><strong>Hitting the limit by dropping a page.</strong> An incomplete document fails verification rather than upload.</li>
+        <li><strong>Uploading a photograph of a screen</strong> showing the document. Illegible and obvious.</li>
+        <li><strong>Leaving it to the closing day,</strong> when portals are slowest and a rejected upload has no recovery time.</li>
       </ul>
 
-      <h2>Why Browser-Based Compression is Better</h2>
-      <p>Unlike online tools that upload your files to their servers, FreeToolHubs processes everything locally in your browser. This means:</p>
-      <ul style="margin-left:1.5rem">
-        <li>Your Aadhaar, PAN, and other sensitive documents stay on your device</li>
-        <li>No waiting for upload/download — instant processing</li>
-        <li>Works even with slow internet connections</li>
-        <li>No file count or daily limits</li>
-      </ul>
+      <h2>Where these files go</h2>
 
+      <p>The documents in question are mark sheets, caste and income certificates, Aadhaar and PAN copies, medical records. Most free PDF compression sites upload every file to a server and process it there.</p>
+
+      <p>For this category of document that is a transfer worth avoiding, and it has a practical dimension too: on the closing day of an application, a tool that needs to upload and download a 5 MB file is slower than one that works on your device.</p>
+
+      <p>Our <a href="/tools/pdf-compressor" style="color:var(--accent-text)">PDF Compressor</a> runs entirely in your browser — files never leave your device — and shows the before and after size so you can confirm you are under the limit, with the output available to compare before you commit to it. The <a href="/tools/pdf-merger" style="color:var(--accent-text)">PDF Merger</a> handles combining in a set order, the <a href="/tools/pdf-splitter" style="color:var(--accent-text)">PDF Splitter</a> the reverse when a portal wants documents separately, and the <a href="/tools/image-to-pdf" style="color:var(--accent-text)">Image to PDF</a> tool builds a PDF from phone photographs if you have no scanner.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Ready to compress your PDF?</strong></p>
         <a href="/tools/pdf-compressor" class="btn" style="display:inline-block;text-decoration:none">📦 Open PDF Compressor — Free</a>
