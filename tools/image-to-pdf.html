@@ -157,7 +157,36 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Page size, orientation and why images get cropped</h2>
+      <p>Putting an image into a PDF requires a decision the image does not contain: what size page it goes on, and what happens where the image shape and the page shape differ.</p>
+      <p>Three behaviours are possible and they produce quite different results.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Fit</strong> — the whole image is kept and white space appears on two sides. Nothing is lost.</li>
+        <li><strong>Fill</strong> — the image covers the page and the overflow is cropped. Nothing is wasted, something is cut.</li>
+        <li><strong>Stretch</strong> — the image is distorted to match. Almost never what you want.</li>
+      </ul>
+      <p>For a document scan, fit is correct — losing the edge of a certificate is worse than a white margin. For a photo book, fill usually looks better. The important thing is knowing which one a tool is doing, because a cropped signature on a form is a rejected form.</p>
+
+      <h2>Matching the page to the image</h2>
+      <p>A4 is 210 × 297 mm, a ratio of about 0.71. A phone photograph is typically 3:4 (0.75) or 9:16 (0.56). Neither matches A4, so there will always be either margins or cropping.</p>
+      <p>Where the output is for printing, A4 is right. Where it is only ever viewed on screen, setting the page to the image's own dimensions avoids the question entirely and produces a tighter file.</p>
+
+      <h2>File size, and where it comes from</h2>
+      <p>A PDF containing images is roughly the sum of those images plus a small overhead. Converting does not compress — a PDF of five 3 MB photos is about 15 MB.</p>
+      <p>What actually reduces it: resize the images before converting, since a 4000-pixel-wide photo on an A4 page is far more detail than any printer will use; and compress them first, because once inside the PDF they are harder to reach.</p>
+      <p>For document scans specifically, 200 DPI greyscale is enough to read and a fraction of the size of a 400 DPI colour scan. That decision at scan time matters more than anything done afterwards.</p>
+
+      <h2>Order, which is where mistakes happen</h2>
+      <p>Images are added in the order the file picker supplied them, and that is frequently not the order you intended — alphabetical sorting puts <code>page10</code> before <code>page2</code>.</p>
+      <p>Naming files with zero-padded numbers — <code>page01</code> through <code>page12</code> — fixes it permanently. And always check the first and last page of the output, plus the page count against the number of images.</p>
+
+      <h2>What this cannot do</h2>
+      <p>The result contains pictures of text, not text. It is not searchable, not selectable and not readable by a screen reader. If the recipient needs to search or copy the content, the image has to go through OCR first — and OCR output needs checking, because it is a best guess rather than a transcription.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Scanned 10 pages with your phone camera? Drop all those images here at once</li>
 <li><strong>Step 2:</strong> Pick your page size — A4 works for most documents, Letter if you're in the US</li>

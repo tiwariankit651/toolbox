@@ -95,7 +95,44 @@
         <button class="btn btn-outline" onclick="clearGraphState()">🗑 Clear saved state</button>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>What a plot can mislead you about</h2>
+      <p>A graph is a reading of a function over a finite range at a finite number of points, and each of those limits can hide something.</p>
+
+      <h3>Sampling misses detail between points</h3>
+      <p>A plotter evaluates the function at a set number of x values and joins them. A feature narrower than the gap between samples is invisible — so a function with a sharp spike can look smooth, and a rapidly oscillating one can appear to have a completely different shape.</p>
+      <p>Plotting <code>sin(1/x)</code> near zero demonstrates it: the true function oscillates infinitely fast, and any plot shows an arbitrary pattern determined by where the samples happened to fall.</p>
+
+      <h3>Asymptotes draw as vertical lines</h3>
+      <p>At a point where a function goes to infinity — <code>1/x</code> at zero, <code>tan(x)</code> at π/2 — the plotter has a large positive value on one side and a large negative value on the other, and joining them draws a vertical line that is not part of the function.</p>
+      <p>That line is an artefact of joining the dots. The function has no value there at all.</p>
+
+      <h3>The range determines the apparent shape</h3>
+      <p>Any polynomial looks like a straight line if you zoom in enough, and like its highest-power term if you zoom out enough. A cubic viewed between −0.1 and 0.1 appears linear; the same cubic from −100 to 100 appears to be a simple power curve. Neither view is wrong and neither is the whole picture.</p>
+
+      <h2>Reading a graph properly</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Check the axis ranges first.</strong> A dramatic-looking rise is often a narrow y range.</li>
+        <li><strong>Look at several zoom levels.</strong> Features exist at different scales and no single view shows all of them.</li>
+        <li><strong>Note where the function is undefined,</strong> and treat any vertical line with suspicion.</li>
+        <li><strong>Verify a few points by hand.</strong> Substituting one value catches a mistyped expression faster than staring at the curve.</li>
+      </ol>
+
+      <h2>Degrees and radians</h2>
+      <p>Trigonometric functions in almost every programming context take radians, not degrees. So <code>sin(30)</code> is not 0.5 — it is the sine of 30 radians, about −0.988.</p>
+      <p>This is the single most common error in plotting trigonometric functions. To work in degrees, convert: multiply by π/180.</p>
+
+      <h2>Syntax that catches people</h2>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Implicit multiplication may not be supported.</strong> <code>2x</code> often needs to be <code>2*x</code>.</li>
+        <li><strong>Exponent notation differs.</strong> <code>x^2</code> and <code>x**2</code> are both used; <code>^</code> means bitwise XOR in some contexts.</li>
+        <li><strong>Brackets around a whole argument.</strong> <code>sin x + 1</code> is ambiguous; <code>sin(x) + 1</code> and <code>sin(x + 1)</code> are different functions.</li>
+        <li><strong>Integer division.</strong> In some languages <code>1/2</code> is 0 rather than 0.5.</li>
+      </ul>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Math equation ka graph dekhna hai? y = x², sin(x), kuch bhi — type karo, plot ho jayega. Homework aur assignments ke liye perfect.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Equation enter karo — x^2, sin(x), 2*x+3, jo bhi function hai</li>

@@ -191,7 +191,35 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Case conversion is harder than it looks</h2>
+      <p>Uppercase and lowercase are mechanical. Title case is not, because the rules depend on which style guide you are following and no two agree.</p>
+      <p>Most style guides capitalise the first and last word plus all significant words, and leave short articles, conjunctions and prepositions lowercase — but they disagree about the length cut-off for prepositions, about whether to capitalise "is", and about hyphenated compounds. A tool has to pick one convention.</p>
+      <p>What no tool can decide: proper nouns inside a sentence that is being lowercased. Converting "I MET RAVI IN DELHI" to sentence case gives "I met ravi in delhi", and the names have to be fixed by hand.</p>
+
+      <h2>Invisible characters, and why text misbehaves</h2>
+      <p>Text pasted from a word processor or a web page routinely carries characters that look ordinary and are not. This causes a surprising amount of trouble.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Smart quotes.</strong> A curly apostrophe is a different character from a straight one, and code or a search that expects the straight one will not match.</li>
+        <li><strong>Non-breaking spaces.</strong> Look identical to a space, and a split on ordinary spaces will not split there.</li>
+        <li><strong>Zero-width characters.</strong> Entirely invisible, and they break string comparisons and form validation.</li>
+        <li><strong>Soft hyphens,</strong> which show only when a line wraps.</li>
+        <li><strong>A byte-order mark</strong> at the start of a file, invisible and enough to make the first line differ.</li>
+      </ul>
+      <p>If a value looks correct and a system rejects it, one of these is usually why.</p>
+
+      <h2>Line endings differ by platform</h2>
+      <p>Windows ends a line with CRLF, Unix and macOS with LF. A file moved between them can differ on every line while appearing identical, and a diff will show every line as changed.</p>
+      <p>This also matters for file formats with a specification. An <code>.ics</code> calendar file requires CRLF, and some clients reject one using bare LF — which is why a calendar export that looks fine can fail to import.</p>
+
+      <h2>Encoding, and where Hindi text breaks</h2>
+      <p>UTF-8 handles every script and is the correct default. Problems appear when something assumes an older encoding.</p>
+      <p>The most common symptom: Devanagari text opening as question marks or boxes in Excel. The file is correct; Excel is reading it in the system's regional encoding because there was no byte-order mark to tell it otherwise. Writing a UTF-8 BOM at the start fixes it, which is why CSV exports that need to open cleanly in Excel include one.</p>
+      <p>A second consequence worth knowing: JavaScript's <code>\w</code> in a regular expression matches ASCII letters only, so a routine that sanitises a filename with it will strip every Devanagari character and leave an empty name.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Text uppercase karna hai? Ya sort? Ya reverse? Ya extra spaces hatane hain? Sab ek jagah — paste karo, button dabao, done.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Apna text paste karo ya type karo input area mein</li>
