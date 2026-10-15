@@ -97,7 +97,10 @@
       </div>
     </div>
 
-    <div class="tool-section" style="margin-top:1.5rem"><h2>✅ Benefits</h2>
+          <h2 style="font-size:1rem;margin-top:1.2rem">Saved calculations</h2>
+      <div id="scHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>✅ Benefits</h2>
       <ul style="line-height:2">
         <li>Instant CTC to in-hand salary conversion</li>
         <li>Supports both Old and New Tax Regime (2026)</li>
@@ -327,5 +330,50 @@ var FIELDS=['basicPct','hraPct','pfPct','gratPct','lta','ptState','esi','otherDe
 function save(){try{var o={mode:mode};FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)o[id]=el.value});storeSet('salaryCalc', o)}catch(e){}}
 function load(){try{var o=storeGet('salaryCalc', {});FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&o[id]!==undefined)el.value=o[id]});if(o.mode)setMode(o.mode)}catch(e){}}
 document.addEventListener('DOMContentLoaded',function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',save)})});
+
+/* ===== Keep each CTC worked out, and validate by field =====
+   Comparing offers means running this several times, and the whole point is
+   seeing them side by side rather than one at a time. */
+var scHistory = toolHistory({
+  key: 'sc_hist', into: 'scHist', max: 10,
+  empty: 'Each calculation is kept here, so two or three offers can be compared.',
+  label: function (e) { return e.label; },
+  apply: function (e) {
+    var el = document.getElementById(e.field);
+    if (el) { el.value = e.ctc; el.dispatchEvent(new Event('input', { bubbles: true })) }
+    if (typeof run === 'function') run();
+    notify('Calculation loaded.', 'ok');
+  }
+});
+
+var _scRun = run;
+run = function () {
+  /* find whichever amount field is visible in the current mode */
+  var cands = ['ctc', 'gross', 'amount', 'salary', 'monthly'];
+  var field = null;
+  for (var i = 0; i < cands.length; i++) {
+    var el = document.getElementById(cands[i]);
+    if (el && el.offsetParent !== null) { field = cands[i]; break }
+  }
+  if (field) {
+    var chk = checkFields([[field, 'the salary amount', { positive: true, max: 1e9 }]]);
+    if (!chk.ok) return;
+  }
+  _scRun();
+  if (!field) return;
+  var val = +document.getElementById(field).value;
+  var res = document.getElementById('result');
+  var txt = res ? res.textContent.replace(/\s+/g, ' ').trim() : '';
+  if (!txt) return;
+  var m = txt.match(/([\d,]+)/);
+  var last = scHistory.read()[0];
+  if (last && last.ctc === val) return;
+  scHistory.push({
+    field: field, ctc: val,
+    label: 'CTC ' + val.toLocaleString('en-IN') + (m ? '  ·  in-hand ' + m[1] : ''),
+    at: Date.now()
+  });
+};
+window.run = run;
 </script>
 </body></html>

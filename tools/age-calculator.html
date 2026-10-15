@@ -137,7 +137,14 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Calculate your exact age in years, months, days, hours, and minutes. Find out how many days until your next birthday. Enter your date of birth and get detailed age breakdown instantly.</p><h2>How to Use</h2><ol style='margin-left:1.5rem;line-height:2'><li>Exact age chahiye years, months, days mein? Apni date of birth select karo</li><li>Calculate button dabao — precise age milegi, hours aur minutes tak</li><li>Next birthday kitne din mein hai? Woh bhi dikh jayega</li><li>Government form ya job application ke liye exact age chahiye? Yahan se lo</li></ol><h2>Why Use an Age Calculator?</h2><p>Many government forms, job applications, and exam registrations require your exact age as of a specific date. Manual calculation can lead to errors. This tool gives you precise age breakdown instantly. Useful for calculating age for insurance, retirement planning, and legal purposes.</p></div>
+        <div class="row" style="margin-top:.8rem">
+        <button class="btn btn-outline" onclick="tx_agereport.text()" style="flex:1">⬇️ Download</button>
+        <button class="btn btn-outline" onclick="tx_agereport.copy()" style="flex:1">📋 Copy</button>
+      </div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Recent dates</h2>
+      <div id="acHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Calculate your exact age in years, months, days, hours, and minutes. Find out how many days until your next birthday. Enter your date of birth and get detailed age breakdown instantly.</p><h2>How to Use</h2><ol style='margin-left:1.5rem;line-height:2'><li>Exact age chahiye years, months, days mein? Apni date of birth select karo</li><li>Calculate button dabao — precise age milegi, hours aur minutes tak</li><li>Next birthday kitne din mein hai? Woh bhi dikh jayega</li><li>Government form ya job application ke liye exact age chahiye? Yahan se lo</li></ol><h2>Why Use an Age Calculator?</h2><p>Many government forms, job applications, and exam registrations require your exact age as of a specific date. Manual calculation can lead to errors. This tool gives you precise age breakdown instantly. Useful for calculating age for insurance, retirement planning, and legal purposes.</p></div>
     <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Calculator</a><a href="/tools/emi-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">EMI Calculator</a><a href="/tools/sip-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">SIP Calculator</a><a href="/tools/loan-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Loan Calculator</a><a href="/tools/tax-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Tax Calculator</a><a href="/tools/salary-calculator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Salary Calculator</a></div></div>
   <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/age-calculator-exact-age-birthday-countdown">Age Calculator — Exact Age Kaise Nikale, Birthday Countdown</a></li><li><a href="/blog/bmi-calculator-healthy-weight-guide-india">BMI Calculator — Healthy Weight Kya Hai? India Ke Liye Complete Guide</a></li><li><a href="/blog/emi-calculator-home-loan-car-loan-guide">EMI Calculator — Home Loan & Car Loan EMI Kaise Calculate Kare</a></li><li><a href="/blog/free-love-calculator-online">Love Calculator — Check Compatibility Free Online</a></li><li><a href="/blog/income-tax-calculator-india-old-vs-new-regime">Income Tax Calculator India 2026 — Old vs New Regime Comparison</a></li><li><a href="/blog/loan-comparison-calculator-guide">Loan Comparison Calculator Guide — Compare EMIs & Get Best Rates</a></li></ul></div>
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
@@ -372,6 +379,53 @@ document.addEventListener("keydown",function(e){
     calc();
   }
 });
-  </script>
+  
+/* ===== Keep the dates checked, and let the result leave the page =====
+   People check several dates in a sitting — their own, a child's, a cut-off
+   for a form — and retyping each one is the annoying part. */
+var acHistory = toolHistory({
+  key: 'ac_hist',
+  into: 'acHist',
+  max: 10,
+  empty: 'Dates you check are kept here so you can switch between them.',
+  same: function (a, b) { return a.dob === b.dob },
+  label: function (e) { return e.dob + '  ·  ' + e.age },
+  apply: function (e) {
+    var el = document.getElementById('dob');
+    if (el) { el.value = e.dob; el.dispatchEvent(new Event('change', { bubbles: true })) }
+    calc();
+    notify('Date loaded.', 'ok');
+  }
+});
+
+var acExport = toolExport({
+  name: 'age-report',
+  title: 'Age report',
+  lines: function () {
+    var res = document.getElementById('result');
+    if (!res || !res.textContent.trim()) return null;
+    var dob = (document.getElementById('dob') || {}).value || '';
+    var L = ['Date of birth: ' + dob, ''];
+    res.textContent.split('\n').forEach(function (line) {
+      var t = line.trim();
+      if (t) L.push(t);
+    });
+    return L;
+  }
+});
+
+var _acCalc = calc;
+calc = function () {
+  _acCalc();
+  var dob = (document.getElementById('dob') || {}).value || '';
+  if (!dob) return;
+  var res = document.getElementById('result');
+  var txt = res ? res.textContent.replace(/\s+/g, ' ').trim() : '';
+  if (!txt) return;
+  var m = txt.match(/(\d+)\s*year/i);
+  acHistory.push({ dob: dob, age: m ? m[1] + ' years' : txt.slice(0, 24), at: Date.now() });
+};
+window.calc = calc;
+</script>
 </body>
 </html>

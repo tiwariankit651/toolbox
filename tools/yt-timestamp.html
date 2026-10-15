@@ -91,6 +91,9 @@
 <div id="embedResult"></div>
 </div>
 </div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Recent videos</h2>
+      <div id="ytHist"></div>
+
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Video mein chapters banana hai? Timestamps add karo description mein — viewers directly jump kar sakte hain. Yahan format karo easily.</p>
 <ol style="margin-left:1.5rem;line-height:2">
@@ -362,6 +365,72 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,function(c){return{"&":"&amp;
 // Init
 if(!loadChapters()){addRow("00:00","Intro")}
 refresh();
+
+/* ===== Remember the chapter list and the videos worked on =====
+   Building a chapter list takes several minutes of typing, so losing it to a
+   reload is the worst thing this tool could do. */
+var YT_K = 'yt_last';
+
+var ytHistory = toolHistory({
+  key: 'yt_hist', into: 'ytHist', max: 8,
+  empty: 'Videos you build chapters for are kept here, so you can return to one.',
+  same: function (a, b) { return a.url === b.url },
+  label: function (e) { return (e.url || '(no link)') + '  ·  ' + e.rows + ' chapters'; },
+  apply: function (e) {
+    var u = document.getElementById('url');
+    if (u && e.url) { u.value = e.url; u.dispatchEvent(new Event('input', { bubbles: true })) }
+    notify('Video loaded. Chapter rows are kept separately.', 'ok');
+  }
+});
+
+function ytSave() {
+  var rows = [];
+  document.querySelectorAll('#rows tr, .ts-row').forEach(function (tr) {
+    var ins = tr.querySelectorAll('input');
+    if (ins.length >= 2) rows.push([ins[0].value, ins[1].value]);
+  });
+  var u = document.getElementById('url');
+  storeSet(YT_K, { url: u ? u.value : '', rows: rows }, true);
+}
+
+function ytRestore() {
+  var d = storeGet(YT_K, null);
+  if (!d) return;
+  var u = document.getElementById('url');
+  if (u && d.url) u.value = d.url;
+  if (!Array.isArray(d.rows) || !d.rows.length) return;
+  /* add enough rows, then fill them */
+  var existing = document.querySelectorAll('#rows tr, .ts-row').length;
+  for (var i = existing; i < d.rows.length; i++) {
+    if (typeof addRow === 'function') addRow();
+  }
+  var trs = document.querySelectorAll('#rows tr, .ts-row');
+  d.rows.forEach(function (r, i) {
+    if (!trs[i]) return;
+    var ins = trs[i].querySelectorAll('input');
+    if (ins.length >= 2) { ins[0].value = r[0]; ins[1].value = r[1] }
+  });
+}
+
+(function ytInit() {
+  ytRestore();
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.tagName === 'INPUT') ytSave();
+  });
+  /* record the video once a chapter list has actually been built */
+  document.addEventListener('click', function () {
+    setTimeout(function () {
+      var rows = document.querySelectorAll('#rows tr, .ts-row').length;
+      if (rows < 2) return;
+      var u = document.getElementById('url');
+      var url = u ? String(u.value || '').trim() : '';
+      if (!url) return;
+      var last = ytHistory.read()[0];
+      if (last && last.url === url && last.rows === rows) return;
+      ytHistory.push({ url: url.slice(0, 70), rows: rows, at: Date.now() });
+    }, 600);
+  });
+})();
 </script>
 </body>
 </html>

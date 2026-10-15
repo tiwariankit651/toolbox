@@ -190,7 +190,14 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="row" style="margin-top:.8rem">
+        <button class="btn btn-outline" onclick="tx_focuslog.csv()" style="flex:1">📊 Export log as CSV</button>
+        <button class="btn btn-outline" onclick="tx_focuslog.text()" style="flex:1">⬇️ Download summary</button>
+      </div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Completed sessions</h2>
+      <div id="pmHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Phone mein distract ho jaate ho? 25 min focus challenge try karo. Ek pomodoro complete karo — phir break lo. Simple hai, but kaam banta hai.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Mode choose karo — Focus (25 min), Short Break (5 min), ya Long Break (15 min)</li>
@@ -522,6 +529,76 @@ showCurrentTask();
 renderDistractions();
 renderStats();
 render();
-  </script>
+  
+/* ===== Log completed focus sessions and let them leave =====
+   A pomodoro timer with no record cannot answer the only question that
+   matters afterwards: how much focused time did I actually do. */
+var pmHistory = toolHistory({
+  key: 'pm_hist', into: 'pmHist', max: 20,
+  empty: 'Finished focus sessions are logged here with a daily total.',
+  label: function (e) {
+    var d = new Date(e.at);
+    return e.mins + ' min' + (e.task ? '  ·  ' + e.task : '') + '  ·  ' +
+      d.toLocaleDateString() + ' ' + d.toTimeString().slice(0, 5);
+  }
+});
+
+var pmExport = toolExport({
+  name: 'focus-log',
+  title: 'Focus session log',
+  lines: function () {
+    var log = pmHistory.read();
+    if (!log.length) return null;
+    var total = log.reduce(function (s, e) { return s + e.mins }, 0);
+    var today = log.filter(function (e) {
+      return new Date(e.at).toDateString() === new Date().toDateString();
+    }).reduce(function (s, e) { return s + e.mins }, 0);
+    var L = ['Today: ' + today + ' minutes',
+             'All time: ' + total + ' minutes across ' + log.length + ' sessions', ''];
+    log.forEach(function (e) {
+      L.push('  ' + new Date(e.at).toISOString().slice(0, 16).replace('T', ' ') +
+             '  ' + e.mins + ' min' + (e.task ? '  ' + e.task : ''));
+    });
+    return L;
+  },
+  rows: function () {
+    var log = pmHistory.read();
+    if (!log.length) return null;
+    return {
+      header: ['Date', 'Time', 'Minutes', 'Task'],
+      rows: log.map(function (e) {
+        var d = new Date(e.at);
+        return [d.toISOString().slice(0, 10), d.toTimeString().slice(0, 5), e.mins, e.task || ''];
+      })
+    };
+  }
+});
+
+/* Hook the completion path. The tool announces a finished focus block, so
+   watch for that rather than guessing from the timer value. */
+(function pmHook() {
+  var lastLogged = 0;
+  var origNotify = window.notify;
+  window.notify = function (msg, kind) {
+    try {
+      if (/focus.*(done|complete|finished|over)|take a break|break time/i.test(String(msg))) {
+        var now = Date.now();
+        /* one log per completion, not per repeated message */
+        if (now - lastLogged > 30000) {
+          lastLogged = now;
+          var mins = 25;
+          var f = document.getElementById('cfgFocus');
+          if (f && +f.value > 0) mins = Math.round(+f.value);
+          var taskEl = document.getElementById('currentTask') ||
+                       document.querySelector('#pomTasks .active, .pom-task.active');
+          var task = taskEl ? String(taskEl.textContent || taskEl.value || '').trim().slice(0, 40) : '';
+          pmHistory.push({ mins: mins, task: task, at: now });
+        }
+      }
+    } catch (e) { /* never let logging break the notification */ }
+    return origNotify.apply(this, arguments);
+  };
+})();
+</script>
 </body>
 </html>

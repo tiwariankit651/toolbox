@@ -352,7 +352,21 @@ function copyNow(text, okMsg) {
 (function () {
   var PRIMARY = /^(generate|calculate|convert|compress|create|run|analy[sz]e|check|extract|build|make|plot|encode|decode|format|count|compare|split|merge|shorten|translate|summari[sz]e|remove|apply|search|start|go|submit|render|process|flip|roll|pick|draw)/i;
   var DOWNLOADY = /(download|save|export|\.png|\.pdf|\.zip|\.csv|\.txt)/i;
-  var AVOID = /(reset|clear|delete|remove all|discard|logout|theme)/i;
+  /* Template and example buttons often start with an action word — "CREATE
+   TABLE" in sql-formatter beat its own Format button — so they are excluded
+   from the primary-action search. */
+/* SQL template buttons are labelled with the keyword they insert — CREATE
+   TABLE, WITH (CTE) — and would otherwise win the primary-action search over
+   the tool's own Format button. Exclude those, and example loaders, but keep
+   the exclusion narrow so a genuine action is never skipped. */
+/* Excluded from the primary-action search:
+     - destructive or housekeeping buttons
+     - SQL template buttons, labelled with the keyword they insert, which
+       would otherwise beat the tool's own Format button
+     - in-place text transforms such as "Remove Extra Spaces" or "UPPERCASE".
+       word-counter has no primary action at all, so Ctrl+Enter was quietly
+       rewriting the user's text, which is worse than doing nothing. */
+var AVOID = /(reset|clear|delete all|remove all|discard|logout|theme|load example|load sample|remove extra|remove duplicate|uppercase|lowercase|title case|sentence case|^(select|join|insert|update|delete|create table|with \()$)/i;
 
   function visible(el) {
     if (!el) return false;
@@ -367,14 +381,22 @@ function copyNow(text, okMsg) {
   function findButton(re) {
     var all = buttons();
     for (var i = 0; i < all.length; i++) {
-      var label = (all[i].innerText || all[i].getAttribute('aria-label') || '').trim();
-      if (!label || AVOID.test(label)) continue;
+      var raw = (all[i].innerText || all[i].getAttribute('aria-label') || '').trim();
+      if (!raw || AVOID.test(raw)) continue;
+      /* Most labels begin with an emoji, so an anchored pattern never
+         matched. Drop any leading non-letter characters first. */
+      var label = raw.replace(/^[^A-Za-z]+/, '');
+      if (!label) continue;
       if (re.test(label)) return all[i];
     }
     return null;
   }
   function firstField() {
-    var sel = 'input[type=text], input[type=search], input[type=url], input[type=email], input:not([type]), textarea';
+    /* type=number was missing, so "/" and Ctrl+K did nothing on every
+       calculator — which is most of the numeric tools on the site. */
+    var sel = 'input[type=text], input[type=search], input[type=url], ' +
+      'input[type=email], input[type=number], input[type=tel], ' +
+      'input:not([type]), textarea';
     var all = [].slice.call(document.querySelectorAll(sel)).filter(visible);
     return all[0] || null;
   }
@@ -587,3 +609,195 @@ function touchShim(el) {
   el.addEventListener('touchend', finish);
   el.addEventListener('touchcancel', finish);
 }
+
+/* ===== Shared history and export helpers ================================
+   Nine tools needed a short list of recent work and five needed a way to get
+   the result out. Writing that nine times would mean nine slightly different
+   implementations to keep in step, so it lives here once.
+
+   Each tool opts in with one call and supplies only what is specific to it:
+   a storage key, how to label an entry, and how to put an entry back. */
+
+/* toolHistory(cfg) -> { push, render, clear }
+
+   cfg.key      storage key, e.g. 'bmi_hist'
+   cfg.into     id of the container to render into
+   cfg.label    (entry) -> the text shown for that entry
+   cfg.apply    (entry) -> put it back into the form
+   cfg.max      how many to keep, default 10
+   cfg.empty    message shown when there is nothing yet
+   cfg.same     optional (a, b) -> treat as the same entry, so a repeat moves
+                to the front instead of duplicating
+*/
+function toolHistory(cfg) {
+  var max = cfg.max || 10;
+  var ns = 'th_' + cfg.key;
+
+  function read() {
+    var v = storeGet(cfg.key, []);
+    return Array.isArray(v) ? v : [];
+  }
+
+  function render() {
+    var box = document.getElementById(cfg.into);
+    if (!box) return;
+    var list = read();
+    if (!list.length) {
+      box.innerHTML = '<p class="info" style="font-size:.82rem">' +
+        (cfg.empty || 'Your recent work will appear here.') + '</p>';
+      return;
+    }
+    box.innerHTML = list.map(function (e, i) {
+      return '<div style="background:var(--card);border-radius:8px;padding:.4rem .6rem;' +
+        'margin:.25rem 0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">' +
+        '<span style="flex:1;min-width:130px;font-size:.82rem">' +
+        String(cfg.label(e)).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>' +
+        (cfg.apply ? '<button class="btn btn-outline" style="font-size:.75rem;' +
+          'padding:.25rem .55rem" onclick="window.' + ns + '.use(' + i + ')">Load</button>' : '') +
+        '</div>';
+    }).join('') +
+      '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;' +
+      'margin-top:.3rem" onclick="window.' + ns + '.clear()">🗑️ Clear</button>';
+  }
+
+  function push(entry) {
+    if (!entry) return;
+    var list = read();
+    if (cfg.same) {
+      list = list.filter(function (e) { return !cfg.same(e, entry) });
+    }
+    list.unshift(entry);
+    if (list.length > max) list = list.slice(0, max);
+    storeSet(cfg.key, list, true);
+    render();
+  }
+
+  function use(i) {
+    var e = read()[i];
+    if (e && cfg.apply) cfg.apply(e);
+  }
+
+  function clear() {
+    storeDel(cfg.key);
+    render();
+    notify('History cleared.', 'info');
+  }
+
+  var api = { push: push, render: render, clear: clear, use: use, read: read };
+  window[ns] = api;
+  render();
+  return api;
+}
+
+/* toolExport(cfg) — text and CSV download from one description.
+
+   cfg.name     base filename without extension
+   cfg.title    heading for the text report
+   cfg.lines    () -> array of 'Label: value' strings, or null when there is
+                nothing to export yet
+   cfg.rows     optional () -> { header: [...], rows: [[...], ...] } for CSV
+*/
+function toolExport(cfg) {
+  function textReport() {
+    var lines = cfg.lines ? cfg.lines() : null;
+    if (!lines || !lines.length) return null;
+    return [cfg.title || 'Report',
+            'Generated ' + new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
+            ''].concat(lines).join('\n');
+  }
+
+  function downloadText() {
+    var txt = textReport();
+    if (!txt) { notify('Nothing to export yet — run the calculation first.', 'warn'); return }
+    download(new Blob([txt], { type: 'text/plain;charset=utf-8' }),
+             (cfg.name || 'report') + '.txt');
+    notify('Downloaded.', 'ok');
+  }
+
+  function copyText() {
+    var txt = textReport();
+    if (!txt) { notify('Nothing to copy yet — run the calculation first.', 'warn'); return }
+    copyNow(txt, 'Copied — paste it wherever you need it.');
+  }
+
+  function downloadCsv() {
+    if (!cfg.rows) { downloadText(); return }
+    var data = cfg.rows();
+    if (!data || !data.rows || !data.rows.length) {
+      notify('Nothing to export yet — run the calculation first.', 'warn');
+      return;
+    }
+    /* BOM so Excel does not mangle the rupee sign or any accented text */
+    var out = '\uFEFF' + data.header.join(',') + '\n';
+    data.rows.forEach(function (r) {
+      out += r.map(function (c) {
+        var s = String(c == null ? '' : c);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(',') + '\n';
+    });
+    download(new Blob([out], { type: 'text/csv;charset=utf-8' }),
+             (cfg.name || 'report') + '.csv');
+    notify('CSV downloaded.', 'ok');
+  }
+
+  var ns = 'tx_' + (cfg.name || 'report').replace(/[^a-z0-9]/gi, '');
+  var api = { text: downloadText, csv: downloadCsv, copy: copyText, build: textReport };
+  window[ns] = api;
+  return api;
+}
+
+/* numField(id) — read a numeric field and say what is wrong with it.
+   Returns { ok: true, value } or { ok: false, why }. The messages name the
+   field and the problem, because "invalid input" tells the user nothing. */
+function numField(id, label, opts) {
+  opts = opts || {};
+  var el = document.getElementById(id);
+  if (!el) return { ok: false, why: null };          /* field not on this page */
+  var raw = String(el.value == null ? '' : el.value).trim();
+  if (!raw) {
+    return { ok: false, why: opts.optional ? null : 'Enter ' + label + '.' };
+  }
+  if (!/^-?\d*\.?\d+$/.test(raw)) {
+    return { ok: false, why: label.charAt(0).toUpperCase() + label.slice(1) +
+             ' must be a number — "' + raw.slice(0, 14) + '" is not.' };
+  }
+  var v = parseFloat(raw);
+  if (!isFinite(v)) return { ok: false, why: label + ' is not a finite number.' };
+  if (opts.positive && v <= 0) {
+    return { ok: false, why: label.charAt(0).toUpperCase() + label.slice(1) +
+             ' must be greater than zero.' };
+  }
+  if (opts.min != null && v < opts.min) {
+    return { ok: false, why: label.charAt(0).toUpperCase() + label.slice(1) +
+             ' cannot be below ' + opts.min + '.' };
+  }
+  if (opts.max != null && v > opts.max) {
+    return { ok: false, why: label.charAt(0).toUpperCase() + label.slice(1) +
+             ' cannot be above ' + opts.max + '.' };
+  }
+  if (opts.integer && v !== Math.round(v)) {
+    return { ok: false, why: label.charAt(0).toUpperCase() + label.slice(1) +
+             ' must be a whole number.' };
+  }
+  return { ok: true, value: v };
+}
+
+/* checkFields(specs) — validate several at once and report the first problem.
+   specs: [ [id, label, opts], ... ]  ->  { ok, values, why } */
+function checkFields(specs) {
+  var values = {};
+  for (var i = 0; i < specs.length; i++) {
+    var r = numField(specs[i][0], specs[i][1], specs[i][2]);
+    if (!r.ok) {
+      if (r.why) { notify(r.why, 'warn'); return { ok: false, why: r.why } }
+      continue;                                      /* optional or absent */
+    }
+    values[specs[i][0]] = r.value;
+  }
+  return { ok: true, values: values };
+}
+
+window.toolHistory = toolHistory;
+window.toolExport = toolExport;
+window.numField = numField;
+window.checkFields = checkFields;

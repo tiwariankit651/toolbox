@@ -615,6 +615,30 @@ if(dcRestore()){ setTimeout(function(){dcToast('Restored your last comparison')}
 updateSideStats();
 wireFile('fileA','textA');
 wireFile('fileB','textB');
-  </script>
+  
+/* ===== Say what is wrong instead of producing an empty diff =====
+   Comparing nothing against nothing produced an empty result that looks
+   identical to "these files match", which is the worst possible ambiguity
+   for a diff tool. */
+var _dcCompare = compare;
+compare = function () {
+  var boxes = [].slice.call(document.querySelectorAll('textarea'))
+    .filter(function (e) { return e.offsetParent !== null });
+  var a = boxes[0] ? boxes[0].value : '';
+  var b = boxes[1] ? boxes[1].value : '';
+  if (!a.trim() && !b.trim()) {
+    notify('Paste text into both sides to compare them.', 'warn');
+    return;
+  }
+  if (!a.trim() || !b.trim()) {
+    notify('One side is empty, so every line will show as ' +
+           (a.trim() ? 'removed' : 'added') + '.', 'info');
+  } else if (a === b) {
+    notify('The two sides are identical — no differences to show.', 'info');
+  }
+  _dcCompare();
+};
+window.compare = compare;
+</script>
 </body>
 </html>

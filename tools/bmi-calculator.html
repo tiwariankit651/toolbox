@@ -133,7 +133,15 @@
       </div>
     </div>
     <div style="min-height:90px"></div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+          <div class="row" style="margin-top:.8rem">
+        <button class="btn" onclick="tx_bmireport.text()" style="flex:1">⬇️ Download report</button>
+        <button class="btn btn-outline" onclick="tx_bmireport.csv()" style="flex:1">📊 CSV of readings</button>
+        <button class="btn btn-outline" onclick="tx_bmireport.copy()" style="flex:1">📋 Copy</button>
+      </div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Your readings</h2>
+      <div id="bmiHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Enter weight:</strong> BMI check karna hai? Apna weight daalo — kg ya pounds, jo comfortable ho</li>
 <li><strong>Enter height:</strong> Height daalo — cm mein ya feet/inches mein, dono chalega</li>
@@ -388,6 +396,115 @@ function renderHistory(){
 function clearBmiHistory(){localStorage.removeItem(BMI_HIST);renderHistory();}
 
 (function(){restoreInputs();renderHistory();})();
-  </script>
+  
+/* ===== Export the result and keep a record of readings =====
+   BMI is checked repeatedly over weeks, so a single reading on screen is less
+   useful than the trend. And a reading someone wants to show a doctor needs to
+   leave the browser. */
+
+var bmiHist = toolHistory({
+  key: 'bmi_hist',
+  into: 'bmiHist',
+  max: 12,
+  empty: 'Each reading is kept here, so you can see whether the trend is moving.',
+  label: function (e) {
+    var d = new Date(e.at);
+    return 'BMI ' + e.bmi + ' — ' + e.cat + '  ·  ' + e.w + ' kg, ' + e.h + ' cm  ·  ' +
+      d.toLocaleDateString();
+  },
+  apply: function (e) {
+    var hc = document.getElementById('heightCm');
+    var wt = document.getElementById('weight');
+    if (hc) { hc.value = e.h; hc.dispatchEvent(new Event('input', { bubbles: true })) }
+    if (wt) { wt.value = e.w; wt.dispatchEvent(new Event('input', { bubbles: true })) }
+    calc();
+    notify('Reading loaded.', 'ok');
+  }
+});
+
+var bmiExport = toolExport({
+  name: 'bmi-report',
+  title: 'BMI report',
+  lines: function () {
+    var v = (document.getElementById('bmiVal') || {}).textContent || '';
+    if (!v.trim()) return null;
+    var cat = (document.getElementById('bmiCat') || {}).textContent || '';
+    var mw = getMetric();
+    var L = [];
+    L.push('BMI: ' + v.trim());
+    L.push('Category: ' + cat.trim());
+    L.push('Height: ' + Math.round(mw.h) + ' cm');
+    L.push('Weight: ' + Math.round(mw.w) + ' kg');
+    var age = document.getElementById('age');
+    if (age && age.value) L.push('Age: ' + age.value);
+    var g = document.getElementById('gender');
+    if (g) L.push('Sex: ' + g.value);
+    L.push('');
+    L.push('BMI bands (WHO, adults)');
+    L.push('  Under 18.5     underweight');
+    L.push('  18.5 to 24.9   healthy range');
+    L.push('  25.0 to 29.9   overweight');
+    L.push('  30.0 and above obese');
+    L.push('');
+    L.push('BMI does not distinguish muscle from fat and was never designed');
+    L.push('for individual diagnosis. Treat it as one number among several.');
+    var hist = bmiHist.read();
+    if (hist.length > 1) {
+      L.push('');
+      L.push('Previous readings');
+      hist.forEach(function (e) {
+        L.push('  ' + new Date(e.at).toISOString().slice(0, 10) + '  BMI ' +
+               e.bmi + '  ' + e.w + ' kg');
+      });
+    }
+    return L;
+  },
+  rows: function () {
+    var hist = bmiHist.read();
+    if (!hist.length) return null;
+    return {
+      header: ['Date', 'BMI', 'Category', 'Height cm', 'Weight kg'],
+      rows: hist.map(function (e) {
+        return [new Date(e.at).toISOString().slice(0, 10), e.bmi, e.cat, e.h, e.w];
+      })
+    };
+  }
+});
+
+/* ---- wrap calc so it validates by field and records the reading -------- */
+var _bmiCalc = calc;
+calc = function () {
+  /* The old check said only "Enter a valid height and weight" for any
+     problem. Name the field and the reason instead. */
+  var unit = document.getElementById('heightCm');
+  var usingCm = unit && unit.offsetParent !== null;
+  var specs = [['weight', 'weight', { positive: true, max: 650 }]];
+  if (usingCm) specs.push(['heightCm', 'height in cm', { positive: true, min: 40, max: 280 }]);
+  else {
+    specs.push(['heightFt', 'height in feet', { positive: true, min: 1, max: 9 }]);
+    specs.push(['heightIn', 'inches', { min: 0, max: 11, optional: true }]);
+  }
+  specs.push(['age', 'age', { positive: true, max: 120, optional: true }]);
+  var check = checkFields(specs);
+  if (!check.ok) return;
+
+  _bmiCalc();
+
+  /* record what was displayed, so history cannot disagree with the screen */
+  var v = (document.getElementById('bmiVal') || {}).textContent || '';
+  var n = parseFloat(v);
+  if (!isFinite(n)) return;
+  var mw = getMetric();
+  var cat = ((document.getElementById('bmiCat') || {}).textContent || '').trim();
+  var last = bmiHist.read()[0];
+  /* do not stack identical readings from repeated clicks */
+  if (last && last.bmi === n.toFixed(1) && last.w === Math.round(mw.w)) return;
+  bmiHist.push({
+    bmi: n.toFixed(1), cat: cat,
+    h: Math.round(mw.h), w: Math.round(mw.w), at: Date.now()
+  });
+};
+window.calc = calc;
+</script>
 </body>
 </html>

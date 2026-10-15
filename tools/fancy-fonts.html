@@ -30,7 +30,10 @@
       <div id="fonts" style="margin-top:1rem"></div>
     </div>
 
-    <div class="tool-section" style="margin-top:1.5rem">
+          <h2 style="font-size:1rem;margin-top:1.2rem">Recent conversions</h2>
+      <div id="ffHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem">
       <h2>🎀 Decoration Builder</h2>
       <p class="info">Wrap your text with symbol borders, add ornaments and dividers.</p>
       <input type="text" id="decoInput" placeholder="Text to decorate..." oninput="buildDeco()" value="FreeToolHubs">
@@ -303,6 +306,43 @@ renderSymbolLib();
 buildDeco();
 bioCount();
 generate();
-  </script>
+  
+/* ===== Keep what was converted, and refuse an empty run =====
+   The same handful of names and captions get converted repeatedly, and
+   pressing Generate with an empty box produced nothing with no explanation. */
+var ffHistory = toolHistory({
+  key: 'ff_hist', into: 'ffHist', max: 10,
+  empty: 'Text you convert is kept here, so a name or caption can be reused.',
+  same: function (a, b) { return a.text === b.text },
+  label: function (e) { return e.text },
+  apply: function (e) {
+    var el = document.getElementById('input') || document.querySelector('textarea, input[type=text]');
+    if (el) { el.value = e.text; el.dispatchEvent(new Event('input', { bubbles: true })) }
+    if (typeof generate === 'function') generate();
+    notify('Text loaded.', 'ok');
+  }
+});
+
+var _ffGen = generate;
+generate = function () {
+  var el = document.getElementById('input') || document.querySelector('textarea, input[type=text]');
+  var v = el ? String(el.value || '').trim() : '';
+  if (!v) {
+    notify('Type some text to convert into fancy fonts.', 'warn');
+    return;
+  }
+  if (v.length > 200) {
+    notify('That is ' + v.length + ' characters. Fancy fonts are for short text — a name or a caption.', 'info');
+  }
+  /* Unicode styled letters only exist for A-Z, a-z and digits, so anything
+     else passes through unchanged. Saying so prevents "it did not work". */
+  if (!/[A-Za-z0-9]/.test(v)) {
+    notify('Fancy fonts replace Latin letters and digits. This text has none, so it will come back unchanged.', 'info');
+  }
+  _ffGen();
+  ffHistory.push({ text: v.slice(0, 60), at: Date.now() });
+};
+window.generate = generate;
+</script>
 </body>
 </html>

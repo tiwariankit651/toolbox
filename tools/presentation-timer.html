@@ -67,7 +67,14 @@
 
       <div class="info" style="margin-top:1rem"><strong>⌨️ Shortcuts:</strong> <kbd>Space</kbd> Pause/Resume · <kbd>N</kbd> Next section · <kbd>F</kbd> Fullscreen · <kbd>Esc</kbd> Exit fullscreen</div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+          <div class="row" style="margin-top:.8rem">
+        <button class="btn btn-outline" onclick="tx_rehearsal.csv()" style="flex:1">📊 Export timings as CSV</button>
+        <button class="btn btn-outline" onclick="tx_rehearsal.text()" style="flex:1">⬇️ Download plan</button>
+      </div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Rehearsal history</h2>
+      <div id="ptHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Viva mein time khatam ho gaya aur slides bachi hain? Pehle practice karo yahan. Set karo total time, slides ka number — tool batayega kab next slide pe jaana hai.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Total time set karo — 5 min, 10 min, jitna bhi allotted hai</li>
@@ -278,6 +285,95 @@ document.addEventListener('keydown',function(e){
 /* ---------- Init ---------- */
 loadNotes();if(!sections.length){sections=[{name:'Intro',minutes:2,notes:''},{name:'Body',minutes:6,notes:''},{name:'Conclusion',minutes:2,notes:''}]}
 renderSections();
+
+/* ===== Export the running order, and keep each rehearsal =====
+   Rehearsing is how a talk gets to the right length, so the comparison
+   between runs is the useful output — and the plan itself is something you
+   want on paper next to the lectern. */
+var ptHistory = toolHistory({
+  key: 'pt_hist', into: 'ptHist', max: 10,
+  empty: 'Each rehearsal is logged here, so you can see whether the talk is getting closer to its slot.',
+  label: function (e) {
+    var d = new Date(e.at);
+    return e.total + ' planned vs ' + e.actual + ' actual  ·  ' +
+      e.sections + ' sections  ·  ' + d.toLocaleDateString();
+  }
+});
+
+function ptSections() {
+  var out = [];
+  document.querySelectorAll('[id*=section] input, .pt-section').forEach(function (el) {
+    if (el.tagName === 'INPUT') return;           /* handled below */
+  });
+  /* read label and minutes from each row */
+  var rows = document.querySelectorAll('#sections > *, .pt-row');
+  rows.forEach(function (r) {
+    var ins = r.querySelectorAll('input');
+    if (ins.length >= 2) out.push({ name: ins[0].value || '(unnamed)', mins: +ins[1].value || 0 });
+    else if (ins.length === 1) out.push({ name: '(section)', mins: +ins[0].value || 0 });
+  });
+  return out;
+}
+
+var ptExport = toolExport({
+  name: 'rehearsal',
+  title: 'Presentation running order',
+  lines: function () {
+    var s = ptSections();
+    if (!s.length) return null;
+    var total = s.reduce(function (a, x) { return a + x.mins }, 0);
+    var L = ['Total planned: ' + total + ' minutes', '', 'Running order'];
+    var run = 0;
+    s.forEach(function (x, i) {
+      L.push('  ' + String(i + 1).padStart(2) + '. ' + x.name.padEnd(28) +
+             x.mins + ' min   (starts at ' + run + ' min)');
+      run += x.mins;
+    });
+    var hist = ptHistory.read();
+    if (hist.length) {
+      L.push('');
+      L.push('Previous rehearsals');
+      hist.forEach(function (e) {
+        L.push('  ' + new Date(e.at).toISOString().slice(0, 10) +
+               '  planned ' + e.total + '  actual ' + e.actual);
+      });
+    }
+    return L;
+  },
+  rows: function () {
+    var s = ptSections();
+    if (!s.length) return null;
+    var run = 0;
+    return {
+      header: ['Order', 'Section', 'Minutes', 'Starts at'],
+      rows: s.map(function (x, i) {
+        var row = [i + 1, x.name, x.mins, run];
+        run += x.mins;
+        return row;
+      })
+    };
+  }
+});
+
+/* Record a rehearsal when the run is stopped, comparing planned to actual. */
+(function ptHook() {
+  var startedAt = null;
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!b) return;
+    var label = (b.innerText || '').toLowerCase();
+    if (/start|begin|▶/.test(label) && !startedAt) { startedAt = Date.now(); return }
+    if (/stop|finish|reset|end|⏹/.test(label) && startedAt) {
+      var actual = Math.round((Date.now() - startedAt) / 60000);
+      startedAt = null;
+      if (actual < 1) return;
+      var s = ptSections();
+      var total = s.reduce(function (a, x) { return a + x.mins }, 0);
+      ptHistory.push({ total: total, actual: actual, sections: s.length, at: Date.now() });
+      notify('Rehearsal logged: ' + actual + ' min against a ' + total + ' min plan.', 'ok');
+    }
+  });
+})();
 </script>
 </body>
 </html>

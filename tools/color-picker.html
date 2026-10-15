@@ -117,7 +117,13 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="row" style="margin-top:.8rem">
+        <button class="btn btn-outline" onclick="tx_palette.text()" style="flex:1">⬇️ Download palette</button>
+        <button class="btn btn-outline" onclick="tx_palette.csv()" style="flex:1">📊 CSV</button>
+        <button class="btn btn-outline" onclick="tx_palette.copy()" style="flex:1">📋 Copy</button>
+      </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Pick a color:</strong> Perfect color palette chahiye website ke liye? Use the color wheel to find your shade</li>
 <li><strong>Fine-tune it:</strong> Hue, saturation, brightness sliders se exact shade adjust karo</li>
@@ -322,5 +328,42 @@ function render(fromText){var hex=curHex();
 renderSaved();
 render();
 genHarmony('complementary');
+
+/* ===== Export the colour and its harmonies =====
+   The point of generating a harmony is to use it somewhere else, which means
+   the values have to leave the page in a form a design tool can read. */
+function cpSwatches() {
+  /* read whatever hex values are currently rendered, so the export always
+     matches what the user is looking at */
+  var found = [];
+  document.querySelectorAll('[data-hex], .swatch, [style*="background"]').forEach(function (el) {
+    var hex = el.getAttribute('data-hex');
+    if (!hex) {
+      var m = (el.getAttribute('style') || '').match(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/);
+      if (m) hex = m[0];
+    }
+    if (hex && found.indexOf(hex.toLowerCase()) < 0) found.push(hex.toLowerCase());
+  });
+  return found;
+}
+var cpExport = toolExport({
+  name: 'palette',
+  title: 'Colour palette',
+  lines: function () {
+    var sw = cpSwatches();
+    if (!sw.length) return null;
+    var L = ['Colours (' + sw.length + ')'];
+    sw.forEach(function (h) { L.push('  ' + h) });
+    L.push('');
+    L.push('Paste a hex value into any design tool. Check each pair against');
+    L.push('the contrast checker before using one as text on the other.');
+    return L;
+  },
+  rows: function () {
+    var sw = cpSwatches();
+    if (!sw.length) return null;
+    return { header: ['Hex'], rows: sw.map(function (h) { return [h] }) };
+  }
+});
 </script>
 </body></html>

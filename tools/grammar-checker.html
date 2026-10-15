@@ -29,7 +29,10 @@
       <div id="typeCounts" style="margin-top:.8rem"></div>
       <div id="result" style="margin-top:1rem"></div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+          <h2 style="font-size:1rem;margin-top:1.2rem">Recent checks</h2>
+      <div id="gcHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Email bhejne se pehle grammar check karo — embarrassment se bachoge. Professor ko mail ho ya company ko — ek typo se impression kharab hota hai. 2 sec lagega check karne mein.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Text paste karo ya directly type karo editor mein</li>
@@ -273,5 +276,48 @@ function ignoreIssue(idx){currentIssues[idx].ignored=true;render();}
 function copyCorrected(btn){copyNow(document.getElementById("input").value);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
 function downloadCorrected(){var blob=new Blob([document.getElementById("input").value],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='corrected.txt';a.click();}
 (function(){try{var s=storeGetRaw(GC_KEY, null);if(s)document.getElementById("input").value=s;}catch(e){}})();
-  </script>
+  
+/* ===== Keep what was checked, and say when there is nothing to check =====
+   Writing is revised in passes, so seeing how the issue count fell across
+   those passes is more useful than one count in isolation. */
+var gcHistory = toolHistory({
+  key: 'gc_hist', into: 'gcHist', max: 10,
+  empty: 'Each check is listed here with how many issues it found, so you can see a draft improving.',
+  label: function (e) {
+    return e.issues + ' issue' + (e.issues === 1 ? '' : 's') + '  ·  ' +
+      e.words + ' words  ·  "' + e.start + '…"';
+  },
+  apply: function (e) {
+    var ta = document.querySelector('textarea');
+    if (ta && e.text) { ta.value = e.text; ta.dispatchEvent(new Event('input', { bubbles: true })) }
+    check();
+    notify('Draft loaded.', 'ok');
+  }
+});
+
+var _gcCheck = check;
+check = function () {
+  var ta = document.querySelector('textarea');
+  var v = ta ? String(ta.value || '').trim() : '';
+  if (!v) { notify('Paste the text you want checked.', 'warn'); return }
+  if (v.split(/\s+/).length < 3) {
+    notify('That is very short — a few words cannot show much. Paste a sentence or more.', 'info');
+  }
+  _gcCheck();
+  /* read the issue count the tool displayed rather than recounting */
+  setTimeout(function () {
+    var res = document.getElementById('result');
+    var txt = res ? res.textContent : '';
+    var m = txt.match(/(\d+)\s*(issue|problem|suggestion)/i);
+    gcHistory.push({
+      issues: m ? +m[1] : 0,
+      words: v.split(/\s+/).length,
+      start: v.slice(0, 28),
+      text: v.slice(0, 4000),
+      at: Date.now()
+    });
+  }, 400);
+};
+window.check = check;
+</script>
 </body></html>

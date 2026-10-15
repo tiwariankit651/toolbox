@@ -67,7 +67,10 @@
         <div class="row"><button class="btn btn-outline" onclick="copyOut(this)">📋 Copy</button><button class="btn btn-outline" onclick="download(new Blob([document.getElementById('output').value]),'paraphrased.txt')">💾 Download</button></div>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+          <h2 style="font-size:1rem;margin-top:1.2rem">Previous versions</h2>
+      <div id="prHist"></div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Same baat alag words mein likhni hai? Paraphrase karo. Plagiarism se bachna ho ya better version chahiye — paste karo, mode choose karo, done.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Original text paste karo — jo rewrite karna hai</li>
@@ -508,6 +511,46 @@ function saveState(){
 ['input','mode','strength','protect'].forEach(function(id){
   document.getElementById(id).addEventListener('input',saveState);
 });
-  </script>
+  
+/* ===== Keep each version, and refuse an empty run =====
+   Paraphrasing is iterative — you try a mode, dislike it, and want the
+   previous version back. Without a record that version is simply gone. */
+var prHistory = toolHistory({
+  key: 'pr_hist', into: 'prHist', max: 8,
+  empty: 'Each version you generate is kept here, so you can go back to one you preferred.',
+  label: function (e) { return (e.mode ? '[' + e.mode + '] ' : '') + e.out; },
+  apply: function (e) {
+    var out = document.getElementById('output') || document.getElementById('result');
+    if (out) {
+      if ('value' in out) out.value = e.full; else out.textContent = e.full;
+    }
+    notify('Version restored.', 'ok');
+  }
+});
+
+var _prRun = paraphrase;
+paraphrase = function () {
+  var ta = document.querySelector('textarea');
+  var v = ta ? String(ta.value || '').trim() : '';
+  if (!v) { notify('Paste the text you want rewritten.', 'warn'); return }
+  if (v.split(/\s+/).length < 4) {
+    notify('Too short to rewrite usefully — paste a full sentence.', 'info');
+    return;
+  }
+  _prRun();
+  setTimeout(function () {
+    var out = document.getElementById('output') || document.getElementById('result');
+    var txt = out ? (('value' in out) ? out.value : out.textContent) : '';
+    txt = String(txt || '').trim();
+    if (!txt) return;
+    var modeEl = document.getElementById('mode');
+    prHistory.push({
+      out: txt.slice(0, 54), full: txt,
+      mode: modeEl ? modeEl.value : '', at: Date.now()
+    });
+  }, 500);
+};
+window.paraphrase = paraphrase;
+</script>
 </body>
 </html>
