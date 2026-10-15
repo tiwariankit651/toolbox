@@ -18,13 +18,91 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Instagram Fonts</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>✨ Fancy Fonts for Instagram Bio</h1>
-      <p class="info">April 2026 · 2 min read</p>
-      <p>Want your Instagram bio to stand out? Use fancy Unicode fonts that work everywhere — no app needed, just copy and paste.</p>
-      <h2>Available Font Styles</h2>
-      <ul style="margin-left:1.5rem"><li><strong>Bold Sans</strong> — 𝗟𝗶𝗸𝗲 𝘁𝗵𝗶𝘀</li><li><strong>Italic</strong> — 𝘓𝘪𝘬𝘦 𝘵𝘩𝘪𝘴</li><li><strong>Script/Cursive</strong> — 𝒮𝒸𝓇𝒾𝓅𝓉</li><li><strong>Gothic/Fraktur</strong> — 𝔊𝔬𝔱𝔥𝔦𝔠</li><li><strong>Monospace</strong> — 𝙼𝚘𝚗𝚘</li><li><strong>Circled</strong> — Ⓒⓘⓡⓒⓛⓔⓓ</li><li><strong>Small Caps</strong> — ꜱᴍᴀʟʟ ᴄᴀᴘꜱ</li><li><strong>Underline, Strikethrough</strong> and more</li></ul>
-      <h2>How to Use</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2"><li>Open <a href="/tools/fancy-fonts" style="color:var(--accent-text)">Instagram Font Generator</a></li><li>Type your text</li><li>See 14+ font styles instantly</li><li>Click Copy on the one you like</li><li>Paste in Instagram bio, Twitter name, WhatsApp status, etc.</li></ol>
-      <p>These are Unicode characters, not images — they work on every platform and device without any special app.</p>
+      <p class="info">October 2026 · 8 min read</p>
+<p>Those stylised letters in social media bios are not fonts. That distinction sounds pedantic and it explains everything about when they work and when they cause problems.</p>
+
+      <h2>What they actually are</h2>
+
+      <p>A font is a way of drawing a character. Choosing a bold typeface does not change the letter A — it changes how the A is painted, and the underlying character is still A.</p>
+
+      <p>The stylised letters are different <em>characters</em>. 𝐀 is U+1D400, "mathematical bold capital A", a separate character that exists in Unicode because mathematicians needed bold symbols to mean something distinct from regular ones. It happens to look like a bold A.</p>
+
+      <p>So when you paste 𝐀𝐧𝐤𝐢𝐭 into a bio, you have not applied styling. You have typed five characters that are not the letters A, n, k, i, t.</p>
+
+      <h2>Which blocks are used</h2>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Looks like</th><th style="padding:.5rem;text-align:left">Actually is</th><th style="padding:.5rem;text-align:left">Coverage</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Bold, italic, bold-italic</td><td style="padding:.5rem">Mathematical Alphanumeric Symbols</td><td style="padding:.5rem">A–Z, a–z, 0–9</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Script / cursive</td><td style="padding:.5rem">Mathematical script</td><td style="padding:.5rem">A–Z, a–z; some letters missing</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Monospace</td><td style="padding:.5rem">Mathematical monospace</td><td style="padding:.5rem">A–Z, a–z, 0–9</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Small caps</td><td style="padding:.5rem">Phonetic extensions</td><td style="padding:.5rem">Incomplete; some letters have no form</td></tr>
+        <tr><td style="padding:.5rem">Circled, squared</td><td style="padding:.5rem">Enclosed Alphanumerics</td><td style="padding:.5rem">A–Z, 0–9</td></tr>
+      </table>
+
+      <p>Two practical consequences fall out of the coverage column.</p>
+
+      <p><strong>Only Latin letters and digits have these forms.</strong> Devanagari, Tamil, Arabic and every other script has no stylised equivalent, so a Hindi name passes through unchanged. A tool that appears to do nothing on Hindi text is working correctly — there is nothing to map to.</p>
+
+      <p><strong>Some sets are incomplete.</strong> Small caps in particular is assembled from phonetic characters that were never designed as a set, so a few letters have no form and come through as ordinary letters. A word in small caps with one normal letter in the middle is this, not a bug.</p>
+
+      <h2>The accessibility cost, stated plainly</h2>
+
+      <p>This is the part the generators do not mention.</p>
+
+      <p>A screen reader works from the characters, not from what they look like. Given 𝐀𝐧𝐤𝐢𝐭, it may announce "mathematical bold capital A, mathematical bold small n…" character by character, or skip the run entirely. Either way, a blind user cannot read a bio written this way.</p>
+
+      <p>For a personal account that may be a trade you are willing to make. For a business account, a public figure, or anything where people need to read your name, it means a portion of your audience cannot.</p>
+
+      <h2>And the search cost</h2>
+
+      <p>Search matches characters. Someone typing your name in ordinary letters will not match the stylised version, because they are different characters.</p>
+
+      <p>So a username or display name in fancy text is harder to find deliberately. If people search for you by name, this matters more than the styling does.</p>
+
+      <h2>Where rendering fails</h2>
+
+      <p>These characters need font coverage on the reader's device, and coverage is not universal.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Older Android devices</strong> frequently lack the mathematical blocks, showing boxes.</li>
+        <li><strong>Desktop browsers</strong> usually render them, with inconsistent spacing because the characters were not designed as a typeface.</li>
+        <li><strong>Some apps strip them</strong> on paste, or normalise them back to plain letters.</li>
+        <li><strong>Printing and PDF export</strong> often fails, because the embedded font lacks the glyphs.</li>
+      </ul>
+
+      <p>The last one catches people who use styled text in a document rather than a bio.</p>
+
+      <h2>Using them well</h2>
+
+      <p>A reasonable approach that keeps most of the benefit and avoids the costs:</p>
+
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Keep your actual name in plain letters,</strong> so it is searchable and readable.</li>
+        <li><strong>Use the styling for a short decorative line,</strong> not for information someone needs.</li>
+        <li><strong>Never use it for a link, a handle or contact details.</strong> Those have to be readable and copyable.</li>
+        <li><strong>Test on a phone,</strong> not only on a laptop — the failure mode is device-specific.</li>
+        <li><strong>Prefer bold and italic over small caps,</strong> because their character sets are complete.</li>
+      </ol>
+
+      <h2>What to use instead when you want emphasis</h2>
+
+      <p>If the goal is a bio that stands out, there are approaches that cost nothing:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Line breaks and spacing.</strong> Structure reads as deliberate and remains accessible.</li>
+        <li><strong>A single emoji as a marker</strong> at the start of a line.</li>
+        <li><strong>Short lines.</strong> Three brief lines are more readable and more striking than one long one in any typeface.</li>
+        <li><strong>Actual words.</strong> A specific, concrete bio outperforms a decorated vague one.</li>
+      </ul>
+
+      <h2>A note on copying these characters</h2>
+
+      <p>Because they are characters rather than formatting, they survive copying anywhere — a text message, a document, a spreadsheet cell. That is convenient and occasionally a problem: pasted into a form field or a database, they are stored as those characters, and a system expecting plain letters may reject them or mangle them.</p>
+
+      <p>Never use them in a field that will be processed — a name on an application, an email address, a username that has to be typed by someone else.</p>
+
+      <p>Our <a href="/tools/fancy-fonts" style="color:var(--accent-text)">Fancy Fonts</a> tool generates the Unicode styles above and tells you when your text contains nothing it can restyle — which is what happens with Devanagari and most non-Latin scripts, and is otherwise confusing. It keeps your recent conversions so a name or caption can be reused, runs in your browser with nothing uploaded, and works offline. For caption structure, the <a href="/tools/caption-spacer" style="color:var(--accent-text)">Caption Spacer</a> handles line breaks that survive the paste.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Get fancy fonts now!</strong></p>
         <a href="/tools/fancy-fonts" class="btn" style="display:inline-block;text-decoration:none">✨ Open Font Generator</a>

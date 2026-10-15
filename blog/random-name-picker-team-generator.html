@@ -18,13 +18,84 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Name Picker</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>🎯 Random Name Picker and Team Generator</h1>
-      <p class="info">April 2026 · 3 min read</p>
-      <p>Need to pick a random student, make fair teams, or shuffle a list? Our name picker uses cryptographically secure randomization for truly fair results.</p>
-      <h2>Features</h2>
-      <ul style="margin-left:1.5rem"><li><strong>Pick Random</strong> — select one random name from the list</li><li><strong>Pick Multiple</strong> — select 2, 3, or more names at once</li><li><strong>Make Teams</strong> — automatically divide names into balanced teams</li><li><strong>Shuffle</strong> — randomize the entire list order</li><li><strong>History</strong> — see previous picks</li></ul>
-      <h2>Perfect For</h2>
-      <ul style="margin-left:1.5rem"><li><strong>Teachers</strong> — pick students for questions or presentations</li><li><strong>Sports</strong> — make fair teams for games</li><li><strong>Events</strong> — giveaway winners, raffle draws</li><li><strong>Group projects</strong> — assign random groups</li></ul>
-      <p>Enter names one per line, then use any of the four modes. Uses <code>crypto.getRandomValues()</code> for truly random, unbiased results.</p>
+      <p class="info">October 2026 · 8 min read</p>
+<p>Picking a name at random sounds trivial and has one genuine subtlety: whether a pick can repeat. Getting that wrong is the difference between a fair rotation and a draw where the same person is chosen three times in a row — and both behaviours are correct for different purposes.</p>
+
+      <h2>With replacement, or without</h2>
+
+      <p><strong>With replacement</strong> means every pick is independent and anyone can be chosen again. Right for a raffle or a prize draw, where each draw should be a fresh chance.</p>
+
+      <p><strong>Without replacement</strong> means a chosen name is removed. Right for a rotation — who answers next, who presents this week — where repeating defeats the purpose.</p>
+
+      <p>Most disappointment with a random picker comes from using the first when you wanted the second. A class rotation that picks the same student twice before reaching half the class is doing exactly what it was asked.</p>
+
+      <h2>Random does not mean evenly spread</h2>
+
+      <p>This is the thing worth understanding, because it is why genuinely random results often look broken.</p>
+
+      <p>With thirty names and thirty independent picks, you will not get each name once. On average about eleven names are never picked at all, and some are picked three or four times. That is what randomness looks like, and it is unintuitive enough that people assume the tool is faulty.</p>
+
+      <p>Humans expect randomness to alternate and spread. Real randomness clusters. If you want an even spread, you do not want random — you want a shuffle.</p>
+
+      <h2>Shuffling is usually what you actually want</h2>
+
+      <p>A shuffle produces a random <em>order</em> of everyone, which gives you fairness and coverage at once: every name appears exactly once, in an unpredictable sequence.</p>
+
+      <p>For a classroom rotation this is almost always the right tool. Shuffle the class, work down the list, reshuffle when you reach the end. Nobody is asked twice before everyone is asked once, and nobody can predict their turn.</p>
+
+      <p>The standard algorithm is Fisher-Yates, which produces every possible ordering with equal probability. A naive approach — sorting with a random comparator — does not, and produces a detectable bias towards certain orderings. Worth knowing if you are implementing it; invisible if the tool does it correctly.</p>
+
+      <h2>Making teams, and the three kinds of fair</h2>
+
+      <p>Splitting a list into teams has more than one notion of fairness, and they conflict.</p>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Goal</th><th style="padding:.5rem;text-align:left">Method</th><th style="padding:.5rem;text-align:left">Trade-off</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Equal sizes</td><td style="padding:.5rem">Shuffle, then deal round-robin</td><td style="padding:.5rem">Ignores ability</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Balanced ability</td><td style="padding:.5rem">Rank, then snake draft</td><td style="padding:.5rem">Needs a ranking you may not have</td></tr>
+        <tr><td style="padding:.5rem">Fully unpredictable</td><td style="padding:.5rem">Pure random assignment</td><td style="padding:.5rem">Sizes and strength may be uneven</td></tr>
+      </table>
+
+      <p>Dealing round-robin from a shuffled list is the usual best answer: shuffle once, then assign the first name to team 1, second to team 2, and so on, wrapping around. Sizes differ by at most one, and the composition is random.</p>
+
+      <p>With 23 people into 4 teams you get 6, 6, 6, 5 — and the team of 5 should be chosen by the shuffle rather than always being the last, which round-robin from a shuffled list handles automatically.</p>
+
+      <h2>Where "random" is not random</h2>
+
+      <p>Three ways a draw stops being fair without anyone intending it.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Re-rolling a result you dislike.</strong> The moment you reject an outcome and draw again, the process is your preference rather than chance. If some outcomes are unacceptable, remove those names first.</li>
+        <li><strong>Duplicates in the list.</strong> A name entered twice has twice the chance. Easy to do when pasting from a spreadsheet with a header row or a trailing blank.</li>
+        <li><strong>Whitespace making near-duplicates.</strong> "Ankit" and "Ankit " are two entries. A good tool trims; otherwise check the count matches what you expect.</li>
+      </ul>
+
+      <h2>Being seen to be fair</h2>
+
+      <p>For anything with a stake — a prize, an assignment nobody wants — the perception matters as much as the method.</p>
+
+      <p>Things that help: showing the full list before drawing, so everyone can see who is included; drawing in front of people rather than announcing a result; and stating the rule beforehand, including whether picks can repeat.</p>
+
+      <p>If a draw has real consequences, a verifiable method is better than a trusted one. Numbering the list and using a public source of randomness — a lottery number, a dice roll everyone watches — removes the question of whether the tool was honest.</p>
+
+      <h2>Classroom use</h2>
+
+      <p>A few specifics that make this work better in practice.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Use a shuffle, not repeated picks,</strong> so every student is asked before anyone is asked twice.</li>
+        <li><strong>Keep the list between sessions</strong> rather than retyping it, and continue where the order left off.</li>
+        <li><strong>Exclude absentees</strong> before drawing, so the pick does not land on an empty chair.</li>
+        <li><strong>Consider whether randomness is right at all.</strong> For a student who finds being called on stressful, a predictable rotation is kinder and achieves the same coverage.</li>
+      </ul>
+
+      <h2>A privacy note on name lists</h2>
+
+      <p>A class list, a team roster or a list of participants is personal data about other people — often about children.</p>
+
+      <p>Most online pickers send the list to a server. For a list of nicknames that is unimportant; for a class register it is a transfer you may not be permitted to make on your institution's behalf. A browser-based tool keeps the list on your device, which also means it works without a connection.</p>
+
+      <p>Our <a href="/tools/name-picker" style="color:var(--accent-text)">Name Picker</a> supports both modes — picking with and without replacement — and shuffles for a full fair order, plus team splitting by round-robin from a shuffled list. It trims whitespace and reports the count so a duplicate or a stray blank line is visible before you draw. The list is stored in your browser with nothing uploaded, so a class register stays on your device. For a two-way decision the <a href="/tools/coin-flip" style="color:var(--accent-text)">Coin Flip</a> is the simpler tool, and the <a href="/tools/topic-picker" style="color:var(--accent-text)">Topic Picker</a> handles choosing from a prepared set of subjects.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Pick random names now!</strong></p>
         <a href="/tools/name-picker" class="btn" style="display:inline-block;text-decoration:none">🎯 Open Name Picker</a>
