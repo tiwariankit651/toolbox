@@ -95,7 +95,31 @@
       <div id="sessionHistory" style="margin-top:1rem"></div>
     </div>
     <div style="min-height:90px"></div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why a browser timer drifts, and why this one does not</h2>
+      <p>The naive way to build a stopwatch is to add ten milliseconds to a counter every ten milliseconds. It drifts badly, and understanding why explains a lot about timing in browsers.</p>
+      <p><code>setInterval</code> does not guarantee its interval. It guarantees the callback will not run <em>sooner</em> than asked. If the page is busy, the tab is in the background, or the device is throttling to save battery, callbacks arrive late — and a counter that adds a fixed amount per callback loses exactly that much time.</p>
+      <p>The correct approach is to record the start time and compute elapsed time as the difference from the current clock. Then a late callback shows the right number, because the number was never being accumulated. The display may update unevenly; the time stays accurate.</p>
+
+      <h2>Background tabs are throttled deliberately</h2>
+      <p>Every modern browser slows timers in hidden tabs, often to once a second or less, to save battery. A stopwatch left in a background tab will update rarely and still be correct when you look at it, because it recomputes from the clock.</p>
+      <p>This is also why a browser tab cannot be relied on to alert you at a specific moment. For anything that must interrupt you, a phone alarm or a calendar notification is the tool; a tab is the display.</p>
+
+      <h2>Lap timing, and the two things it can mean</h2>
+      <p>These are different measurements and tools disagree about which they report.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Lap time</strong> — the duration of that lap alone, measured from the previous lap marker.</li>
+        <li><strong>Split time</strong> — the total elapsed time at that marker.</li>
+      </ul>
+      <p>For a four-lap run, the lap times might be 60, 62, 65, 61 while the splits are 60, 122, 187, 248. Both are useful: laps show consistency, splits show the overall pace. Confusing them makes a comparison meaningless.</p>
+
+      <h2>Precision and what it is worth</h2>
+      <p>A stopwatch can display hundredths or thousandths of a second, and for human-triggered timing the extra digits are decoration. Reaction time between seeing something and pressing a key is typically 200 to 300 milliseconds, with variation of tens of milliseconds between attempts.</p>
+      <p>So a time measured by hand is accurate to roughly a tenth of a second regardless of how many digits are shown. Displaying three decimal places implies a precision the method cannot deliver — useful to know before comparing two hand-timed results that differ by 50 milliseconds.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:1rem">Lap time track karna hai? Ya countdown set karna hai? Dono yahan hai. Running practice ho ya cooking timer — ek click mein shuru.</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Stopwatch tab mein Start dabao — time count hona shuru</li>

@@ -79,7 +79,34 @@ button:hover { background: #8b5cf6; }</textarea>
       <p class="info" style="font-size:.78rem">🔒 The preview runs in a sandboxed iframe (<code>sandbox="allow-scripts"</code>). Your JavaScript executes but cannot touch this page. Network requests from your code may be blocked by the sandbox.</p>
       <div class="row"><button class="btn btn-outline" onclick="copyAll()">📋 Copy All</button><button class="btn btn-outline" onclick="dlAll()">💾 Download HTML</button></div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why a preview behaves differently from a real page</h2>
+      <p>A live preview renders inside an iframe, which is a separate document with its own styles and scripts. That isolation is the point — your code cannot break the editor — and it causes three specific surprises.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Outside styles do not apply.</strong> A stylesheet on the surrounding page has no effect inside the preview, so your CSS has to be in the preview's own style block.</li>
+        <li><strong>No inherited reset.</strong> The preview starts from browser defaults, so a layout that looks right here can shift on a site with a CSS reset.</li>
+        <li><strong>Script is scoped to the frame.</strong> <code>document.getElementById</code> inside the preview cannot see the editor around it, and console errors are attributed to the frame.</li>
+      </ul>
+
+      <h2>HTML fails silently, which is the hard part</h2>
+      <p>There are no syntax errors in HTML the way there are in a programming language. A missing closing tag does not produce a message — the browser guesses where it belonged, and the guess is often somewhere unexpected.</p>
+      <p>The symptom is a layout where everything after a certain element is nested one level too deep. If a page breaks after a particular point, count closing tags backwards from there.</p>
+      <p>A related trap: <code>&lt;div /&gt;</code> is not a self-closing div. Only void elements — <code>img</code>, <code>br</code>, <code>input</code>, <code>hr</code>, <code>meta</code>, <code>link</code> — have no closing tag. Writing a self-closing div opens one that never closes, which is the same problem with a different cause, and it catches people coming from JSX.</p>
+
+      <h2>Specificity explains most "why is this ignored"</h2>
+      <p>When two rules target the same element, the more specific wins — not the later one. From weakest: element selectors, then classes and pseudo-classes, then IDs, then inline styles, then <code>!important</code>.</p>
+      <p>So <code>#main p { color: blue }</code> beats <code>.highlight { color: red }</code> even though the class rule comes later. Only when specificity is equal does source order decide.</p>
+      <p><code>!important</code> wins everything, which is why it should be a last resort — once one rule uses it, overriding that rule needs another, and the cascade stops being predictable.</p>
+
+      <h2>The box model, for the other half of layout confusion</h2>
+      <p>By default <code>width</code> sets the content box and padding and border are added outside it, so <code>width: 200px; padding: 20px</code> occupies 240 pixels. Setting <code>box-sizing: border-box</code> makes width include both, which is what almost everyone expects and why most stylesheets apply it globally.</p>
+
+      <h2>What a browser editor cannot do</h2>
+      <p>No server, so nothing needing a backend will run. Cross-origin requests are blocked unless the other server allows them, so most API calls fail with a CORS error that is not your bug. No build step, so JSX, TypeScript and SCSS need compiling first. And you are seeing your own browser's rendering, which is not a cross-browser test.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Start coding:</strong> HTML seekh rahe ho? Live preview ke saath practice karo — type karo, result dekho instantly</li>
 <li><strong>Add some style:</strong> CSS section mein apne elements ko beautiful banao. Colors, fonts, layouts — sab try karo</li>

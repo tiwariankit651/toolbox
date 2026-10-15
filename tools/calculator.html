@@ -118,6 +118,35 @@
         <button class="btn btn-outline" onclick="tx_calctape.copy()" style="flex:1">📋 Copy tape</button>
       </div>
 
+    <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Floating point, and why 0.1 + 0.2 is not 0.3</h2>
+      <p>Enter 0.1 + 0.2 in almost any programming language and you get 0.30000000000000004. This is not a bug in the calculator — it is how binary floating point works, and it is worth understanding because it affects any calculation involving money.</p>
+      <p>Computers store numbers in binary. One tenth in binary is a repeating fraction, exactly as one third is in decimal, so it cannot be stored exactly in a finite number of bits. The stored value is very slightly off, and the error becomes visible when two such values are added.</p>
+      <p>Most calculators hide this by rounding the display, which is the right choice for an interface and means the underlying value is still slightly imprecise.</p>
+
+      <h3>What this means in practice</h3>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Never compare two computed decimals for exact equality.</strong> Compare whether the difference is smaller than a tolerance.</li>
+        <li><strong>For money, work in the smallest unit.</strong> Paise rather than rupees, as integers. This is what financial software does.</li>
+        <li><strong>Round once, at the end.</strong> Rounding at each step accumulates error in a way that rounding once does not.</li>
+      </ul>
+
+      <h2>Operator precedence, and where calculators disagree</h2>
+      <p>2 + 3 × 4 is 14, not 20, because multiplication binds tighter than addition. Simple four-function calculators often evaluate strictly left to right and give 20, which is why the same keystrokes on two devices can produce different answers.</p>
+      <p>The genuinely ambiguous case is implicit multiplication: 6 ÷ 2(1+2) is read as 9 by some conventions and 1 by others, and there is no universal answer. The practical response is to use brackets rather than relying on precedence for anything that matters.</p>
+      <p>Unary minus is another common disagreement: −3² is −9 if the exponent binds tighter, and 9 if the negation does. Most mathematical convention gives −9.</p>
+
+      <h2>Percentage, which means different things in different places</h2>
+      <p>The percent key is the least standardised function on any calculator.</p>
+      <p>On many calculators, 200 + 10% gives 220 — the percentage is taken of the first operand. On others it gives 200.1, treating 10% as 0.1. Both are defensible and they are different answers.</p>
+      <p>The unambiguous approach is to compute it explicitly: for a 10% increase, multiply by 1.1. For a discount, multiply by 0.9. For "what percentage is 45 of 60", divide and multiply by 100.</p>
+
+      <h2>Reverse percentage, the one people get wrong</h2>
+      <p>If a price after a 20% discount is ₹850, the original is not ₹850 + 20%. It is ₹850 ÷ 0.8, which is ₹1,062.50 — because the 20% was taken of the larger original figure, not of the smaller result.</p>
+      <p>Adding 20% to ₹850 gives ₹1,020, which is wrong by ₹42.50. This is the most common percentage error in everyday use and it appears in exam questions for exactly that reason.</p>
+    </div>
+
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A full-featured scientific calculator that works in your browser. Perform basic arithmetic, trigonometric functions (sin, cos, tan), logarithms (log, ln), square roots, powers, factorials, and more. Supports keyboard input. Perfect for students, engineers, and daily calculations.</p><h2>How to Use</h2><ol style='margin-left:1.5rem;line-height:2'><li>Phone calculator mein history nahi dikhta? Yahan buttons click karo ya keyboard se type karo</li><li>Trigonometry chahiye? sin, cos, tan use karo (degrees mein calculate hota hai)</li><li>log, ln — logarithms ke liye. Engineering students ke kaam ka</li><li>Powers ke liye ^ use karo, factorial ke liye ! — simple syntax</li><li>= ya Enter dabao — result + history dono dikhega</li></ol><h2>Supported Functions</h2><p>This scientific calculator supports basic arithmetic, trigonometric functions (sin, cos, tan), logarithms (log base 10, natural log), square root, powers, factorial, pi, and Euler's number. Calculation history is shown below. Works offline after first visit.</p>
 <h2>Benefits of Using This Tool</h2>
 <ul style="margin-left:1.5rem;line-height:2">
