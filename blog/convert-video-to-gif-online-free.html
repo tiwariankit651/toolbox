@@ -18,13 +18,78 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Video to GIF</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>🎬 How to Convert Video to GIF Online</h1>
-      <p class="info">April 2026 · 3 min read</p>
-      <p>GIFs are perfect for social media, memes, tutorials, and messaging. Converting a video clip to GIF is easy with our free tool.</p>
-      <h2>How to Convert</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2"><li>Open <a href="/tools/video-to-gif" style="color:var(--accent-text)">Video to GIF Converter</a></li><li>Upload your video (MP4, WebM, MOV)</li><li>Set start and end time to trim</li><li>Choose FPS (10 for small file, 20 for smooth)</li><li>Set output width</li><li>Click Convert and download your GIF</li></ol>
-      <h2>Tips for Smaller GIFs</h2>
-      <ul style="margin-left:1.5rem"><li>Keep duration under 5 seconds</li><li>Use 10 FPS instead of 20</li><li>Set width to 320px or less</li><li>Trim to only the important part</li></ul>
-      <p>Everything runs in your browser using gif.js library. Your video never leaves your device.</p>
+      <p class="info">October 2026 · 9 min read</p>
+<p>GIF is a 1987 format that survives for one reason: it plays inline, everywhere, with no player and no click. That makes it the right choice for a short demonstration in a bug tracker or a chat, and the wrong choice for almost anything longer — because the format is extremely inefficient and the file size grows faster than people expect.</p>
+
+      <h2>Why GIFs get so large</h2>
+
+      <p>GIF has no inter-frame video compression in the sense modern codecs use. Each frame is stored as an image, with only limited gains from unchanged regions. A video codec stores the <em>difference</em> between frames, which is why a ten-second MP4 can be 500 KB and the same clip as a GIF is 8 MB.</p>
+
+      <p>Two numbers drive the size, and they multiply:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Dimensions.</strong> Halving the width and height quarters the pixels per frame.</li>
+        <li><strong>Frame count</strong> — duration multiplied by frame rate. Ten seconds at 20fps is 200 frames; at 10fps it is 100.</li>
+      </ul>
+
+      <p>So a clip at 640 px and 10fps is roughly a sixteenth of the size of the same clip at 1280 px and 20fps. That is the whole of GIF optimisation.</p>
+
+      <h2>The 256-colour limit</h2>
+
+      <p>GIF stores at most 256 colours per frame, chosen from a palette. A video frame typically contains thousands.</p>
+
+      <p>The conversion therefore has to discard colours, and how it does that decides how the result looks. <strong>Dithering</strong> scatters pixels of two available colours to approximate a third — which preserves the impression of a gradient at the cost of a visible speckled texture, and larger files because the scatter defeats compression.</p>
+
+      <p>Without dithering you get flat bands where a gradient used to be. Neither is ideal; which looks worse depends on the content.</p>
+
+      <p>The practical consequence: <strong>screen recordings convert well, camera footage does not.</strong> A user interface has flat colours and few of them, so 256 is plenty. A sunset or a face has smooth gradients everywhere, and 256 colours cannot hold them.</p>
+
+      <h2>Settings that actually matter</h2>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Setting</th><th style="padding:.5rem;text-align:left">For a UI demo</th><th style="padding:.5rem;text-align:left">For camera footage</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Width</td><td style="padding:.5rem">480–720 px</td><td style="padding:.5rem">320–480 px</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Frame rate</td><td style="padding:.5rem">10–12 fps</td><td style="padding:.5rem">12–15 fps</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Duration</td><td style="padding:.5rem">Under 10 seconds</td><td style="padding:.5rem">Under 5 seconds</td></tr>
+        <tr><td style="padding:.5rem">Dithering</td><td style="padding:.5rem">Off — flat colours anyway</td><td style="padding:.5rem">On — gradients need it</td></tr>
+      </table>
+
+      <p>Ten frames a second looks jerky for motion and perfectly acceptable for a cursor moving and a dialog opening. For a UI demonstration the viewer is reading the screen, not watching movement, so the frame rate can go low.</p>
+
+      <h2>Trim before converting, not after</h2>
+
+      <p>Every frame costs size, so cutting four seconds of a ten-second clip removes 40% of the file. Trimming first is the single most effective optimisation and the one most often skipped, because people convert the whole clip and then try to compress the result.</p>
+
+      <p>Be ruthless about it. A demonstration almost never needs the moment before you click or the pause after. Start on the action.</p>
+
+      <h2>When not to use GIF at all</h2>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Anything with sound.</strong> GIF has no audio track. If the sound matters, you need video.</li>
+        <li><strong>Longer than about fifteen seconds.</strong> The file becomes unreasonable and nobody watches a long GIF loop.</li>
+        <li><strong>Camera footage you want to look good.</strong> The colour limit makes this impossible.</li>
+        <li><strong>Where a video player is available.</strong> If the platform plays MP4 inline — most do now — use it.</li>
+      </ul>
+
+      <p>The modern alternative is a short MP4 or WebM with autoplay and loop, which behaves like a GIF and is a fraction of the size. Where that is supported it is strictly better. GIF remains useful where you cannot control the player: an email, an older issue tracker, a wiki that strips video tags.</p>
+
+      <h2>Looping, and where to cut</h2>
+
+      <p>GIFs loop by default, and a badly chosen cut makes the loop jarring.</p>
+
+      <p>If the content returns to its starting state — a cursor back where it began, a dialog closed again — the loop is seamless. If it ends somewhere different, there is a visible jump every cycle.</p>
+
+      <p>For a demonstration, ending on the result is usually right even though the loop jumps, because the result is the point. For a decorative clip, finding a cut that returns to the start matters more.</p>
+
+      <h2>Where the file goes, and a technical note</h2>
+
+      <p>Video files are large, so uploading one to convert it is slow as well as a privacy question. Screen recordings in particular often contain things you did not intend to share — a tab title, a notification, a file path.</p>
+
+      <p>Browser-based conversion processes the video on your own device. It is limited by your hardware rather than an upload size cap, and nothing is transmitted.</p>
+
+      <p>One implementation detail worth knowing, because it causes a specific failure: GIF encoding in the browser uses a worker thread, and browsers refuse to construct a worker from a cross-origin URL. A tool that hands the encoder a CDN address directly will throw on every conversion — the fix is to fetch the worker source and run it from a same-origin blob. We hit exactly this and it is why conversion here works offline too.</p>
+
+      <p>Our <a href="/tools/video-to-gif" style="color:var(--accent-text)">Video to GIF</a> converter runs in your browser with no upload, lets you trim before converting and set width and frame rate explicitly, and reports the resulting size so you can see the effect of each change. For capturing the clip in the first place, the <a href="/tools/screen-recorder" style="color:var(--accent-text)">Screen Recorder</a> works the same way, and the <a href="/tools/video-trimmer" style="color:var(--accent-text)">Video Trimmer</a> handles the cut if your source is longer.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Convert your video now!</strong></p>
         <a href="/tools/video-to-gif" class="btn" style="display:inline-block;text-decoration:none">🎬 Open Video to GIF</a>

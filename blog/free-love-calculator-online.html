@@ -18,12 +18,64 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Love Calculator</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>💕 Love Calculator — Check Your Compatibility</h1>
-      <p class="info">April 2026 · 2 min read</p>
-      <p>Curious about your compatibility? Enter your name and your crush's name to see the love percentage! This is purely for fun and entertainment.</p>
-      <h2>How It Works</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2"><li>Open <a href="/tools/love-calculator" style="color:var(--accent-text)">Love Calculator</a></li><li>Enter your name</li><li>Enter their name</li><li>Click Calculate Love</li><li>See your love percentage with a fun message</li><li>Share the result with friends on WhatsApp!</li></ol>
-      <p>The tool uses a fun algorithm based on name characters to generate a percentage. Results are consistent — same names always give the same result. Share with friends and have fun!</p>
-      <p><em>Disclaimer: This is for entertainment only. Real relationships are built on trust, communication, and respect!</em></p>
+      <p class="info">October 2026 · 7 min read</p>
+<p>A love calculator takes two names and returns a percentage. It is a toy, it has no predictive value whatsoever, and the interesting question is a different one: how does it produce a number, and why does the same pair of names always give the same answer?</p>
+
+      <h2>How the number is produced</h2>
+
+      <p>Almost every implementation works the same way. The two names are combined, each character is converted to a number, those numbers are folded together with some arithmetic, and the result is reduced to the range 0 to 100.</p>
+
+      <p>A simple version: sum the character codes of both names, take the remainder when divided by 101. That gives a number between 0 and 100 that depends only on the letters.</p>
+
+      <p>The traditional pen-and-paper method, which some versions imitate, is older: write both names, count how many times each letter of a word like "LOVES" appears across them, then repeatedly add adjacent digits until two digits remain.</p>
+
+      <p>Either way the output is <strong>deterministic</strong>. The same two names always give the same percentage, because nothing random is involved — it is a hash of the input.</p>
+
+      <h2>Why the same names always match</h2>
+
+      <p>This is the part people notice and find slightly eerie. You try it, get 73%, try again next week, still 73%.</p>
+
+      <p>There is nothing stored and nothing remembered. The calculation is a pure function of the two strings, so it cannot give a different answer unless the input changes. Swap a nickname for a full name and the number changes completely, which is the clearest demonstration that it is arithmetic on letters rather than anything about people.</p>
+
+      <p>Try it: the same person's name with and without a middle name gives two unrelated percentages. Both cannot be meaningful.</p>
+
+      <h2>Why a random number would be worse</h2>
+
+      <p>Interestingly, determinism is the better design for a toy like this.</p>
+
+      <p>If the result were random, trying twice would give two answers and the illusion would collapse immediately. Being deterministic makes it feel like a measurement, which is what makes it fun. It is the same reason a fortune cookie works better than a dice roll.</p>
+
+      <h2>The reason it feels meaningful</h2>
+
+      <p>Two well-documented effects do the work.</p>
+
+      <p><strong>The Barnum effect.</strong> People accept vague, generally positive statements as specifically true of them. A number like 78% invites you to supply the reasons it is right, and you will find some.</p>
+
+      <p><strong>Confirmation bias.</strong> A high score gets remembered and recounted; a low one gets dismissed as "it's just a game". So in memory the calculator has a good hit rate, because the misses were filtered out at the time.</p>
+
+      <p>Both are ordinary features of how people reason, not failures of intelligence. Knowing about them does not stop them working, which is itself interesting.</p>
+
+      <h2>What this is actually similar to</h2>
+
+      <p>The calculation is a <strong>hash function</strong> — input of any length, fixed-size output, same input always giving the same output. Hashes are used throughout computing for checking that a file has not changed, for storing passwords, and for distributing data across servers.</p>
+
+      <p>A love calculator is a hash function with a playful presentation. That is a reasonable thing to understand from it: the same idea, used seriously, is how your password is checked without the website storing it.</p>
+
+      <p>The difference is that a cryptographic hash is designed so similar inputs give completely different outputs, and so the input cannot be recovered from the output. A love calculator's arithmetic has neither property, which is why swapping two letters can give a similar answer.</p>
+
+      <h2>Privacy, which is not nothing</h2>
+
+      <p>You are typing two names — often your own and someone else's.</p>
+
+      <p>Many of these sites run server-side, which means both names are sent to and logged by somebody's server, usually alongside an advertising identifier. For a toy that is a disproportionate amount of data collection, and several of these sites exist primarily to collect it.</p>
+
+      <p>A browser-based version does the arithmetic on your own device. Nothing is transmitted, which for a tool whose entire input is two people's names is the correct default.</p>
+
+      <h2>Taking it in the right spirit</h2>
+
+      <p>It is a game, and games are fine. The only thing worth saying is the obvious one: a percentage derived from the letters in two names carries no information about two people. If a low number would genuinely bother you, the honest answer is that the arithmetic does not know either of you.</p>
+
+      <p>Our <a href="/tools/love-calculator" style="color:var(--accent-text)">Love Calculator</a> runs entirely in your browser — the names are never sent anywhere — and shows which method produced the number, so it is clear it is arithmetic rather than a measurement. If you want the underlying idea without the framing, the <a href="/tools/coin-flip" style="color:var(--accent-text)">Coin Flip</a> is genuinely random, and the <a href="/tools/name-picker" style="color:var(--accent-text)">Name Picker</a> handles fair selection from a list.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Check your love percentage!</strong></p>
         <a href="/tools/love-calculator" class="btn" style="display:inline-block;text-decoration:none">💕 Open Love Calculator</a>
