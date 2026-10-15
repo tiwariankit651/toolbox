@@ -148,7 +148,43 @@
 <details><summary>Can I compare code with this?</summary><p>Yes! It uses a monospace font and preserves whitespace, making it suitable for comparing code, configs, or any structured text.</p></details>
 </div>
   </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/word-counter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Word Counter</a><a href="/tools/text-tools" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Tools</a><a href="/tools/text-compare" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Compare</a><a href="/tools/text-tools" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Case Converter</a><a href="/tools/paraphraser" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Paraphraser</a><a href="/tools/summarizer" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Summarizer</a></div></div>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>How a diff is computed, and why that shapes the output</h2>
+      <p>A diff finds the longest common subsequence of the two inputs, then describes what has to be added or removed to turn one into the other. It is not comparing meaning — it is matching lines or characters.</p>
+      <p>Two consequences follow, and they explain most confusing diffs.</p>
+
+      <h3>A moved block looks like a deletion plus an insertion</h3>
+      <p>Move a paragraph from the top of a document to the bottom, change nothing else, and a line diff reports the whole paragraph as deleted in one place and added in another. Nothing was edited, and the diff cannot say so because it has no concept of movement.</p>
+
+      <h3>Reformatting swamps the real change</h3>
+      <p>Rewrapping a paragraph changes every line in it, so a one-word edit inside a rewrapped paragraph is invisible among the noise. This is why reformatting and editing in the same pass makes a change impossible to review — and why doing them separately is worth the discipline.</p>
+
+      <h2>Line, word and character diffs</h2>
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Granularity</th><th style="padding:.5rem;text-align:left">Best for</th><th style="padding:.5rem;text-align:left">Weakness</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Line</td><td style="padding:.5rem">Code, config, structured text</td><td style="padding:.5rem">A one-character change flags the whole line</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Word</td><td style="padding:.5rem">Prose and documents</td><td style="padding:.5rem">Noisy where punctuation moved</td></tr>
+        <tr><td style="padding:.5rem">Character</td><td style="padding:.5rem">Short strings, IDs, hashes</td><td style="padding:.5rem">Unreadable on anything long</td></tr>
+      </table>
+      <p>For comparing two drafts of a document, word-level is almost always the right choice. For code, line-level is the convention because that is what version control uses.</p>
+
+      <h2>Invisible differences that matter</h2>
+      <p>Several differences are real and impossible to see, which is where a diff tool earns its place.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Trailing whitespace.</strong> A space at the end of a line is a difference and shows as nothing.</li>
+        <li><strong>Line endings.</strong> Windows uses CRLF, Unix uses LF. A file moved between systems can differ on every single line while looking identical.</li>
+        <li><strong>Tabs against spaces.</strong> Rendered the same width, stored differently.</li>
+        <li><strong>Unicode look-alikes.</strong> A curly apostrophe and a straight one, a non-breaking space and an ordinary one, a Cyrillic 'а' in a Latin word.</li>
+        <li><strong>A byte-order mark</strong> at the start of a file, which is invisible and makes the first line differ.</li>
+      </ul>
+      <p>The Unicode case is the one that causes genuine confusion, because text copied from a word processor routinely carries smart quotes and non-breaking spaces that look exactly like their plain equivalents.</p>
+
+      <h2>Reviewing a diff well</h2>
+      <p>Two habits make a difference. Read the <em>removals</em> as carefully as the additions — a deleted line is easy to skim past and is how things get lost. And reformat separately from editing, so the next diff is readable.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/word-counter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Word Counter</a><a href="/tools/text-tools" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Tools</a><a href="/tools/text-compare" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Compare</a><a href="/tools/text-tools" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Case Converter</a><a href="/tools/paraphraser" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Paraphraser</a><a href="/tools/summarizer" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Text Summarizer</a></div></div>
   <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/paraphrasing-tool-for-students-free">Free Paraphrasing Tool for Students — Rewrite Text Without Plagiarism</a></li><li><a href="/blog/pomodoro-technique-study-schedule-for-exams">Pomodoro Technique for Studying — How to Study 8 Hours Without Burnout</a></li><li><a href="/blog/practice-previous-year-questions-free">Practice Previous Year Questions — SSC UPSC Quiz Free</a></li><li><a href="/blog/presentation-timer-viva-tips">How to Time Presentations & Viva Tips — Manage Nervousness</a></li><li><a href="/blog/professional-email-templates-free">Professional Email Templates — HR, Leave, Resignation Free</a></li><li><a href="/blog/qr-code-kaise-banaye-free-with-logo">QR Code Kaise Banaye Free With Logo — Complete Guide 2026</a></li></ul></div>
   <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
