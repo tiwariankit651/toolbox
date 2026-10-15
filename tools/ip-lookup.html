@@ -66,11 +66,15 @@
         <div class="row" style="gap:.5rem;margin-top:.5rem">
           <button class="btn btn-outline" onclick="lookupMyIP()" style="flex:1">📡 My Public IP (sends request)</button>
           <button class="btn btn-outline" id="copyBtn" onclick="copyIP()" style="flex:1" disabled>📋 Copy IP</button>
+          <button class="btn btn-outline" onclick="iplDownload()" style="flex:1">⬇️ Download report</button>
+          <button class="btn btn-outline" onclick="iplCopy()" style="flex:1">📋 Copy report</button>
         </div>
         <div id="loading" style="display:none;text-align:center;padding:2rem;color:var(--text2)">⏳ Looking up IP via ipapi.co...</div>
         <div id="result" style="display:none;margin-top:1rem">
           <div class="ipl-grid">
-            <div class="ipl-item"><div class="k">IP Address</div><div class="v" id="rIP"></div></div>
+            <div class="ipl-item"><div class="k">IP Address</div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Recent lookups</h2>
+      <div id="iplHist"></div><div class="v" id="rIP"></div></div>
             <div class="ipl-item"><div class="k">City</div><div class="v" id="rCity"></div></div>
             <div class="ipl-item"><div class="k">Region</div><div class="v" id="rRegion"></div></div>
             <div class="ipl-item"><div class="k">Country</div><div class="v" id="rCountry"></div></div>
@@ -465,6 +469,211 @@ function doSplit(){
 
 // ---------- init ----------
 loadBrowserInfo();
-  </script>
+  
+/* ===== Export the findings, remember recent lookups, say what is wrong =====
+
+   This tool had none of the three. It showed a result you could read but not
+   keep, it forgot every address you had checked, and showError() wrote into a
+   panel without using the shared notifier, so a mistyped address produced a
+   message you had to notice rather than one that came to you. */
+
+var IPL_K = { hist: 'ipl_hist', last: 'ipl_last' };
+
+/* ---- validation with a reason ------------------------------------------
+   "999.999.1.1" and "19216801" are both invalid, but for different reasons,
+   and saying which one helps more than a generic refusal. */
+function iplExplain(v) {
+  var s = String(v || '').trim();
+  if (!s) return 'Enter an IP address, or use "My IP" to look up your own.';
+  if (/^\d+$/.test(s) && s.length > 4) {
+    return 'That looks like an integer. Use the Integer tab to convert it, or type the dotted form like 192.168.0.1.';
+  }
+  if (s.indexOf(':') > -1) {
+    return isValidIPv6(s) ? null
+      : 'That is not a valid IPv6 address. Groups are one to four hex digits separated by colons, with at most one "::".';
+  }
+  var parts = s.split('.');
+  if (parts.length !== 4) {
+    return 'An IPv4 address has four parts separated by dots — this has ' + parts.length + '.';
+  }
+  for (var i = 0; i < 4; i++) {
+    if (!/^\d+$/.test(parts[i])) {
+      return 'Part ' + (i + 1) + ' ("' + parts[i] + '") is not a number.';
+    }
+    if (+parts[i] > 255) {
+      return 'Part ' + (i + 1) + ' is ' + parts[i] + '. Each part must be 0 to 255.';
+    }
+    if (parts[i].length > 1 && parts[i][0] === '0') {
+      return 'Part ' + (i + 1) + ' has a leading zero. Some systems read "0" prefixes as octal, so write ' + (+parts[i]) + '.';
+    }
+  }
+  return null;
+}
+
+/* ---- history ----------------------------------------------------------
+   Addresses get checked repeatedly while chasing a problem. Keep the recent
+   ones with what was found, so you do not re-run the same lookup. */
+function iplPushHistory(ip, extra) {
+  if (!ip) return;
+  var hist = storeGet(IPL_K.hist, []);
+  if (!Array.isArray(hist)) hist = [];
+  hist = hist.filter(function (e) { return e.ip !== ip });
+  hist.unshift({ ip: ip, note: extra || '', at: Date.now() });
+  if (hist.length > 10) hist = hist.slice(0, 10);
+  storeSet(IPL_K.hist, hist, true);
+  iplRenderHistory();
+}
+
+function iplRenderHistory() {
+  var box = document.getElementById('iplHist');
+  if (!box) return;
+  var hist = storeGet(IPL_K.hist, []);
+  if (!Array.isArray(hist) || !hist.length) {
+    box.innerHTML = '<p class="info" style="font-size:.82rem">Addresses you look up are kept here so you can return to one without retyping it.</p>';
+    return;
+  }
+  box.innerHTML = hist.map(function (e, i) {
+    return '<div style="background:var(--card);border-radius:8px;padding:.4rem .6rem;margin:.25rem 0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">' +
+      '<code style="font-size:.82rem;flex:1;min-width:110px">' + esc(e.ip) + '</code>' +
+      (e.note ? '<span class="info" style="font-size:.75rem">' + esc(e.note) + '</span>' : '') +
+      '<button class="btn btn-outline" style="font-size:.75rem;padding:.25rem .55rem" onclick="iplUseHistory(' + i + ')">Look up</button>' +
+      '</div>';
+  }).join('') +
+    '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;margin-top:.3rem" onclick="iplClearHistory()">🗑️ Clear</button>';
+}
+
+function iplUseHistory(i) {
+  var hist = storeGet(IPL_K.hist, []);
+  var e = hist[i];
+  if (!e) return;
+  var inp = document.getElementById('ipInput');
+  if (inp) inp.value = e.ip;
+  iplTab('lookup');
+  lookupIP();
+}
+
+function iplClearHistory() {
+  storeDel(IPL_K.hist);
+  iplRenderHistory();
+  notify('Lookup history cleared.', 'info');
+}
+
+/* ---- export -----------------------------------------------------------
+   Someone diagnosing a network problem needs to put the findings in a ticket,
+   which means a file rather than a panel to screenshot. */
+function iplReport() {
+  var g = function (id) {
+    var el = document.getElementById(id);
+    return el ? (el.textContent || el.value || '').trim() : '';
+  };
+  var L = [];
+  L.push('IP and network report');
+  L.push('Generated ' + new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC');
+  L.push('');
+  var ip = g('rIP');
+  if (ip) {
+    L.push('Address lookup');
+    L.push('  IP:       ' + ip);
+    ['rCountry:Country', 'rRegion:Region', 'rCity:City', 'rISP:ISP',
+     'rTZ:Time zone', 'rLat:Latitude', 'rLon:Longitude'].forEach(function (pair) {
+      var bits = pair.split(':');
+      var v = g(bits[0]);
+      if (v) L.push('  ' + (bits[1] + ':').padEnd(10) + v);
+    });
+    L.push('');
+  }
+  var cidr = g('cidrOut');
+  if (cidr) { L.push('CIDR breakdown'); L.push('  ' + cidr.replace(/\s+/g, ' ')); L.push(''); }
+  var val = g('valOut');
+  if (val) { L.push('Validation'); L.push('  ' + val.replace(/\s+/g, ' ')); L.push(''); }
+  var bi = g('browserInfo');
+  if (bi) { L.push('Browser and device'); L.push('  ' + bi.replace(/\s+/g, ' ').slice(0, 600)); L.push(''); }
+  var hist = storeGet(IPL_K.hist, []);
+  if (Array.isArray(hist) && hist.length) {
+    L.push('Recent lookups');
+    hist.forEach(function (e) { L.push('  ' + e.ip + (e.note ? '  (' + e.note + ')' : '')) });
+  }
+  /* Browser and device details are filled in on page load, so counting lines
+     would always clear the guard and someone who had looked nothing up would
+     get a file containing only their own user agent. Require at least one
+     thing the user actually ran. */
+  var ranSomething = !!(ip || cidr || val || (Array.isArray(hist) && hist.length));
+  return ranSomething ? L.join('\n') : null;
+}
+
+function iplDownload() {
+  var txt = iplReport();
+  if (!txt) { notify('Run a lookup or a CIDR calculation first — there is nothing to export yet.', 'warn'); return }
+  download(new Blob([txt], { type: 'text/plain;charset=utf-8' }), 'ip-report.txt');
+  notify('Report downloaded.', 'ok');
+}
+
+function iplCopy() {
+  var txt = iplReport();
+  if (!txt) { notify('Run a lookup first — there is nothing to copy yet.', 'warn'); return }
+  copyNow(txt, 'Report copied — paste it into your ticket or notes.');
+}
+
+/* ---- wrap the lookup so it validates, records and persists ------------- */
+var _iplLookup = lookupIP;
+lookupIP = function () {
+  var inp = document.getElementById('ipInput');
+  var v = inp ? inp.value.trim() : '';
+  var why = iplExplain(v);
+  if (why) {
+    notify(why, 'warn');
+    if (typeof showError === 'function') showError(why);
+    return;
+  }
+  storeSet(IPL_K.last, v, true);
+  _iplLookup();
+  /* record once the result has arrived, with the country if we got one */
+  setTimeout(function () {
+    var c = document.getElementById('rCountry');
+    iplPushHistory(v, c ? (c.textContent || '').trim().slice(0, 28) : '');
+  }, 1800);
+};
+window.lookupIP = lookupIP;
+
+var _iplValidate = doValidate;
+doValidate = function () {
+  var el = document.getElementById('valIp');
+  var v = el ? el.value.trim() : '';
+  if (v) {
+    var why = iplExplain(v);
+    /* a validator SHOULD accept bad input — that is its job — but saying why
+       it failed is more useful than a bare "invalid" */
+    if (why) notify(why, 'info');
+  }
+  _iplValidate();
+};
+window.doValidate = doValidate;
+
+window.iplUseHistory = iplUseHistory;
+window.iplClearHistory = iplClearHistory;
+window.iplDownload = iplDownload;
+window.iplCopy = iplCopy;
+
+/* ---- keyboard ---------------------------------------------------------- */
+document.addEventListener('keydown', function (e) {
+  if (e.defaultPrevented) return;
+  if (e.key === 'Enter') {
+    var t = e.target;
+    if (t && t.id === 'ipInput') { e.preventDefault(); lookupIP(); return }
+    if (t && t.id === 'cidrIp') { e.preventDefault(); doCidr(); return }
+  }
+  var tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'm' || e.key === 'M') { e.preventDefault(); lookupMyIP() }
+  else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); iplDownload() }
+});
+
+(function iplInit() {
+  iplRenderHistory();
+  var last = storeGet(IPL_K.last, '');
+  var inp = document.getElementById('ipInput');
+  if (inp && typeof last === 'string' && last) inp.value = last;
+})();
+</script>
 </body>
 </html>

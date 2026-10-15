@@ -75,6 +75,8 @@
         </div>
         <div class="row" style="margin-top:.5rem"><button class="btn" onclick="analyze()">📊 Analyze Similarity</button><button class="btn btn-outline" onclick="clearSim()">🗑️ Clear</button></div>
         <div id="result" style="margin:1rem 0"></div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Comparison history</h2>
+      <div id="tcHist"></div>
       </div>
 
       <div id="panelFuzzy" style="display:none">
@@ -462,6 +464,132 @@ function downloadBatchCsv(){
   });
   download(new Blob([lines.join('\n')],{type:'text/csv'}),'batch-similarity.csv');
 }
-  </script>
+  
+/* ===== Keep the texts, remember comparisons, refuse empty input =====
+
+   Gaps: the two texts were lost on reload, which is painful when you have
+   pasted long passages; there was no record of comparisons already run; and
+   pressing Analyze with nothing entered did nothing visible, so the user could
+   not tell whether the tool was broken or simply had no input. */
+
+var TC_K = { last: 'tc_last', hist: 'tc_hist' };
+
+function tcSave() {
+  storeSet(TC_K.last, {
+    t1: (document.getElementById('t1') || {}).value || '',
+    t2: (document.getElementById('t2') || {}).value || '',
+    fzA: (document.getElementById('fzA') || {}).value || '',
+    fzB: (document.getElementById('fzB') || {}).value || '',
+    batchIn: (document.getElementById('batchIn') || {}).value || ''
+  }, true);
+}
+
+function tcRestore() {
+  var d = storeGet(TC_K.last, null);
+  if (!d) return;
+  ['t1', 't2', 'fzA', 'fzB', 'batchIn'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el && typeof d[id] === 'string') el.value = d[id];
+  });
+}
+
+/* ---- history ----------------------------------------------------------
+   Store the similarity and a short label rather than the full texts: two
+   long documents would fill local storage quickly, and the number is what
+   you come back for. */
+function tcPushHistory(pct, aLen, bLen) {
+  var hist = storeGet(TC_K.hist, []);
+  if (!Array.isArray(hist)) hist = [];
+  var a = (document.getElementById('t1') || {}).value || '';
+  var b = (document.getElementById('t2') || {}).value || '';
+  var label = (a.trim().split(/\s+/)[0] || '?').slice(0, 14) + ' vs ' +
+              (b.trim().split(/\s+/)[0] || '?').slice(0, 14);
+  hist.unshift({ label: label, pct: pct, aLen: aLen, bLen: bLen, at: Date.now() });
+  if (hist.length > 10) hist = hist.slice(0, 10);
+  storeSet(TC_K.hist, hist, true);
+  tcRenderHistory();
+}
+
+function tcEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function tcRenderHistory() {
+  var box = document.getElementById('tcHist');
+  if (!box) return;
+  var hist = storeGet(TC_K.hist, []);
+  if (!Array.isArray(hist) || !hist.length) {
+    box.innerHTML = '<p class="info" style="font-size:.82rem">Comparisons you run are listed here with their similarity, so you can see how a draft changed over several passes.</p>';
+    return;
+  }
+  box.innerHTML = hist.map(function (e) {
+    return '<div style="background:var(--card);border-radius:8px;padding:.4rem .6rem;margin:.25rem 0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">' +
+      '<span style="flex:1;min-width:120px;font-size:.82rem">' + tcEsc(e.label) + '</span>' +
+      '<strong style="font-size:.85rem">' + e.pct + '%</strong>' +
+      '<span class="info" style="font-size:.75rem">' + e.aLen + ' vs ' + e.bLen + ' chars</span>' +
+      '</div>';
+  }).join('') +
+    '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;margin-top:.3rem" onclick="tcClearHistory()">🗑️ Clear</button>';
+}
+
+function tcClearHistory() {
+  storeDel(TC_K.hist);
+  tcRenderHistory();
+  notify('Comparison history cleared.', 'info');
+}
+
+/* ---- wrap analyze so it validates, records and persists ---------------- */
+var _tcAnalyze = analyze;
+analyze = function () {
+  var a = (document.getElementById('t1') || {}).value || '';
+  var b = (document.getElementById('t2') || {}).value || '';
+  if (!a.trim() && !b.trim()) {
+    notify('Paste text into both boxes to compare them.', 'warn');
+    return;
+  }
+  if (!a.trim() || !b.trim()) {
+    notify('One box is empty, so the similarity will be 0%. Paste text into both to compare.', 'info');
+  }
+  if (a.trim() === b.trim()) {
+    notify('Both texts are identical.', 'info');
+  }
+  _tcAnalyze();
+  tcSave();
+  /* read the percentage the tool displayed, so history cannot disagree
+     with what was shown */
+  setTimeout(function () {
+    var res = document.getElementById('result');
+    if (!res) return;
+    var m = String(res.textContent || '').match(/([\d.]+)\s*%/);
+    if (m) tcPushHistory(Math.round(+m[1]), a.length, b.length);
+  }, 300);
+};
+window.analyze = analyze;
+
+window.tcClearHistory = tcClearHistory;
+
+/* ---- keyboard ---------------------------------------------------------- */
+document.addEventListener('keydown', function (e) {
+  if (e.defaultPrevented) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    analyze();
+    return;
+  }
+  var t = (e.target && e.target.tagName) || '';
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  if (e.key === 'a' || e.key === 'A') { e.preventDefault(); analyze() }
+});
+
+(function tcInit() {
+  tcRestore();
+  tcRenderHistory();
+  ['t1', 't2', 'fzA', 'fzB', 'batchIn'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', tcSave);
+  });
+})();
+</script>
 </body>
 </html>

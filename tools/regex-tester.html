@@ -76,6 +76,7 @@
 
       <!-- Error Display -->
       <div class="rx-error" id="rxError"></div>
+      <div id="rxWarn"></div>
 
       <!-- Tabs: Match | Replace | Patterns | Cheatsheet -->
       <div class="rx-tabs">
@@ -94,6 +95,8 @@
         <div class="rx-results" id="rxResults">
           <div class="rx-match-count" id="rxMatchCount">0 matches</div>
           <div id="rxMatchList"></div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Pattern history</h2>
+      <div id="rxHist"></div>
         </div>
       </div>
 
@@ -507,5 +510,214 @@ document.getElementById("text-replace").addEventListener("scroll", function() {
 });
 
 runTest();
-  </script>
+  
+/* ===== Keep the pattern, remember what worked, warn about real traps =====
+
+   Gaps this tool had: it lost your pattern and test string on reload, it kept
+   no record of patterns you had already got working, there was no shortcut to
+   re-run, and it reported a syntax error but said nothing about patterns that
+   are syntactically fine yet behave in a way that surprises people. */
+
+var RX_K = { last: 'rx_last', hist: 'rx_hist' };
+
+/* ---- persistence -------------------------------------------------------
+   Losing a pattern you spent ten minutes on because the tab reloaded is the
+   single most annoying thing this tool could do. */
+function rxSave() {
+  var flags = {};
+  ['g', 'i', 'm', 's', 'u', 'y'].forEach(function (f) {
+    var el = document.getElementById('flag-' + f);
+    if (el) flags[f] = !!el.checked;
+  });
+  /* storeSetRaw is for values that are already strings; these go through
+     storeSet because the whole object is being encoded. */
+  storeSet(RX_K.last, {
+    pattern: (document.getElementById('pattern') || {}).value || '',
+    text: (document.getElementById('text') || {}).value || '',
+    replacement: (document.getElementById('replacement') || {}).value || '',
+    flags: flags
+  }, true);
+}
+
+function rxRestore() {
+  var d = storeGet(RX_K.last, null);
+  if (!d) return;
+  var set = function (id, v) {
+    var el = document.getElementById(id);
+    if (el && typeof v === 'string') el.value = v;
+  };
+  set('pattern', d.pattern);
+  set('text', d.text);
+  set('replacement', d.replacement);
+  if (d.flags) {
+    Object.keys(d.flags).forEach(function (f) {
+      var el = document.getElementById('flag-' + f);
+      if (el) el.checked = !!d.flags[f];
+    });
+  }
+  if (typeof updateFlagDisplay === 'function') updateFlagDisplay();
+  if (typeof syncTextareas === 'function') syncTextareas();
+}
+
+/* ---- history -----------------------------------------------------------
+   Patterns are reused: the email one, the date one, the one that finally
+   handled the edge case. Keep the ones that actually matched something,
+   because a pattern that matched nothing is not worth returning to. */
+function rxPushHistory(pattern, flags, matchCount) {
+  if (!pattern || !matchCount) return;
+  var hist = storeGet(RX_K.hist, []);
+  if (!Array.isArray(hist)) hist = [];
+  hist = hist.filter(function (e) { return !(e.pattern === pattern && e.flags === flags) });
+  hist.unshift({ pattern: pattern, flags: flags, matches: matchCount });
+  if (hist.length > 10) hist = hist.slice(0, 10);
+  storeSet(RX_K.hist, hist, true);
+  rxRenderHistory();
+}
+
+function rxEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function rxRenderHistory() {
+  var box = document.getElementById('rxHist');
+  if (!box) return;
+  var hist = storeGet(RX_K.hist, []);
+  if (!Array.isArray(hist) || !hist.length) {
+    box.innerHTML = '<p class="info" style="font-size:.82rem">Patterns that matched something are kept here, so you can come back to one without rebuilding it.</p>';
+    return;
+  }
+  box.innerHTML = hist.map(function (e, i) {
+    var p = e.pattern.length > 32 ? e.pattern.slice(0, 32) + '…' : e.pattern;
+    return '<div style="background:var(--card);border-radius:8px;padding:.4rem .6rem;margin:.25rem 0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">' +
+      '<code style="font-size:.8rem;flex:1;min-width:120px;word-break:break-all">/' + rxEsc(p) + '/' + rxEsc(e.flags) + '</code>' +
+      '<span class="info" style="font-size:.75rem">' + e.matches + ' match' + (e.matches === 1 ? '' : 'es') + '</span>' +
+      '<button class="btn btn-outline" style="font-size:.75rem;padding:.25rem .55rem" onclick="rxUseHistory(' + i + ')">Load</button>' +
+      '</div>';
+  }).join('') +
+    '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;margin-top:.3rem" onclick="rxClearHistory()">🗑️ Clear history</button>';
+}
+
+function rxUseHistory(i) {
+  var hist = storeGet(RX_K.hist, []);
+  var e = hist[i];
+  if (!e) return;
+  document.getElementById('pattern').value = e.pattern;
+  ['g', 'i', 'm', 's', 'u', 'y'].forEach(function (f) {
+    var el = document.getElementById('flag-' + f);
+    if (el) el.checked = e.flags.indexOf(f) > -1;
+  });
+  if (typeof updateFlagDisplay === 'function') updateFlagDisplay();
+  runTest();
+  rxSave();
+  notify('Pattern loaded.', 'ok');
+}
+
+function rxClearHistory() {
+  storeDel(RX_K.hist);
+  rxRenderHistory();
+  notify('Pattern history cleared.', 'info');
+}
+
+/* ---- warnings about patterns that are legal but surprising -------------
+   The tool already reported syntax errors. These are the cases where the
+   pattern compiles fine and then does something the author did not intend,
+   which is far harder to debug from the result alone. */
+function rxWarnings(pattern, flags, text) {
+  var w = [];
+  /* A lone dot does not cross a newline unless the s flag is set — the most
+     common reason a multi-line test string matches less than expected. */
+  if (/[^\\]\./.test(pattern) && flags.indexOf('s') === -1 && /\n/.test(text || '')) {
+    w.push('Your text has line breaks and the dot does not match a newline without the s flag.');
+  }
+  /* ^ and $ anchor to the whole string unless m is set. */
+  if (/[\^\$]/.test(pattern) && flags.indexOf('m') === -1 && /\n/.test(text || '')) {
+    w.push('^ and $ match the start and end of the whole text, not each line, without the m flag.');
+  }
+  /* Without g, only the first match is found — and replace only replaces one. */
+  if (flags.indexOf('g') === -1) {
+    w.push('Without the g flag only the first match is returned, and replace changes just that one.');
+  }
+  /* Nested quantifiers are the classic catastrophic-backtracking shape. */
+  if (/\([^)]*[+*][^)]*\)[+*]/.test(pattern)) {
+    w.push('A repeated group containing + or * can backtrack catastrophically on input that nearly matches.');
+  }
+  /* An unescaped dot inside a character class is a literal, which trips people up. */
+  if (/\[[^\]]*\.[^\]]*\]/.test(pattern)) {
+    w.push('Inside [ ] a dot is a literal dot — it does not need escaping and does not mean "any character".');
+  }
+  /* u flag changes escape handling and makes some patterns throw. */
+  if (flags.indexOf('u') > -1 && /\\[pP]\{/.test(pattern) === false && /\\[dwsb]/.test(pattern)) {
+    w.push('With the u flag, \\d and \\w still match ASCII only — use Unicode property escapes like \\p{L} for other scripts.');
+  }
+  return w;
+}
+
+function rxShowWarnings(pattern, flags, text) {
+  var box = document.getElementById('rxWarn');
+  if (!box) return;
+  var w = (pattern ? rxWarnings(pattern, flags, text) : []);
+  if (!w.length) { box.innerHTML = ''; return }
+  box.innerHTML = '<div style="background:var(--card);border-left:4px solid var(--warn-fill);' +
+    'border-radius:8px;padding:.5rem .7rem;margin-top:.5rem">' +
+    '<strong style="font-size:.85rem">Worth checking</strong>' +
+    '<ul style="margin:.3rem 0 0;padding-left:1.1rem;font-size:.82rem;line-height:1.6">' +
+    w.map(function (x) { return '<li>' + x + '</li>' }).join('') +
+    '</ul></div>';
+}
+
+/* ---- wrap runTest so every run persists, records and warns ------------- */
+var _rxRun = runTest;
+runTest = function () {
+  _rxRun();
+  var pattern = (document.getElementById('pattern') || {}).value || '';
+  var flags = (typeof getFlags === 'function') ? getFlags() : '';
+  var text = (document.getElementById('text') || {}).value || '';
+  rxSave();
+  rxShowWarnings(pattern, flags, text);
+  /* only record a pattern that actually matched, read from the tool's own
+     count element so the history cannot disagree with what was displayed */
+  var cnt = document.getElementById('rxMatchCount');
+  var n = 0;
+  if (cnt) {
+    var m = String(cnt.textContent || '').match(/(\d+)/);
+    if (m) n = +m[1];
+  }
+  if (n > 0) rxPushHistory(pattern, flags, n);
+};
+window.runTest = runTest;
+
+window.rxUseHistory = rxUseHistory;
+window.rxClearHistory = rxClearHistory;
+
+/* ---- keyboard ---------------------------------------------------------- */
+document.addEventListener('keydown', function (e) {
+  if (e.defaultPrevented) return;
+  /* Ctrl/Cmd+Enter runs from inside a field, which is where you are typing */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    runTest();
+    notify('Pattern re-run.', 'ok');
+    return;
+  }
+  var t = (e.target && e.target.tagName) || '';
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  if (e.key === 'r' || e.key === 'R') { e.preventDefault(); runTest() }
+});
+
+(function rxInit() {
+  rxRestore();
+  rxRenderHistory();
+  ['pattern', 'text', 'replacement'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', rxSave);
+  });
+  ['g', 'i', 'm', 's', 'u', 'y'].forEach(function (f) {
+    var el = document.getElementById('flag-' + f);
+    if (el) el.addEventListener('change', rxSave);
+  });
+  var d = storeGet(RX_K.last, null);
+  if (d && d.pattern) runTest();
+})();
+</script>
 </body></html>

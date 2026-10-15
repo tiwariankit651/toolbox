@@ -49,7 +49,7 @@
       <div id="batchOut" style="overflow-x:auto;margin-top:.5rem"></div>
 
       <h3 style="margin:1.2rem 0 .5rem" role="heading" aria-level="2">Save & Export</h3>
-      <div class="row" style="gap:.4rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="savePair()" style="font-size:.8rem">💾 Save pair</button><button class="btn btn-outline" onclick="exportResults()" style="font-size:.8rem">📋 Export as text</button><button class="btn btn-outline" onclick="clearPairs()" style="font-size:.8rem">🗑 Clear saved</button></div>
+      <div class="row" style="gap:.4rem;flex-wrap:wrap"><button class="btn btn-outline" onclick="savePair()" style="font-size:.8rem">💾 Save pair</button><button class="btn btn-outline" onclick="exportResults()" style="font-size:.8rem">📋 Export as text</button><button class="btn btn-outline" onclick="ccDownloadReport()" style="font-size:.85rem">⬇️ Download report</button><button class="btn btn-outline" onclick="ccDownloadCsv()" style="font-size:.85rem">📊 CSV</button><button class="btn btn-outline" onclick="clearPairs()" style="font-size:.8rem">🗑 Clear saved</button></div>
       <div id="savedPairs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem"></div>
       <div class="result-box" style="margin-top:.5rem;display:none" id="exportBox"><button class="copy-btn" onclick="copyExportText(this)">Copy</button><pre id="exportText" style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:inherit"></pre></div>
 
@@ -62,6 +62,55 @@
         <p><strong>Non-text UI components &amp; graphics:</strong> Minimum ratio 3:1</p>
       </div>
     </div>
+    
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>What a contrast ratio actually measures</h2>
+      <p>The number is a ratio of <em>relative luminance</em> — how much light each colour reflects — not a difference in hue. It runs from 1:1, where the two colours are identical, to 21:1 for pure black on pure white. Nothing can exceed 21:1.</p>
+      <p>Because it ignores hue, two colours can look very different and still fail. Red text on a green background is a classic example: the colours are opposite, the luminance is similar, and the ratio can fall below 3:1. Conversely, two shades of the same blue can pass easily if one is much darker than the other.</p>
+      <p>This is also why a colour-blind simulation is a separate check. Contrast tells you whether there is enough light difference; simulation tells you whether the hue difference survives for someone who does not distinguish those hues. A design can pass one and fail the other.</p>
+
+      <h2>The thresholds, and why they differ</h2>
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Requirement</th><th style="padding:.5rem;text-align:left">Ratio</th><th style="padding:.5rem;text-align:left">Applies to</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">AA normal text</td><td style="padding:.5rem">4.5:1</td><td style="padding:.5rem">Body copy, labels, most interface text</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">AA large text</td><td style="padding:.5rem">3:1</td><td style="padding:.5rem">24px and above, or 18.66px bold</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">AAA normal text</td><td style="padding:.5rem">7:1</td><td style="padding:.5rem">Enhanced level, often required in government work</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">AAA large text</td><td style="padding:.5rem">4.5:1</td><td style="padding:.5rem">Headings at the enhanced level</td></tr>
+        <tr><td style="padding:.5rem">Non-text contrast</td><td style="padding:.5rem">3:1</td><td style="padding:.5rem">Input borders, icons, focus rings, chart lines</td></tr>
+      </table>
+      <p>Large text gets a lower threshold because thicker strokes stay legible with less luminance difference. The cut-off is a real boundary: 23px regular text needs 4.5:1, 24px needs only 3:1, so one pixel of font size can change whether a colour passes.</p>
+
+      <h2>The mistake that defeats most checks</h2>
+      <p>People test text against the colour they <em>think</em> is behind it, rather than the colour actually painted there. Two things break that assumption:</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Translucency.</strong> A panel at 10% white over a dark page is not white — it is a blend. Testing the text against pure white gives a number that has nothing to do with what is on screen.</li>
+        <li><strong>Stacking.</strong> A badge inside a card inside a section may have three translucent layers between the text and the page background. The effective colour is all of them composited, in order.</li>
+      </ul>
+      <p>The same trap applies to gradients. A button filled with a gradient has no single background colour, so the honest test is against its <em>darkest</em> stop when the text is light — because that stop is where the ratio is worst and where the text will be hardest to read.</p>
+
+      <h2>Fills and text need different colours</h2>
+      <p>A colour chosen to be readable <em>as text</em> on a dark background is light. Use that same colour as a <em>fill</em> behind white text and the requirement inverts — now it needs to be dark. This is the most common reason a status colour that reads fine in one place becomes unreadable in another.</p>
+      <p>In practice you want two variants of each semantic colour: one tuned as text against your background, one tuned as a fill with light text on top. Trying to make a single value serve both roles usually produces a colour that is mediocre at each.</p>
+
+      <h2>What a ratio does not tell you</h2>
+      <p>Passing 4.5:1 is a floor, not a design goal. Several things matter that the number cannot see:</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Font weight.</strong> A thin 300-weight face at 4.5:1 is harder to read than a 500-weight at the same ratio, because there is less ink.</li>
+        <li><strong>Size.</strong> The threshold drops at 24px, but 12px at 4.6:1 is still uncomfortable for sustained reading.</li>
+        <li><strong>Surrounding light.</strong> A phone in sunlight loses effective contrast; a dim room makes bright text glare.</li>
+        <li><strong>Meaning carried by colour alone.</strong> A red field with no icon or message fails for a colour-blind user regardless of its ratio.</li>
+      </ul>
+
+      <h2>Fixing a failure without redesigning</h2>
+      <p>When a pair fails, you usually have more room than you think:</p>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Darken or lighten one side only.</strong> Moving both toward the middle reduces the ratio; moving one away from the other increases it.</li>
+        <li><strong>Keep the hue, change the lightness.</strong> This preserves the brand feel while fixing the number, which is usually an easier conversation than changing the colour.</li>
+        <li><strong>Give the text its own surface.</strong> A message on a solid panel is independent of whatever is behind the panel, so it cannot be broken by a later change elsewhere.</li>
+        <li><strong>Raise the size or weight.</strong> If the text can legitimately be 24px or bold, the threshold drops to 3:1 and a colour that failed may now pass.</li>
+      </ol>
+    </div>
+
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Set text color:</strong> Text readable hai ya nahi? Pehle apna foreground (text) color enter karo</li>
@@ -222,7 +271,7 @@ function runBatch(){var lines=document.getElementById("batchInput").value.split(
 /* ===== Save / export ===== */
 function getPairs(){try{return storeGet("ccPairs", [])}catch(e){return[]}}
 function savePair(){var fg=getFg(),bg=getBg();if(!fg||!bg)return;var p=getPairs();var entry={fg:rgbToHex(fg.r,fg.g,fg.b),bg:rgbToHex(bg.r,bg.g,bg.b)};if(!p.some(function(x){return x.fg===entry.fg&&x.bg===entry.bg})){p.unshift(entry);p=p.slice(0,30);storeSet("ccPairs", p)}renderPairs()}
-function clearPairs(){localStorage.removeItem("ccPairs");renderPairs()}
+function clearPairs(){storeDel("ccPairs");renderPairs();notify("Saved pairs cleared.","info")}
 function renderPairs(){document.getElementById("savedPairs").innerHTML=getPairs().map(function(p){return'<div onclick="applyPair(\''+p.fg+'\',\''+p.bg+'\')" title="'+p.fg+' on '+p.bg+'" style="cursor:pointer;background:'+p.bg+';color:'+p.fg+';padding:.4rem .7rem;border-radius:8px;font-size:.75rem;border:1px solid rgba(128,128,128,.3)">Aa</div>'}).join("")||'<span class="info">No saved pairs.</span>'}
 function exportResults(){var fg=getFg(),bg=getBg();var r=contrastRatio(fg,bg);var fh=rgbToHex(fg.r,fg.g,fg.b),bh=rgbToHex(bg.r,bg.g,bg.b);var lc=apcaLc(fg,bg);
   var txt="Contrast Report\n================\nForeground: "+fh+"\nBackground: "+bh+"\nWCAG 2 ratio: "+r.toFixed(2)+":1\n\nAA Normal (4.5): "+(r>=4.5?"PASS":"FAIL")+"\nAA Large (3.0): "+(r>=3?"PASS":"FAIL")+"\nAAA Normal (7.0): "+(r>=7?"PASS":"FAIL")+"\nAAA Large (4.5): "+(r>=4.5?"PASS":"FAIL")+"\nUI Components (3.0): "+(r>=3?"PASS":"FAIL")+"\n\nAPCA Lc (draft): "+lc.toFixed(1);
@@ -231,6 +280,161 @@ function copyExportText(btn){copyText(document.getElementById("exportText").text
 
 renderPairs();
 check();
-  </script>
+  
+/* ===== Download the report, remember the last pair, explain bad input =====
+
+   Three gaps: the export only filled a textbox to copy from, the tool forgot
+   which colours you were working on, and a value that is not a colour was
+   silently ignored so you could not tell a typo from a colour that happens to
+   look similar. */
+
+var CC_K = { last: 'cc_last' };
+
+/* ---- validation -------------------------------------------------------
+   #12345 and #gg0000 are both not colours, but the old behaviour was the
+   same as typing nothing: the preview simply did not update. Say which one
+   is wrong and what form is expected. */
+function ccValidHex(v) {
+  return /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(v).trim());
+}
+
+function ccCheckHexField(id, label) {
+  var el = document.getElementById(id);
+  if (!el) return true;
+  var v = String(el.value || '').trim();
+  if (!v) return true;                       /* empty is mid-typing */
+  if (ccValidHex(v)) return true;
+  /* only complain once the entry is long enough to be a finished attempt */
+  if (v.replace('#', '').length >= 3) {
+    notify('"' + v + '" is not a colour. Use three or six hex digits, like #1a2b3c.', 'warn');
+  }
+  return false;
+}
+
+/* ---- download the report ----------------------------------------------
+   exportResults() filled a box to copy from, which works until you want to
+   attach the result to a ticket or keep it with a design file. */
+function ccReportText() {
+  var fg = getFg(), bg = getBg();
+  if (!fg || !bg) return null;
+  var r = contrastRatio(fg, bg);
+  var fh = rgbToHex(fg.r, fg.g, fg.b), bh = rgbToHex(bg.r, bg.g, bg.b);
+  var L = [];
+  L.push('Colour contrast report');
+  L.push('Generated ' + new Date().toISOString().slice(0, 10));
+  L.push('');
+  L.push('Foreground: ' + fh);
+  L.push('Background: ' + bh);
+  L.push('Contrast ratio: ' + r.toFixed(2) + ':1');
+  L.push('');
+  L.push('WCAG 2.1');
+  L.push('  AA  normal text (4.5:1)  ' + (r >= 4.5 ? 'PASS' : 'FAIL'));
+  L.push('  AA  large text  (3:1)    ' + (r >= 3 ? 'PASS' : 'FAIL'));
+  L.push('  AAA normal text (7:1)    ' + (r >= 7 ? 'PASS' : 'FAIL'));
+  L.push('  AAA large text  (4.5:1)  ' + (r >= 4.5 ? 'PASS' : 'FAIL'));
+  L.push('  UI components   (3:1)    ' + (r >= 3 ? 'PASS' : 'FAIL'));
+  L.push('');
+  L.push('Large text means 24px, or 18.66px when bold.');
+  var pairs = getPairs();
+  if (pairs && pairs.length) {
+    L.push('');
+    L.push('Saved pairs');
+    pairs.forEach(function (p) {
+      L.push('  ' + p.fg + ' on ' + p.bg + '  ' + (+p.ratio).toFixed(2) + ':1');
+    });
+  }
+  return L.join('\n');
+}
+
+function ccDownloadReport() {
+  var txt = ccReportText();
+  if (!txt) { notify('Pick a foreground and background colour first.', 'warn'); return }
+  download(new Blob([txt], { type: 'text/plain;charset=utf-8' }), 'contrast-report.txt');
+  notify('Report downloaded.', 'ok');
+}
+
+function ccDownloadCsv() {
+  var pairs = getPairs();
+  var fg = getFg(), bg = getBg();
+  if ((!pairs || !pairs.length) && (!fg || !bg)) {
+    notify('Nothing to export yet — check a pair or save a few first.', 'warn');
+    return;
+  }
+  /* BOM so Excel does not mangle the output */
+  var out = '\uFEFF';
+  out += 'Foreground,Background,Ratio,AA normal,AA large,AAA normal,UI components\n';
+  var row = function (fh, bh, r) {
+    return fh + ',' + bh + ',' + r.toFixed(2) + ',' +
+      (r >= 4.5 ? 'pass' : 'fail') + ',' + (r >= 3 ? 'pass' : 'fail') + ',' +
+      (r >= 7 ? 'pass' : 'fail') + ',' + (r >= 3 ? 'pass' : 'fail') + '\n';
+  };
+  if (fg && bg) out += row(rgbToHex(fg.r, fg.g, fg.b), rgbToHex(bg.r, bg.g, bg.b),
+                           contrastRatio(fg, bg));
+  (pairs || []).forEach(function (p) { out += row(p.fg, p.bg, +p.ratio) });
+  download(new Blob([out], { type: 'text/csv;charset=utf-8' }), 'contrast-report.csv');
+  notify('CSV downloaded with ' + ((pairs || []).length + (fg && bg ? 1 : 0)) + ' row(s).', 'ok');
+}
+
+/* ---- persistence ------------------------------------------------------- */
+function ccSaveLast() {
+  var fgEl = document.getElementById('fgHex'), bgEl = document.getElementById('bgHex');
+  storeSet(CC_K.last, {
+    fg: fgEl ? fgEl.value : '', bg: bgEl ? bgEl.value : '',
+    cvd: (document.getElementById('cvd') || {}).value || '',
+    apca: !!(document.getElementById('apca') || {}).checked
+  }, true);
+}
+
+function ccRestoreLast() {
+  var d = storeGet(CC_K.last, null);
+  if (!d) return;
+  var apply = function (hexId, colorId, v) {
+    if (!v || !ccValidHex(v)) return;
+    var h = document.getElementById(hexId), col = document.getElementById(colorId);
+    if (h) h.value = v;
+    if (col) col.value = v.length === 4
+      ? '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3]
+      : (v[0] === '#' ? v : '#' + v);
+  };
+  apply('fgHex', 'fg', d.fg);
+  apply('bgHex', 'bg', d.bg);
+  /* an unlisted value silently blanks a select, so verify it first */
+  if (d.cvd) {
+    var sel = document.getElementById('cvd');
+    if (sel) {
+      var opts = [].map.call(sel.options, function (o) { return o.value });
+      if (opts.indexOf(d.cvd) > -1) sel.value = d.cvd;
+    }
+  }
+  if (d.apca && document.getElementById('apca')) document.getElementById('apca').checked = true;
+}
+
+/* ---- keyboard ---------------------------------------------------------- */
+document.addEventListener('keydown', function (e) {
+  if (e.defaultPrevented) return;
+  var t = (e.target && e.target.tagName) || '';
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  if (e.key === 's' || e.key === 'S') { e.preventDefault(); swap() }
+  else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); ccDownloadReport() }
+});
+
+window.ccDownloadReport = ccDownloadReport;
+window.ccDownloadCsv = ccDownloadCsv;
+
+(function ccInit() {
+  ccRestoreLast();
+  ['fgHex', 'bgHex'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('blur', function () { ccCheckHexField(id, id === 'fgHex' ? 'foreground' : 'background') });
+    el.addEventListener('input', ccSaveLast);
+  });
+  ['fg', 'bg', 'cvd', 'apca'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', ccSaveLast);
+  });
+  if (typeof update === 'function') update();
+})();
+</script>
 </body>
 </html>

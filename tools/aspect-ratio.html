@@ -59,6 +59,8 @@
           <label style="flex:0">Height (px):</label><input type="number" id="h" value="1080" oninput="calcFromH()">
         </div>
         <div id="result" class="ar-result"></div>
+      <h2 style="font-size:1rem;margin-top:1.2rem">Recent sizes</h2>
+      <div id="arHist" style="margin-top:.4rem"></div>
 
         <div class="ar-preview-wrap" id="previewWrap"></div>
         <div class="row"><label style="flex:0;white-space:nowrap"><input type="checkbox" id="cmpToggle" style="width:auto" onchange="toggleCompare()"> Compare with</label>
@@ -108,6 +110,46 @@
         <div id="cropResult" class="ar-result"></div>
       </div>
     </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>Why a ratio matters more than the pixel size</h2>
+      <p>Two images at 1920×1080 and 1280×720 are different sizes but the same shape. Both are 16:9, so both fill a widescreen frame edge to edge with nothing cropped and no bars added. Change one number and the shape changes: 1920×1200 is 16:10, which looks almost identical in a list of dimensions but will be letterboxed or trimmed wherever 16:9 is expected.</p>
+      <p>This is why upload rules are usually stated as a ratio rather than a size. A platform does not care whether your thumbnail is 1280 or 1920 wide — it will scale it. It cares about the shape, because that is what it cannot fix without cutting something off.</p>
+
+      <h2>What actually happens when the ratio is wrong</h2>
+      <p>A service has three choices when the shape does not match, and each one costs you something:</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Crop</strong> — the image is scaled until it covers the frame and the overflow is cut. Centre crops are the norm, so anything near an edge is at risk. This is how a headline gets its top sliced off or a logo loses a corner.</li>
+        <li><strong>Letterbox or pillarbox</strong> — the whole image is kept and bars are added. Nothing is lost, but the image is smaller than it could be and the bars look like a mistake.</li>
+        <li><strong>Stretch</strong> — rare now, but some older systems still distort rather than crop. Circles become ovals and text looks subtly wrong in a way that is hard to name.</li>
+      </ul>
+      <p>You cannot control which one a platform picks. You can control the shape you hand it, which removes the decision.</p>
+
+      <h2>Safe areas: the part of the frame you can rely on</h2>
+      <p>Even at the correct ratio, not all of the frame is reliably visible. A video thumbnail has a duration badge in one corner. A profile banner is cropped differently on a phone than on a desktop. A document preview may round the corners.</p>
+      <p>The practical rule is to keep anything essential — faces, text, logos — inside the central area and treat the outer margin as decorative. If your composition only works when every pixel survives, it will break on the first platform that crops.</p>
+
+      <h2>Common ratios and where they come from</h2>
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Ratio</th><th style="padding:.5rem;text-align:left">Typical use</th><th style="padding:.5rem;text-align:left">Why</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">16:9</td><td style="padding:.5rem">Video, thumbnails, presentations</td><td style="padding:.5rem">The broadcast and monitor standard, so it fills screens without bars</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">1:1</td><td style="padding:.5rem">Profile pictures, grid posts</td><td style="padding:.5rem">Looks the same whichever way a layout flows</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">4:5</td><td style="padding:.5rem">Portrait feed posts</td><td style="padding:.5rem">The tallest shape most feeds allow before cropping</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">9:16</td><td style="padding:.5rem">Stories, reels, shorts</td><td style="padding:.5rem">A phone held upright, full screen</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">3:2</td><td style="padding:.5rem">Photography</td><td style="padding:.5rem">Inherited from 35mm film, still the default on most cameras</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">4:3</td><td style="padding:.5rem">Older screens, some documents</td><td style="padding:.5rem">The pre-widescreen standard; still common in scanned material</td></tr>
+        <tr><td style="padding:.5rem">A4 (≈1:1.414)</td><td style="padding:.5rem">Print and documents</td><td style="padding:.5rem">Halving an A-series sheet keeps the same shape, which is the point of the system</td></tr>
+      </table>
+
+      <h2>Scaling without losing the shape</h2>
+      <p>To resize while keeping the ratio, you only ever need one new number. Multiply the other by the same factor: to take 1920×1080 down to 800 wide, the factor is 800 ÷ 1920 ≈ 0.4167, so the height becomes 1080 × 0.4167 ≈ 450. The Scale tab does this both ways, by target dimension or by percentage.</p>
+      <p>Rounding is where it goes wrong. 0.4167 × 1080 is 450.0 here, but many factors produce a fraction, and a pixel cannot be fractional. Rounding one side and not the other shifts the ratio very slightly — usually invisible, occasionally enough to trigger a crop on a strict uploader. Rounding both sides in the same direction keeps you closer to the original shape.</p>
+
+      <h2>Enlarging is not the same as reducing</h2>
+      <p>Making an image smaller discards information, which is safe. Making it larger has to invent information, which is not. A 400×300 image scaled to 1600×1200 has four times the pixels and no extra detail, so it looks soft. The ratio is still correct — the sharpness is not.</p>
+      <p>If you need a large image, start from a large original. The arithmetic here will give you the right shape at any size, but it cannot add detail that was never captured.</p>
+    </div>
+
     <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Video crop karna hai? Image resize karna hai? Aspect ratio calculate karo — YouTube ke liye 16:9, Instagram ke liye 1:1, sab preset available hai.</p>
 <ol style="margin-left:1.5rem;line-height:2">
@@ -229,11 +271,15 @@ function onRatio(){
   calc();
 }
 function calcFromW(){
+  /* Refuse before the locked-ratio recompute turns a negative width into a
+     plausible-looking pair that would then be recorded in history. */
+  if(+$('w').value<0){calc();return;}
   if($('lockRatio').checked){var rw=+$('rw').value,rh=+$('rh').value,w=+$('w').value;if(rw&&rh&&w)$('h').value=Math.round(w*rh/rw);}
   else updateRatioFromDims();
   calc();
 }
 function calcFromH(){
+  if(+$('h').value<0){calc();return;}
   if($('lockRatio').checked){var rw=+$('rw').value,rh=+$('rh').value,h=+$('h').value;if(rw&&rh&&h)$('w').value=Math.round(h*rw/rh);}
   else updateRatioFromDims();
   calc();
@@ -358,6 +404,179 @@ calc();
 doScale();
 doCrop();
 window.addEventListener('resize',function(){calc();});
-  </script>
+  
+/* ===== Remember work, keep a history, and refuse impossible input =====
+
+   Three gaps this tool had: it forgot everything on reload, it kept no record
+   of sizes you had already worked out, and it accepted values that cannot be
+   a pixel dimension without saying why. */
+
+var AR_K = { last: 'ar_last', hist: 'ar_hist' };
+
+/* ---- validation -------------------------------------------------------
+   A dimension has to be a positive whole number. Previously a negative or a
+   fractional value simply produced a nonsense ratio, and zero produced the
+   same "Enter width and height" message as an empty box — so the user could
+   not tell the difference between not having typed anything and having typed
+   something impossible. */
+function arValidate(w, h, label) {
+  if (w === 0 && h === 0) return null;            /* nothing entered yet */
+  if (w < 0 || h < 0) {
+    notify('A ' + label + ' cannot be negative. Use positive pixel values.', 'warn');
+    return 'negative';
+  }
+  if ((w && !Number.isInteger(w)) || (h && !Number.isInteger(h))) {
+    notify('Pixel dimensions are whole numbers — ' +
+           (Number.isInteger(w) ? h : w) + ' was rounded.', 'info');
+    return 'fractional';
+  }
+  if (w > 100000 || h > 100000) {
+    notify('That is larger than any real image. Check the value.', 'warn');
+    return 'huge';
+  }
+  if ((w && !h) || (h && !w)) return 'partial';   /* mid-typing, stay quiet */
+  return null;
+}
+
+/* ---- persistence ------------------------------------------------------- */
+function arSave() {
+  storeSet(AR_K.last, {
+    w: $('w').value, h: $('h').value,
+    cw: $('cw').value, ch: $('ch').value,
+    cmp: $('cmpToggle').checked,
+    sOrigW: $('sOrigW').value, sOrigH: $('sOrigH').value,
+    scaleMode: $('scaleMode').value, scaleVal: $('scaleVal').value,
+    cropW: $('cropW').value, cropH: $('cropH').value,
+    cropRW: $('cropRW').value, cropRH: $('cropRH').value,
+    tab: ['calc', 'scale', 'crop'].filter(function (k) {
+      return $('panel' + k.charAt(0).toUpperCase() + k.slice(1)).classList.contains('active');
+    })[0] || 'calc'
+  }, true);
+}
+
+function arRestore() {
+  var d = storeGet(AR_K.last, null);
+  if (!d) return;
+  var set = function (id, v) { if (v !== undefined && v !== null && $(id)) $(id).value = v };
+  set('w', d.w); set('h', d.h); set('cw', d.cw); set('ch', d.ch);
+  set('sOrigW', d.sOrigW); set('sOrigH', d.sOrigH); set('scaleVal', d.scaleVal);
+  set('cropW', d.cropW); set('cropH', d.cropH);
+  set('cropRW', d.cropRW); set('cropRH', d.cropRH);
+  if (d.cmp && $('cmpToggle')) $('cmpToggle').checked = !!d.cmp;
+  /* Assigning an unlisted value to a select silently blanks it, so check the
+     saved value is still one of the options before using it. */
+  if (d.scaleMode && $('scaleMode')) {
+    var opts = [].map.call($('scaleMode').options, function (o) { return o.value });
+    if (opts.indexOf(d.scaleMode) > -1) $('scaleMode').value = d.scaleMode;
+  }
+  if (d.tab && ['calc', 'scale', 'crop'].indexOf(d.tab) > -1) setTab(d.tab);
+}
+
+/* ---- history ----------------------------------------------------------
+   Sizes get worked out repeatedly — the same thumbnail, the same banner. A
+   short list of what was already calculated saves retyping, and it stores the
+   ratio alongside so the entry is recognisable without re-running it. */
+function arPushHistory(w, h) {
+  if (!w || !h) return;
+  var hist = storeGet(AR_K.hist, []);
+  if (!Array.isArray(hist)) hist = [];
+  var ratio = simplifyRatio(w, h);
+  var label = w + '×' + h;
+  /* move an existing entry to the front rather than duplicating it */
+  hist = hist.filter(function (e) { return e.label !== label });
+  hist.unshift({ label: label, ratio: ratio, w: w, h: h });
+  if (hist.length > 12) hist = hist.slice(0, 12);
+  storeSet(AR_K.hist, hist, true);
+  arRenderHistory();
+}
+
+function arRenderHistory() {
+  var box = $('arHist');
+  if (!box) return;
+  var hist = storeGet(AR_K.hist, []);
+  if (!Array.isArray(hist) || !hist.length) {
+    box.innerHTML = '<p class="info" style="font-size:.82rem">Sizes you calculate appear here so you can return to them without retyping.</p>';
+    return;
+  }
+  box.innerHTML = hist.map(function (e, i) {
+    return '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;margin:.15rem" ' +
+      'onclick="arUseHistory(' + i + ')">' + e.label +
+      ' <span style="opacity:.7">(' + e.ratio + ')</span></button>';
+  }).join('') +
+    '<button class="btn btn-outline" style="font-size:.78rem;padding:.3rem .6rem;margin:.15rem" ' +
+    'onclick="arClearHistory()">🗑️ Clear</button>';
+}
+
+function arUseHistory(i) {
+  var hist = storeGet(AR_K.hist, []);
+  var e = hist[i];
+  if (!e) return;
+  $('w').value = e.w;
+  $('h').value = e.h;
+  setTab('calc');
+  calc();
+  arSave();
+  notify('Loaded ' + e.label + ' (' + e.ratio + ').', 'ok');
+}
+
+function arClearHistory() {
+  storeDel(AR_K.hist);
+  arRenderHistory();
+  notify('History cleared.', 'info');
+}
+
+/* ---- wrap calc so every path validates, saves and records -------------- */
+var _arCalc = calc;
+calc = function () {
+  var w = +$('w').value, h = +$('h').value;
+  var problem = arValidate(w, h, 'dimension');
+  if (problem === 'negative' || problem === 'huge') {
+    $('result').innerHTML = '<span class="info">Enter positive pixel dimensions.</span>';
+    drawPreview(0, 0);
+    return;
+  }
+  if (problem === 'fractional') {
+    $('w').value = w = Math.round(w);
+    $('h').value = h = Math.round(h);
+  }
+  _arCalc();
+  arSave();
+  /* Every keystroke reaches here, so recording immediately captures
+     half-typed pairs — typing 1920 then 1080 would store 1920x50 and
+     1280x1080 as well. Wait until editing stops before keeping one. */
+  if (w && h) {
+    clearTimeout(window._arHistTimer);
+    window._arHistTimer = setTimeout(function () {
+      var cw = +$('w').value, chh = +$('h').value;
+      /* re-read at fire time: if the values moved on, this pair was transient */
+      if (cw === w && chh === h) arPushHistory(w, h);
+    }, 900);
+  }
+};
+window.calc = calc;
+
+window.arUseHistory = arUseHistory;
+window.arClearHistory = arClearHistory;
+window.arSave = arSave;
+
+/* keep the other panels persisted too */
+['cw', 'ch', 'sOrigW', 'sOrigH', 'scaleVal', 'cropW', 'cropH', 'cropRW', 'cropRH']
+  .forEach(function (id) {
+    var el = $(id);
+    if (el) el.addEventListener('input', arSave);
+  });
+['scaleMode'].forEach(function (id) {
+  var el = $(id);
+  if (el) el.addEventListener('change', arSave);
+});
+if ($('cmpToggle')) $('cmpToggle').addEventListener('change', arSave);
+
+(function arInit() {
+  arRestore();
+  arRenderHistory();
+  var d = storeGet(AR_K.last, null);
+  if (d && d.w && d.h) calc();
+})();
+</script>
 </body>
 </html>
