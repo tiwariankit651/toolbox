@@ -16,7 +16,80 @@
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Color Extractor</div>
-    <div class="tool-section" style="line-height:1.8"><h1>🎨 Extract Dominant Colors from Any Image</h1><p class="info">April 2026 · 3 min read</p><p>Need to create a color scheme based on a photo? Our <a href='../tools/color-extractor' style='color:var(--accent-text)'>Color Extractor</a> analyzes any image and gives you the dominant colors with HEX codes.</p><h2>Use Cases</h2><ul style='margin-left:1.5rem'><li><strong>Web design</strong> — match website colors to a brand photo</li><li><strong>Presentations</strong> — create slides that match an image theme</li><li><strong>Social media</strong> — consistent color palette for posts</li><li><strong>Interior design</strong> — find paint colors from inspiration photos</li></ul><h2>How It Works</h2><p>Upload any image. The tool samples pixels, groups similar colors, and shows the top 8 dominant colors. Click any color to copy its HEX code.</p>
+    <div class="tool-section" style="line-height:1.8"><h1>🎨 Extract Dominant Colors from Any Image</h1><p class="info">October 2026 · 9 min read</p>
+<p>Pulling a palette out of a photograph is a common first step in design work, and the results are often disappointing for a reason that is not obvious: the colours that dominate an image by area are rarely the colours that make it feel the way it does.</p>
+
+      <h2>What a colour extractor actually computes</h2>
+
+      <p>Most tools cluster the pixels. They sample the image, group similar colours together, and report the centre of each group ordered by how many pixels it contains. The usual algorithm is k-means or a variant, and the number of clusters is the palette size you asked for.</p>
+
+      <p>That produces the colours occupying the most <em>area</em>. In a photograph of a sunset, that is probably the sky and the sea. The orange that makes it a sunset might be 4% of the pixels and not appear in a five-colour palette at all.</p>
+
+      <p>Knowing this changes how you read the output: it is a description of the image's bulk, not of its character.</p>
+
+      <h2>Dominant, average and accent are three different things</h2>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Dominant</strong> — the largest cluster. Usually a background, often a muted one.</li>
+        <li><strong>Average</strong> — the mean of every pixel. Almost always a muddy brown or grey, because averaging opposing hues cancels them. Rarely useful and frequently what a naive tool reports.</li>
+        <li><strong>Accent</strong> — a small, highly saturated region that carries the image's identity. The thing you actually wanted, and the thing area-based extraction discards.</li>
+      </ul>
+
+      <p>If an extracted palette looks lifeless, this is why. The fix is to extract from a crop containing the accent, rather than from the whole frame.</p>
+
+      <h2>Why extracted palettes often fail a contrast check</h2>
+
+      <p>Colours taken from a photograph are frequently close in luminance, because natural light tends to produce a related range. Two of them side by side look harmonious and fail as text on background.</p>
+
+      <p>This catches people who build a site palette from a mood image: the colours work as a set of shapes and fail the moment one is text on another. A palette for interface use needs a deliberate luminance spread — something very dark, something very light — which a photograph may not contain at all.</p>
+
+      <p>The practical step is to check every pair you intend to use as text-on-background before committing, and to add a near-black and a near-white yourself if the image does not provide them.</p>
+
+      <h2>Hex, RGB, HSL — which to use when</h2>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Format</th><th style="padding:.5rem;text-align:left">Looks like</th><th style="padding:.5rem;text-align:left">Use it when</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Hex</td><td style="padding:.5rem">#4338ca</td><td style="padding:.5rem">Pasting into CSS or a design tool</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">RGB</td><td style="padding:.5rem">rgb(67, 56, 202)</td><td style="padding:.5rem">You need to compute with the channels</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">HSL</td><td style="padding:.5rem">hsl(245, 58%, 51%)</td><td style="padding:.5rem">Making a shade lighter or more muted</td></tr>
+        <tr><td style="padding:.5rem">RGBA / HSLA</td><td style="padding:.5rem">…, 0.1)</td><td style="padding:.5rem">Translucent overlays</td></tr>
+      </table>
+
+      <p>HSL is the one worth learning, because it separates the three things you usually want to adjust independently. To make a colour lighter without changing its character, raise the L and leave H and S alone. Doing the same in hex means guessing at three numbers at once.</p>
+
+      <h2>Building a usable palette from an extracted one</h2>
+
+      <p>An extracted palette is raw material. Four steps make it usable in a design.</p>
+
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Pick one colour to lead.</strong> Not the most dominant — the most characteristic. Everything else supports it.</li>
+        <li><strong>Add the neutrals yourself.</strong> A near-black for text, a near-white for background, and two greys between. Photographs rarely supply clean neutrals, and an interface needs them.</li>
+        <li><strong>Create a dark and light variant of the lead.</strong> One for fills behind light text, one for text on a light background. A single value cannot serve both roles — a colour readable as text on dark is too light to be a fill under white text.</li>
+        <li><strong>Check every text-on-background pair</strong> against the 4.5:1 threshold before using it.</li>
+      </ol>
+
+      <p>Step three is the one most often missed and causes the most rework later.</p>
+
+      <h2>Reproducing a specific colour from a photograph</h2>
+
+      <p>If the goal is to match something real — a product, a brand, a fabric — a photograph is a poor source, for reasons worth knowing.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>White balance shifts everything.</strong> The same object photographed under daylight and under tungsten gives different hex values, and neither is the object's colour.</li>
+        <li><strong>JPEG compression alters colour,</strong> particularly in saturated regions, because chroma is stored at lower resolution than brightness.</li>
+        <li><strong>Screens differ.</strong> The value you sample is what the file says; what you saw was your display's interpretation of it.</li>
+        <li><strong>Shadow and highlight on a curved surface</strong> give the same object a range of values, so which pixel you sample changes the answer.</li>
+      </ul>
+
+      <p>For brand matching, the brand's own published hex or Pantone reference is the only reliable source. For everything else, sample from a flat, evenly lit region rather than a highlight or an edge.</p>
+
+      <h2>Where the image goes</h2>
+
+      <p>Colour extraction needs the whole image, which means uploading it to any tool that works server-side. Photographs carry EXIF metadata — often including GPS coordinates and the device — so uploading a personal photo to extract five hex values transfers rather more than the colours.</p>
+
+      <p>A browser-based extractor reads the pixels locally. Nothing is transmitted, and it works offline.</p>
+
+      <p>Our <a href="/tools/color-extractor" style="color:var(--accent-text)">Color Extractor</a> runs in your browser, reports hex, RGB and HSL for each colour, and lets you extract from a crop so you can target an accent rather than the frame's bulk. The <a href="/tools/color-picker" style="color:var(--accent-text)">Color Picker</a> builds harmonies and the light and dark variants described above, and the <a href="/tools/contrast-checker" style="color:var(--accent-text)">Contrast Checker</a> handles step four — checking each pair before you commit to it.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Extract colors now!</strong></p><a href="/tools/color-extractor" class="btn" style="display:inline-block;text-decoration:none">🎨 Open Color Extractor</a></div>
     </div>
   </div>

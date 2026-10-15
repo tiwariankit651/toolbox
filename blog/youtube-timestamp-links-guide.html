@@ -16,7 +16,83 @@
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
   <div class="container">
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → YT Timestamps</div>
-    <div class="tool-section" style="line-height:1.8"><h1>🔗 How to Create YouTube Timestamp Links</h1><p class="info">April 2026 · 3 min read</p><p>Want to share a specific moment in a YouTube video? Timestamp links let viewers jump directly to that point.</p><h2>How to Use</h2><ol style='margin-left:1.5rem;line-height:2.2'><li>Open <a href='../tools/yt-timestamp' style='color:var(--accent-text)'>YouTube Timestamp Generator</a></li><li>Paste the YouTube video URL</li><li>Set hours, minutes, and seconds</li><li>Click Generate and copy the link</li></ol><h2>Use Cases</h2><ul style='margin-left:1.5rem'><li>Share the best part of a long video</li><li>Reference specific points in lectures</li><li>Create chapter links for your own videos</li><li>Share funny moments with friends</li></ul>
+    <div class="tool-section" style="line-height:1.8"><h1>🔗 How to Create YouTube Timestamp Links</h1><p class="info">October 2026 · 8 min read</p>
+<p>A timestamp link opens a video at a specific moment, and chapters turn a long video into a navigable document. Both are small features with a large effect on whether a long video gets watched, and both have specific rules that are easy to get wrong.</p>
+
+      <h2>Linking to a moment</h2>
+
+      <p>Append a time parameter to the URL. Two forms exist and they are not interchangeable.</p>
+
+      <p><strong>Standard watch URL:</strong> <code>?t=90</code> or <code>&amp;t=90</code> — the first if there is no other parameter, the second if there is. The value is in seconds.</p>
+
+      <p><strong>Short youtu.be URL:</strong> <code>?t=90</code>, always with a question mark since there is no other parameter.</p>
+
+      <p><strong>Embed URL:</strong> <code>?start=90</code> — note the different parameter name. Using <code>t=</code> on an embed does nothing, which is the most common confusion here. An embed also accepts <code>&amp;end=120</code> to stop at a point, which the watch URL does not.</p>
+
+      <p>The time value accepts <code>90</code>, <code>90s</code>, or <code>1m30s</code>. Plain seconds is the safest because every context accepts it.</p>
+
+      <h2>Chapters, and the rules that make them appear</h2>
+
+      <p>Chapters are generated from timestamps in the video description, and they only appear if several conditions are all met. Missing any one of them produces a description with times that are clickable but no chapter bar.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>The first timestamp must be <code>0:00</code>.</strong> Starting at 0:15 produces no chapters at all. This is the single most common reason chapters do not work.</li>
+        <li><strong>At least three timestamps.</strong> Two is not enough.</li>
+        <li><strong>Each chapter at least ten seconds long.</strong> A gap shorter than that breaks the set.</li>
+        <li><strong>In ascending order.</strong> Out of order and they are ignored.</li>
+        <li><strong>Each on its own line,</strong> with the timestamp first and a title after it.</li>
+      </ul>
+
+      <p>Format: <code>0:00 Introduction</code>, then <code>1:45 Setting up</code>, and so on. A space or a hyphen between the time and the title both work.</p>
+
+      <h2>Why timestamps drift when you re-edit</h2>
+
+      <p>This is the practical problem nobody warns you about. If you re-export a video having trimmed four seconds from the opening, every chapter after that point is four seconds early — which means each one now starts just before its topic, showing the end of the previous section.</p>
+
+      <p>Two ways to handle it:</p>
+
+      <p><strong>Note the offset and apply it to all.</strong> If you cut four seconds from the start, subtract four seconds from every timestamp. Mechanical and reliable.</p>
+
+      <p><strong>Timestamp last.</strong> Build the chapter list only after the edit is final. Obvious in hindsight and routinely not done, because you note the times as you review.</p>
+
+      <h2>Writing chapter titles that help</h2>
+
+      <p>Chapter titles are a table of contents, and the same rules apply as for any contents page.</p>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Weak</th><th style="padding:.5rem;text-align:left">Better</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Part 1</td><td style="padding:.5rem">Installing the dependencies</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">More stuff</td><td style="padding:.5rem">Handling the error case</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Continued</td><td style="padding:.5rem">Testing on a real file</td></tr>
+        <tr><td style="padding:.5rem">Conclusion</td><td style="padding:.5rem">What to do if it still fails</td></tr>
+      </table>
+
+      <p>Keep them short — around forty characters, since they are truncated in the chapter bar — and start with the distinguishing word rather than a repeated prefix. Six chapters all starting "How to" are harder to scan than six starting with the thing itself.</p>
+
+      <h2>Where chapters are worth the effort</h2>
+
+      <p>For a video under about five minutes, chapters add little. Above ten minutes they change how the video is used — people arrive from search, jump to the relevant part, and stay. Without them a long video is watched from the start or abandoned.</p>
+
+      <p>They also help the video appear for narrower searches, because the chapter titles describe specific topics rather than the video's overall subject.</p>
+
+      <h2>Timestamps in comments and elsewhere</h2>
+
+      <p>A plain timestamp typed in a comment becomes a clickable link automatically — useful for pointing someone at a specific moment without constructing a URL. This works in comments and in the description, and it does not work in a video title.</p>
+
+      <p>For sharing outside YouTube, the full URL with the time parameter is more reliable, because a bare <code>1:45</code> in a message is just text.</p>
+
+      <h2>A sequence that avoids the usual problems</h2>
+
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Finish the edit completely.</strong> No further trims after this point.</li>
+        <li><strong>Watch once, noting where each topic genuinely starts</strong> — a second or two before the first word, not on it.</li>
+        <li><strong>Write the list starting at 0:00,</strong> with at least three entries and ten seconds between each.</li>
+        <li><strong>Check ascending order</strong> and that no title is longer than about forty characters.</li>
+        <li><strong>Paste into the description</strong> and confirm the chapter bar appears on the published video.</li>
+        <li><strong>Keep the list in a file.</strong> If you re-upload or re-edit, you will need it again.</li>
+      </ol>
+
+      <p>Our <a href="/tools/yt-timestamp" style="color:var(--accent-text)">YouTube Timestamp Tool</a> builds the chapter list in the correct format, warns if the first entry is not 0:00 or a gap is under ten seconds, and applies a bulk offset to every timestamp at once — which is the fix for the drift problem above. It also generates share links with the right parameter for watch, short and embed URLs, since those three differ. The chapter list is kept in your browser so a half-built set survives a reload, and nothing is uploaded.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Generate timestamp link!</strong></p><a href="/tools/yt-timestamp" class="btn" style="display:inline-block;text-decoration:none">🔗 Open YT Timestamp</a></div>
     </div>
   </div>

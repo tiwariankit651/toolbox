@@ -18,12 +18,84 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → Trim Audio</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>✂️ How to Trim Audio Files Online</h1>
-      <p class="info">April 2026 · 3 min read</p>
-      <p>Need to cut a specific part from an audio file? Create a ringtone, trim a podcast clip, or cut music for a presentation — all free in your browser.</p>
-      <h2>How to Trim Audio</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2"><li>Open <a href="/tools/audio-trimmer" style="color:var(--accent-text)">Audio Trimmer</a></li><li>Upload your audio file (MP3, WAV, OGG)</li><li>See the waveform visualization</li><li>Set precise start and end times</li><li>Preview your selection</li><li>Click Trim and Download</li></ol>
-      <h2>Use Cases</h2>
-      <ul style="margin-left:1.5rem"><li><strong>Ringtones</strong> — cut the best part of a song</li><li><strong>Podcasts</strong> — extract a specific segment</li><li><strong>Presentations</strong> — trim background music to exact length</li><li><strong>Voice notes</strong> — remove silence from beginning/end</li></ul>
+      <p class="info">October 2026 · 8 min read</p>
+<p>Trimming audio is conceptually simple — remove the parts you do not want — and there are two quite different ways to do it, with different consequences for quality. Knowing which one a tool uses explains why a trimmed file sometimes sounds worse than the original.</p>
+
+      <h2>Lossless cutting versus re-encoding</h2>
+
+      <p><strong>Lossless cutting</strong> removes whole compressed frames without decoding them. The audio that remains is bit-for-bit what it was, so there is no quality loss at all. The limitation is that cuts can only fall on frame boundaries, which for MP3 is roughly every 26 milliseconds — close enough to be imperceptible for speech or music.</p>
+
+      <p><strong>Re-encoding</strong> decodes the audio, cuts at the exact sample, and compresses again. The cut is precise, and the whole file has been through a second generation of lossy compression, so it is slightly worse than the original even in the parts you did not touch.</p>
+
+      <p>For speech, re-encoding once is inaudible. For music you will re-edit several times, the losses accumulate, and lossless cutting is worth seeking out.</p>
+
+      <h2>The cut that clicks</h2>
+
+      <p>A cut made at the wrong point produces an audible click, and the cause is specific.</p>
+
+      <p>Audio is a waveform oscillating around zero. If you cut where the waveform is at a peak, the signal jumps instantly from that value to the next file's starting value, and a sudden jump is heard as a click.</p>
+
+      <p>Two fixes:</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Cut at a zero crossing</strong> — a point where the waveform passes through zero. Some editors snap to these automatically.</li>
+        <li><strong>Apply a very short fade,</strong> five to ten milliseconds, at each cut. Inaudible as a fade, and it removes the discontinuity entirely.</li>
+      </ul>
+
+      <p>A short fade is the more reliable habit, because it works regardless of where the cut landed.</p>
+
+      <h2>Trimming silence, and leaving some</h2>
+
+      <p>The usual reason to trim is removing dead air at the start and end, and it is easy to overdo.</p>
+
+      <p>Cutting to the exact first syllable sounds abrupt — speech that begins instantly feels like it was clipped. Leaving about 200 to 300 milliseconds before the first sound and after the last makes it sound deliberate rather than truncated.</p>
+
+      <p>For a ringtone or a notification sound the opposite applies: any leading silence is a delay the listener notices, so cut tight.</p>
+
+      <h2>Formats, and what to keep</h2>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Format</th><th style="padding:.5rem;text-align:left">Nature</th><th style="padding:.5rem;text-align:left">Use for</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">WAV</td><td style="padding:.5rem">Uncompressed</td><td style="padding:.5rem">Editing masters; large files</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">MP3</td><td style="padding:.5rem">Lossy, universal</td><td style="padding:.5rem">Sharing anywhere</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">M4A / AAC</td><td style="padding:.5rem">Lossy, more efficient</td><td style="padding:.5rem">Better quality at the same size</td></tr>
+        <tr><td style="padding:.5rem">OGG / Opus</td><td style="padding:.5rem">Lossy, very efficient</td><td style="padding:.5rem">Speech and web; less universal</td></tr>
+      </table>
+
+      <p>The rule that matters: <strong>edit from the highest-quality source you have.</strong> Trimming an MP3 that was itself made from a compressed source compounds the loss. If a WAV or the original recording exists, work from that and export to MP3 at the end.</p>
+
+      <p>And do not convert formats more than once. Each lossy encode is a generation, and generations accumulate.</p>
+
+      <h2>Bitrate: what is enough</h2>
+
+      <p>Higher bitrate means a larger file and better quality, with diminishing returns that arrive sooner than people expect.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Speech, mono:</strong> 64 kbps is clear. 96 is comfortable.</li>
+        <li><strong>Speech, stereo:</strong> 96 to 128 kbps.</li>
+        <li><strong>Music:</strong> 192 kbps is good; 256 to 320 for critical listening.</li>
+        <li><strong>Above 320:</strong> no audible benefit in MP3.</li>
+      </ul>
+
+      <p>Encoding a voice recording at 320 kbps produces a large file with no improvement, because the source does not contain the detail that bitrate is reserving space for.</p>
+
+      <h2>Common problems and what causes them</h2>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Trimmed file sounds muffled.</strong> It was re-encoded at a lower bitrate than the original. Check the export setting.</li>
+        <li><strong>A click at the join.</strong> The cut was not at a zero crossing and had no fade.</li>
+        <li><strong>The file is longer than expected.</strong> Some tools pad to a frame boundary, adding a few milliseconds of silence.</li>
+        <li><strong>Volume differs between joined sections.</strong> Two recordings at different levels need normalising before joining, not after.</li>
+        <li><strong>Metadata lost.</strong> Title, artist and album are stored in tags that many trimmers discard. Re-add them if they matter.</li>
+      </ul>
+
+      <h2>Where the file goes</h2>
+
+      <p>Audio people trim is often personal or confidential: a recorded lecture, an interview, a voice note, a meeting. Uploading it to a web service to cut ten seconds off the start means transmitting the whole recording.</p>
+
+      <p>Browser-based editing loads the file into the page and processes it on your device. Nothing is uploaded, which also means it works offline and there is no size limit beyond your own memory.</p>
+
+      <p>Our <a href="/tools/audio-trimmer" style="color:var(--accent-text)">Audio Trimmer</a> shows the waveform so you can see where the silence actually ends, supports touch as well as mouse for setting the in and out points, and processes everything in your browser with no upload. For related work, the <a href="/tools/screen-recorder" style="color:var(--accent-text)">Screen Recorder</a> captures audio alongside video, and the <a href="/tools/speech-to-text" style="color:var(--accent-text)">Speech to Text</a> tool handles transcription if what you need from the recording is the words.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Trim your audio now!</strong></p>
         <a href="/tools/audio-trimmer" class="btn" style="display:inline-block;text-decoration:none">✂️ Open Audio Trimmer</a>

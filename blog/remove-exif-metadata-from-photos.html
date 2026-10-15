@@ -18,15 +18,94 @@
     <div class="breadcrumb"><a href="../">Home</a> → <a href="./">Blog</a> → EXIF Remover</div>
     <div class="tool-section" style="line-height:1.8">
       <h1>🔒 Remove EXIF Metadata from Photos</h1>
-      <p class="info">April 2026 · 3 min read</p>
-      <p>Every photo you take with your phone contains hidden data called EXIF metadata — including your GPS location, camera model, date, and time. Sharing these photos online can expose your home address and daily routine.</p>
-      <h2>What is EXIF Data?</h2>
-      <ul style="margin-left:1.5rem"><li><strong>GPS coordinates</strong> — exact location where photo was taken</li><li><strong>Camera model</strong> — phone or camera brand</li><li><strong>Date and time</strong> — when the photo was taken</li><li><strong>Lens info</strong> — focal length, aperture</li><li><strong>Software</strong> — editing app used</li></ul>
-      <h2>How to Remove It</h2>
-      <ol style="margin-left:1.5rem;line-height:2.2"><li>Open <a href="/tools/exif-remover" style="color:var(--accent-text)">EXIF Metadata Remover</a></li><li>Drop one or multiple images</li><li>The tool re-draws each image on a clean canvas, stripping all metadata</li><li>Download the clean images</li></ol>
-      <p>Unlike other tools, your photos <strong>never leave your device</strong>. The cleaning happens entirely in your browser.</p>
-      <h2>When to Remove EXIF Data</h2>
-      <ul style="margin-left:1.5rem"><li>Before posting on social media</li><li>Before sending photos to strangers</li><li>Before uploading to public websites</li><li>When selling items online with photos</li></ul>
+      <p class="info">October 2026 · 9 min read</p>
+<p>Every photograph taken on a phone or camera carries a block of data describing how, when and often exactly where it was taken. It is invisible when you look at the image and it travels with the file. For most photographs this is harmless or useful. For some it is a genuine privacy problem, and the difference is worth knowing before you share anything.</p>
+
+      <h2>What is actually in there</h2>
+
+      <p>EXIF is a metadata standard, and a typical phone photograph contains more than people expect.</p>
+
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Field</th><th style="padding:.5rem;text-align:left">Typical content</th><th style="padding:.5rem;text-align:left">Risk</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">GPS coordinates</td><td style="padding:.5rem">Latitude, longitude, sometimes altitude</td><td style="padding:.5rem">High — pinpoints where you were</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Date and time</td><td style="padding:.5rem">To the second, with time zone</td><td style="padding:.5rem">Moderate — establishes when</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Device</td><td style="padding:.5rem">Make, model, sometimes serial</td><td style="padding:.5rem">Moderate — links photos to one device</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Camera settings</td><td style="padding:.5rem">Aperture, shutter, ISO, lens</td><td style="padding:.5rem">Low</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Software</td><td style="padding:.5rem">Editing app and version</td><td style="padding:.5rem">Low</td></tr>
+        <tr><td style="padding:.5rem">Thumbnail</td><td style="padding:.5rem">A small embedded copy</td><td style="padding:.5rem">Can retain a pre-crop version</td></tr>
+      </table>
+
+      <p>The last row catches people. An embedded thumbnail is generated when the photo is taken and is not always regenerated when you edit. A photograph cropped to remove something can carry a thumbnail showing the uncropped frame.</p>
+
+      <h2>When it matters, concretely</h2>
+
+      <p>Not every photograph needs stripping, and knowing which do is more useful than a blanket rule.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Anything taken at home.</strong> A photo of something you are selling, posted publicly, contains the coordinates of your front door.</li>
+        <li><strong>Photographs of children,</strong> especially near a school or a home, for the same reason.</li>
+        <li><strong>Listings and classifieds.</strong> You are showing a stranger where the item is.</li>
+        <li><strong>Anything posted while away from home.</strong> The timestamp and location together say your house is empty.</li>
+        <li><strong>Documents and ID scans.</strong> These establish where you were when you photographed them.</li>
+        <li><strong>Journalism and sensitive work.</strong> Location data can identify a source.</li>
+      </ul>
+
+      <p>And when it does not: a photograph you are keeping, a family album, anything where the location is already obvious. EXIF is also genuinely useful — it is how your photo app sorts by date and shows a map, and photographers rely on the settings to learn from their own work.</p>
+
+      <h2>Which platforms strip it and which do not</h2>
+
+      <p>This matters because people assume it is handled and it is only sometimes handled.</p>
+
+      <p>Most large social platforms strip EXIF from uploads, partly for privacy and partly to save space — but they read it first, so the platform now holds the location data even though viewers cannot see it. Messaging apps generally recompress images, which removes EXIF as a side effect.</p>
+
+      <p>What does <strong>not</strong> strip it: email attachments, file-sharing links, cloud folders shared by link, and any site that serves the original file. A photograph emailed or shared from a drive arrives with everything intact.</p>
+
+      <p>The rule of thumb: if the recipient gets the file itself rather than a platform's re-rendered version, assume the metadata is there.</p>
+
+      <h2>Checking before you strip</h2>
+
+      <p>Worth doing once, because the contents are usually more than expected.</p>
+
+      <p>On a phone, the photo details view shows date, location and often device. On a computer, the file properties dialog shows a subset — but both views hide fields, so a dedicated viewer shows more.</p>
+
+      <p>The specific thing to look for is whether GPS coordinates are present. Many people have location tagging switched on without knowing, and finding that every photograph for three years carries coordinates is a common discovery.</p>
+
+      <h2>Stripping it without damaging the image</h2>
+
+      <p>There is a correct and an incorrect way, and the incorrect way is more common.</p>
+
+      <p><strong>Re-encoding</strong> — opening the image and saving it again — removes metadata as a side effect, and also recompresses the photograph. You lose a little quality every time. Most "remove EXIF" tools work this way.</p>
+
+      <p><strong>Rewriting the metadata block</strong> removes the fields and leaves the compressed pixel data untouched, so there is no quality loss at all. This is what a proper metadata editor does.</p>
+
+      <p>For a photograph you are posting once, either is fine. For an archival image, the difference is real — and re-encoding repeatedly, across several edits, accumulates visible degradation.</p>
+
+      <h2>A screenshot is not a solution</h2>
+
+      <p>Screenshotting a photograph does remove the EXIF, and it also reduces the image to your screen's resolution and recompresses it. The result is a smaller, softer image with no metadata.</p>
+
+      <p>It works, but it is a poor trade when stripping the metadata properly keeps the full image.</p>
+
+      <h2>What stripping does not do</h2>
+
+      <p>Removing EXIF removes the metadata. It does not remove information visible <em>in</em> the photograph, and this is where people over-trust the fix.</p>
+
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li>A street sign, a house number or a landmark in frame identifies the location regardless.</li>
+        <li>A reflection in a window or a mirror can show the room, or the photographer.</li>
+        <li>A screen visible in the background may show readable content.</li>
+        <li>Uniforms, name badges and vehicle plates are all in the pixels.</li>
+      </ul>
+
+      <p>Stripping metadata and then posting a photograph of your own doorplate achieves nothing. Look at the image itself before deciding it is safe.</p>
+
+      <h2>Where to do it</h2>
+
+      <p>The irony of uploading a photograph to a website in order to remove its location data is worth stating plainly: you have just sent the file, complete with coordinates, to a server.</p>
+
+      <p>A browser-based tool reads and rewrites the file on your own device, so nothing is transmitted. That is the only approach where the privacy claim is structurally true rather than a promise.</p>
+
+      <p>Our <a href="/tools/exif-remover" style="color:var(--accent-text)">EXIF Remover</a> shows you what metadata the file contains before removing it — so you can see whether GPS data was actually present — and strips it in your browser with nothing uploaded. It works offline after the first visit. If you also need the image smaller or a different size, the <a href="/tools/image-compressor" style="color:var(--accent-text)">Image Compressor</a> and <a href="/tools/image-resizer" style="color:var(--accent-text)">Image Resizer</a> work the same way.</p>
       <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center">
         <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Protect your privacy now!</strong></p>
         <a href="/tools/exif-remover" class="btn" style="display:inline-block;text-decoration:none">🔒 Open EXIF Remover</a>
