@@ -158,7 +158,48 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>What decides whether OCR works</h2>
+      <p>Optical character recognition is pattern matching on shapes, and the quality of the input decides almost everything. Three factors dominate.</p>
+      <p><strong>Resolution.</strong> Characters need enough pixels to be distinguishable. Around 300 DPI for printed text is the usual recommendation, and below about 150 accuracy falls sharply. A photograph of a page from a metre away does not have the pixels regardless of the camera.</p>
+      <p><strong>Contrast and evenness.</strong> Black on white works; grey on grey does not. A shadow across half the page can make that half unreadable while the other half is fine, which produces output that is accurate in places and nonsense elsewhere.</p>
+      <p><strong>Geometry.</strong> Text has to be roughly horizontal. A page photographed at an angle gives a trapezium, and characters at the far edge are compressed into fewer pixels than those near the camera.</p>
+
+      <h2>The characters that get confused</h2>
+      <p>Certain pairs are genuinely similar in most typefaces, and these are where errors cluster.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>0 and O</strong>, <strong>1 and l and I</strong>, <strong>5 and S</strong>, <strong>8 and B</strong>, <strong>2 and Z</strong></li>
+        <li><strong>rn</strong> read as <strong>m</strong>, and <strong>cl</strong> read as <strong>d</strong></li>
+        <li><strong>Punctuation:</strong> a comma and a full stop, a colon and a semicolon</li>
+      </ul>
+      <p>This matters most for anything you will use as data. An OCR'd account number, PAN or amount needs checking character by character, because a 0 for an O is invisible in a glance and fatal in a form.</p>
+
+      <h2>What OCR does not preserve</h2>
+      <p>OCR extracts characters. It does not reliably extract <em>structure</em>, and the distinction matters when deciding whether the output is usable.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Tables</strong> frequently come out as rows of text with the column relationship lost.</li>
+        <li><strong>Multiple columns</strong> may be read straight across, interleaving two unrelated columns line by line.</li>
+        <li><strong>Reading order</strong> on a complex layout — a sidebar, a caption, a footnote — is a guess.</li>
+        <li><strong>Formatting</strong> such as bold, italic and heading level is usually dropped.</li>
+      </ul>
+
+      <h2>Handwriting is a different problem</h2>
+      <p>Printed text recognition is mature; handwriting recognition is substantially harder and accuracy on unconstrained handwriting remains poor. Neat, separated capitals do reasonably well. Joined cursive, or anything written at speed, does not.</p>
+      <p>If the goal is digitising handwritten notes, typing them is usually faster than correcting the output.</p>
+
+      <h2>Improving the input</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Flat page, parallel camera.</strong> Removes the geometry problem entirely.</li>
+        <li><strong>Even light from the side,</strong> not directly overhead where your own shadow falls.</li>
+        <li><strong>Fill the frame with the page.</strong> Cropping afterwards throws away the resolution you needed.</li>
+        <li><strong>Greyscale and increase contrast</strong> before recognising, which helps more than any setting afterwards.</li>
+        <li><strong>Tell it the language.</strong> Recognition uses a language model to resolve ambiguity, and the wrong language makes the confusable pairs above worse.</li>
+      </ol>
+      <p>The recognition here runs in your browser, which for a scanned document — a mark sheet, a certificate, a contract — is the relevant point: the page is not uploaded to a service to be read.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Got a photo of handwritten notes or a scanned document? Upload that image here</li>
 <li><strong>Step 2:</strong> Pick the language — this helps the tool read your text more accurately</li>

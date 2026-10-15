@@ -94,6 +94,36 @@
       <h2 style="font-size:1rem;margin-top:1.2rem">Recent videos</h2>
       <div id="ytHist"></div>
 
+    <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>The three URL parameters, which are not interchangeable</h2>
+      <p>Linking to a moment in a video uses a different parameter depending on the URL form, and using the wrong one silently does nothing.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Watch URL:</strong> <code>&amp;t=90</code>, or <code>?t=90</code> if there is no other parameter.</li>
+        <li><strong>Short youtu.be URL:</strong> <code>?t=90</code>, always with a question mark.</li>
+        <li><strong>Embed URL:</strong> <code>?start=90</code> — a different name entirely. Using <code>t=</code> on an embed has no effect, which is the most common confusion here. An embed also accepts <code>&amp;end=120</code>, which the watch URL does not.</li>
+      </ul>
+      <p>The value accepts <code>90</code>, <code>90s</code> or <code>1m30s</code>. Plain seconds is safest because every context accepts it.</p>
+
+      <h2>Five conditions for chapters to appear</h2>
+      <p>Chapters are generated from timestamps in the description and appear only if all of these hold. Missing any one produces clickable times and no chapter bar.</p>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>The first timestamp must be 0:00.</strong> Starting at 0:15 produces no chapters at all — the single commonest cause.</li>
+        <li><strong>At least three timestamps.</strong> Two is not enough.</li>
+        <li><strong>Each chapter at least ten seconds long.</strong></li>
+        <li><strong>Ascending order.</strong></li>
+        <li><strong>One per line,</strong> timestamp first, title after.</li>
+      </ol>
+
+      <h2>Why timestamps drift after an edit</h2>
+      <p>Trim four seconds from the opening and re-export, and every chapter after that point is four seconds early — each one now begins just before its topic, showing the tail of the previous section.</p>
+      <p>Two ways to handle it. Apply the offset to every timestamp uniformly, which is mechanical and reliable. Or build the chapter list only after the edit is final — obvious in hindsight and routinely not done, because you note the times while reviewing.</p>
+
+      <h2>Writing titles that work as a contents page</h2>
+      <p>Keep them around forty characters, since they are truncated in the chapter bar, and start with the distinguishing word rather than a repeated prefix. Six chapters all beginning "How to" are harder to scan than six beginning with the thing itself.</p>
+      <p>For a video under about five minutes chapters add little. Above ten minutes they change how it is used — people arrive from search, jump to the relevant part, and stay.</p>
+    </div>
+
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Video mein chapters banana hai? Timestamps add karo description mein — viewers directly jump kar sakte hain. Yahan format karo easily.</p>
 <ol style="margin-left:1.5rem;line-height:2">

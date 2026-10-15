@@ -78,7 +78,30 @@
       <div id="altCode" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin-top:.5rem;font-family:monospace;font-size:.8rem"></div>
     </div>
 
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why gradients look muddy in the middle</h2>
+      <p>A gradient between two colours interpolates each channel separately, and in sRGB that produces a middle that is darker and less saturated than either end.</p>
+      <p>Blue to yellow is the clearest case: interpolating in sRGB passes through a grey-green, because the shortest numerical path between those two RGB values goes through low-saturation territory. The eye expects to pass through green or through white, and gets mud.</p>
+      <p>Two ways around it. Add an intermediate stop in the colour you want it to pass through, which gives you direct control. Or interpolate in a perceptual space such as Oklab, which modern browsers support — <code>linear-gradient(in oklab, blue, yellow)</code> — where the midpoint matches what the eye expects.</p>
+
+      <h2>Banding, and why it shows on large areas</h2>
+      <p>A gradient across 1000 pixels with only 60 distinct values will show visible steps. 8-bit colour gives 256 levels per channel, which is plenty for a small element and not always enough for a full-page background.</p>
+      <p>What helps: fewer, further-apart stops rather than many close ones; avoiding very low-contrast gradients, where the available levels are spread thinly; and adding a very subtle noise overlay, which breaks the bands up perceptually.</p>
+
+      <h2>Angles, and what the number means</h2>
+      <p>In CSS, <code>0deg</code> points up and angles increase clockwise. So <code>90deg</code> is left-to-right and <code>180deg</code> is top-to-bottom. This differs from the mathematical convention, which is why a gradient sometimes arrives rotated from what you expected.</p>
+      <p><code>to right</code> and <code>to bottom</code> are equivalent keywords and clearer for the common cases. For a diagonal, <code>to bottom right</code> adapts to the element's shape in a way a fixed angle does not.</p>
+
+      <h2>Text on a gradient needs the worst case</h2>
+      <p>A gradient has a different contrast ratio at every point across it. White text on an indigo-to-pink gradient may clear 4.5:1 at the dark end and fall to 3.5:1 at the light end.</p>
+      <p>The honest test is against the <strong>lightest</strong> stop when the text is light, and the darkest when the text is dark — that is where the ratio is worst and where the text will actually be hard to read. Testing the midpoint gives a figure that is true of a thin band and false either side.</p>
+
+      <h2>Performance</h2>
+      <p>A CSS gradient is painted by the browser and costs nothing to download, which makes it strictly better than a gradient image. Animating one, however, forces a repaint each frame and can be expensive — animating the element's <code>opacity</code> or <code>transform</code> is cheap, animating gradient stops is not.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Pick your colors:</strong> CSS gradient manually likhna painful hai? Just pick 2 or more colors from the palette</li>
 <li><strong>Choose direction:</strong> Linear, radial, ya conic — jo style chahiye select karo</li>

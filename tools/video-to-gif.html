@@ -96,7 +96,30 @@
         <div id="result"></div>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why GIFs are so large</h2>
+      <p>GIF has no inter-frame compression in the sense modern video codecs use. Each frame is stored largely as its own image, where a video codec stores the <em>difference</em> between frames. That is why a ten-second MP4 can be 500 KB and the same clip as a GIF is 8 MB.</p>
+      <p>Two numbers drive the size and they multiply: dimensions, and frame count (duration times frame rate). A clip at 640 pixels and 10fps is roughly a sixteenth the size of the same clip at 1280 and 20fps. That is the whole of GIF optimisation.</p>
+
+      <h2>The 256-colour limit decides what converts well</h2>
+      <p>GIF stores at most 256 colours per frame, chosen from a palette, while a video frame typically contains thousands. The conversion must discard colours, and how it does so decides the result.</p>
+      <p><strong>Dithering</strong> scatters pixels of two available colours to approximate a third, preserving the impression of a gradient at the cost of a visible speckle — and larger files, because the scatter defeats compression. Without it you get flat bands where a gradient was.</p>
+      <p>The practical consequence: <strong>screen recordings convert well, camera footage does not.</strong> An interface has flat colours and few of them, so 256 is plenty. A face or a sunset has smooth gradients everywhere.</p>
+
+      <h2>Trim before converting</h2>
+      <p>Every frame costs size, so cutting four seconds from a ten-second clip removes 40% of the file. This is the most effective single optimisation and the one most often skipped, because people convert the whole clip and then try to compress the result.</p>
+      <p>Be ruthless: a demonstration almost never needs the moment before the click or the pause after.</p>
+
+      <h2>Where GIF is the wrong choice</h2>
+      <p>Anything with sound, since GIF has no audio track. Anything over about fifteen seconds. Camera footage you want to look good. And anywhere a video player is available — a short autoplaying MP4 behaves like a GIF at a fraction of the size.</p>
+      <p>GIF remains right where you cannot control the player: an email, an older issue tracker, a wiki that strips video tags.</p>
+
+      <h2>A technical note on browser encoding</h2>
+      <p>GIF encoding in a browser runs on a worker thread, and browsers refuse to construct a worker from a cross-origin URL. A tool that passes the encoder a CDN address directly throws on every conversion — the fix is to fetch the worker source and run it from a same-origin blob. We hit exactly this, and it is also why conversion here keeps working offline.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Want to make a funny GIF from a video clip? Upload your video file here</li>
 <li><strong>Step 2:</strong> Set where you want the GIF to start and end — trim it to the good part</li>
