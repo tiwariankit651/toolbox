@@ -484,8 +484,12 @@ function renderOverlap(inst,win){
       else if(c==="edge"&&worst2!=="out")worst2="edge";
     });
     var bg=worst2==="in"?"var(--ok-fill)":worst2==="edge"?"var(--warn-fill)":"var(--danger-fill)";
-    strip+="<div class='tz-cell' style='background:"+bg+"' title='"+
-      String(h2).padStart(2,"0")+":00 in "+cityLabel(baseTz)+"'>"+h2+"</div>";
+    /* The hour number is hidden by font-size:0 under 600px, so title alone
+       left the hour available to nobody on a phone — title is not reliably
+       announced and there is no hover. aria-label is announced. */
+    var cellLabel=String(h2).padStart(2,"0")+":00 in "+cityLabel(baseTz);
+    strip+="<div class='tz-cell' style='background:"+bg+"' title='"+cellLabel+
+      "' aria-label='"+cellLabel+"'>"+h2+"</div>";
   }
   strip+="</div>";
 
