@@ -75,7 +75,29 @@
         <div id="result" style="margin-top:1rem"></div>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Upscaling invents pixels; it does not recover them</h2>
+      <p>This is the honest framing and it governs everything else. A 400-pixel-wide image does not contain 1200 pixels of detail somewhere waiting to be found. Enlarging it means computing new pixels from the ones that exist, which is an estimate.</p>
+      <p>Classical interpolation — bilinear, bicubic — averages neighbouring pixels. The result has no artefacts and no new detail either, so it looks soft. Model-based upscaling instead predicts what detail <em>probably</em> belonged there, based on having seen many images, which looks sharper and is a guess.</p>
+      <p>That distinction matters for anything evidential. A model-upscaled photograph can show a plausible face or a plausible number plate that was never in the original, and it looks convincing precisely because it was generated to look convincing. For a document, an ID or anything where accuracy is the point, do not trust detail that appeared during upscaling.</p>
+
+      <h2>What upscales well</h2>
+      <p><strong>Well:</strong> line art, logos and text, where the shapes are simple and the correct answer is close to predictable. Clean photographs at moderate enlargement, up to roughly 2×. Images that were downscaled from something larger, where the structure is intact.</p>
+      <p><strong>Badly:</strong> heavily compressed JPEGs, because the artefacts get enlarged and sharpened along with everything else — the blocking becomes more visible, not less. Very small source images, past about 4×. Already-blurry photographs, since nothing can recover focus that was never captured. And anything that has been through several rounds of save and re-save.</p>
+      <p>The pre-check: view the original at 100%. Any detail you cannot see there is not in the file, and no tool will produce it truthfully.</p>
+
+      <h2>Do the other steps in the right order</h2>
+      <p>Where an image needs several operations, the order changes the result.</p>
+      <p>Crop before upscaling, so the processing is spent on the part you are keeping. Upscale before sharpening, because sharpening first amplifies artefacts that then get enlarged. And compress last — compressing before upscaling bakes the artefacts in.</p>
+      <p>For printing, work out the pixels you need from the physical size and the printer's resolution, then upscale once to that. Repeated small enlargements compound the softness.</p>
+
+      <h2>The alternative that is usually better</h2>
+      <p>Find the original. A photograph that arrived through WhatsApp has been recompressed and downscaled by WhatsApp; the sender's gallery has the full-resolution file. A logo pulled from a website has an SVG or a large PNG somewhere, and an SVG can be rendered at any size with no loss at all because it stores shapes rather than pixels.</p>
+      <p>Five minutes looking for the source beats any amount of upscaling, and this is worth trying first rather than last.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Old photo blurry hai? Zoom karo toh pixels dikhtein hain? Upload that image here</li>
 <li><strong>Step 2:</strong> Pick how much bigger you want it — 2x is usually enough, 4x for really small images</li>

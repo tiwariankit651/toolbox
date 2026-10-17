@@ -61,7 +61,35 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>What the model can and cannot separate</h2>
+      <p>Background removal decides, for every pixel, whether it belongs to the subject. Some images make that decision easy and some make it impossible, and which is which is predictable.</p>
+      <p><strong>Works well:</strong> a clear subject against a contrasting background, even lighting, a defined outline. A person against a plain wall is the ideal case.</p>
+      <p><strong>Works badly:</strong></p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Hair and fur.</strong> Thousands of semi-transparent edges, each partly subject and partly background. This is the hardest problem in the field and no tool solves it completely.</li>
+        <li><strong>A subject the colour of the background</strong> — a grey shirt against a grey wall gives the model nothing to work with.</li>
+        <li><strong>Glass and anything transparent,</strong> where the background legitimately shows through the subject.</li>
+        <li><strong>Motion blur,</strong> where the boundary does not exist as a line in the first place.</li>
+      </ul>
+
+      <h2>The coloured fringe, and why it appears</h2>
+      <p>Edge pixels in a photograph are a genuine blend of subject and background — half of one, half of the other. Removing the background leaves those blended pixels behind, so a person photographed against green keeps a thin green outline.</p>
+      <p>Nothing is wrong with the mask; the pixels really are part green. The fix is either to choose a replacement background of similar brightness, which makes the fringe far less visible, or to shrink the mask by a pixel and accept losing a hair's width of the subject.</p>
+      <p>The related artefact is a <strong>cut-out look</strong>, caused by a mask with no soft edge. Real photographic boundaries are slightly soft, so a perfectly sharp one reads as fake even when the shape is correct.</p>
+
+      <h2>For a document or ID photograph</h2>
+      <p>Where the requirement is a plain white background, the job is much easier because there is nothing to match. Two things still matter.</p>
+      <p>The subject's own shadow should not survive onto the new background — a shadow with nothing casting it is the giveaway. And the edge should be soft enough not to look cut out, because an obviously edited ID photograph can be queried, and a rejected application costs more than a retake.</p>
+      <p>For official photographs the safer route is always to retake against a plain wall. Removal is for when that is not possible.</p>
+
+      <h2>Why this one is a large download</h2>
+      <p>Unlike most tools here, background removal needs a trained model, and that model is several megabytes. It is fetched on first use and cached afterwards, so the first run is slow and later ones are not.</p>
+      <p>The trade is deliberate: the model comes to your device rather than your photograph going to a server. For a photograph of a person — or a child, or a document — that is the distinction that matters, and it is why the wait on first use is worth it.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Passport photo chahiye white background pe? Studio jaane ka time nahi? Just upload your photo here</li>
 <li><strong>Step 2:</strong> AI automatically detects you and removes everything behind you</li>

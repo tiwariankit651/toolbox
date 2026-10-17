@@ -101,7 +101,33 @@
         <p class="info">🔒 Picks use <code>crypto.getRandomValues()</code> for cryptographically fair, unbiased randomness — important so no name is secretly favoured. Lists and history are stored only in your browser (localStorage).</p>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Random is not the same as fair, and the difference is practical</h2>
+      <p>A single random draw is unbiased in the sense that every name had an equal chance. It is not fair in the sense people usually mean, because one person can be drawn three times in a row and someone else never.</p>
+      <p>Over a term, a class picked purely at random will produce students called on five times and students called on once. That is the expected behaviour of randomness, not a fault — but if the purpose is to distribute participation, random is the wrong mechanism.</p>
+      <p>What distributes participation is <strong>drawing without replacement</strong>: remove each name once drawn, and only refill the pool when it empties. Everyone is called exactly once per cycle, and the order within a cycle is still unpredictable. For a classroom this is almost always what you actually want.</p>
+
+      <h2>Why people distrust genuine randomness</h2>
+      <p>A real random sequence contains runs. In twenty coin tosses, a run of four the same way is more likely than not — and it looks wrong, so a sequence that <em>feels</em> random usually has fewer runs than a real one.</p>
+      <p>This matters when a draw is public. A genuinely random pick that lands on the same team twice will be read as rigged, and no explanation of probability changes that impression in the moment.</p>
+      <p>So for anything where the result must be <em>seen</em> to be fair — prizes, allocations, who presents first — announce the method before drawing, and prefer without-replacement so repeats are impossible. The perception of fairness is part of the job.</p>
+
+      <h2>Where a browser's randomness is and is not adequate</h2>
+      <p><code>Math.random()</code> is a pseudorandom generator. It produces a sequence that passes statistical tests for randomness but is computed deterministically from an internal state, and it is explicitly not a cryptographic source.</p>
+      <p>For picking who answers a question, choosing a presentation order, or shuffling flashcards, this is entirely adequate and the distinction is academic.</p>
+      <p>It is <strong>not</strong> adequate where someone has a financial interest in predicting or influencing the outcome — a lottery with real prizes, an allocation of something valuable, anything auditable. Those need a cryptographically secure source at minimum, and in practice a documented, verifiable procedure. A browser tool is the wrong instrument for that, and the right answer is to say so rather than to add a reassurance.</p>
+
+      <h2>Running a draw people accept</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Show the full list before drawing,</strong> so nobody wonders who was in it.</li>
+        <li><strong>State the method and whether names are removed</strong> after being picked.</li>
+        <li><strong>Draw once.</strong> Re-drawing a result you did not like is the thing that destroys trust, and it is visible.</li>
+        <li><strong>For a consequential draw, do it in front of people</strong> or record it. The record is what settles a dispute later.</li>
+      </ol>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p style="margin-bottom:.5rem">Class mein random student pick karna hai? Giveaway winner decide karna hai? Names daalo, spin karo — fair aur unbiased selection!</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li>Names enter karo — ek line mein ek naam, ya comma se separate karo</li>
