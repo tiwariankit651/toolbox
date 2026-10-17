@@ -64,6 +64,31 @@
 <li><code>ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC)</code></li>
 <li><code>RANK()</code>, <code>DENSE_RANK()</code>, <code>LAG(col)</code>, <code>LEAD(col)</code>, <code>SUM(col) OVER (...)</code> for running totals.</li>
 </ul></div>
+    <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why formatting changes whether a query can be reviewed</h2>
+      <p>A query written on one line is syntactically identical to the same query formatted across twenty, and completely different to work with. The reason is that SQL's structure is hierarchical while its text is linear — formatting is what makes the hierarchy visible.</p>
+      <p>The specific thing formatting reveals is <strong>join conditions</strong>. In a one-line query with four joins, the <code>ON</code> clauses are buried in the middle of the text and a missing one is invisible. Formatted one join per line, a join with no condition is obvious on sight — and that is the mistake that silently produces a cross product and a query returning millions of rows.</p>
+
+      <h2>The traps formatting makes visible</h2>
+      <p><strong>Operator precedence between AND and OR.</strong> <code>WHERE a = 1 OR b = 2 AND c = 3</code> is not what most people read it as: AND binds tighter, so it means <code>a = 1 OR (b = 2 AND c = 3)</code>. Formatted with the groups indented, the actual grouping becomes apparent — and the fix is to add the brackets explicitly rather than rely on the reader knowing the rule.</p>
+      <p><strong>NULL comparisons.</strong> <code>= NULL</code> is never true, because NULL is not a value to compare against. The correct form is <code>IS NULL</code>. This also means a <code>NOT IN</code> against a list containing a NULL returns no rows at all, which is one of the most confusing results in SQL and is entirely correct behaviour.</p>
+      <p><strong>LEFT JOIN undone by the WHERE clause.</strong> Filtering on a column from the right table in <code>WHERE</code> discards the unmatched rows the LEFT JOIN was there to keep, turning it into an INNER JOIN. The condition belongs in the <code>ON</code> clause instead. Formatting puts the two clauses in clearly different places, which is how the error gets spotted.</p>
+
+      <h2>Conventions worth following</h2>
+      <p>No formatter decides these; they are choices a team makes and then applies consistently.</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Keywords in upper case.</strong> It separates the language from your identifiers at a glance.</li>
+        <li><strong>One column per line in a long SELECT,</strong> with leading commas or trailing — either, consistently. Leading commas make it easier to comment a line out.</li>
+        <li><strong>Never ship <code>SELECT *</code>.</strong> It breaks when a column is added, transfers data nobody reads, and hides what the query actually depends on.</li>
+        <li><strong>Table aliases that mean something.</strong> <code>c</code> for customers is fine; <code>t1</code> through <code>t5</code> makes a query unreadable.</li>
+      </ul>
+
+      <h2>Formatting is not optimisation</h2>
+      <p>Worth stating plainly: reformatting a query does not make it faster. The database parses the text into a plan and the whitespace is gone before any planning happens.</p>
+      <p>What changes performance is indexes, the join order the planner chooses, and whether a condition can use an index — and a function applied to a column, like <code>WHERE YEAR(created) = 2026</code>, usually prevents the index from being used. Formatting makes such a condition easier to find, which is its contribution to performance.</p>
+    </div>
+
 <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Paste your query:</strong> SQL query 500 characters ki ek line mein hai? Unreadable? Just paste it above</li>

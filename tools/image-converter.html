@@ -60,7 +60,35 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Which format to use, and why</h2>
+      <p>The choice is decided by what the image contains, not by preference.</p>
+      <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem">
+        <tr style="background:var(--card)"><th style="padding:.5rem;text-align:left">Format</th><th style="padding:.5rem;text-align:left">Use for</th><th style="padding:.5rem;text-align:left">Avoid for</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem"><strong>JPEG</strong></td><td style="padding:.5rem">Photographs</td><td style="padding:.5rem">Text, line art, anything needing transparency</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem"><strong>PNG</strong></td><td style="padding:.5rem">Screenshots, logos, text, transparency</td><td style="padding:.5rem">Large photographs — files get very big</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem"><strong>WebP</strong></td><td style="padding:.5rem">Web use, where it is 25-35% smaller</td><td style="padding:.5rem">Anywhere a recipient may not support it</td></tr>
+        <tr><td style="padding:.5rem"><strong>SVG</strong></td><td style="padding:.5rem">Logos and icons, at any size</td><td style="padding:.5rem">Photographs — it is not a photo format</td></tr>
+      </table>
+      <p>The reason behind the table: JPEG compression is designed around how the eye perceives photographs, so it discards detail you are unlikely to notice in a continuous-tone image. On the hard edges of text that same compression produces visible fringing, which is why a screenshot saved as JPEG looks dirty around the letters.</p>
+
+      <h2>Lossy and lossless, and why quality degrades</h2>
+      <p>PNG is lossless — decoding returns exactly the pixels that were encoded, and re-saving it costs nothing.</p>
+      <p>JPEG is lossy, and each save discards information permanently. Converting JPEG to PNG does not recover what was lost; it preserves the already-degraded pixels in a lossless container. The damage happened at the first JPEG save.</p>
+      <p>This is why opening a JPEG, making a small edit and saving repeatedly produces an image that visibly deteriorates — generation loss. The habit that avoids it: keep the original, edit from it each time, and export rather than re-save.</p>
+
+      <h2>Transparency, which is where conversions go wrong</h2>
+      <p>JPEG has no alpha channel. Converting a transparent PNG to JPEG must fill the transparent area with something, and the common default is <strong>black</strong>.</p>
+      <p>This is the single most frequent surprise in format conversion: a logo that looked fine on a white page arrives with a black box around it. Where the destination needs JPEG, composite the image onto white deliberately before converting rather than letting the encoder decide.</p>
+
+      <h2>What converting does not remove</h2>
+      <p>A JPEG from a phone carries EXIF metadata — the camera, the settings, the date, and frequently GPS coordinates. Converting the format does not reliably strip it, and some converters carry it across.</p>
+      <p>If an image is going anywhere public, the location data is the part worth caring about. Stripping metadata is a separate operation from converting, and worth doing explicitly.</p>
+      <p>One more thing conversion does not remove: anything visible in the image. Blurring or pixelating a region in a tool that writes a new file does remove it; drawing a black box in a format that keeps layers may not.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Website PNG maang raha hai but photo JPG mein hai? Upload your image here</li>
 <li><strong>Step 2:</strong> Pick the format you actually need — PNG, JPG, WebP, whatever</li>

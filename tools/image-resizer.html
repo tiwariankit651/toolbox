@@ -108,7 +108,32 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Resizing down is safe; resizing up is not</h2>
+      <p>Making an image smaller discards information, and the result is genuinely sharp because every output pixel is computed from several real input pixels.</p>
+      <p>Making it larger has to invent pixels that were never recorded. Interpolation estimates each new pixel from its neighbours, which is a reasonable guess and not detail — so an enlarged image is softer, and enlarging past about 150% is visibly so.</p>
+      <p>The practical rule: always start from the largest original you have. A 400-pixel image enlarged to 1200 cannot be rescued by any setting, because the information is not there to recover.</p>
+
+      <h2>Pixels, dimensions and DPI</h2>
+      <p>These get conflated and the confusion matters when a form specifies one and you supply another.</p>
+      <p>An image file contains a number of pixels — say 1200 × 1800. That is the only thing actually stored. <strong>DPI is not a property of the pixels</strong>; it is an instruction about how large to print them. The same 1200 × 1800 file is 4 × 6 inches at 300 DPI and 12 × 18 inches at 100 DPI, and the file does not change.</p>
+      <p>So "300 DPI" on its own specifies nothing. What a printer needs is pixels: for a 4 × 6 inch print at 300 DPI, 1200 × 1800 pixels. For screen use DPI is irrelevant entirely.</p>
+
+      <h2>Aspect ratio, and the two ways to change it</h2>
+      <p>Resizing to dimensions with a different ratio from the original forces a choice, and tools differ in which they make silently.</p>
+      <p><strong>Stretching</strong> keeps everything and distorts it. Faces become noticeably wrong, and it is almost never what you want.</p>
+      <p><strong>Cropping</strong> keeps the proportions and loses the edges. For a document photograph this is the dangerous one — a passport photo cropped to a different ratio can lose part of the head, and the form will be rejected.</p>
+      <p><strong>Padding</strong> keeps everything undistorted and adds blank space. For a form requiring exact dimensions with a white background, this is usually correct.</p>
+      <p>Check the result against the original before uploading. A silent crop is the most common reason a correctly sized photograph still fails.</p>
+
+      <h2>Hitting an exact file size in KB</h2>
+      <p>Indian government portals specify kilobytes, not pixels, and this trips people up because file size depends on three things at once: the dimensions, the JPEG quality setting, and how much detail the image contains.</p>
+      <p>Approach it in that order. Reduce dimensions to the specified pixels first, since that has the largest effect. Then lower the JPEG quality until the size is met. Only then consider converting to greyscale, which helps for a signature and is unacceptable for a photograph.</p>
+      <p>One thing to avoid: repeatedly saving the same JPEG at lower quality. Each save re-compresses already-compressed data and the artefacts accumulate. Go back to the original and make one pass.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <p>You know that moment when a form says "photo must be exactly 200x230 pixels" and you're like... how do I even do that? Been there. Here's the easy way:</p>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Upload your photo</strong> — drag and drop or click. Any image format works.</li>

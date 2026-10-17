@@ -111,7 +111,35 @@
 </div>
   </div>
 
-  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>Why the conversion is not always possible</h2>
+      <p>JSON and CSV describe different shapes. CSV is a flat table — rows and columns, one value per cell. JSON is a tree and can nest to any depth. So converting JSON to CSV means flattening a tree into a table, and some trees do not flatten.</p>
+      <p>Three cases that cause trouble:</p>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Nested objects</strong> can be flattened by joining the keys — <code>address.city</code> becomes one column. This works and produces wide tables.</li>
+        <li><strong>Arrays of values</strong> have no clean answer. A list of three tags in one record can become three columns, or one column with a separator, or three rows. Each choice loses something.</li>
+        <li><strong>Arrays of objects</strong> are the genuinely hard case. A customer with four orders cannot become one row without either duplicating the customer across four rows or collapsing the orders into an unparseable cell.</li>
+      </ul>
+      <p>Where a tool silently picks one of these, the output may be valid CSV and the wrong data. Checking the row count against the record count catches it immediately.</p>
+
+      <h2>CSV has a specification, and most problems come from ignoring it</h2>
+      <p>CSV looks trivial and has real rules, set out in RFC 4180.</p>
+      <p><strong>A field containing a comma must be quoted.</strong> Otherwise it splits into two fields and every column after it shifts — the classic cause of a file that imports with data in the wrong columns.</p>
+      <p><strong>A quote inside a quoted field is doubled,</strong> not backslash-escaped. So <code>5" pipe</code> is written <code>"5"" pipe"</code>. Backslash escaping is a different convention and parsers following the spec will not accept it.</p>
+      <p><strong>A newline inside a quoted field is legal.</strong> This surprises people who split a CSV file on line breaks — a correct parser must track whether it is inside quotes, which is why line-by-line splitting breaks on real data.</p>
+
+      <h2>Type information does not survive</h2>
+      <p>JSON distinguishes a number from a string, and has a real boolean and null. CSV has only text. So a round trip through CSV loses all of it, and the receiving program guesses.</p>
+      <p>The guessing causes specific damage. A phone number <code>"0987654321"</code> becomes the number 987654321 and the leading zero is gone — the same thing that eats PIN codes. A long numeric ID can be converted to floating point and lose precision in the last digits. A value like <code>1-2</code> may be read as a date. And the string <code>"NULL"</code> becomes indistinguishable from an actual null.</p>
+      <p>Where IDs matter, the defence is to make sure the receiving tool imports that column as text rather than letting it detect the type.</p>
+
+      <h2>Devanagari in Excel, and the BOM</h2>
+      <p>A UTF-8 CSV containing Hindi opens in Excel as question marks or boxes unless the file starts with a byte-order mark. The file is correct; Excel is reading it in the system's regional encoding because nothing told it otherwise.</p>
+      <p>Writing a UTF-8 BOM at the start fixes it, which is why exports here include one. It is three invisible bytes and the difference between a readable file and an unusable one.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Pick your direction:</strong> API gave you JSON but Excel chahiye? Choose JSON → CSV. Got a spreadsheet? Go CSV → JSON</li>
 <li><strong>Paste your data:</strong> Just copy-paste from wherever — Postman, database export, any file</li>
