@@ -161,22 +161,13 @@
 </ul>
 </div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A Kanban-style task board with three columns: To Do, Doing, and Done. Add tasks with priority levels (High/Normal/Low) and optional due dates. Move tasks between columns as you work on them. Color-coded priority indicators and due date display. Clear completed tasks with one button. All data saves automatically in your browser. Perfect for managing study plans, project tasks, daily activities, assignment tracking, and any workflow that benefits from visual task organization.</p>
-<h2>Benefits of Using This Tool</h2>
-<ul style="margin-left:1.5rem;line-height:2">
-<li><strong>100% Free</strong> — No hidden charges, no premium version, no limits on usage</li>
-<li><strong>No Signup Required</strong> — Start using immediately without creating an account</li>
-<li><strong>Complete Privacy</strong> — All processing happens in your browser. Your files are never uploaded to any server</li>
-<li><strong>Works Offline</strong> — After first visit, this tool works without internet connection</li>
-<li><strong>No Installation</strong> — Works directly in your web browser on any device</li>
-<li><strong>Fast Processing</strong> — No waiting for server response, everything is instant</li>
-<li><strong>Mobile Friendly</strong> — Works on phones, tablets, and desktops</li>
-</ul>
+
 <h2>Frequently Asked Questions</h2>
-<details><summary>Is this tool really free?</summary><p>Yes. To-Do List & Kanban Board has no charge, no sign-up and no paid tier. The .json/.txt/.csv output carries no watermark and there is no cap on how often you use it. The only cost is bandwidth on your first visit, when it loads JSZip; after that it is cached. Advertising funds the site, which is why there is no account to create and nothing to upgrade to.</p></details>
-<details><summary>Is my data safe?</summary><p>Yes, and the reason is structural rather than a promise. To-Do List & Kanban Board reads your JSON file with the browser's own file API and does the work on your device — there is no upload step at all, encrypted or otherwise. The processing uses JSZip, which runs inside the page: the library is downloaded to you, not your content to us. Anything remembered between visits sits in local storage under <code>kanban</code>, which is on your device and invisible to us. Clearing browser data clears it.</p></details>
-<details><summary>Does it work on mobile?</summary><p>Yes. To-Do List & Kanban Board runs in the browser rather than as an installed application, so a phone, a tablet and a desktop behave the same. On a phone you can pick a JSON file from storage or capture one directly.</p></details>
-<details><summary>Does it work offline?</summary><p>Yes, after the first visit. To-Do List & Kanban Board is cached by a service worker, so opening it again works with no connection. JSZip is cached on that first visit too, so it does not need fetching again. Your saved work is in local storage, so it is there offline as well. Processing a JSON file never needed a network in the first place.</p></details>
-<details><summary>Can I use this for commercial purposes?</summary><p>Yes. Whatever To-Do List & Kanban Board produces from your JSON file is yours for any purpose, personal or commercial, with no attribution required. The output derives entirely from the JSON file you supplied, so the only rights involved are the ones you already hold in it. We never receive a copy, so there is nothing we could claim over it even in principle.</p></details>
+<details><summary>Is this tool really free?</summary><p>Yes. To-Do List & Kanban Board has no charge, no sign-up and no paid tier. The .json/.txt/.csv output carries no watermark and there is no cap on how often you use it. The one network request To-Do List & Kanban Board makes is for JSZip on your first visit, so that it can bundle the results into a single download. The only thing To-Do List & Kanban Board ever fetches is JSZip itself, on your first visit; the site is funded by advertising rather than by a paid tier.</p></details>
+<details><summary>Is my data safe?</summary><p>Yes, and it follows from how To-Do List & Kanban Board is built rather than from a policy we could change. To-Do List & Kanban Board reads your JSON file with the browser's own file API and does the work on your device — there is no upload step at all, encrypted or otherwise. Anything remembered between visits sits in local storage under <code>kanban</code>, which is on your device and invisible to us. Clearing browser data clears it.</p></details>
+<details><summary>Does it work on mobile?</summary><p>Yes. To-Do List & Kanban Board runs in the browser rather than as an installed application, so a phone, a tablet and a desktop behave the same.</p></details>
+<details><summary>Does it work offline?</summary><p>Yes, after the first visit. To-Do List & Kanban Board is cached by a service worker, so opening it again works with no connection. What you saved is under <code>kanban</code> in this browser, which is readable with no connection. Handling a JSON file was never a networked operation in To-Do List & Kanban Board, so offline is not a reduced mode.</p></details>
+<details><summary>Can I use this for commercial purposes?</summary><p>Yes. Whatever To-Do List & Kanban Board produces from your JSON file is yours for any purpose, personal or commercial, with no attribution required. The output derives entirely from the JSON file you supplied. The .json, .zip file To-Do List & Kanban Board produces is written on your machine and never passes through ours, so there is nothing for us to hold a claim over.</p></details>
 </div>
   </div>
   <div class="td-modal" id="taskModal">
@@ -517,12 +508,12 @@ function exportZip(){
     '=================\n\n'+
     'This ZIP was created by the FreeToolHubs To-Do List tool.\n\n'+
     'FILES:\n'+
-    '  todo_backup.json  Full backup of ALL your lists. To restore, open the\n'+
+    '  todo_backup.json Full backup of ALL your lists. To restore, open the\n'+
     '                    To-Do tool and use "Import" (or drag this JSON onto the\n'+
     '                    drop zone). This replaces your current data.\n'+
-    '  checklist.txt     Human-readable checklist of the current list, with\n'+
+    '  checklist.txt Human-readable checklist of the current list, with\n'+
     '                    [x] for done and [ ] for pending tasks and subtasks.\n'+
-    '  tasks.csv         The current list as a spreadsheet (open in Excel,\n'+
+    '  tasks.csv The current list as a spreadsheet (open in Excel,\n'+
     '                    Google Sheets, etc.).\n\n'+
     'Only todo_backup.json can be re-imported. The .txt and .csv are for reading.\n');
   zip.generateAsync({type:'blob'}).then(function(blob){
