@@ -92,7 +92,29 @@
         <div id="progress" style="display:none;margin-top:.6rem"><div style="background:var(--card);border-radius:8px;overflow:hidden;height:14px"><div id="progressBar" style="height:100%;width:0;background:var(--gradient);transition:width .2s"></div></div><p class="info" id="progressTxt" style="text-align:center"></p></div>
       </div>
     </div>
-    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+        <div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+
+      <h2>What converts well, and what turns to mud</h2>
+      <p>A sketch effect works by finding edges and discarding colour, so the result depends entirely on whether the photograph has edges to find.</p>
+      <p><strong>Works well:</strong> a clear subject against a plain background, strong directional light that creates defined shadows, visible texture, and a reasonably close subject. Portraits and buildings are the reliable cases.</p>
+      <p><strong>Turns to mud:</strong> flat overcast lighting, where nothing has a distinct boundary. A busy background at the same distance as the subject, where the edge detection cannot tell them apart. Very dark or very bright photographs, where the detail is already lost before any processing. And anything heavily compressed, because JPEG artefacts are themselves edges and get drawn as if they were real.</p>
+      <p>The useful test before converting: squint at the photograph. If you can still make out the subject's shape, a sketch will work. If it becomes an indistinct blob, no setting will save it.</p>
+
+      <h2>What the controls are actually doing</h2>
+      <p>The typical pipeline is three steps, and understanding them makes the settings predictable rather than trial and error.</p>
+      <p>First the image is converted to greyscale, because a sketch has no colour. Second it is blurred and the blurred version is compared against the original — where they differ most is where an edge is, which is how edges are found without any understanding of the content. Third the result is inverted and its contrast stretched, turning the edge map into something that reads as pencil on paper.</p>
+      <p>So the blur radius is the control that matters most. A small radius finds fine detail and also finds noise. A large radius finds only the major outlines and loses texture. The best value depends on how much detail your photograph genuinely has, which is why one setting does not suit every image.</p>
+
+      <h2>Resolution, and why the output can look worse than expected</h2>
+      <p>Edge detection operates on pixels, so the amount of detail available is fixed by the source resolution. A 600-pixel-wide photograph has no fine detail to find, and enlarging it afterwards enlarges the edges into soft grey smudges.</p>
+      <p>Start from the largest version you have. If the result will be printed, work at the print resolution from the beginning rather than upscaling at the end — upscaling a sketch is particularly unforgiving because the lines were thin to begin with.</p>
+
+      <h2>What it is reasonable to do with the result</h2>
+      <p>A sketch of your own photograph is yours. A sketch of someone else's photograph is a derivative of their work, and running an effect over it does not change who owns it — this catches people who assume a transformation creates something new. It does not.</p>
+      <p>For a portrait of a person, the subject's consent matters separately from the photographer's copyright, particularly if the result is going anywhere public.</p>
+    </div>
+
+<div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
 <ol style="margin-left:1.5rem;line-height:2">
 <li><strong>Step 1:</strong> Want to turn your selfie into a pencil drawing? No Photoshop needed! Just upload any photo</li>
 <li><strong>Step 2:</strong> Pick a sketch style — light for subtle, detailed for dramatic effect</li>
