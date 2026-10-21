@@ -264,7 +264,8 @@ function showCard(){
 }
 function flipCard(){document.getElementById("flashcard").classList.toggle("flipped")}
 function rateCard(quality){
-  if(!deck.length)return;
+  /* Silent before: rating a card with no deck chosen did nothing. */
+  if(!deck.length){notify("Pick a deck first, then rate the cards as you go.","warn");return}
   sm2(cardKey(deck[idx]),quality);
   if(quality>=3)score.know++;else score.dont++;
   updateScore();nextCard();
@@ -272,6 +273,9 @@ function rateCard(quality){
 function nextCard(){if(!deck.length)return;idx=(idx+1)%deck.length;showCard()}
 function prevCard(){if(!deck.length)return;idx=(idx-1+deck.length)%deck.length;showCard()}
 function shuffleDeck(){
+  /* Ran over an empty array and changed nothing, so pressing Shuffle
+     before choosing a deck looked broken. */
+  if(!deck.length){notify("Pick a deck first \u2014 then Shuffle reorders it.","warn");return}
   for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=deck[i];deck[i]=deck[j];deck[j]=t;}
   idx=0;showCard();
 }

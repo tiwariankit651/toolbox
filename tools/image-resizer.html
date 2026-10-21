@@ -50,10 +50,10 @@
       </div>
       <div class="row"><div><label>Width <span id="unitW">px</span></label><div style="display:flex;gap:.3rem;align-items:center"><button onclick="adjustSize('w',-10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">−</button><input type="number" id="w" placeholder="Width" step="any" style="width:90px"><button onclick="adjustSize('w',10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">+</button></div></div><div><label>Height <span id="unitH">px</span></label><div style="display:flex;gap:.3rem;align-items:center"><button onclick="adjustSize('h',-10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">−</button><input type="number" id="h" placeholder="Height" step="any" style="width:90px"><button onclick="adjustSize('h',10)" style="padding:.3rem .6rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:1rem">+</button></div></div></div>
       <div class="row" style="margin:.5rem 0;gap:.3rem;flex-wrap:wrap"><label>Adjust by:</label>
-        <button class="btn btn-outline" onclick="stepSize=1" style="font-size:.75rem;padding:.2rem .5rem">±1px</button>
-        <button class="btn btn-outline" onclick="stepSize=10" style="font-size:.75rem;padding:.2rem .5rem;background:var(--accent-strong);color:#fff">±10px</button>
-        <button class="btn btn-outline" onclick="stepSize=50" style="font-size:.75rem;padding:.2rem .5rem">±50px</button>
-        <button class="btn btn-outline" onclick="stepSize=100" style="font-size:.75rem;padding:.2rem .5rem">±100px</button>
+        <button class="btn btn-outline" id="step1" style="font-size:.75rem;padding:.2rem .5rem" onclick="setStep(1)">±1px</button>
+        <button class="btn btn-outline" id="step10" style="font-size:.75rem;padding:.2rem .5rem" onclick="setStep(10)">±10px</button>
+        <button class="btn btn-outline" id="step50" style="font-size:.75rem;padding:.2rem .5rem" onclick="setStep(50)">±50px</button>
+        <button class="btn btn-outline" id="step100" style="font-size:.75rem;padding:.2rem .5rem" onclick="setStep(100)">±100px</button>
         <button class="btn btn-outline" onclick="scaleBy(0.5)" style="font-size:.75rem;padding:.2rem .5rem">50%</button>
         <button class="btn btn-outline" onclick="scaleBy(0.75)" style="font-size:.75rem;padding:.2rem .5rem">75%</button>
         <button class="btn btn-outline" onclick="scaleBy(1.5)" style="font-size:.75rem;padding:.2rem .5rem">150%</button>
@@ -182,8 +182,31 @@
   <script src="../js/common.js"></script>
   <script>let file,ratio,origW,origH,stepSize=10;
 function adjustSize(dim,dir){var el=document.getElementById(dim);var v=parseFloat(el.value)||0;el.value=Math.max(1,v+dir*stepSize);if(document.getElementById("lock").checked){if(dim==="w")document.getElementById("h").value=Math.round(el.value/ratio);else document.getElementById("w").value=Math.round(el.value*ratio)}}
+/* The four step buttons only assigned stepSize, and the 10px button carried a
+   hardcoded highlight — so after pressing 50px the highlight stayed on 10px
+   and nothing told the user which step was active. */
+function setStep(n){
+  stepSize=n;
+  ["1","10","50","100"].forEach(function(k){
+    var b=document.getElementById("step"+k);
+    if(!b)return;
+    b.className="btn btn-outline";
+    b.style.background="";
+    b.style.color="";
+  });
+  var on=document.getElementById("step"+n);
+  if(on){on.style.background="var(--accent-strong)";on.style.color="#fff"}
+}
+window.setStep=setStep;
+/* stepSize defaults to 10; apply the matching highlight on load, since
+   the markup no longer carries it. */
+setStep(10);
 function scaleBy(factor){var w=document.getElementById("w"),h=document.getElementById("h");w.value=Math.round((parseFloat(w.value)||origW)*factor);h.value=Math.round((parseFloat(h.value)||origH)*factor)}
-function upscale(factor){if(!origW)return;document.getElementById("w").value=Math.round(origW*factor);document.getElementById("h").value=Math.round(origH*factor);document.getElementById("unit").value="px";convertUnit()}
+function upscale(factor){
+  /* Returned silently before, so clicking 2x with no image loaded did
+     nothing and gave no reason. */
+  if(!origW){notify("Load an image first \u2014 the multiplier scales its real size.","warn");return}
+document.getElementById("w").value=Math.round(origW*factor);document.getElementById("h").value=Math.round(origH*factor);document.getElementById("unit").value="px";convertUnit()}
 setupDrop("drop","inp",f=>{
   /* Resizing a folder of photos to the same size is the common job, so keep the
      whole list rather than only the first file. */

@@ -78,7 +78,7 @@
       </div>
       <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill" style="width:0%"></div></div>
       <div class="row" style="margin-top:.5rem">
-        <button class="btn" id="translateBtn" onclick="translate()">Translate</button>
+        <button class="btn" id="translateBtn" onclick="doTranslate()">Translate</button>
       </div>
       <p class="info" id="status"></p>
 
@@ -187,7 +187,7 @@ function onSrcInput(){
   if(len>5000)el.className="char-count warn";
   else el.className="char-count";
   clearTimeout(translateTimer);
-  translateTimer=setTimeout(translate,800);
+  translateTimer=setTimeout(doTranslate,800);
 }
 
 function swapLanguages(){
@@ -244,9 +244,19 @@ async function fetchWithRetry(url){
   return res;
 }
 
-async function translate(){
+/* Named doTranslate, not translate: `translate` is a standard
+   HTMLElement boolean property, and inside an inline onclick the
+   element is in scope before window — so translate() resolved to
+   that boolean and threw "translate is not a function". */
+async function doTranslate(){
   var text=document.getElementById("src").value.trim();
-  if(!text){document.getElementById("out").value="";document.getElementById("status").textContent="";return}
+  if(!text){
+    /* Cleared the output and said nothing, so the button looked dead. */
+    document.getElementById("out").value="";
+    document.getElementById("status").textContent="";
+    notify("Type or paste the text you want translated.","warn");
+    return
+  }
   if(isTranslating)return;
   isTranslating=true;
   var from=document.getElementById("from").value;
@@ -269,7 +279,11 @@ async function translate(){
     for(var i=0;i<chunks.length;i++){
       if(chunks.length>1)statusEl.textContent="⏳ Translating chunk "+(i+1)+"/"+chunks.length+"...";
       progressFill.style.width=((i+1)/chunks.length*100)+"%";
-      var langPair=(from==="auto"?"":from)+"|"+to;
+      /* "auto" mapped to an empty string here, giving langpair=|hi, which
+         MyMemory rejects with INVALID LANGUAGE PAIR SPECIFIED — so the tool
+         failed on its own default setting. The token the API accepts is
+         Autodetect, verified against the live endpoint. */
+      var langPair=(from==="auto"?"Autodetect":from)+"|"+to;
       var url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(chunks[i])+"&langpair="+langPair;
       var res=await fetchWithRetry(url);
       var data=await res.json();
