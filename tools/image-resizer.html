@@ -201,7 +201,15 @@ window.setStep=setStep;
 /* stepSize defaults to 10; apply the matching highlight on load, since
    the markup no longer carries it. */
 setStep(10);
-function scaleBy(factor){var w=document.getElementById("w"),h=document.getElementById("h");w.value=Math.round((parseFloat(w.value)||origW)*factor);h.value=Math.round((parseFloat(h.value)||origH)*factor)}
+function scaleBy(factor){
+  /* Fell back to origW, which is undefined before an image loads, so the
+     percentage buttons wrote NaN or nothing and said nothing. Same fault
+     as upscale() had. */
+  var w=document.getElementById("w"),h=document.getElementById("h");
+  var bw=parseFloat(w.value)||origW, bh=parseFloat(h.value)||origH;
+  if(!bw||!bh){notify("Load an image first, or type a width to scale from.","warn");return}
+  w.value=Math.round(bw*factor);
+  h.value=Math.round(bh*factor)}
 function upscale(factor){
   /* Returned silently before, so clicking 2x with no image loaded did
      nothing and gave no reason. */

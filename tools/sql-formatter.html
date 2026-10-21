@@ -306,7 +306,12 @@ function showValidation(msgs){
 function fmt(){
   updateDialectNote();
   var raw=$("input").value.trim();
-  if(!raw){$("output").value="";$("highlighted").innerHTML="";showValidation([]);return}
+  if(!raw){
+    /* Cleared the output silently before, so the button looked dead. */
+    $("output").value="";$("highlighted").innerHTML="";showValidation([]);
+    notify("Paste a query into the editor first.","warn");
+    return
+  }
   var msgs=validate(raw);
   showValidation(msgs);
   var hasFatal=msgs.some(function(m){return m.level==="error"});
