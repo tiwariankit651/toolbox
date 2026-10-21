@@ -299,7 +299,20 @@ function srHandleFile(file){
   }
   var reader = new FileReader();
   reader.onload = function(ev) {
-    document.getElementById('srText').value = ev.target.result;
+    /* The extension and MIME checks above pass for a .txt that actually
+       contains binary, and this then loaded null bytes as reading material and
+       reported success. A decoded binary file shows U+FFFD replacement
+       characters, which is the reliable signal. */
+    var txt = ev.target.result || '';
+    if (txt.indexOf('\u0000') !== -1 || (txt.match(/\uFFFD/g) || []).length > 3) {
+      notify('That file is not readable text \u2014 it looks like a binary file renamed to .txt.', 'error');
+      return;
+    }
+    if (!txt.trim()) {
+      notify('That file is empty.', 'warn');
+      return;
+    }
+    document.getElementById('srText').value = txt;
     srUpdateStats();
     notify('Loaded '+file.name,'ok');
   };
