@@ -531,6 +531,13 @@ function downloadNote(){
   var note=getNote(activeId);
   /* Silent before: pressing .txt with no note open did nothing. */
   if(!note){notify("Open a note first, then save it as .txt.","warn");return}
+  /* A note can exist with empty content — a new note starts blank — and
+     this wrote a 0-byte file, which opens empty and looks like a broken
+     download rather than an empty note. */
+  if(!note.content||!note.content.trim()){
+    notify("This note is empty. Write something first.","warn");
+    return
+  }
   var blob=new Blob([note.content],{type:'text/plain'});
   dlFile(blob,note.title+'.txt');
 }
