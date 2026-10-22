@@ -1,3 +1,9 @@
+/* Cross-tab write tracking. Declared FIRST: storeSet reads these, and code
+   further up this file calls storeSet at load time (recent-tools list). Left
+   at the bottom, hoisting made them exist but undefined at that point, and
+   storeSet threw on every tool page that reached it. */
+var _lastWrote = Object.create(null);
+var _staleKeys = Object.create(null);
 // Shared utilities
 function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';try{localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark')}catch(e){}document.querySelectorAll('canvas').forEach(function(c){if(c.style.background==='#fff'||c.style.background==='white')c.style.background=document.body.classList.contains('light')?'#fff':'#fff'})}
 try{if(localStorage.getItem('theme')==='light')document.body.classList.add('light')}catch(e){}
@@ -36,7 +42,7 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=5').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=6').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
@@ -262,8 +268,18 @@ function storeGet(key, fallback) {
   }
 }
 function storeSet(key, value, quiet) {
+  /* Another tab changed this key since we last wrote it. Writing our
+     stale state here is what silently destroyed the other tab's work. */
+  if (_staleKeys[key]) {
+    notify("Another tab of this tool has newer data. Reload this tab to see it, "
+         + "or your changes here will not be saved.", "warn");
+    return false;
+  }
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    /* Remember what we stored, so a later storage event can tell whether
+       another tab has diverged from it. */
+    try { _lastWrote[key] = localStorage.getItem(key); } catch (e) {}
     return true;
   } catch (e) {
     if (!quiet) {
@@ -288,8 +304,18 @@ function storeGetRaw(key, fallback) {
   }
 }
 function storeSetRaw(key, value, quiet) {
+  /* Another tab changed this key since we last wrote it. Writing our
+     stale state here is what silently destroyed the other tab's work. */
+  if (_staleKeys[key]) {
+    notify("Another tab of this tool has newer data. Reload this tab to see it, "
+         + "or your changes here will not be saved.", "warn");
+    return false;
+  }
   try {
     localStorage.setItem(key, String(value));
+    /* Remember what we stored, so a later storage event can tell whether
+       another tab has diverged from it. */
+    try { _lastWrote[key] = localStorage.getItem(key); } catch (e) {}
     return true;
   } catch (e) {
     if (!quiet) {
@@ -801,3 +827,40 @@ window.toolHistory = toolHistory;
 window.toolExport = toolExport;
 window.numField = numField;
 window.checkFields = checkFields;
+
+
+/* ---- Cross-tab write protection ----------------------------------------
+   Two tabs of the same tool share one localStorage. Reproduced on notes:
+   write a note in tab B, then type in tab A, and tab A writes its stale
+   in-memory state over the key — tab B's note is gone with no warning.
+   Confirmed the same on todo and budget-tracker. 33 tools write a whole
+   state object to one key, and nothing listened for the `storage` event,
+   which browsers fire in every OTHER tab when one tab writes.
+
+   So: track what this tab wrote, notice when another tab changes the same
+   key, and refuse the next overwrite instead of destroying their work.
+   Refusing beats merging — two unknown object shapes cannot be merged
+   safely from a generic helper — and it beats the current silent loss. */
+/* _lastWrote and _staleKeys are declared at the top of this file. */
+
+try {
+  window.addEventListener('storage', function (e) {
+    /* e.key is null when another tab calls clear() */
+    if (!e.key) { _staleKeys = Object.create(null); _lastWrote = Object.create(null); return; }
+    /* Only a key this tab has also written can be clobbered by this tab. */
+    if (!(e.key in _lastWrote)) return;
+    /* If the other tab wrote exactly what we hold, there is nothing to lose. */
+    if (e.newValue === _lastWrote[e.key]) return;
+    _staleKeys[e.key] = true;
+  });
+} catch (e) { /* no window, or storage events unavailable */ }
+
+/* Let a tool opt out for a key it genuinely owns per tab, and let the user
+   deliberately take over after being warned. */
+function storeClaim(key) {
+  delete _staleKeys[key];
+  try { _lastWrote[key] = localStorage.getItem(key); } catch (e) {}
+}
+window.storeClaim = storeClaim;
+function storeIsStale(key) { return !!_staleKeys[key]; }
+window.storeIsStale = storeIsStale;
