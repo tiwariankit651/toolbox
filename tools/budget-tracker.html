@@ -3,7 +3,13 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Budget Tracker - Monthly Expense Manager Free | FreeToolHubs</title>
   <meta name="description" content="Where does your money go every month? Track expenses by category, see visual charts & export to CSV. Auto-saves, no signup needed.">
@@ -254,10 +260,10 @@ function load(){
 function mapOldCat(c){var map={food:'dining',bills:'utilities',health:'medical'};return map[c]||c||'other';}
 function parseOldDate(s){
   // old used toLocaleDateString('en-IN') => dd/mm/yyyy
-  if(!s)return new Date().toISOString().slice(0,10);
+  if(!s)return _localYMD();
   var m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if(m)return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
-  var d=new Date(s);return isNaN(d)?new Date().toISOString().slice(0,10):d.toISOString().slice(0,10);
+  var d=new Date(s);return isNaN(d)?_localYMD():_localYMD(d);
 }
 function save(){storeSet(STORE_KEY, data);}
 
@@ -284,7 +290,7 @@ function toWords(num){
 }
 
 /* ---- month helpers ---- */
-function curMonth(){return document.getElementById('monthPick').value||new Date().toISOString().slice(0,7);}
+function curMonth(){return document.getElementById('monthPick').value||_localYMD().slice(0,7);}
 function txnMonth(t){return (t.date||'').slice(0,7);}
 function monthTxns(m){return data.txns.filter(function(t){return txnMonth(t)===m;});}
 
@@ -308,7 +314,7 @@ function addTxn(){
     type:document.getElementById('type').value,
     cat:document.getElementById('category').value,
     method:document.getElementById('method').value,
-    date:document.getElementById('txnDate').value||new Date().toISOString().slice(0,10),
+    date:document.getElementById('txnDate').value||_localYMD(),
     note:document.getElementById('note').value.trim()
   };
   data.txns.push(t);save();
@@ -520,7 +526,7 @@ function renderInsights(){
   var change=prevExp?((totalExp-prevExp)/prevExp*100):null;
   // avg daily
   var daysInMonth=new Date(base.getFullYear(),base.getMonth()+1,0).getDate();
-  var today=new Date();var divisor=(m===today.toISOString().slice(0,7))?Math.max(1,today.getDate()):daysInMonth;
+  var today=new Date();var divisor=(m===_localYMD(today).slice(0,7))?Math.max(1,today.getDate()):daysInMonth;
   var avgDaily=totalExp/divisor;
   // 50/30/20
   var g={needs:0,wants:0,savings:0};
@@ -594,7 +600,7 @@ function txnsCsvText(){
 
 function exportCSV(){
   if(!data.txns.length){notify('No transactions to export.', 'warn');return;}
-  var blob=new Blob([txnsCsvText()],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='budget_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  var blob=new Blob([txnsCsvText()],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='budget_'+_localYMD()+'.csv';a.click();
 }
 
 /* The pack an accountant actually needs: the re-importable JSON backup, the
@@ -654,8 +660,8 @@ function clearAll(){if(confirm('Delete ALL budget data? This cannot be undone.')
 
 /* ---- init ---- */
 load();
-document.getElementById('monthPick').value=new Date().toISOString().slice(0,7);
-document.getElementById('txnDate').value=new Date().toISOString().slice(0,10);
+document.getElementById('monthPick').value=_localYMD().slice(0,7);
+document.getElementById('txnDate').value=_localYMD();
 fillCategorySelects();
 renderAll();
 setupDrop('budgetDrop','importJson',importBudgetFiles);

@@ -3,7 +3,14 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _parseYMD(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s);return m?new Date(+m[1],m[2]-1,+m[3]):new Date(s)}
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Habit Tracker - Track Daily Habits Free Online</title>
   <meta name="description" content="Build daily habits with streak tracking & GitHub-style heatmap. See your longest streak, weekly progress. Small habits = big results!">
@@ -157,7 +164,7 @@
   <script>
 /* ===== HABIT TRACKER ADVANCED ===== */
 var HT_KEY='habit_tracker_v2';
-var TODAY=new Date().toISOString().split('T')[0];
+var TODAY=_localYMD();
 document.getElementById('today').textContent='Today: '+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 function migrateOld(){
@@ -280,11 +287,11 @@ function renderPanel(t){if(t==='habits')renderHabits();else if(t==='heatmap')ren
 
 function isScheduled(h,dateStr){
   if(h.schedule==='daily')return true;
-  if(h.schedule==='weekdays'){var dow=new Date(dateStr).getDay();return(h.days||[]).indexOf(dow)>=0;}
+  if(h.schedule==='weekdays'){var dow=_parseYMD(dateStr).getDay();return(h.days||[]).indexOf(dow)>=0;}
   if(h.schedule==='weekly'){
-    var weekStart=new Date(dateStr);weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+    var weekStart=_parseYMD(dateStr);weekStart.setDate(weekStart.getDate()-weekStart.getDay());
     var count=0;
-    for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var k=d.toISOString().split('T')[0];if(h.log&&h.log[k])count++;}
+    for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var k=_localYMD(d);if(h.log&&h.log[k])count++;}
     return count<(h.timesPerWeek||3);
   }
   return true;
@@ -298,7 +305,7 @@ function getVal(h,dateStr){if(!h.log||!h.log[dateStr])return 0;if(h.type==='yesn
 function getStreak(h){
   var streak=0;var d=new Date();
   for(var j=0;j<365;j++){
-    var key=d.toISOString().split('T')[0];
+    var key=_localYMD(d);
     if(!isScheduled(h,key)){d.setDate(d.getDate()-1);continue;}
     if(isDone(h,key))streak++;else if(j>0)break;
     d.setDate(d.getDate()-1);
@@ -311,7 +318,7 @@ function getLongestStreak(h){
   keys.forEach(function(k){
     if(!isScheduled(h,k))return;
     if(!isDone(h,k)){cur=0;prev=null;return;}
-    if(prev){var diff=(new Date(k)-new Date(prev))/86400000;var gap=false;for(var d=new Date(prev);;){d.setDate(d.getDate()+1);var dk=d.toISOString().split('T')[0];if(dk>=k)break;if(isScheduled(h,dk)){gap=true;break;}}if(gap)cur=1;else cur++;}
+    if(prev){var diff=(_parseYMD(k)-_parseYMD(prev))/86400000;var gap=false;for(var d=_parseYMD(prev);;){d.setDate(d.getDate()+1);var dk=_localYMD(d);if(dk>=k)break;if(isScheduled(h,dk)){gap=true;break;}}if(gap)cur=1;else cur++;}
     else cur=1;
     if(cur>max)max=cur;prev=k;
   });
@@ -319,7 +326,7 @@ function getLongestStreak(h){
 }
 function getCompletionRate(h,days){
   var scheduled=0;var done=0;
-  for(var i=0;i<days;i++){var d=new Date();d.setDate(d.getDate()-i);var k=d.toISOString().split('T')[0];
+  for(var i=0;i<days;i++){var d=new Date();d.setDate(d.getDate()-i);var k=_localYMD(d);
     if(isScheduled(h,k)){scheduled++;if(isDone(h,k))done++;}
   }
   return scheduled?Math.round(done/scheduled*100):0;
@@ -331,7 +338,7 @@ function renderHabits(){
   H.habits.forEach(function(h,i){
     var done=isDone(h,TODAY);var val=getVal(h,TODAY);var streak=getStreak(h);var longest=getLongestStreak(h);
     var totalDone=0;Object.keys(h.log||{}).forEach(function(k){if(isDone(h,k))totalDone++;});
-    var last7='';for(var j=6;j>=0;j--){var d=new Date();d.setDate(d.getDate()-j);var k=d.toISOString().split('T')[0];var c=isDone(h,k)?h.color||'#22c55e':'rgba(148,148,184,.2)';last7+='<span style="display:inline-block;width:18px;height:18px;border-radius:4px;margin:1px;background:'+c+'"></span>';}
+    var last7='';for(var j=6;j>=0;j--){var d=new Date();d.setDate(d.getDate()-j);var k=_localYMD(d);var c=isDone(h,k)?h.color||'#22c55e':'rgba(148,148,184,.2)';last7+='<span style="display:inline-block;width:18px;height:18px;border-radius:4px;margin:1px;background:'+c+'"></span>';}
     html+='<div class="ht-card" style="border-left:4px solid '+(h.color||'#6366f1')+'">';
     html+='<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">';
     if(h.type==='yesno'){
@@ -409,7 +416,7 @@ function buildHeatmapHTML(habit){
     html+='<div style="display:flex;flex-direction:column;gap:2px;flex:1">';
     for(var d=0;d<7;d++){
       var dt=new Date();dt.setDate(dt.getDate()-(w*7+(6-d)));
-      var key=dt.toISOString().split('T')[0];
+      var key=_localYMD(dt);
       var intensity=0;
       if(habit){intensity=isDone(habit,key)?1:getVal(habit,key)>0?0.5:0;}
       else{var total=H.habits.length;if(total){var doneCount=0;H.habits.forEach(function(h){if(isDone(h,key))doneCount++;});intensity=doneCount/total;}}
@@ -433,12 +440,12 @@ function renderCalendar(){
   var h=H.habits[calHabitIdx];
   var first=new Date(calY,calM,1);var last=new Date(calY,calM+1,0);
   var startDow=first.getDay();var totalDays=last.getDate();
-  var todayStr=new Date().toISOString().split('T')[0];
+  var todayStr=_localYMD();
   html+='<div class="ht-cal-grid">';
   ['S','M','T','W','T','F','S'].forEach(function(d){html+='<div class="ht-cal-head">'+d+'</div>';});
   for(var i=0;i<startDow;i++)html+='<div></div>';
   for(var d=1;d<=totalDays;d++){
-    var dt=new Date(calY,calM,d);var k=dt.toISOString().split('T')[0];
+    var dt=new Date(calY,calM,d);var k=_localYMD(dt);
     var done=isDone(h,k);var isT=k===todayStr;
     html+='<div class="ht-cal-cell'+(done?' done':'')+(isT?' today':'')+'" onclick="toggleCalDay('+calHabitIdx+',\''+k+'\')" title="'+k+'">'+d+'</div>';
   }
@@ -458,7 +465,7 @@ function renderStats(){
   var html='<h3>📊 Stats Dashboard</h3>';
   /* Best day of week */
   var dowCounts=[0,0,0,0,0,0,0];var dowTotal=[0,0,0,0,0,0,0];
-  for(var i=0;i<90;i++){var d=new Date();d.setDate(d.getDate()-i);var k=d.toISOString().split('T')[0];var dow=d.getDay();
+  for(var i=0;i<90;i++){var d=new Date();d.setDate(d.getDate()-i);var k=_localYMD(d);var dow=d.getDay();
     H.habits.forEach(function(h){if(isScheduled(h,k)){dowTotal[dow]++;if(isDone(h,k))dowCounts[dow]++;}});
   }
   var bestDow=0;var bestPct=0;dowCounts.forEach(function(c,i){var p=dowTotal[i]?c/dowTotal[i]*100:0;if(p>bestPct){bestPct=p;bestDow=i;}});
@@ -480,7 +487,7 @@ function drawWeekChart(){
   var canvas=document.getElementById('htWeekChart');if(!canvas)return;
   var ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth*2;canvas.height=360;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
+  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(_localYMD(d));}
   var vals=days.map(function(day){var sched=0;var done=0;H.habits.forEach(function(h){if(isScheduled(h,day)){sched++;if(isDone(h,day))done++;}});return sched?Math.round(done/sched*100):0;});
   var barW=canvas.width/9;var padB=40;var padT=20;var cH=canvas.height-padB-padT;
   days.forEach(function(day,i){
@@ -489,7 +496,7 @@ function drawWeekChart(){
     grad.addColorStop(0,'#6366f1');grad.addColorStop(1,'#8b5cf6');
     ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect(x-barW*0.3,canvas.height-padB-h,barW*0.6,h,8);ctx.fill();
     ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text2')||'#9494b8';ctx.font='20px sans-serif';ctx.textAlign='center';
-    ctx.fillText(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(day).getDay()],x,canvas.height-10);
+    ctx.fillText(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][_parseYMD(day).getDay()],x,canvas.height-10);
     if(vals[i]>0)ctx.fillText(vals[i]+'%',x,canvas.height-padB-h-8);
   });
 }

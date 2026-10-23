@@ -3,7 +3,14 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _parseYMD(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s);return m?new Date(+m[1],m[2]-1,+m[3]):new Date(s)}
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Calendar 2026 - Upcoming Government Exams India | UPSC SSC Banking Railway Dates</title>
   <meta name="description" content="All 2026 government exam dates in one place — SSC, UPSC, IBPS, RRB. Add directly to Google Calendar with one click. Never miss a deadline!">
@@ -416,7 +423,7 @@ function getFiltered() {
   var q = document.getElementById('searchBox').value.toLowerCase().trim();
   return getAllExams().filter(function(e) {
     if (cat !== 'all' && e.cat !== cat) return false;
-    if (month !== 'all' && new Date(e.tentativeDate).getMonth() !== parseInt(month)) return false;
+    if (month !== 'all' && _parseYMD(e.tentativeDate).getMonth() !== parseInt(month)) return false;
     if (q && (e.name + ' ' + e.body + ' ' + e.detail + ' ' + e.cat).toLowerCase().indexOf(q) === -1) return false;
     return true;
   }).sort(function(a, b) { return a.tentativeDate.localeCompare(b.tentativeDate); });
@@ -430,7 +437,7 @@ function renderList() {
     var days = getDaysLeft(e.tentativeDate);
     var dc = daysClass(days);
     var isStarred = !!starred[e.id];
-    var dStr = new Date(e.tentativeDate).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'});
+    var dStr = _parseYMD(e.tentativeDate).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'});
     var daysText = days > 0 ? days + ' days left' : days === 0 ? 'Today!' : 'Completed';
     html += '<div class="ec-card' + (isStarred ? ' starred' : '') + '">';
     html += '<button class="ec-star" onclick="toggleStar(\'' + e.id + '\')" title="' + (isStarred ? 'Unstar' : 'Star') + '">' + (isStarred ? '⭐' : '☆') + '</button>';
@@ -459,7 +466,7 @@ function renderMyExams() {
   mine.forEach(function(e) {
     var days = getDaysLeft(e.tentativeDate);
     var dc = daysClass(days);
-    var dStr = new Date(e.tentativeDate).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'});
+    var dStr = _parseYMD(e.tentativeDate).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'});
     var pct = days > 0 ? Math.max(0, Math.min(100, 100 - (days / 365 * 100))) : 100;
     html += '<div class="ec-card starred" style="flex-direction:column;align-items:stretch">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">';
@@ -484,7 +491,7 @@ function renderCalendar() {
   var allExams = getAllExams();
   var examsByDay = {};
   allExams.forEach(function(e) {
-    var d = new Date(e.tentativeDate);
+    var d = _parseYMD(e.tentativeDate);
     if (d.getMonth() === calMonth && d.getFullYear() === calYear) {
       var day = d.getDate();
       if (!examsByDay[day]) examsByDay[day] = [];
@@ -525,7 +532,7 @@ function changeMonth(delta) {
 function showDayExams(y, m, d) {
   var allExams = getAllExams();
   var dayExams = allExams.filter(function(e) {
-    var ed = new Date(e.tentativeDate);
+    var ed = _parseYMD(e.tentativeDate);
     return ed.getFullYear() === y && ed.getMonth() === m && ed.getDate() === d;
   });
   if (!dayExams.length) return;
@@ -599,8 +606,8 @@ function exportICS() {
   var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FreeToolHubs//ExamCalendar//EN', 'CALSCALE:GREGORIAN'];
   mine.forEach(function(e) {
     var dStr = e.tentativeDate.replace(/-/g, '');
-    var end = new Date(e.tentativeDate); end.setDate(end.getDate() + 1);
-    var eStr = end.toISOString().split('T')[0].replace(/-/g, '');
+    var end = _parseYMD(e.tentativeDate); end.setDate(end.getDate() + 1);
+    var eStr = _localYMD(end).replace(/-/g, '');
     lines.push('BEGIN:VEVENT');
     lines.push('DTSTART;VALUE=DATE:' + dStr);
     lines.push('DTEND;VALUE=DATE:' + eStr);
@@ -624,7 +631,7 @@ function exportICS() {
   var blob = new Blob([lines.map(fold).join('\r\n') + '\r\n'], {type: 'text/calendar;charset=utf-8'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'exam-calendar-' + new Date().toISOString().split('T')[0] + '.ics';
+  a.download = 'exam-calendar-' + _localYMD() + '.ics';
   a.click(); URL.revokeObjectURL(a.href);
 }
 
@@ -633,7 +640,7 @@ function exportJSON() {
   var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'exam-calendar-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'exam-calendar-backup-' + _localYMD() + '.json';
   a.click(); URL.revokeObjectURL(a.href);
 }
 

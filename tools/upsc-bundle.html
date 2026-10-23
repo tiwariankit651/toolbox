@@ -3,7 +3,14 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _parseYMD(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s);return m?new Date(+m[1],m[2]-1,+m[3]):new Date(s)}
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UPSC Study Bundle - All Exam Prep Tools in One Place</title>
   <meta name="description" content="All UPSC exam tools in one dashboard — study streak, daily planner, quiz stats, exam countdown. Your complete preparation companion!">
@@ -272,7 +279,7 @@ function renderCurrent(){
   html+='</select></div><div class="row"><button class="btn" onclick="exportCA(\'json\')" style="flex:none;font-size:.8rem;padding:.4rem .8rem">Export JSON</button><button class="btn" onclick="exportCA(\'text\')" style="flex:none;font-size:.8rem;padding:.4rem .8rem">Export Text</button></div>';
   html+='<div id="caList"></div>';
   document.getElementById('currentContent').innerHTML=html;
-  document.getElementById('caDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('caDate').value=_localYMD();
   renderCAList();
 }
 function renderCAList(){
@@ -352,13 +359,13 @@ function toggleTimer(){
 }
 function tickTimer(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var s=Math.floor(total/1000);var h=Math.floor(s/3600);var m=Math.floor((s%3600)/60);var sec=s%60;var el=document.getElementById('timerDisplay');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;}
 function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerElapsed=0;timerStart=0;var el=document.getElementById('timerDisplay');if(el)el.textContent='00:00:00';var btn=document.getElementById('timerBtn');if(btn)btn.textContent='▶ Start';}
-function logTime(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var minutes=Math.round(total/60000);if(minutes<1){notify('Timer too short to log.', 'warn');return;}var subject=document.getElementById('timerSubject').value;var today=new Date().toISOString().split('T')[0];if(!D.timerLog[today])D.timerLog[today]=[];D.timerLog[today].push({subject:subject,minutes:minutes});save();resetTimer();renderTimer();}
+function logTime(){var total=timerElapsed+(timerRunning?Date.now()-timerStart:0);var minutes=Math.round(total/60000);if(minutes<1){notify('Timer too short to log.', 'warn');return;}var subject=document.getElementById('timerSubject').value;var today=_localYMD();if(!D.timerLog[today])D.timerLog[today]=[];D.timerLog[today].push({subject:subject,minutes:minutes});save();resetTimer();renderTimer();}
 function drawTimerChart(){
   var canvas=document.getElementById('timerChart');if(!canvas)return;
   var ctx=canvas.getContext('2d');
   canvas.width=canvas.offsetWidth*2;canvas.height=400;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
+  var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(_localYMD(d));}
   var vals=days.map(function(day){var entries=D.timerLog[day]||[];var total=0;entries.forEach(function(e){total+=e.minutes;});return total;});
   var maxVal=Math.max.apply(null,vals.concat([60]));
   var barW=canvas.width/9;var padBottom=40;var padTop=20;var chartH=canvas.height-padBottom-padTop;
@@ -370,7 +377,7 @@ function drawTimerChart(){
     ctx.fillStyle=grad;
     ctx.beginPath();ctx.roundRect(x-barW*0.3,canvas.height-padBottom-h,barW*0.6,h,8);ctx.fill();
     ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text2')||'#9494b8';
-    var label=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(day).getDay()];
+    var label=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][_parseYMD(day).getDay()];
     ctx.fillText(label,x,canvas.height-10);
     if(vals[i]>0)ctx.fillText(vals[i]+'m',x,canvas.height-padBottom-h-8);
   });
@@ -503,7 +510,7 @@ function renderBackup(){
 }
 function exportAll(){
   var blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-bundle-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(a.href);
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='upsc-bundle-backup-'+_localYMD()+'.json';a.click();URL.revokeObjectURL(a.href);
 }
 function importAll(e){
   var file=e.target.files[0];if(!file)return;

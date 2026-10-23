@@ -3,7 +3,13 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Presentation Timer - Viva & Speech Timer Free | FreeToolHubs</title>
   <meta name="description" content="Practicing for viva? Set total time & slides — get alerts at each section. Color-coded countdown. Pace analysis after. Nail your presentation!">
@@ -328,7 +334,7 @@ var ptExport = toolExport({
       L.push('');
       L.push('Previous rehearsals');
       hist.forEach(function (e) {
-        L.push('  ' + new Date(e.at).toISOString().slice(0, 10) +
+        L.push('  ' + _localYMD(new Date(e.at)) +
                '  planned ' + e.total + '  actual ' + e.actual);
       });
     }

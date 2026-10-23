@@ -6,6 +6,12 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
 <script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -387,7 +393,7 @@ function advancePhase(auto){
   if(auto&&cfg.autoStart){startTimer();}
 }
 
-function todayKey(){return new Date().toISOString().slice(0,10)}
+function todayKey(){return _localYMD()}
 function getStats(){try{return storeGet('pomStats', {})}catch(e){return{}}}
 function saveStats(s){storeSet('pomStats', s)}
 function recordFocusComplete(){
@@ -400,13 +406,13 @@ function recordFocusComplete(){
 }
 function computeStreak(s){
   var streak=0,d=new Date();
-  for(var i=0;i<400;i++){var k=d.toISOString().slice(0,10);if(s[k]&&s[k].count>0){streak++;d.setDate(d.getDate()-1);}else{break;}}
+  for(var i=0;i<400;i++){var k=_localYMD(d);if(s[k]&&s[k].count>0){streak++;d.setDate(d.getDate()-1);}else{break;}}
   return streak;
 }
 function renderStats(){
   var s=getStats();var today=new Date();var week=0,total=0,totalMin=0;
   for(var k in s){total+=s[k].count;totalMin+=s[k].min||0;}
-  for(var i=0;i<7;i++){var d=new Date(today);d.setDate(d.getDate()-i);var kk=d.toISOString().slice(0,10);if(s[kk])week+=s[kk].count;}
+  for(var i=0;i<7;i++){var d=new Date(today);d.setDate(d.getDate()-i);var kk=_localYMD(d);if(s[kk])week+=s[kk].count;}
   document.getElementById('statToday').textContent=(s[todayKey()]&&s[todayKey()].count)||0;
   document.getElementById('statWeek').textContent=week;
   document.getElementById('statTotalMin').textContent=totalMin;
@@ -419,7 +425,7 @@ function drawWeekChart(s){
   var c=document.getElementById('weekChart');if(!c)return;var ctx=c.getContext('2d');
   var w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
   var today=new Date();var vals=[],labels=[];
-  for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);var k=d.toISOString().slice(0,10);vals.push((s[k]&&s[k].count)||0);labels.push(d.toLocaleDateString('en',{weekday:'short'}));}
+  for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);var k=_localYMD(d);vals.push((s[k]&&s[k].count)||0);labels.push(d.toLocaleDateString('en',{weekday:'short'}));}
   var max=Math.max(1,Math.max.apply(null,vals));
   var bw=w/7,padx=14;
   var grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,'#8b5cf6');grad.addColorStop(1,'#6366f1');
@@ -587,7 +593,7 @@ var pmExport = toolExport({
       header: ['Date', 'Time', 'Minutes', 'Task'],
       rows: log.map(function (e) {
         var d = new Date(e.at);
-        return [d.toISOString().slice(0, 10), d.toTimeString().slice(0, 5), e.mins, e.task || ''];
+        return [_localYMD(d), d.toTimeString().slice(0, 5), e.mins, e.task || ''];
       })
     };
   }

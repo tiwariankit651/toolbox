@@ -6,6 +6,12 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
 <script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -488,7 +494,7 @@ var bmiExport = toolExport({
       L.push('');
       L.push('Previous readings');
       hist.forEach(function (e) {
-        L.push('  ' + new Date(e.at).toISOString().slice(0, 10) + '  BMI ' +
+        L.push('  ' + _localYMD(new Date(e.at)) + '  BMI ' +
                e.bmi + '  ' + e.w + ' kg');
       });
     }
@@ -500,7 +506,7 @@ var bmiExport = toolExport({
     return {
       header: ['Date', 'BMI', 'Category', 'Height cm', 'Weight kg'],
       rows: hist.map(function (e) {
-        return [new Date(e.at).toISOString().slice(0, 10), e.bmi, e.cat, e.h, e.w];
+        return [_localYMD(new Date(e.at)), e.bmi, e.cat, e.h, e.w];
       })
     };
   }

@@ -3,7 +3,13 @@
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+<script>
+/* Local calendar date, not UTC. toISOString() is UTC, so between midnight and
+   05:30 in India "today" came out as yesterday: a habit ticked at 1 AM was
+   logged on the previous day, streaks broke, and date fields defaulted to
+   the wrong day. */
+function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ambient Noise Generator - Focus Sounds Free | FreeToolHubs</title>
   <meta name="description" content="Can't focus while studying? Mix rain, forest & cafe sounds to create your perfect study environment. Free, no signup, works offline.">
@@ -642,7 +648,7 @@ function anExportLog() {
   out += 'Date,Time,Minutes,Mix\n';
   log.forEach(function (e) {
     var d = new Date(e.at);
-    out += d.toISOString().slice(0, 10) + ',' + d.toTimeString().slice(0, 5) +
+    out += _localYMD(d) + ',' + d.toTimeString().slice(0, 5) +
            ',' + e.mins + ',"' + String(e.mix).replace(/"/g, '""') + '"\n';
   });
   var total = log.reduce(function (s, e) { return s + e.mins }, 0);
