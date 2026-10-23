@@ -178,7 +178,15 @@ var soundDefs=[
     }));
   }},
   {id:"brown",name:"Brown Noise",emoji:"🟤",gen:function(ctx){
-    return bufSource(ctx,noiseBuffer(ctx,3,function(d){var v=0;for(var i=0;i<d.length;i++){v+=(Math.random()*2-1)*0.02;v=Math.max(-1,Math.min(1,v));d[i]=v*3.5}}));
+    /* The random walk ran to +/-1 and was then multiplied by 3.5, so samples
+       reached +/-3.5 - far past full scale. At 50% volume about 7,700 samples in
+       every 32k clipped: audible crackle in the one noise people use for sleep.
+       A leaky integrator keeps the brown (1/f^2) spectrum without drifting, and
+       the buffer is normalised to a 0.5 peak like the other noises. */
+    return bufSource(ctx,noiseBuffer(ctx,3,function(d){var v=0,pk=0;for(var i=0;i<d.length;i++){v=0.998*v+(Math.random()*2-1)*0.02;d[i]=v;var a=Math.abs(v);if(a>pk)pk=a}
+      var k=pk>0?0.5/pk:1;for(var j=0;j<d.length;j++)d[j]*=k;
+      /* ease the loop seam so the 3 s buffer does not click on repeat */
+      var fade=Math.min(2048,d.length>>4);for(var m=0;m<fade;m++){var g=m/fade;d[m]*=g;d[d.length-1-m]*=g}}));
   }},
   {id:"rain",name:"Rain",emoji:"🌧️",gen:function(ctx){
     // filtered noise + gentle amplitude modulation
