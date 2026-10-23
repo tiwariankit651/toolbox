@@ -124,10 +124,44 @@ var TYPE_SIZE={1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8};
 function parseEXIF(buf){
   var out={fields:{},gps:null,all:[],hasExif:false};
   var view=new DataView(buf);
+  /* PNG (eXIf chunk) and WebP (EXIF chunk) hold the same TIFF structure as
+     JPEG, so readIFD can read them. This used to return nothing for any
+     non-JPEG, so a PNG carrying GPS reported "no readable EXIF tags". */
+  function readTiffAt(tiff){
+    if(tiff+8>view.byteLength)return;
+    var le=view.getUint16(tiff)===0x4949;
+    if(!le&&view.getUint16(tiff)!==0x4D4D)return;
+    out.hasExif=true;
+    readIFD(view,tiff,tiff+view.getUint32(tiff+4,le),le,out);
+  }
+  if(view.byteLength>16&&view.getUint32(0)===0x89504E47){           // PNG
+    var p=8;
+    while(p+12<=view.byteLength){
+      var clen=view.getUint32(p),ctype=view.getUint32(p+4);
+      if(ctype===0x65584966){readTiffAt(p+8);break}                   // "eXIf"
+      if(ctype===0x49454E44)break;                                    // "IEND"
+      p+=12+clen;
+    }
+    return out;
+  }
+  if(view.byteLength>16&&view.getUint32(0)===0x52494646&&view.getUint32(8)===0x57454250){  // RIFF....WEBP
+    var w=12;
+    while(w+8<=view.byteLength){
+      var wtype=view.getUint32(w),wlen=view.getUint32(w+4,true);
+      if(wtype===0x45584946){                                         // "EXIF"
+        var s=w+8;
+        if(view.getUint32(s)===0x45786966)s+=6;                       // optional "Exif\0\0"
+        readTiffAt(s);break;
+      }
+      w+=8+wlen+(wlen&1);
+    }
+    return out;
+  }
   if(view.byteLength<2||view.getUint16(0)!==0xFFD8)return out;
   var offset=2;
   while(offset+4<view.byteLength){
     var marker=view.getUint16(offset);
+    if(marker===0xFFDA)break;            // start of scan: no more metadata
     if(marker===0xFFE1){
       var segLen=view.getUint16(offset+2);
       // check "Exif\0\0"
@@ -137,8 +171,11 @@ function parseEXIF(buf){
         var le=view.getUint16(tiff)===0x4949;
         var ifd0=tiff+view.getUint32(tiff+4,le);
         readIFD(view,tiff,ifd0,le,out);
+        break;
       }
-      break;
+      /* Not EXIF — usually XMP, which is ALSO an APP1 and often comes first.
+         This used to break here, so a photo with XMP before EXIF read as
+         "0 tags" while GPS and the camera serial were still in it. */
     }
     if((marker&0xFF00)!==0xFF00)break;
     offset+=2+view.getUint16(offset+2);
@@ -235,24 +272,46 @@ function stripGpsOnly(buf){
     if(marker===0xFFE1&&view.getUint32(offset+4)===0x45786966){
       var tiff=offset+10;var le=view.getUint16(tiff)===0x4949;
       var ifd0=tiff+view.getUint32(tiff+4,le);
-      zeroGpsPointer(view,tiff,ifd0,le);
+      zeroGpsPointer(view,tiff,ifd0,le,offset+2+len);
       break;
     }
     offset+=2+len;
   }
   return new Blob([arr],{type:"image/jpeg"});
 }
-function zeroGpsPointer(view,tiff,ifd,le){
+/* Remove GPS for real. This used to rename the GPS pointer and zero it,
+   which hides GPS from readers that follow pointers but leaves the GPS IFD
+   and the latitude/longitude rationals in the file — a hex editor or a
+   forensic tool could read the location straight back, while the user had
+   been told it was gone. Now every byte the GPS IFD owns is overwritten with
+   zeros in place, then the pointer is removed. Sizes do not change, so no
+   other offset in the EXIF block moves. */
+function zeroGpsPointer(view,tiff,ifd,le,segEnd){
   if(ifd+2>view.byteLength)return;
+  var limit=Math.min(segEnd||view.byteLength,view.byteLength);
+  var SIZE={1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8};
   var n=view.getUint16(ifd,le);
   for(var i=0;i<n;i++){
     var e=ifd+2+i*12;if(e+12>view.byteLength)break;
-    var tag=view.getUint16(e,le);
-    if(tag===0x8825){
-      // change tag id to a harmless/unknown tag and zero the value -> GPS data becomes unreferenced
-      view.setUint16(e,0x0001,le); // repurpose to InteropIndex-ish unknown; readers ignore
-      view.setUint32(e+8,0,le);
+    if(view.getUint16(e,le)!==0x8825)continue;
+    var gps=tiff+view.getUint32(e+8,le);
+    if(gps+2<=limit){
+      var gn=view.getUint16(gps,le);
+      for(var j=0;j<gn;j++){
+        var g=gps+2+j*12;if(g+12>limit)break;
+        var type=view.getUint16(g+2,le),count=view.getUint32(g+4,le);
+        var bytes=(SIZE[type]||1)*count;
+        if(bytes>4){                         // value lives elsewhere: wipe it
+          var at=tiff+view.getUint32(g+8,le);
+          for(var b=0;b<bytes&&at+b<limit;b++)view.setUint8(at+b,0);
+        }
+        for(var k=0;k<12;k++)view.setUint8(g+k,0);   // wipe the entry itself
+      }
+      view.setUint16(gps,0,le);              // GPS IFD now has zero entries
     }
+    // and drop the pointer: renumber as an ignorable private tag, value 0
+    view.setUint16(e,0xC000,le);
+    view.setUint16(e+2,4,le);view.setUint32(e+4,1,le);view.setUint32(e+8,0,le);
   }
 }
 // Build a minimal APP1 EXIF segment containing only Orientation.
@@ -364,11 +423,15 @@ function processFile(file,i,result){
       // Perform removal
       function finish(blob,note){
         window._exifBlobs[i]=blob;
-        var cleanName=(mode==="all"&&outFmt==="image/png")?"clean_"+file.name.replace(/\.[^.]+$/,"")+".png":"clean_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
+        /* Named from the blob's real type. A PNG or WebP converted to JPEG used
+           to keep its original extension, so the download was a JPEG named
+           .png or .webp, which many apps refuse to open. */
+        var realExt=blob.type==="image/png"?".png":blob.type==="image/webp"?".webp":".jpg";
+        var cleanName="clean_"+file.name.replace(/\.[^.]+$/,"").replace(/[^a-zA-Z0-9._-]/g,"_")+realExt;
         window._exifNames[i]=cleanName;
         var comparison='<div style="font-size:.8rem;margin-top:.4rem;padding:.5rem .8rem;background:rgba(76,175,80,.1);border-radius:8px">'
           +'<strong>Before → After</strong><br>'
-          +'• Metadata tags: '+beforeCount+' → '+(mode==="gpsOnly"?(beforeCount-(exif.gps?1:0)):(mode==="keepOrient"?(f.Orientation?1:0):0))+'<br>'
+          +'• Metadata tags: '+beforeCount+' → '+(mode==="gpsOnly"?(beforeCount-(exif.gps?1:0)):(mode==="keepOrient"?((parseInt(f.Orientation,10)||1)!==1?1:0):0))+'<br>'
           +'• File size: '+formatSize(file.size)+' → '+formatSize(blob.size)+'<br>'
           +'• '+note+'</div>';
         var block=document.createElement("div");
@@ -384,9 +447,20 @@ function processFile(file,i,result){
         finish(stripGpsOnly(arrBuf),"GPS stripped from original JPEG bytes (no re-compression, camera data kept).");
       }else if(isJpeg&&mode==="keepOrient"){
         finish(stripJpegMeta(arrBuf,true),"All metadata stripped from original JPEG bytes, orientation preserved (no re-compression).");
-      }else if(isJpeg&&mode==="all"&&outFmt==="image/jpeg"){
+      }else if(isJpeg&&mode==="all"&&outFmt==="image/jpeg"&&(parseInt(f.Orientation,10)||1)===1){
         // Prefer lossless byte strip for JPEG "strip everything"
         finish(stripJpegMeta(arrBuf,false),"All metadata removed from original JPEG bytes (no re-compression — pixels untouched).");
+      }else if(isJpeg&&mode==="all"&&outFmt==="image/jpeg"){
+        /* A phone photo stores pixels in sensor orientation plus an Orientation
+           tag. Stripping every tag dropped that one too, so portrait photos
+           came back sideways. The browser has already applied the rotation
+           when it decoded img, so drawing it to a canvas bakes the correct
+           orientation into the pixels and the result needs no tag at all. */
+        var cv=document.createElement("canvas");cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+        cv.getContext("2d").drawImage(img,0,0);
+        cv.toBlob(function(blob){
+          finish(blob,"All metadata removed. The photo carried a rotation tag, so the rotation was applied to the pixels instead (re-encoded once at your quality setting).");
+        },"image/jpeg",quality);
       }else{
         // Canvas re-encode path (PNG output, or non-JPEG input)
         var c=document.createElement("canvas");c.width=img.width;c.height=img.height;
