@@ -42,7 +42,7 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=6').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=7').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
@@ -864,3 +864,63 @@ function storeClaim(key) {
 window.storeClaim = storeClaim;
 function storeIsStale(key) { return !!_staleKeys[key]; }
 window.storeIsStale = storeIsStale;
+
+
+/* ---- Accessible names for icon-only buttons ------------------------------
+   An audit of all 122 tools found 213 kinds of button whose only content is
+   an emoji or symbol, with no title and no aria-label — most of them the
+   theme toggle in the shared nav, plus download, delete and zoom buttons
+   rendered into result rows. A screen reader announces those as "button" or
+   reads the emoji's Unicode name ("floppy disk"), which does not say what it
+   does. This names them from the icons actually used on this site, and keeps
+   doing so as tools render new rows. A button that already has a name, or
+   any letters or digits, is left alone. */
+var _ICON_NAMES = {
+  '\uD83C\uDF19': 'Toggle dark and light theme', '\u2600\uFE0F': 'Toggle dark and light theme',
+  '\u2600': 'Toggle dark and light theme',
+  '\uD83D\uDCBE': 'Download', '\u2B07\uFE0F': 'Download', '\u2B07': 'Download',
+  '\uD83D\uDDD1\uFE0F': 'Delete', '\uD83D\uDDD1': 'Delete',
+  '\u2715': 'Remove', '\u2716': 'Remove', '\u00D7': 'Remove', '\u2717': 'Remove',
+  '\u2795': 'Increase', '\u2796': 'Decrease', '+': 'Increase', '\u2212': 'Decrease', '-': 'Decrease',
+  '\uD83D\uDD0D+': 'Zoom in', '\uD83D\uDD0D\u2212': 'Zoom out', '\uD83D\uDD0D-': 'Zoom out',
+  '\u2699\uFE0F': 'Settings', '\u2699': 'Settings',
+  '\uD83D\uDC4D': 'Mark this time as good', '\uD83D\uDC4E': 'Mark this time as bad',
+  '\uD83D\uDCCB': 'Copy', '\u270F\uFE0F': 'Edit', '\u270F': 'Edit',
+  '\u2191': 'Move up', '\u2193': 'Move down', '\u25B2': 'Move up', '\u25BC': 'Move down',
+  '\u25B6': 'Play', '\u25B6\uFE0F': 'Play', '\u23F8': 'Pause', '\u23F8\uFE0F': 'Pause',
+  '\u23EE': 'Previous', '\u23ED': 'Next', '\u21BA': 'Reset', '\u21BB': 'Redo',
+  '\u21B6': 'Undo', '\u21A9': 'Undo', '\u21AA': 'Redo', '\uD83D\uDD0A': 'Read aloud',
+  '\u2606': 'Add to favourites', '\u2605': 'Remove from favourites',
+  '\u2630': 'Menu', '\u2026': 'More options', '\u22EE': 'More options',
+  '\u232B': 'Backspace', '(': 'Open bracket', ')': 'Close bracket',
+  '\u00F7': 'Divide', '=': 'Equals', '.': 'Decimal point', '%': 'Percent',
+  '\u00B1': 'Change sign', '\u221A': 'Square root', '^': 'Power'
+};
+function _labelIcons(root) {
+  try {
+    var list = (root || document).querySelectorAll('button,[role=button]');
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      if (b.hasAttribute('aria-label') || b.hasAttribute('aria-labelledby')) continue;
+      var t = (b.textContent || '').trim();
+      if (!t || /[\p{L}\p{N}]/u.test(t)) continue;      /* has words: already named */
+      var name = _ICON_NAMES[t] || (b.getAttribute('title'));
+      /* a symbol in a picker grid IS its own content: say so */
+      if (!name && t.length <= 4) name = 'Insert ' + t;
+      if (name) b.setAttribute('aria-label', name);
+    }
+  } catch (e) { /* older engines without \p{} support: leave buttons as they are */ }
+}
+try {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { _labelIcons(); });
+  } else { _labelIcons(); }
+  /* tools render buttons into result rows after load; name those too */
+  var _iconObs = new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      if (muts[i].addedNodes && muts[i].addedNodes.length) { _labelIcons(); return; }
+    }
+  });
+  var _startObs = function () { if (document.body) _iconObs.observe(document.body, { childList: true, subtree: true }); };
+  if (document.body) _startObs(); else document.addEventListener('DOMContentLoaded', _startObs);
+} catch (e) {}
