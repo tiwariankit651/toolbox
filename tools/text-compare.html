@@ -311,7 +311,14 @@ function analyze(){
   if(!a.trim()||!b.trim()){document.getElementById('result').innerHTML='<p class="info">Please paste text in both boxes.</p>';return;}
   var lev=levSim(a,b), jw=jaroWinkler(a,b), jac=jaccard(a,b), cos=cosine(a,b), di=dice(a,b);
   var lcsSub=longestCommonSubstring(a,b);
-  var overall=(lev+jw+jac+cos+di)/5;
+  /* A plain average let the character-level metrics (Levenshtein, Jaro-Winkler)
+   carry texts that share NO words: 'alpha beta gamma' vs 'zeta eta theta'
+   scored 20.1% and was labelled 'Somewhat similar', because shared letters
+   like 'eta' count as edits saved. With no word in common the texts are not
+   similar in any sense a reader means, so the headline follows the word-level
+   metrics when they say there is no overlap. Each metric is still shown. */
+var overall=(lev+jw+jac+cos+di)/5;
+if(jac===0&&cos===0)overall=Math.min(overall,(jac+cos+di)/3);
   var verdict=overall>0.8?'Nearly identical':overall>0.6?'Very similar':overall>0.4?'Moderately similar':overall>0.2?'Somewhat similar':'Mostly different';
 
   var html='<div class="verdict"><div class="vbig">'+pct(overall)+'%</div><div style="font-weight:600;margin:.3rem 0">'+verdict+'</div>'+

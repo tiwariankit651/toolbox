@@ -208,8 +208,26 @@ function splitAuthors(raw){
   return raw.split(/;|&|\band\b/).map(function(s){return s.trim();}).filter(Boolean);
 }
 // APA: Surname, I. I. — with & before last; et al. rules for 21+
+/* The comment above promised "Surname, I. I." but names were printed as typed,
+   so "Sharma, Ravi" stayed "Sharma, Ravi" - APA 7 requires initials:
+   "Sharma, R.". Accepts "Surname, Given Names" or "Given Names Surname";
+   a single word (an organisation) is left alone. Hyphenated given names keep
+   the hyphen: Jean-Paul -> J.-P. */
+function apaName(n){
+  n=n.trim(); if(!n)return n;
+  var sur,given;
+  if(n.indexOf(',')>-1){sur=n.slice(0,n.indexOf(',')).trim();given=n.slice(n.indexOf(',')+1).trim();}
+  else{var parts=n.split(/\s+/);if(parts.length<2)return n;sur=parts.pop();given=parts.join(' ');}
+  if(!given)return sur;
+  /* already initials, e.g. "R. K." - keep */
+  if(/^([\p{L}]\.\s*)+$/u.test(given))return sur+', '+given.replace(/\s+/g,' ');
+  var ini=given.split(/\s+/).map(function(w){
+    return w.split('-').map(function(p){return p?Array.from(p)[0].toUpperCase()+'.':''}).join('-');
+  }).join(' ');
+  return sur+', '+ini;
+}
 function authorsAPA(raw){
-  var a=splitAuthors(raw);
+  var a=splitAuthors(raw).map(apaName);
   if(!a.length)return '';
   if(a.length===1)return a[0];
   if(a.length>=2&&a.length<=20){

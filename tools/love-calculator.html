@@ -160,8 +160,19 @@ function friendMessage(pct){
 
 // FLAMES game — classic counting-out algorithm
 function flames(a,b){
-  a=a.toLowerCase().replace(/[^a-z]/g,"").split("");
-  b=b.toLowerCase().replace(/[^a-z]/g,"").split("");
+  /* [^a-z] stripped EVERY character of a Devanagari name, leaving a count of
+     zero, which the code below maps to "Lovers" - so any two names typed in
+     Hindi always came out Lovers. Keep letters and combining marks in every
+     script, compared by user-perceived character. */
+  var chars=function(s){
+    s=s.toLowerCase().normalize("NFC").replace(/[^\p{L}\p{M}]/gu,"");
+    if(typeof Intl!=="undefined"&&Intl.Segmenter){
+      return Array.from(new Intl.Segmenter(undefined,{granularity:"grapheme"}).segment(s),function(x){return x.segment});
+    }
+    return Array.from(s);
+  };
+  a=chars(a);
+  b=chars(b);
   // cancel common letters
   for(var i=0;i<a.length;i++){
     var idx=b.indexOf(a[i]);
@@ -239,7 +250,11 @@ function calculate(){
   document.getElementById("bar").style.display="";
   document.getElementById("loveCanvas").style.display="";
   var pct,message,fact="";
-  var hash=stableHash(n1+"|"+n2+"|"+currentMode);
+  /* Hashed "a|b", so Ravi+Priya and Priya+Ravi got different scores. Anyone
+     trying both orders saw the number change and concluded it was random.
+     Sort the pair so the score does not depend on which box a name is in. */
+  var pair=[n1,n2].sort();
+  var hash=stableHash(pair[0]+"|"+pair[1]+"|"+currentMode);
 
   if(currentMode==="flames"){
     var fl=flames(n1,n2);
