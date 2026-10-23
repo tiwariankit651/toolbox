@@ -350,13 +350,24 @@ function isValidIPv4(ip){
   return true;
 }
 function isValidIPv6(ip){
-  if(ip.indexOf(':')<0)return false;
-  if((ip.match(/::/g)||[]).length>1)return false;
-  var hasDouble=ip.indexOf('::')>=0;
-  var groups=ip.split(':');
-  if(!hasDouble&&groups.length!==8)return false;
-  for(var i=0;i<groups.length;i++){var g=groups[i];if(g==='')continue;if(!/^[0-9a-fA-F]{1,4}$/.test(g))return false;}
-  return true;
+  /* The old check split on ':' and skipped every empty group, so ':::'
+     (2001:db8:::1), a lone leading/trailing ':' (:1::, 1::2:) and too many
+     groups around '::' (1:2:3:4:5:6:7::8) all passed. RFC 4291 rules: at most
+     one '::', which stands for at least one zero group; up to 8 groups of 1-4
+     hex digits; the last 32 bits may be written as dotted IPv4. */
+  if(typeof ip!=='string'||ip.indexOf(':')<0)return false;
+  var zone=ip.indexOf('%');if(zone>=0){if(zone===ip.length-1)return false;ip=ip.slice(0,zone)}
+  if(/:::/.test(ip))return false;
+  var dbl=ip.split('::');if(dbl.length>2)return false;
+  function groups(s){return s===''?[]:s.split(':')}
+  var head=groups(dbl[0]),tail=dbl.length===2?groups(dbl[1]):[];
+  var all=head.concat(tail),n=0;
+  for(var i=0;i<all.length;i++){
+    var g=all[i];
+    if(i===all.length-1&&g.indexOf('.')>=0){if(!isValidIPv4(g))return false;n+=2;continue}
+    if(!/^[0-9a-fA-F]{1,4}$/.test(g))return false;n++;
+  }
+  return dbl.length===2?n<=7:n===8;
 }
 function ipv4ToInt(ip){var p=ip.split('.');return ((+p[0])*16777216+(+p[1])*65536+(+p[2])*256+(+p[3]))>>>0;}
 function intToIpv4(n){n=n>>>0;return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');}
@@ -409,7 +420,9 @@ function doCidr(){
   var net=(ipv4ToInt(ip)&mask)>>>0;
   var bcast=(net|wildcard)>>>0;
   var totalHosts=Math.pow(2,32-pfx);
-  var usable=pfx>=31?0:totalHosts-2;
+  /* /31 (RFC 3021, point-to-point) uses both addresses and /32 is a single
+     host; both were reported as 0 usable hosts with no first/last. */
+  var usable=pfx===32?1:pfx===31?2:totalHosts-2;
   var first=pfx>=31?net:(net+1)>>>0;
   var last=pfx>=31?bcast:(bcast-1)>>>0;
   var rows=[
@@ -417,10 +430,10 @@ function doCidr(){
     ['Broadcast address',intToIpv4(bcast)],
     ['Subnet mask',intToIpv4(mask)],
     ['Wildcard mask',intToIpv4(wildcard)],
-    ['First usable host',pfx>=31?'—':intToIpv4(first)],
-    ['Last usable host',pfx>=31?'—':intToIpv4(last)],
+    ['First usable host',intToIpv4(first)],
+    ['Last usable host',intToIpv4(last)],
     ['Total addresses',totalHosts.toLocaleString()],
-    ['Usable hosts',usable.toLocaleString()],
+    ['Usable hosts',usable.toLocaleString()+(pfx===31?' (point-to-point, RFC 3021)':pfx===32?' (single host)':'')],
     ['CIDR notation',intToIpv4(net)+'/'+pfx]
   ];
   out.innerHTML='<table class="ipl-tbl">'+rows.map(function(r){return '<tr><th>'+r[0]+'</th><td class="ipl-kv">'+r[1]+'</td></tr>';}).join('')+'</table>';
