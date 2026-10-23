@@ -444,8 +444,12 @@ async function dlPdf(){
       var dataUrl=off.toDataURL("image/png");
       var bytes=await (await fetch(dataUrl)).arrayBuffer();
       var png=await doc.embedPng(bytes);
-      var page=doc.addPage([off.width,off.height]);
-      page.drawImage(png,{x:0,y:0,width:off.width,height:off.height});
+      /* A4 is defined as 794 x 1123 px (96 dpi) and those pixels were used as
+         PDF points, giving a 280 x 396 mm page - printed at 100% it overflowed
+         A4 paper. Convert at 96 px/inch so A4 prints as A4. */
+      var pw=off.width*72/96, ph=off.height*72/96;
+      var page=doc.addPage([pw,ph]);
+      page.drawImage(png,{x:0,y:0,width:pw,height:ph});
       await new Promise(function(r){setTimeout(r,0)});
     }
     var pdfBytes=await doc.save();

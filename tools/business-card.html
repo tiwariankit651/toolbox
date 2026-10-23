@@ -249,10 +249,10 @@ if(window.qrcode&&qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs["UTF-8"])
   <script>
 /* ===== Business Card Generator ===== */
 var SIZES={
-  us:{w:1050,h:600,label:'3.5 x 2 in'},
-  eu:{w:1004,h:650,label:'85 x 55 mm'},
-  square:{w:650,h:650,label:'55 x 55 mm'},
-  slim:{w:1004,h:472,label:'85 x 40 mm'}
+  us:{w:1050,h:600,label:'3.5 x 2 in',mm:[88.9,50.8]},
+  eu:{w:1004,h:650,label:'85 x 55 mm',mm:[85,55]},
+  square:{w:650,h:650,label:'55 x 55 mm',mm:[55,55]},
+  slim:{w:1004,h:472,label:'85 x 40 mm',mm:[85,40]}
 };
 var TEMPLATES=[
   {id:'minimal',name:'Minimal'},{id:'modern',name:'Modern Gradient'},
@@ -610,8 +610,15 @@ async function downloadPDF(){
     for(var i=0;i<sides.length;i++){
       exportStatus('Rendering '+sides[i]+'…');await _yield();
       var img=await doc.embedPng(dataURLtoBytes(sideDataURL(sides[i])));
-      var pg=doc.addPage([W,H]);
-      pg.drawImage(img,{x:0,y:0,width:W,height:H});
+      /* The page was sized in canvas PIXELS treated as points, so the card
+         PDF came out 370 x 212 mm - printing it gave a card four times too
+         big. */
+      /* Each card size now carries its physical size, so the PDF page is the
+         card's real dimensions: 3.5 x 2 in, 85 x 55, 55 x 55 or 85 x 40 mm. */
+      var mm=(SIZES[sizeKey]&&SIZES[sizeKey].mm)||[85,55];
+      var PW=mm[0]*72/25.4, PH=mm[1]*72/25.4;
+      var pg=doc.addPage([PW,PH]);
+      pg.drawImage(img,{x:0,y:0,width:PW,height:PH});
     }
     exportStatus('Building PDF…');await _yield();
     var bytes=await doc.save();

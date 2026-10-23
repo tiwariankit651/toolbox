@@ -452,8 +452,13 @@ async function dlPdf(){
       var dataUrl=pageCanvases[i].toDataURL("image/png");
       var bytes=await (await fetch(dataUrl)).arrayBuffer();
       var png=await doc.embedPng(bytes);
-      var page=doc.addPage([pageCanvases[i].width,pageCanvases[i].height]);
-      page.drawImage(png,{x:0,y:0,width:pageCanvases[i].width,height:pageCanvases[i].height});
+      /* Canvas pixels were used as PDF points, so an A4 sheet (794 x 1123 px at
+         96 dpi) became a 280 x 396 mm page, and printing at 100% overflowed the
+         paper and broke the ruling - the one thing a practice sheet needs.
+         Convert at 96 px per inch: 794 x 1123 px -> 595 x 842 pt = A4. */
+      var pw=pageCanvases[i].width*72/96, ph=pageCanvases[i].height*72/96;
+      var page=doc.addPage([pw,ph]);
+      page.drawImage(png,{x:0,y:0,width:pw,height:ph});
       await new Promise(function(r){setTimeout(r,0)});
     }
     var pdfBytes=await doc.save();
