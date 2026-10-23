@@ -191,6 +191,12 @@ function loadNotes(){try{var s=storeGet('pt_sections', null);if(s&&s.length)sect
 /* ---------- Timer state ---------- */
 var timer,totalSec,elapsedSec=0,paused=false,curSection=0,warnSec=0,showMode='both',overtime=false;
 var sectionBounds=[]; // cumulative end second for each section
+/* Elapsed time is measured from the clock, not by counting ticks. Counting
+   ticks lost time whenever the browser throttled the tab - exactly what happens
+   while the speaker is on their slides: 9 real seconds read as 4. originMs is
+   the wall-clock moment that corresponds to elapsedSec = 0. */
+var originMs=0,pausedAtMs=0;
+function syncElapsed(){if(!paused)elapsedSec=Math.floor((Date.now()-originMs)/1000)}
 
 function startTimer(){
   if(!sections.length){notify('Add at least one section.', 'warn');return}
@@ -199,23 +205,26 @@ function startTimer(){
   if(totalSec<=0){notify('Total time must be greater than 0.', 'warn');return}
   warnSec=Math.round((+document.getElementById('warnMin').value||0)*60);
   showMode=document.getElementById('showMode').value;
-  elapsedSec=0;paused=false;curSection=0;overtime=false;
+  elapsedSec=0;paused=false;curSection=0;overtime=false;originMs=Date.now();
   sectionBounds=[];var run=0;sections.forEach(function(s){run+=Math.round((+s.minutes||0)*60);sectionBounds.push(run)});
   document.getElementById('setup').style.display='none';
   document.getElementById('timerDisplay').style.display='block';
   document.getElementById('pauseBtn').textContent='⏸️ Pause';
   buildSegBar();updateDisplay();beep(880,150);
-  clearInterval(timer);timer=setInterval(tick,1000);
+  clearInterval(timer);timer=setInterval(tick,250);
 }
 function currentSectionIndex(){for(var i=0;i<sectionBounds.length;i++){if(elapsedSec<sectionBounds[i])return i}return sectionBounds.length-1}
+var _lastShown=-1;
 function tick(){
   if(paused)return;
-  elapsedSec++;
+  var before=elapsedSec;syncElapsed();
+  if(elapsedSec===_lastShown)return;_lastShown=elapsedSec;
   var idx=currentSectionIndex();
   if(idx>curSection&&!overtime){curSection=idx;beep(880,200)}
   var remaining=totalSec-elapsedSec;
-  if(remaining===warnSec&&warnSec>0)beep(660,400);
-  if(remaining===0){beep(440,700)}
+  /* cues fire when their second is crossed, even if a throttled tick skipped it */
+  if(warnSec>0&&totalSec-before>warnSec&&remaining<=warnSec&&remaining>0)beep(660,400);
+  if(totalSec-before>0&&remaining<=0)beep(440,700);
   if(remaining<0)overtime=true;
   updateDisplay();
 }
@@ -256,10 +265,10 @@ function updateSegBar(){
     else if(i===idx)d.style.background='var(--accent)';
     else d.style.background='var(--card)';})
 }
-function pauseResume(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶️ Resume':'⏸️ Pause'}
+function pauseResume(){if(!paused){syncElapsed();pausedAtMs=Date.now()}else{originMs+=Date.now()-pausedAtMs}paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶️ Resume':'⏸️ Pause'}
 function nextSection(){
   var idx=currentSectionIndex();
-  if(idx<sectionBounds.length-1){elapsedSec=sectionBounds[idx];curSection=idx+1;beep(880,180);updateDisplay()}
+  if(idx<sectionBounds.length-1){elapsedSec=sectionBounds[idx];originMs=Date.now()-elapsedSec*1000;if(paused)pausedAtMs=Date.now();_lastShown=elapsedSec;curSection=idx+1;beep(880,180);updateDisplay()}
 }
 function resetTimer(){
   clearInterval(timer);document.body.style.backgroundColor='';
