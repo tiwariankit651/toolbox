@@ -141,6 +141,21 @@ function filterCat(cat,btn){
 
 // Spotlight search
 var searchAliases={"loan":"emi","photo":"image resizer background","resume":"cover letter","scan":"ocr","crop":"resizer","convert":"converter","download":"video gif","edit":"editor","write":"handwriting notes","study":"flashcards pomodoro syllabus","exam":"quiz flashcards syllabus calendar","money":"budget emi sip tax","code":"json html regex sql","draw":"whiteboard signature","music":"audio","record":"screen recorder","font":"fancy fonts","private":"exif remover","ai":"humanizer","grammar":"checker","merge":"merger image-to-pdf","combine":"merger","join":"merger","compress":"compressor pdf-compressor","reduce":"compressor","size":"resizer compressor","passport":"resizer date-on-photo","form":"resizer date-on-photo handwriting"};
+/* The WebSite schema declares a SearchAction at /?q={search_term_string},
+   which tells Google /?q=pdf shows results for "pdf". The page ignored the
+   parameter, so Google's check of that action failed in Search Console.
+   Honour it: fill the box from ?q and run the existing search. */
+window.addEventListener("DOMContentLoaded",function(){
+  try{
+    var q=new URLSearchParams(location.search).get("q");
+    if(!q)return;
+    var box=document.getElementById("searchTools");
+    if(!box)return;
+    box.value=q.slice(0,80);
+    box.dispatchEvent(new Event("input",{bubbles:true}));
+    box.scrollIntoView({block:"center"});
+  }catch(e){}
+});
 document.getElementById("searchTools").addEventListener("input",function(){
   var q=this.value.toLowerCase().trim();
   var resultsDiv=document.getElementById("searchResults");

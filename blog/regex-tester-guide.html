@@ -99,7 +99,84 @@
       </ul>
 
       <p>Our <a href="/tools/regex-tester" style="color:var(--accent-text)">Regex Tester</a> runs the pattern as you type, shows every match highlighted in place with a count, and warns about the specific traps above — a dot that will not cross a newline in text that has line breaks, anchors without the <code>m</code> flag, a missing <code>g</code>, nested quantifiers, and <code>\d</code> under <code>u</code> still being ASCII. It keeps the patterns that matched something so you can return to one without rebuilding it, and everything runs in your browser.</p>
-      <div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Test your regex!</strong></p><a href="/tools/regex-tester" class="btn" style="display:inline-block;text-decoration:none">🔍 Open Regex Tester</a></div></div></div>
+      
+<h2>Regex Kya Hai</h2>
+<p>This section was previously a separate guide and is kept here in full.</p>
+<h3>Regex Kya Hai? — Simple Explanation</h3>
+      <p><strong>Regex (Regular Expression)</strong> ek pattern hai jo text mein specific sequences dhundhne ke liye use hota hai. Jaise tum Google mein kuch search karte ho, waise hi regex se tum text ke andar patterns search karte ho.</p>
+      <p>Example: Tumhe ek document mein se saare phone numbers nikalne hain. Manually dhundhoge toh ghante lag jayenge. Regex se ek line mein ho jaayega — kyunki tum pattern define kar dete ho ki "10 digits jo 6-9 se start hote hain" aur regex sab match kar deta hai.</p>
+      <p>Regex almost har programming language mein kaam karta hai — JavaScript, Python, Java, PHP, C#. Ek baar seekh lo, har jagah use kar sakte ho.</p>
+<h3>Developers Ko Regex Kyun Chahiye?</h3>
+      <h3>1. Form Validation</h3>
+      <p>User ne email sahi format mein daala ya nahi? Phone number valid hai ya nahi? PAN card format correct hai? Ye sab regex se validate hota hai. Frontend aur backend dono pe.</p>
+
+      <h3>2. Data Extraction</h3>
+      <p>Ek bade text file se specific data nikalna — jaise log files se error codes, HTML se links, CSV se phone numbers. Regex ye sab seconds mein kar deta hai.</p>
+
+      <h3>3. Find and Replace</h3>
+      <p>VS Code, Sublime Text, ya koi bhi editor mein regex find-replace use karke complex replacements kar sakte ho. Jaise saare dates ko ek format se dusre format mein convert karna.</p>
+<h3>Basic Syntax — Pehle Ye Samjho</h3>
+      <p>Ye fundamental building blocks hain:</p>
+      <ul style="margin-left:1.5rem">
+        <li><code>.</code> — Koi bhi ek character (except newline). Example: <code>a.c</code> matches "abc", "a1c", "a@c"</li>
+        <li><code>*</code> — Pichla character 0 ya zyada baar. Example: <code>ab*c</code> matches "ac", "abc", "abbc"</li>
+        <li><code>+</code> — Pichla character 1 ya zyada baar. Example: <code>ab+c</code> matches "abc", "abbc" (not "ac")</li>
+        <li><code>?</code> — Pichla character 0 ya 1 baar (optional). Example: <code>colou?r</code> matches "color" aur "colour"</li>
+        <li><code>\d</code> — Koi bhi digit (0-9). Example: <code>\d\d\d</code> matches "123", "456"</li>
+        <li><code>\w</code> — Koi bhi word character (letter, digit, underscore)</li>
+        <li><code>^</code> — String ki starting. Example: <code>^Hello</code> matches "Hello world" (start mein Hello hai)</li>
+        <li><code>$</code> — String ki ending. Example: <code>world$</code> matches "Hello world" (end mein world hai)</li>
+        <li><code>[abc]</code> — Character class — a, b, ya c mein se koi ek</li>
+        <li><code>{n}</code> — Exactly n baar repeat. Example: <code>\d{6}</code> matches exactly 6 digits</li>
+      </ul>
+<h3>5 Practical Examples — Indian Context</h3>
+
+      <h3>1. Email Validation</h3>
+      <p><code>^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$</code></p>
+      <p>Ye pattern check karta hai ki email mein @ hai, domain hai, aur extension (.com, .in) hai. Basic validation ke liye perfect hai.</p>
+
+      <h3>2. Indian Phone Number</h3>
+      <p><code>^[6-9]\d{9}$</code></p>
+      <p>Indian mobile numbers 6, 7, 8, ya 9 se start hote hain aur total 10 digits hote hain. Ye pattern exactly wahi check karta hai. Simple aur effective.</p>
+
+      <h3>3. Indian Pincode</h3>
+      <p><code>^[1-9]\d{5}$</code></p>
+      <p>Indian pincodes 6 digits ke hote hain aur 0 se start nahi hote. Ye pattern ensures ki first digit 1-9 hai aur total 6 digits hain.</p>
+
+      <h3>4. PAN Card Number</h3>
+      <p><code>^[A-Z]{5}\d{4}[A-Z]$</code></p>
+      <p>PAN card format: 5 uppercase letters, 4 digits, 1 uppercase letter. Example: ABCDE1234F. Ye pattern exactly ye structure validate karta hai.</p>
+
+      <h3>5. Date Format (DD/MM/YYYY)</h3>
+      <p><code>^\d{2}\/\d{2}\/\d{4}$</code></p>
+      <p>Indian date format DD/MM/YYYY check karta hai. Note: ye sirf format check karta hai, valid date (like 32/13/2026) nahi check karta — uske liye additional logic chahiye.</p>
+<h3>Common Mistakes — Ye Mat Karo</h3>
+      <ul style="margin-left:1.5rem">
+        <li><strong>Greedy matching</strong> — <code>.*</code> by default greedy hai (maximum match karta hai). <code>.*?</code> use karo lazy matching ke liye</li>
+        <li><strong>Special characters escape na karna</strong> — <code>.</code> regex mein "any character" hai. Actual dot match karne ke liye <code>\.</code> likho</li>
+        <li><strong>^ aur $ bhoolna</strong> — Bina anchors ke partial matches bhi aa jaate hain. Full string validate karna hai toh ^ aur $ lagao</li>
+        <li><strong>Over-engineering</strong> — Simple validation ke liye complex regex mat likho. Readable code > clever code</li>
+        <li><strong>Testing na karna</strong> — Hamesha multiple test cases se verify karo. Edge cases miss ho jaate hain</li>
+      </ul>
+<h3>Hamara Regex Tester Tool — Features</h3>
+      <p>Hamara <a href="/tools/regex-tester" style="color:var(--accent-text)">Regex Tester</a> specifically beginners ke liye design kiya gaya hai:</p>
+      <ul style="margin-left:1.5rem">
+        <li><strong>Live Testing</strong> — type karte hi matches highlight ho jaate hain, real-time feedback</li>
+        <li><strong>Cheat Sheet</strong> — side mein common patterns ki reference list, yaad rakhne ki zaroorat nahi</li>
+        <li><strong>Presets</strong> — common patterns (email, phone, URL, date) ek click mein load karo</li>
+        <li><strong>Match highlighting</strong> — color-coded matches taaki clearly dikhe kya match ho raha hai</li>
+        <li><strong>Flags support</strong> — global (g), case-insensitive (i), multiline (m) flags toggle karo</li>
+      </ul>
+      <p>Aur agar tum JSON ke saath kaam karte ho, toh hamara <a href="/tools/json-formatter" style="color:var(--accent-text)">JSON Formatter</a> bhi check karo — API responses format karne ke liye perfect hai.</p>
+<h3>Learning Path — Aage Kaise Badhe?</h3>
+      <ol style="margin-left:1.5rem;line-height:2.2">
+        <li><strong>Week 1:</strong> Basic metacharacters seekho (. * + ? \d \w ^ $) — hamara tool mein practice karo</li>
+        <li><strong>Week 2:</strong> Character classes [a-z], quantifiers {n,m}, groups () seekho</li>
+        <li><strong>Week 3:</strong> Lookahead (?=), lookbehind (?<=), non-capturing groups (?:) explore karo</li>
+        <li><strong>Week 4:</strong> Real projects mein use karo — form validation, log parsing, data cleaning</li>
+      </ol>
+      <p><strong>Pro tip:</strong> Har din 10 minute regex practice karo. 1 month mein tum confidently regex likh paoge. Start simple, gradually complex patterns pe jaao.</p>
+<div style="margin:2rem 0;padding:1.5rem;background:var(--card);border-radius:12px;text-align:center"><p style="font-size:1.1rem;margin-bottom:1rem"><strong>Test your regex!</strong></p><a href="/tools/regex-tester" class="btn" style="display:inline-block;text-decoration:none">🔍 Open Regex Tester</a></div></div></div>
 <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
       <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
