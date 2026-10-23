@@ -311,7 +311,7 @@ function showResult(d){document.getElementById('loading').style.display='none';d
 function fetchIP(url){showLoading();fetch(url).then(function(r){if(!r.ok)throw new Error('API error: '+r.status);return r.json();}).then(function(d){if(d.error)throw new Error(d.reason||'Invalid IP address');showResult(d);}).catch(function(e){showError(e.message||'Failed to fetch IP data. Check your connection.');});}
 function lookupMyIP(){document.getElementById('ipInput').value='';fetchIP('https://ipapi.co/json/');}
 function lookupIP(){var ip=document.getElementById('ipInput').value.trim();if(!ip){lookupMyIP();return;}fetchIP('https://ipapi.co/'+encodeURIComponent(ip)+'/json/');}
-function copyIP(){if(!currentIP)return;navigator.clipboard.writeText(currentIP).then(function(){var b=document.getElementById('copyBtn');b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy IP';},1500);});}
+function copyIP(){if(!currentIP)return;Promise.resolve(copyNow(currentIP,'IP copied.')).then(function(ok){if(!ok)return;var b=document.getElementById('copyBtn');b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy IP';},1500);});}
 
 // ---------- WebRTC local IP ----------
 function detectWebRTC(){

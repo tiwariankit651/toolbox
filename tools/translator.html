@@ -204,7 +204,7 @@ function swapLanguages(){
 function copyResult(){
   var text=document.getElementById("out").value;
   if(!text)return;
-  navigator.clipboard.writeText(text).then(function(){
+  Promise.resolve(copyNow(text)).then(function(ok){if(!ok)return;
     document.getElementById("status").textContent="✅ Copied to clipboard!";
   });
 }

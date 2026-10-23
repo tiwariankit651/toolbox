@@ -223,6 +223,8 @@ function startTimer(){startTime=Date.now();timerInt=setInterval(()=>{const sec=M
 function stopTimer(){if(timerInt){clearInterval(timerInt);timerInt=null}}
 function updateCounts(){
   const t=document.getElementById('output').value;
+  /* Saved a 0-byte .txt with no warning when the box was empty. */
+  if(!String(t).trim()){notify('There is no text to download yet.','warn');return}
   const words=t.trim()?t.trim().split(/\s+/).length:0;
   document.getElementById('wordCount').textContent=words+' words';
   document.getElementById('charCountS').textContent=t.length+' chars';
@@ -317,7 +319,7 @@ function finishRec(){
 // ---------- Actions ----------
 function copyOutput(){
   const t=document.getElementById('output').value;
-  navigator.clipboard.writeText(t).then(()=>{document.getElementById('status').textContent='📋 Copied to clipboard'});
+  Promise.resolve(copyNow(t)).then((ok)=>{if(!ok)return;document.getElementById('status').textContent='📋 Copied to clipboard'});
 }
 function clearOutput(){
   pushUndo();
@@ -327,6 +329,8 @@ function clearOutput(){
 }
 function downloadOutput(){
   const t=document.getElementById('output').value;
+  /* Saved a 0-byte .txt with no warning when nothing had been dictated. */
+  if(!String(t).trim()){notify('There is no text to download yet.','warn');return}
   const blob=new Blob([t],{type:'text/plain'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');

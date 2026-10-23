@@ -144,12 +144,12 @@ function hello() {
           </div>
         </div>
         <div class="preview-pane">
-          <div id="preview-area" onscroll="syncScroll(this)"></div>
+          <div id="preview-area" role="document" aria-label="Rendered preview" onscroll="syncScroll(this)"></div>
         </div>
       </div>
       <div class="row" style="margin-top:1rem">
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('md').value).then(function(){showToast('Markdown copied!')})">📋 Copy MD</button>
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('preview-area').innerHTML).then(function(){showToast('HTML copied!')})">📋 Copy HTML</button>
+        <button class="btn btn-outline" onclick="copyNow(document.getElementById('md').value,'Markdown copied.')">📋 Copy MD</button>
+        <button class="btn btn-outline" onclick="copyNow(document.getElementById('preview-area').innerHTML,'HTML copied.')">📋 Copy HTML</button>
         <button class="btn" onclick="downloadMD()">💾 Download .md</button>
         <button class="btn" onclick="exportHTML()">📄 Export HTML</button>
         <button class="btn btn-outline" onclick="window.print()">🖨 Print/PDF</button>

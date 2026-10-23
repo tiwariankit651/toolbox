@@ -327,7 +327,7 @@ function offerTable(a,b){
 function textSummary(b){
   return "Salary Breakdown (estimate)\nCTC: "+fmt(b.ctc)+"\nGross: "+fmt(b.gross)+"\nIncome Tax: "+fmt(b.tax)+"\nEmployee PF: "+fmt(b.pfEmployee)+"\nProf Tax: "+fmt(b.pt)+"\nTotal Deductions: "+fmt(b.totalDeduction)+"\nIn-Hand: "+fmt(b.inHandMonthly)+"/mo · "+fmt(b.inHandAnnual)+"/yr\n("+words(b.inHandAnnual)+")\n\nEstimate only — not financial advice. Confirm with HR/a professional.";
 }
-function copySummary(){if(!lastSummary){document.getElementById('copyMsg').textContent='Calculate first.';return}var done=function(){document.getElementById('copyMsg').textContent='✅ Copied!'};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastSummary).then(done,function(){fallbackCopy(lastSummary,done)})}else{fallbackCopy(lastSummary,done)}}
+function copySummary(){if(!lastSummary){document.getElementById('copyMsg').textContent='Calculate first.';return}var done=function(){document.getElementById('copyMsg').textContent='✅ Copied!'};Promise.resolve(copyNow(lastSummary,'Summary copied.')).then(function(ok){if(ok)done()})}
 function fallbackCopy(t,cb){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb()}
 
 var FIELDS=['basicPct','hraPct','pfPct','gratPct','lta','ptState','esi','otherDed','regime','taxOverride','inputType','ctc','targetInhand','curCtc','hikePct','offerA','offerB'];

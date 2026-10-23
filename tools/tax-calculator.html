@@ -167,6 +167,10 @@ function computeNew(gross){
   var baseTax=r.tax;
   var rebate=0;
   if(taxable<=1200000){rebate=Math.min(baseTax,60000);}
+  /* Marginal relief under 87A: just above Rs 12L the tax cannot exceed the
+     income above Rs 12L. Without it, Rs 13L gross (Rs 12.25L taxable) showed
+     Rs 66,300 when the correct figure is Rs 26,000 — Rs 25,000 + 4% cess. */
+  else if(baseTax>taxable-1200000){rebate=baseTax-(taxable-1200000);}
   var afterRebate=Math.max(baseTax-rebate,0);
   var sur=surcharge(afterRebate,taxable);
   var cess=(afterRebate+sur)*0.04;
@@ -251,7 +255,7 @@ function breakdownTable(gross,salary,other,o,n){
   h+='<table style="width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:.9rem;margin-top:1rem">';
   h+='<tr style="background:rgba(139,92,246,.15)"><th style="padding:.5rem .6rem;text-align:left">Tax Computation</th><th style="padding:.5rem .6rem;text-align:right">Old</th><th style="padding:.5rem .6rem;text-align:right">New</th></tr>';
   h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Tax before rebate</td>'+col(o.baseTax)+col(n.baseTax)+'</tr>';
-  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Rebate u/s 87A</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(o.rebate)+'</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(n.rebate)+'</td></tr>';
+  h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Rebate u/s 87A'+(n.taxable>1200000&&n.rebate>0?' (marginal relief)':'')+'</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(o.rebate)+'</td><td style="padding:.4rem .6rem;text-align:right">-'+inr(n.rebate)+'</td></tr>';
   h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Surcharge</td>'+col(o.surcharge)+col(n.surcharge)+'</tr>';
   h+='<tr style="border-top:1px solid var(--card)"><td style="padding:.4rem .6rem">Health &amp; Education Cess 4%</td>'+col(o.cess)+col(n.cess)+'</tr>';
   h+='<tr style="border-top:1px solid var(--card);font-weight:700"><td style="padding:.4rem .6rem">Total Tax Payable</td>'+col(o.total)+col(n.total)+'</tr>';
@@ -268,7 +272,7 @@ function buildSummary(gross,o,n,diff){
   "Recommended: "+better+" (saves "+fmt(diff)+")\n\n"+
   "Estimate only — not tax advice. Confirm with a professional.";
 }
-function copySummary(){if(!lastSummary){document.getElementById("copyMsg").textContent="Calculate first.";return}var done=function(){document.getElementById("copyMsg").textContent="✅ Summary copied!"};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastSummary).then(done,function(){fallbackCopy(lastSummary,done)})}else{fallbackCopy(lastSummary,done)}}
+function copySummary(){if(!lastSummary){document.getElementById("copyMsg").textContent="Calculate first.";return}var done=function(){document.getElementById("copyMsg").textContent="✅ Summary copied!"};Promise.resolve(copyNow(lastSummary,'Summary copied.')).then(function(ok){if(ok)done()})}
 function fallbackCopy(t,cb){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);cb()}
 
 document.addEventListener("DOMContentLoaded",function(){load();FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener("input",save)})});

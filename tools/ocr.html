@@ -550,6 +550,8 @@ function renderOcrResult(text){
   var avg=lastConf.length?Math.round(lastConf.reduce(function(a,b){return a+b},0)/lastConf.length):0;
   var cColor=avg>=85?'#22c55e':avg>=70?'#f59e0b':'#ec4899';
   var cNote=avg>=85?'High confidence':avg>=70?'Moderate — check the text':'Low — try a preset or raise contrast/threshold';
+  /* With 0 words a confidence figure means nothing — and could read as 95%. */
+  if(words===0){avg=0;cColor='#f59e0b';cNote='No text found — try a clearer image, a preset, or raise contrast';}
 
   var table=detectTable(text);
   var tableHtml=table?"<details style='margin-top:.5rem'><summary style='cursor:pointer'>📊 Detected table</summary><pre style='overflow-x:auto;padding:.5rem;background:var(--bg2);border-radius:6px'>"+table.replace(/</g,"&lt;")+"</pre></details>":"";

@@ -433,7 +433,11 @@ async function exportAllBoards(){
       'and .csv (opens in Excel or Google Sheets).\n\n'+
       'Boards included: '+count+'\n');
     var blob=await zip.generateAsync({type:'blob'});
-    download(blob,'kanban-boards.zip');
+    /* The page defines its own download(name,text,type), which shadows the
+       shared download(blob,name). Called with the shared order, it wrote a
+       17-byte '[object Blob].txt' holding the text 'kanban-boards.zip'. */
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kanban-boards.zip';
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);
     notify(count+' board'+(count>1?'s':'')+' exported as ZIP.','ok');
   }catch(err){
     notify('ZIP export failed: '+((err&&err.message)||'unknown'),'error');

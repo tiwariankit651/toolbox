@@ -294,7 +294,7 @@ function buildSummary(mode,p,data,infl,real){
   s+="Inflation-adjusted value: "+fmt(real)+"\n\nReturns are assumptions, not guaranteed. Mutual funds carry market risk. Not financial advice.";
   return s;
 }
-function copySummary(){if(!lastSummary){document.getElementById("copyMsg").textContent="Calculate first.";return}var done=function(){document.getElementById("copyMsg").textContent="✅ Copied!"};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastSummary).then(done,function(){fallbackCopy(lastSummary,done)})}else{fallbackCopy(lastSummary,done)}}
+function copySummary(){if(!lastSummary){document.getElementById("copyMsg").textContent="Calculate first.";return}var done=function(){document.getElementById("copyMsg").textContent="✅ Copied!"};Promise.resolve(copyNow(lastSummary,'Summary copied.')).then(function(ok){if(ok)done()})}
 function fallbackCopy(t,cb){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);cb()}
 
 // Compare 2-3 return assumptions

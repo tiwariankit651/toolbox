@@ -7,7 +7,12 @@ var _staleKeys = Object.create(null);
 // Shared utilities
 function toggleTheme(){document.body.classList.toggle('light');document.getElementById('themeToggle').textContent=document.body.classList.contains('light')?'☀️':'🌙';try{localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark')}catch(e){}document.querySelectorAll('canvas').forEach(function(c){if(c.style.background==='#fff'||c.style.background==='white')c.style.background=document.body.classList.contains('light')?'#fff':'#fff'})}
 try{if(localStorage.getItem('theme')==='light')document.body.classList.add('light')}catch(e){}
-function copyText(t,btn){navigator.clipboard.writeText(t);if(btn){btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1000)}}
+/* Said 'Copied!' whether or not the clipboard write succeeded, and left an
+   unhandled rejection when it failed. copyNow() falls back to execCommand and
+   reports a real failure; the button now reflects the actual outcome. */
+function copyText(t,btn){var p=(typeof copyNow==='function')?copyNow(t):Promise.resolve(false);
+  Promise.resolve(p).then(function(ok){if(!btn)return;var was=btn.textContent;btn.textContent=ok?'Copied!':'Copy failed';
+  setTimeout(function(){btn.textContent=was==='Copied!'||was==='Copy failed'?'Copy':was},1200)})}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();var t=document.createElement('div');t.textContent='🎉 Downloaded: '+name;t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:600;z-index:9999;animation:fadeUp .3s ease';document.body.appendChild(t);setTimeout(function(){t.remove()},2500);if(!document.getElementById('toastCSS')){var s=document.createElement('style');s.id='toastCSS';s.textContent='@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';document.head.appendChild(s)}}
 /* Shared rejection handler for loadImage chains. Without one, a corrupt file
    turns into an unhandled promise rejection, which is exactly as silent for the
@@ -42,7 +47,7 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=7').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=8').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
@@ -71,7 +76,7 @@ if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-g
     shareDiv.style.cssText='margin-top:.8rem;display:flex;gap:6px;flex-wrap:wrap';
     var url=window.location.href;
     var title=document.title;
-    shareDiv.innerHTML='<button onclick="if(navigator.share)navigator.share({title:document.title,url:location.href});else{navigator.clipboard.writeText(location.href);this.textContent=\'Copied!\'}" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:.8rem">📤 Share Tool</button><a href="https://wa.me/?text='+encodeURIComponent(title+' '+url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">💬 WhatsApp</a><a href="https://twitter.com/intent/tweet?text='+encodeURIComponent(title)+' '+encodeURIComponent(url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">🐦 Twitter</a><a href="/tools/whatsapp-direct" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">💬 Send via WhatsApp Direct</a>';
+    shareDiv.innerHTML='<button onclick="if(navigator.share)navigator.share({title:document.title,url:location.href});else{var _b=this;Promise.resolve(copyNow(location.href,\'Link copied.\')).then(function(ok){_b.textContent=ok?\'Copied!\':\'Copy failed\'})}" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text);cursor:pointer;font-size:.8rem">📤 Share Tool</button><a href="https://wa.me/?text='+encodeURIComponent(title+' '+url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">💬 WhatsApp</a><a href="https://twitter.com/intent/tweet?text='+encodeURIComponent(title)+' '+encodeURIComponent(url)+'" target="_blank" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">🐦 Twitter</a><a href="/tools/whatsapp-direct" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;text-decoration:none">💬 Send via WhatsApp Direct</a>';
     h1.parentNode.insertBefore(shareDiv,badge.nextSibling);
 
     // Related Tools section

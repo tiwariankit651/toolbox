@@ -427,7 +427,7 @@ function rejectAll(){ suggestions.forEach(function(s){s.accepted=false;}); refre
 function copyOut(btn){
   var val=document.getElementById("output").value;
   if(!val){notify("Nothing to copy yet — refine some text first.", 'warn');return;}
-  navigator.clipboard.writeText(val).then(function(){
+  Promise.resolve(copyNow(val)).then(function(ok){if(!ok)return;
     var old=btn.textContent; btn.textContent="✅ Copied!"; setTimeout(function(){btn.textContent=old;},1200);
   });
 }

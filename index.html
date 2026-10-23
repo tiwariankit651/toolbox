@@ -34,7 +34,7 @@
   {"@context":"https://schema.org","@type":"WebSite","name":"FreeToolHubs","url":"https://freetoolhubs.com/","description":"Free online tools for students and professionals. PDF editor, typing test, flashcards, quiz maker & more.","author":{"@type":"Person","name":"Ankit Tiwari"},"potentialAction":{"@type":"SearchAction","target":"https://freetoolhubs.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
   </script>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is FreeToolHubs really free?","acceptedAnswer":{"@type":"Answer","text":"Yes, 100% free. No hidden charges, no signup required. All 122 tools are free to use without any limits."}},{"@type":"Question","name":"Are my files safe and private?","acceptedAnswer":{"@type":"Answer","text":"All processing happens in your browser using JavaScript. Your files are never uploaded to any server."}},{"@type":"Question","name":"How many tools does FreeToolHubs have?","acceptedAnswer":{"@type":"Answer","text":"We offer 115+ free online tools across categories: Document Tools, Image Tools, Developer Tools, Student Tools, Professional Tools, and Utility Tools."}},{"@type":"Question","name":"What tools are available for students?","acceptedAnswer":{"@type":"Answer","text":"30+ student tools including Flashcards with spaced repetition, Quiz Maker, Typing Test (Hindi+English), CGPA Calculator, Handwriting Assignment Maker, Syllabus Tracker, and Pomodoro Timer."}},{"@type":"Question","name":"Can I use FreeToolHubs offline?","acceptedAnswer":{"@type":"Answer","text":"Yes! Most tools work offline after the first visit. FreeToolHubs is a Progressive Web App (PWA)."}}]}
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is FreeToolHubs really free?","acceptedAnswer":{"@type":"Answer","text":"Yes, 100% free. No hidden charges, no signup required. All 122 tools are free to use without any limits."}},{"@type":"Question","name":"Are my files safe and private?","acceptedAnswer":{"@type":"Answer","text":"All processing happens in your browser using JavaScript. Your files are never uploaded to any server."}},{"@type":"Question","name":"How many tools does FreeToolHubs have?","acceptedAnswer":{"@type":"Answer","text":"We offer 122 free online tools across categories: Document Tools, Image Tools, Developer Tools, Student Tools, Professional Tools, and Utility Tools."}},{"@type":"Question","name":"What tools are available for students?","acceptedAnswer":{"@type":"Answer","text":"30+ student tools including Flashcards with spaced repetition, Quiz Maker, Typing Test (Hindi+English), CGPA Calculator, Handwriting Assignment Maker, Syllabus Tracker, and Pomodoro Timer."}},{"@type":"Question","name":"Can I use FreeToolHubs offline?","acceptedAnswer":{"@type":"Answer","text":"Yes! Most tools work offline after the first visit. FreeToolHubs is a Progressive Web App (PWA)."}}]}
   </script>
   <link rel="canonical" href="https://freetoolhubs.com/">
   <link rel="manifest" href="manifest.json">
@@ -67,7 +67,7 @@
     <input type="text" id="searchTools" placeholder="🔍 Search tools... (Ctrl+K)" style="width:100%;padding:1rem 1.2rem;font-size:1rem;border-radius:14px;border:1px solid rgba(79,140,255,.2);background:var(--card);color:var(--text);margin-bottom:.8rem;box-shadow:0 4px 15px rgba(0,0,0,.1)">
     <div id="searchResults" style="display:none;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:.8rem;margin-bottom:1rem;max-height:300px;overflow-y:auto;box-shadow:0 8px 30px rgba(79,140,255,.15)"></div>
     <div style="display:flex;justify-content:center;gap:2rem;margin:1rem 0;flex-wrap:wrap">
-      <div style="text-align:center"><strong style="font-size:1.5rem;color:var(--accent-text)">115+</strong><br><span style="font-size:.8rem;color:var(--text2)">Free Tools</span></div>
+      <div style="text-align:center"><strong style="font-size:1.5rem;color:var(--accent-text)">122</strong><br><span style="font-size:.8rem;color:var(--text2)">Free Tools</span></div>
       <div style="text-align:center"><strong style="font-size:1.5rem;color:#4caf50">100%</strong><br><span style="font-size:.8rem;color:var(--text2)">Browser-Based</span></div>
       <div style="text-align:center"><strong style="font-size:1.5rem;color:var(--accent2-text)">0</strong><br><span style="font-size:.8rem;color:var(--text2)">Files Uploaded to Server</span></div>
     </div>
@@ -160,16 +160,29 @@ document.getElementById("searchTools").addEventListener("input",function(){
   var q=this.value.toLowerCase().trim();
   var resultsDiv=document.getElementById("searchResults");
   if(!q){resultsDiv.style.display="none";document.querySelectorAll(".tool-card").forEach(function(c){c.style.display=""});document.querySelectorAll(".tools-grid,.section-header").forEach(function(s){s.style.display=""});return}
-  var expanded=q;for(var k in searchAliases){if(q.indexOf(k)>-1)expanded+=" "+searchAliases[k]}
+  /* Aliases matched by substring, so "resize" contained "size" and pulled in
+     "resizer compressor" — PDF Compressor topped a search for resize. Match
+     aliases against whole words of the query instead. */
+  var qWords=q.split(/\s+/);
+  var expanded=q;for(var k in searchAliases){if(qWords.indexOf(k)>-1)expanded+=" "+searchAliases[k]}
   var matches=[];
   document.querySelectorAll(".tool-card").forEach(function(c){
     var t=c.textContent.toLowerCase();var href=(c.getAttribute("href")||"").toLowerCase();var full=t+" "+href;
     var m=full.indexOf(q)>-1;if(!m){var w=expanded.split(/\s+/);m=w.some(function(x){return full.indexOf(x)>-1})}
     c.style.display=m?"":"none";
-    if(m&&matches.length<6)matches.push({name:c.textContent.replace(/\n/g,' ').trim().substring(0,40),href:c.getAttribute("href")});
+    if(m)matches.push({name:c.textContent.replace(/\n/g,' ').trim().substring(0,40),href:c.getAttribute("href"),exact:full.indexOf(q)>-1});
   });
   document.querySelectorAll(".tools-grid").forEach(function(s){var v=false;s.querySelectorAll(".tool-card").forEach(function(c){if(c.style.display!=="none")v=true});s.style.display=v?"":"none";var p=s.previousElementSibling;if(p)p.style.display=v?"":"none"});
+  /* The same tool card appears in several sections, so dedupe by link, and
+     put literal matches ahead of alias matches. */
+  var seenH={};matches=matches.filter(function(m){if(seenH[m.href])return false;seenH[m.href]=1;return true});
+  matches.sort(function(a,b){return (b.exact?1:0)-(a.exact?1:0)});matches=matches.slice(0,6);
   // Spotlight dropdown
+  /* With no match every card was hidden and nothing said why. */
+  if(!matches.length&&q.length>1){
+    resultsDiv.style.display="block";
+    resultsDiv.innerHTML='<p style="padding:.6rem .8rem;margin:0;color:var(--text2)">No tools match \u201c'+q.replace(/[<>&"]/g,"")+'\u201d. Try a shorter word, such as \u201cpdf\u201d, \u201cimage\u201d or \u201cexam\u201d.</p>';
+  }else
   if(matches.length&&q.length>1){
     resultsDiv.style.display="block";
     resultsDiv.innerHTML=matches.map(function(m){return'<a href="'+m.href+'" style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;border-radius:8px;color:var(--text);text-decoration:none;transition:background .2s"><span style="font-size:1.2rem">'+m.name.substring(0,2)+'</span><span style="flex:1">'+m.name+'</span><span style="color:var(--text2);font-size:.75rem">→</span></a>'}).join("")+'<style>#searchResults a:hover{background:var(--card)}</style>';
@@ -358,7 +371,7 @@ document.getElementById("searchTools").addEventListener("blur",function(){setTim
 
     <div class="tool-section" style="margin-top:1.5rem">
       <h2>Why Choose FreeToolHubs?</h2>
-      <p>FreeToolHubs is a comprehensive collection of 115+ free online tools designed for students, professionals, developers, and everyday users. Unlike other tool websites that upload your files to remote servers, every tool on FreeToolHubs processes your data entirely within your web browser using modern JavaScript APIs. This means your documents, images, and personal information never leave your device — giving you complete privacy and security.</p>
+      <p>FreeToolHubs is a comprehensive collection of 122 free online tools designed for students, professionals, developers, and everyday users. Unlike other tool websites that upload your files to remote servers, every tool on FreeToolHubs processes your data entirely within your web browser using modern JavaScript APIs. This means your documents, images, and personal information never leave your device — giving you complete privacy and security.</p>
       <h3 style="margin-top:1rem">For Students & Exam Aspirants</h3>
       <p>Preparing for SSC, UPSC, IBPS, or GATE? We have specialized tools built specifically for Indian government exam preparation. Our Image Compressor includes one-click presets for SSC photo (200x230px, under 20KB), UPSC signature (140x60px), and IBPS requirements. The Handwriting Assignment Maker converts typed text to realistic handwritten pages. Flashcards use the scientifically-proven SM-2 spaced repetition algorithm to help you remember more and forget less. The Typing Test supports both Hindi and English with difficulty levels matching SSC CHSL requirements.</p>
       <h3 style="margin-top:1rem">For Professionals & Freelancers</h3>
@@ -376,7 +389,7 @@ document.getElementById("searchTools").addEventListener("blur",function(){setTim
       <details><summary>Do I need to install anything?</summary><p>No. FreeToolHubs works directly in your web browser on any device — desktop, laptop, tablet, or mobile phone. No software download or installation needed.</p></details>
       <details><summary>Is there a file size limit?</summary><p>Since everything runs in your browser, the limit depends on your device's memory. Most files up to 100MB work fine. For very large files, we recommend using a desktop browser.</p></details>
       <details><summary>Can I use FreeToolHubs offline?</summary><p>Yes! Most tools work offline after the first visit. FreeToolHubs is a Progressive Web App (PWA) — you can install it on your phone or desktop for instant access without internet. Tools that require APIs (Translator, URL Shortener, IP Lookup) need internet.</p></details>
-      <details><summary>How many tools does FreeToolHubs have?</summary><p>We currently offer 115+ free online tools across categories: Document Tools (PDF editor, merger, splitter, compressor), Image Tools (compressor, resizer, background remover, watermark, collage), Developer Tools (JSON formatter, regex tester, SQL formatter, diff checker), Student Tools (flashcards, quiz maker, typing test, CGPA calculator), Professional Tools (resume builder, invoice generator, certificate maker, business card designer), and many more utility tools.</p></details>
+      <details><summary>How many tools does FreeToolHubs have?</summary><p>We currently offer 122 free online tools across categories: Document Tools (PDF editor, merger, splitter, compressor), Image Tools (compressor, resizer, background remover, watermark, collage), Developer Tools (JSON formatter, regex tester, SQL formatter, diff checker), Student Tools (flashcards, quiz maker, typing test, CGPA calculator), Professional Tools (resume builder, invoice generator, certificate maker, business card designer), and many more utility tools.</p></details>
       <details><summary>What are the most popular tools?</summary><p>Our most used tools include: PDF Editor, Image Compressor, Background Remover, Typing Test, Flashcards with Spaced Repetition, Quiz Maker, Resume Builder, Salary Calculator (CTC to In-Hand), Handwriting Assignment Maker, and the Pomodoro Timer. All are completely free.</p></details>
       <details><summary>How is FreeToolHubs different from other online tools?</summary><p>Unlike most online tools that upload your files to their servers, FreeToolHubs processes everything locally in your browser. This means faster processing, complete privacy, and no file size limits from server restrictions. We also offer 122 tools in one place — no need to visit different websites for different tasks.</p></details>
       <details><summary>What tools do you offer for students?</summary><p>We have 30+ student-focused tools: Flashcards (with spaced repetition), Quiz Maker (CSV import, timer, leaderboard), Typing Test (Hindi + English), CGPA Calculator, Handwriting Assignment Maker, Essay Outline Generator, Syllabus Tracker, Exam Calendar 2026, Speed Reader, Vocabulary Builder, Formula Sheet, Pomodoro Timer, Timetable Maker, and Plagiarism Checker.</p></details>
