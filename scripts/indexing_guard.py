@@ -109,6 +109,23 @@ def main():
             if re.search(pat, txt, re.I):
                 errors.append(f'{p}: {why}')
 
+    # 7. internal files that would be publicly served. .cfignore was never
+    #    honoured by Cloudflare Pages, so planning docs were public for months.
+    #    Anything tracked that is not part of the site must be 404'd in
+    #    _redirects, which IS honoured.
+    tracked = subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout.splitlines()
+    site_ext = re.compile(r'\.(html|css|js|png|jpg|jpeg|svg|ico|xml|webp|gif|json|webmanifest)$')
+    allowed = {'_redirects', '_headers', 'robots.txt', 'ads.txt', '.gitignore', '.well-known/security.txt'}
+    rtext = open('_redirects', encoding='utf-8').read()
+    for t in tracked:
+        if t in allowed or site_ext.search(t):
+            continue
+        top = '/' + t.split('/')[0]
+        served_path = '/' + t.replace(' ', '%20')
+        if (served_path + ' ') in rtext or (served_path + '\t') in rtext or (top + '/*') in rtext:
+            continue
+        errors.append(f'{t}: tracked file would be PUBLICLY served - add a 404 rule to _redirects')
+
     # sitemaps
     files = {clean_url(p).rstrip('/'): c for p, c in all_pages}
     for sm in glob.glob('sitemap-*.xml'):
