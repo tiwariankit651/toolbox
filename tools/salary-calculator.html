@@ -57,6 +57,7 @@
         <div class="row"><label style="min-width:150px">Basic % of CTC</label><input type="number" id="basicPct" value="45" style="width:80px"></div>
         <div class="row"><label style="min-width:150px">HRA % of Basic</label><input type="number" id="hraPct" value="50" style="width:80px"></div>
         <div class="row"><label style="min-width:150px">Employee PF % of Basic</label><input type="number" id="pfPct" value="12" style="width:80px"></div>
+        <div class="row"><label style="min-width:150px"><input type="checkbox" id="pfFull"> PF on full basic</label><span class="info" style="font-size:.8rem">Off: 12% of basic capped at Rs 15,000/month = Rs 1,800 (the statutory amount). Tick only if your employer contributes on the full basic.</span></div>
         <div class="row"><label style="min-width:150px">Gratuity % of Basic</label><input type="number" id="gratPct" value="4.81" style="width:80px"></div>
         <div class="row"><label style="min-width:150px">LTA (annual ₹)</label><input type="number" id="lta" value="0" style="width:120px"></div>
         <div class="row"><label style="min-width:150px">State (Prof. Tax)</label><select id="ptState">
@@ -171,7 +172,9 @@ function inr(n){n=Math.round(n||0);var neg=n<0;n=Math.abs(n);var s=n.toString();
 function fmt(n){return '₹'+inr(n)}
 function words(n){n=Math.round(n||0);if(n===0)return "Zero Rupees";var neg=n<0;n=Math.abs(n);var out="";var cr=Math.floor(n/10000000);n%=10000000;var lk=Math.floor(n/100000);n%=100000;var th=Math.floor(n/1000);n%=1000;var hd=Math.floor(n/100);var rem=n%100;if(cr)out+=cr+" Crore ";if(lk)out+=lk+" Lakh ";if(th)out+=th+" Thousand ";if(hd)out+=hd+" Hundred ";if(rem)out+=rem+" ";return (neg?"Minus ":"")+out.trim()+" Rupees"}
 
-function taxNewRegime(income){var std=75000;var ti=Math.max(0,income-std);var slabs=[[400000,0],[400000,0.05],[400000,0.10],[400000,0.15],[400000,0.20],[400000,0.25],[Infinity,0.30]];var tax=0,rem=ti;for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}if(ti<=1200000)tax=Math.max(0,tax-Math.min(tax,60000));return tax*1.04}
+function taxNewRegime(income){var std=75000;var ti=Math.max(0,income-std);var slabs=[[400000,0],[400000,0.05],[400000,0.10],[400000,0.15],[400000,0.20],[400000,0.25],[Infinity,0.30]];var tax=0,rem=ti;for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}if(ti<=1200000)tax=Math.max(0,tax-Math.min(tax,60000));/* 87A marginal relief - the same fix made in tax-calculator, which this tool
+   keeps its own copy of. Just above Rs 12L taxable the tax cannot exceed the
+   income above Rs 12L. */else if(tax>ti-1200000)tax=ti-1200000;return tax*1.04}
 function taxOldRegime(income){var std=50000;var sec80c=150000;var ti=Math.max(0,income-std-sec80c);var slabs=[[250000,0],[250000,0.05],[500000,0.20],[Infinity,0.30]];var tax=0,rem=ti;for(var i=0;i<slabs.length&&rem>0;i++){var amt=Math.min(rem,slabs[i][0]);tax+=amt*slabs[i][1];rem-=amt}if(ti<=500000)tax=Math.max(0,tax-Math.min(tax,12500));return tax*1.04}
 
 function cfg(){return {
@@ -191,8 +194,13 @@ function cfg(){return {
 function breakup(ctc,c){
   var basic=ctc*c.basicPct;
   var hra=basic*c.hraPct;
-  var pfEmployer=basic*c.pfPct;
-  var pfEmployee=basic*c.pfPct;
+  /* Statutory PF is 12% of basic up to the Rs 15,000/month wage ceiling
+   (Rs 1,800/month); above it is voluntary under EPF Scheme 2026. This was
+   12% of the FULL basic, which on a 12L CTC understated in-hand pay by
+   Rs 3,600 a month. Full-basic PF is still available as an option. */
+var pfBase=(document.getElementById('pfFull')&&document.getElementById('pfFull').checked)?basic:Math.min(basic,15000*12);
+var pfEmployer=pfBase*c.pfPct;
+  var pfEmployee=pfBase*c.pfPct;
   var gratuity=basic*c.gratPct;
   var lta=c.lta;
   var special=ctc-basic-hra-pfEmployer-gratuity-lta;
