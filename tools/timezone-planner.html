@@ -590,7 +590,10 @@ function exportIcs(){
            z(d.getUTCHours())+z(d.getUTCMinutes())+z(d.getUTCSeconds())+"Z";
   };
   var end=new Date(p.inst.getTime()+30*60000);
-  var desc=p.lines.slice(2).filter(Boolean).join("\\n");
+  /* Each line is TEXT: commas and semicolons must be escaped (RFC 5545 3.3.11).
+     City lines like "Mumbai, India: 09:30" were cut at the comma by some apps. */
+  var icsText=function(s){return String(s).replace(/([,;\\])/g,"\\$1")};
+  var desc=p.lines.slice(2).filter(Boolean).map(icsText).join("\\n");
   var uid="tzp-"+p.inst.getTime()+"@freetoolhubs.com";
 
   var ics=[
