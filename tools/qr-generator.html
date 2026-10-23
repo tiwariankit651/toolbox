@@ -177,6 +177,16 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+/* qrcode-generator's DEFAULT byte encoder keeps only the low 8 bits of each
+   character (255 & charCode), so Hindi, the rupee sign, accented letters and
+   emoji were encoded as garbage: "Pay \u20b91,250" scanned as an empty string
+   and Devanagari as mojibake. The library ships a UTF-8 encoder; select it.
+   This is exactly what its own optional qrcode_UTF8.js does, inline. */
+if(window.qrcode&&qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs["UTF-8"]){
+  qrcode.stringToBytes=qrcode.stringToBytesFuncs["UTF-8"];
+}
+</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
   <script>

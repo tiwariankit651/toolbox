@@ -611,7 +611,17 @@ function exportICS() {
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');
-  var blob = new Blob([lines.join('\r\n')], {type: 'text/calendar;charset=utf-8'});
+  /* RFC 5545 3.1: fold content lines longer than 75 octets as CRLF + space.
+     An exam DESCRIPTION with the board's website ran to 83 octets. Folds on
+     UTF-8 octets so a multi-byte character is never split. */
+  var fold = function(line){
+    var enc = new TextEncoder(), out = [], cur = '', curLen = 0;
+    for (var ch of line) { var n = enc.encode(ch).length;
+      if (curLen + n > 75) { out.push(cur); cur = ' '; curLen = 1; }
+      cur += ch; curLen += n; }
+    out.push(cur); return out.join('\r\n');
+  };
+  var blob = new Blob([lines.map(fold).join('\r\n') + '\r\n'], {type: 'text/calendar;charset=utf-8'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'exam-calendar-' + new Date().toISOString().split('T')[0] + '.ics';

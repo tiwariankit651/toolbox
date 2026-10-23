@@ -238,6 +238,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+/* qrcode-generator's default encoder keeps only the low 8 bits of each
+   character, so a Hindi name, the rupee sign or an accented letter in the
+   QR scanned as garbage. Select the library's own UTF-8 encoder. */
+if(window.qrcode&&qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs["UTF-8"]){
+  qrcode.stringToBytes=qrcode.stringToBytesFuncs["UTF-8"];
+}
+</script>
   <script>
 /* ===== Business Card Generator ===== */
 var SIZES={

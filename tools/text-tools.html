@@ -382,7 +382,26 @@ function tx(m) {
   switch(m) {
     case "upper": t = t.toUpperCase(); break;
     case "lower": t = t.toLowerCase(); break;
-    case "title": t = t.replace(/\w\S*/g, function(w) { return w[0].toUpperCase() + w.slice(1).toLowerCase(); }); break;
+    case "title": {
+      /* Capitalised EVERY word ("The Lord Of The Rings") while this page's own
+         notes say style guides keep short articles, conjunctions and
+         prepositions lower case. Now follows that common convention: minor
+         words stay lower unless first or last. Also used \w, which is ASCII
+         only, so it mangled text in Indian scripts; this splits on spaces. */
+      var MINOR = {a:1,an:1,the:1,and:1,but:1,or:1,nor:1,for:1,so:1,yet:1,as:1,at:1,by:1,in:1,of:1,on:1,to:1,up:1,via:1,per:1,vs:1};
+      t = t.split("\n").map(function(line){
+        var words = line.split(/(\s+)/);
+        var idx = words.map(function(w,i){return /\S/.test(w)?i:-1}).filter(function(i){return i>=0});
+        var first = idx[0], last = idx[idx.length-1];
+        return words.map(function(w,i){
+          if (!/\S/.test(w)) return w;
+          var lower = w.toLowerCase();
+          if (i !== first && i !== last && MINOR[lower.replace(/[^a-z]/g,"")]) return lower;
+          return lower.charAt(0).toUpperCase() + lower.slice(1);
+        }).join("");
+      }).join("\n");
+      break;
+    }
     case "sentence": t = t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/g, function(m, p, c) { return p + c.toUpperCase(); }); break;
     case "alternating": t = t.split("").map(function(c, i) { return i % 2 === 0 ? c.toLowerCase() : c.toUpperCase(); }).join(""); break;
     case "inverse": t = t.split("").map(function(c) { return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase(); }).join(""); break;
