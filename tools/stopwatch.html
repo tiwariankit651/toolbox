@@ -297,15 +297,20 @@ function ivStart(){
   ac();
   if(ivRound===0){ivRound=1;ivPhase='work';ivLeft=+document.getElementById('ivWork').value||1;document.getElementById('ivPhase').textContent='\ud83d\udcaa WORK';document.getElementById('ivRoundInfo').textContent='Round 1 / '+ivTotal;workBeep()}
   ivRunning=true;document.getElementById('ivBtn').textContent='\u23f8 Pause';
+  /* The phase ends at a clock deadline. Counting ticks ran slow when the tab
+     was throttled, so a 30 s work interval could last a minute. If a throttled
+     tick skips past one or more phase ends, each is applied in turn. */
+  var phaseEnd=Date.now()+ivLeft*1000;
   ivInt=setInterval(function(){
-    ivLeft--;
-    if(ivLeft<0){
-      if(ivPhase==='work'){ivPhase='rest';ivLeft=(+document.getElementById('ivRest').value||1)-1;document.getElementById('ivPhase').textContent='\ud83d\ude0c REST';restBeep()}
-      else{ivRound++;if(ivRound>ivTotal){ivStop();document.getElementById('ivPhase').textContent='\u2705 Done!';document.getElementById('ivDisplay').textContent='00:00';document.getElementById('ivBtn').textContent='\u25b6 Start';document.title='Online Stopwatch & Timer - Free | FreeToolHubs';alarm();flash();ivRound=0;return}ivPhase='work';ivLeft=(+document.getElementById('ivWork').value||1)-1;document.getElementById('ivPhase').textContent='\ud83d\udcaa WORK';document.getElementById('ivRoundInfo').textContent='Round '+ivRound+' / '+ivTotal;workBeep()}
+    var now=Date.now();
+    while(now>=phaseEnd){
+      if(ivPhase==='work'){ivPhase='rest';phaseEnd+=(+document.getElementById('ivRest').value||1)*1000;document.getElementById('ivPhase').textContent='\ud83d\ude0c REST';restBeep()}
+      else{ivRound++;if(ivRound>ivTotal){ivStop();document.getElementById('ivPhase').textContent='\u2705 Done!';document.getElementById('ivDisplay').textContent='00:00';document.getElementById('ivBtn').textContent='\u25b6 Start';document.title='Online Stopwatch & Timer - Free | FreeToolHubs';alarm();flash();ivRound=0;return}ivPhase='work';phaseEnd+=(+document.getElementById('ivWork').value||1)*1000;document.getElementById('ivPhase').textContent='\ud83d\udcaa WORK';document.getElementById('ivRoundInfo').textContent='Round '+ivRound+' / '+ivTotal;workBeep()}
     }
+    ivLeft=Math.ceil((phaseEnd-now)/1000);
     document.getElementById('ivDisplay').textContent=ivFmt(Math.max(0,ivLeft));
     if(currentTab==='iv')document.title=ivFmt(Math.max(0,ivLeft))+(ivPhase==='work'?' \ud83d\udcaa':' \ud83d\ude0c');
-  },1000);
+  },250);
 }
 
 /* ---------- Keyboard shortcuts (stopwatch) ---------- */

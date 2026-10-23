@@ -421,8 +421,11 @@ function setSleepTimer(){
   var mins=val==='custom'?(+custom.value||0):(+val);
   if(!mins){document.getElementById('sleepDisplay').textContent='';return}
   sleepLeft=mins*60;
+  /* deadline on the clock: counted ticks ran slow in a background tab, so a
+     30-minute sleep timer kept the sound playing well past 30 minutes */
+  var sleepEnd=Date.now()+sleepLeft*1000;
   sleepInt=setInterval(function(){
-    sleepLeft--;
+    sleepLeft=Math.max(0,Math.ceil((sleepEnd-Date.now())/1000));
     var m=Math.floor(sleepLeft/60),s=sleepLeft%60;
     document.getElementById('sleepDisplay').textContent='⏳ '+m+':'+(s<10?'0':'')+s;
     if(sleepLeft<=0){
@@ -431,7 +434,7 @@ function setSleepTimer(){
       document.getElementById('sleepDisplay').textContent='😴 Stopped';
       document.getElementById('sleepTimer').value='0';
     }
-  },1000);
+  },250);
 }
 
 // ---------- Pomodoro ----------
@@ -451,27 +454,29 @@ function togglePomodoro(){
   if(pomoInt){stopPomodoro();return}
   ensureCtx();started=true;
   pomoPhase='focus';
-  pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;
+  pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;pomoEnd=Date.now()+pomoLeft*1000;
   document.getElementById('pomoBtn').textContent='⏹ Stop Pomodoro';
   // remember current mix to resume after breaks
   pomoPrevMix={};for(var id in active)pomoPrevMix[id]=Math.round(active[id].targetVol*100);
   runPomoTick();
-  pomoInt=setInterval(runPomoTick,1000);
+  pomoInt=setInterval(runPomoTick,250);
 }
+var pomoEnd=0;
 function runPomoTick(){
+  pomoLeft=Math.max(0,Math.ceil((pomoEnd-Date.now())/1000));
   var m=Math.floor(pomoLeft/60),s=pomoLeft%60;
   document.getElementById('pomoDisplay').textContent=(pomoPhase==='focus'?'🎯 Focus — ':'☕ Break — ')+m+':'+(s<10?'0':'')+s;
   if(pomoLeft<=0){
     chime();
     if(pomoPhase==='focus'){
       pomoPhase='break';
-      pomoLeft=(+document.getElementById('pomoBreak').value||5)*60;
+      pomoLeft=(+document.getElementById('pomoBreak').value||5)*60;pomoEnd=Date.now()+pomoLeft*1000;
       // pause sounds during break (fade out but keep mix memory)
       pomoPrevMix={};for(var id in active)pomoPrevMix[id]=Math.round(active[id].targetVol*100);
       stopAll();
     }else{
       pomoPhase='focus';
-      pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;
+      pomoLeft=(+document.getElementById('pomoFocus').value||25)*60;pomoEnd=Date.now()+pomoLeft*1000;
       // resume the remembered mix
       if(pomoPrevMix){
         var mix=pomoPrevMix;
@@ -484,7 +489,6 @@ function runPomoTick(){
     }
     return;
   }
-  pomoLeft--;
 }
 function stopPomodoro(){
   clearInterval(pomoInt);pomoInt=null;
