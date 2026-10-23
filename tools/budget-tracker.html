@@ -264,17 +264,22 @@ function save(){storeSet(STORE_KEY, data);}
 /* ---- Indian number formatting ---- */
 function inr(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 function toWords(num){
+  /* Used to print digits ("33 thousand 180 rupees"); a figure "in words" should
+     be words: "Thirty Three Thousand One Hundred Eighty rupees". Indian system. */
   num=Math.round(Math.abs(num));
-  if(num===0)return 'zero rupees';
-  var parts=[];
+  if(num===0)return 'Zero rupees';
+  var a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  var b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function two(n){return n<20?a[n]:b[Math.floor(n/10)]+(n%10?' '+a[n%10]:'');}
+  function three(n){return (n>=100?a[Math.floor(n/100)]+' Hundred'+(n%100?' ':''):'')+(n%100?two(n%100):'');}
   var crore=Math.floor(num/10000000);num%=10000000;
   var lakh=Math.floor(num/100000);num%=100000;
   var thousand=Math.floor(num/1000);num%=1000;
-  var hundred=num;
-  if(crore)parts.push(crore+' crore');
-  if(lakh)parts.push(lakh+' lakh');
-  if(thousand)parts.push(thousand+' thousand');
-  if(hundred)parts.push(hundred);
+  var parts=[];
+  if(crore)parts.push((crore>=1000?toWords(crore).replace(/ rupees$/,''):three(crore))+' Crore');
+  if(lakh)parts.push(two(lakh)+' Lakh');
+  if(thousand)parts.push(two(thousand)+' Thousand');
+  if(num)parts.push(three(num));
   return parts.join(' ')+' rupees';
 }
 

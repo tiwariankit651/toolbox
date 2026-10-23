@@ -203,10 +203,10 @@ function getVideoId(url){
   return null;
 }
 
-// Meaningful, de-duplicated size set (sgp = 1080p if present)
+// Sizes YouTube actually serves. A "sgp 1920x1080" entry was listed too; it
+// 404s on every video tested, so it promised a size that does not exist.
 var YT_SIZE_LIST=[
   {name:"Max Resolution",file:"maxresdefault",res:"1280×720"},
-  {name:"Standard HD (sgp)",file:"sgp",res:"1920×1080"},
   {name:"HQ Default",file:"hqdefault",res:"480×360"},
   {name:"MQ Default",file:"mqdefault",res:"320×180"},
   {name:"SD Default",file:"sddefault",res:"640×480"},
@@ -289,7 +289,7 @@ function fetchThumbnails(){
     var probe=new Image();
     probe.onload=function(){
       // YouTube serves a 120x90 grey placeholder for missing large sizes
-      var isPlaceholder=(probe.naturalWidth<=120&&(s.file==="maxresdefault"||s.file==="sgp"||s.file==="sddefault"));
+      var isPlaceholder=(probe.naturalWidth<=120&&(s.file==="maxresdefault"||s.file==="sddefault"));
       if(!(probe.naturalWidth===0)&&!isPlaceholder){
         addThumbCard(grid,id,s,src,probe.naturalWidth,probe.naturalHeight);
       }

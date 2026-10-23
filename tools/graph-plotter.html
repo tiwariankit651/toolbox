@@ -22,7 +22,7 @@
     <div class="tool-section">
       <h1>📈 Graph Plotter</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="55" y="10" width="90" height="100" rx="10" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="65" y="20" width="70" height="25" rx="4" fill="#6366f1" opacity=".2"/><circle cx="80" cy="60" r="6" fill="#8b5cf6"/><circle cx="100" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="80" cy="80" r="6" fill="#8b5cf6"/><circle cx="100" cy="80" r="6" fill="#8b5cf6"/><circle cx="120" cy="80" r="6" fill="#8b5cf6"/><circle cx="80" cy="98" r="6" fill="#8b5cf6"/><circle cx="100" cy="98" r="6" fill="#8b5cf6"/><circle cx="120" cy="98" r="6" fill="#8b5cf6"/></svg></div>
-      <p class="info">Enter expressions using <strong>x</strong> (Cartesian), <strong>t</strong> (polar angle / parameter). Supports + - * / ^, parentheses and functions: sin cos tan asin acos atan sinh cosh tanh log ln log10 exp sqrt abs floor ceil round sign min max pow, and constants pi, e. Example: <code>sin(x) + x^2/4</code></p>
+      <p class="info">Enter expressions using <strong>x</strong> (Cartesian), <strong>t</strong> (polar angle / parameter). Supports + - * / ^, parentheses and functions: sin cos tan asin acos atan sinh cosh tanh log (base 10) ln (natural) log10 exp sqrt abs floor ceil round sign min max pow, and constants pi, e. Example: <code>sin(x) + x^2/4</code></p>
       <!-- Mode selector -->
       <div class="row" style="gap:8px;margin-bottom:.5rem">
         <label><input type="radio" name="mode" value="cartesian" checked onchange="switchMode()"> Cartesian y=f(x)</label>
@@ -187,7 +187,7 @@
   <script>
 /* ===== Safe expression parser (tokeniser + recursive-descent) ===== */
 var MATH_FUNCS={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,
-sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,log:Math.log,ln:Math.log,log10:Math.log10||function(x){return Math.log(x)/Math.LN10},
+sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,log:Math.log10||function(x){return Math.log(x)/Math.LN10},ln:Math.log,log10:Math.log10||function(x){return Math.log(x)/Math.LN10},
 exp:Math.exp,sqrt:Math.sqrt,abs:Math.abs,floor:Math.floor,ceil:Math.ceil,round:Math.round,
 sign:Math.sign||function(x){return x>0?1:x<0?-1:0},min:Math.min,max:Math.max,pow:Math.pow};
 var MATH_CONSTS={pi:Math.PI,e:Math.E};

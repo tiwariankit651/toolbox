@@ -188,7 +188,11 @@ var weakVerbs={
   'dealt with':'resolved / managed'
 };
 
+/* Common job-description filler. Without these the tool told users to add
+   'need, skilled, required' to their resume as missing keywords. */
+var JD_FILLER='need needs needed skilled skills skill required require requires requirement requirements experience experienced preferred prefer ideal ideally knowledge understanding ability abilities including include includes also well using used use across within such other more must-have nice have hands years year working join help like make ensure seeking hiring apply responsibilities responsible duties excellent proven solid deep familiarity familiar exposure equivalent least minimum degree based related relevant various multiple new opportunity opportunities';
 var STOPWORDS={'the':1,'and':1,'for':1,'with':1,'you':1,'your':1,'our':1,'are':1,'will':1,'that':1,'this':1,'have':1,'has':1,'from':1,'they':1,'their':1,'about':1,'into':1,'over':1,'than':1,'then':1,'them':1,'were':1,'been':1,'being':1,'able':1,'must':1,'should':1,'would':1,'could':1,'who':1,'what':1,'when':1,'where':1,'which':1,'while':1,'role':1,'work':1,'team':1,'company':1,'candidate':1,'job':1,'position':1,'looking':1,'strong':1,'good':1,'great':1,'plus':1,'etc':1,'per':1,'via':1};
+JD_FILLER.split(' ').forEach(function(w){STOPWORDS[w]=1});
 
 var lastReport='';
 var lastMissing=[];   /* keywords the JD wants that the resume lacks, for copyMissing() */
@@ -354,9 +358,16 @@ function checkATS(){
     return resumeLower.indexOf(w)>-1;
   }
   var jdFreq={};
-  job.toLowerCase().replace(/[^a-z0-9+#.\s]/g,' ').split(/\s+/).forEach(function(w){
-    w=w.replace(/^\.+|\.+$/g,'');
-    if(w.length>=minKwLen&&!STOPWORDS[w]){jdFreq[w]=(jdFreq[w]||0)+1}
+  /* The length filter dropped SQL, AWS, GCP, Git, C++ and C# - often the most
+     important keywords in a JD - so they were neither matched nor reported
+     missing. Short tokens are kept when the JD writes them as an acronym
+     (all caps) or they carry + or #. */
+  job.replace(/[^A-Za-z0-9+#.\s]/g,' ').split(/\s+/).forEach(function(raw){
+    raw=raw.replace(/^\.+|\.+$/g,'');
+    var w=raw.toLowerCase();
+    var tech=/^[A-Z][A-Z0-9]{1,}$/.test(raw)||/[+#]/.test(raw);
+    if(!w||STOPWORDS[w])return;
+    if(w.length>=minKwLen||(tech&&w.length>=2)){jdFreq[w]=(jdFreq[w]||0)+1}
   });
   var jdKeys=Object.keys(jdFreq).sort(function(a,b){return jdFreq[b]-jdFreq[a]});
   var totalWeight=0,matchedWeight=0,matchedList=[],missingList=[];
