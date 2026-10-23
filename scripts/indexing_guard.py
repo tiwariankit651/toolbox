@@ -124,7 +124,10 @@ def main():
         served_path = '/' + t.replace(' ', '%20')
         if (served_path + ' ') in rtext or (served_path + '\t') in rtext or (top + '/*') in rtext:
             continue
-        errors.append(f'{t}: tracked file would be PUBLICLY served - add a 404 rule to _redirects')
+        # Warn, do not block: a 404 rule in _redirects neither stops Pages
+        # serving an existing file nor survives the build (it broke every
+        # deploy after 3cfd71a). The real fix is a Cloudflare WAF rule.
+        print(f'  note: {t} is publicly served (block it with a Cloudflare WAF rule)')
 
     # sitemaps
     files = {clean_url(p).rstrip('/'): c for p, c in all_pages}
