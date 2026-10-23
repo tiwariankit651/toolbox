@@ -109,25 +109,39 @@ def main():
             if re.search(pat, txt, re.I):
                 errors.append(f'{p}: {why}')
 
-    # 7. internal files that would be publicly served. .cfignore was never
-    #    honoured by Cloudflare Pages, so planning docs were public for months.
-    #    Anything tracked that is not part of the site must be 404'd in
-    #    _redirects, which IS honoured.
+    # 7. internal files that would be publicly served.
+    #    .cfignore is ignored by Cloudflare Pages and _redirects cannot block
+    #    an existing file, so the ONLY thing keeping internal files private is
+    #    the Cloudflare WAF custom rule "Block internal files". This mirrors
+    #    that rule exactly. A tracked file the rule does not cover would go
+    #    live publicly, so the commit is BLOCKED until either the file is moved
+    #    under a covered path or the WAF rule and WAF_RULE below are updated
+    #    together.
+    #
+    #    WAF expression, as deployed 2026-10-23:
+    #      starts_with(path, "/.git") or ends_with(path, ".md")
+    #      or starts_with(path, "/scripts/") or starts_with(path, "/Setup")
+    #      or path eq "/.cfignore"
+    def waf_blocks(path):
+        return (path.startswith('/.git') or path.endswith('.md')
+                or path.startswith('/scripts/') or path.startswith('/Setup')
+                or path == '/.cfignore')
     tracked = subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout.splitlines()
-    site_ext = re.compile(r'\.(html|css|js|png|jpg|jpeg|svg|ico|xml|webp|gif|json|webmanifest)$')
-    allowed = {'_redirects', '_headers', 'robots.txt', 'ads.txt', '.gitignore', '.well-known/security.txt'}
-    rtext = open('_redirects', encoding='utf-8').read()
-    for t in tracked:
+    # what a deployed copy of a NEW file would look like, too — staged files
+    staged = subprocess.run(['git', 'diff', '--cached', '--name-only', '--diff-filter=A'],
+                            capture_output=True, text=True).stdout.splitlines()
+    site_ext = re.compile(r'\.(html|css|js|png|jpg|jpeg|svg|ico|xml|webp|gif|json|webmanifest|woff2?|ttf)$')
+    allowed = {'_redirects', '_headers', 'robots.txt', 'ads.txt', '.gitignore',
+               '.well-known/security.txt'}
+    for t in sorted(set(tracked) | set(staged)):
         if t in allowed or site_ext.search(t):
             continue
-        top = '/' + t.split('/')[0]
-        served_path = '/' + t.replace(' ', '%20')
-        if (served_path + ' ') in rtext or (served_path + '\t') in rtext or (top + '/*') in rtext:
+        if waf_blocks('/' + t):
             continue
-        # Warn, do not block: a 404 rule in _redirects neither stops Pages
-        # serving an existing file nor survives the build (it broke every
-        # deploy after 3cfd71a). The real fix is a Cloudflare WAF rule.
-        print(f'  note: {t} is publicly served (block it with a Cloudflare WAF rule)')
+        errors.append(f'{t}: would be PUBLIC on freetoolhubs.com - the Cloudflare '
+                      f'"Block internal files" rule does not cover it. Move it under '
+                      f'/scripts/, rename it to .md, or add it to the WAF rule AND to '
+                      f'waf_blocks() in scripts/indexing_guard.py')
 
     # sitemaps
     files = {clean_url(p).rstrip('/'): c for p, c in all_pages}
