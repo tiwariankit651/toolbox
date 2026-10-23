@@ -462,7 +462,9 @@ function download(filename,text,type){var b=new Blob([text],{type:type});var a=d
 function exportJSON(){download('todo_backup.json',JSON.stringify(data,null,2),'application/json')}
 function exportText(){
   var lines=[list().name,''];
-  list().tasks.forEach(function(t){lines.push((t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':''));});
+  /* subtasks were left out of the .txt export (the .md export and Copy kept them) */
+  list().tasks.forEach(function(t){lines.push((t.done?'[x] ':'[ ] ')+t.title+(t.due?' (due '+t.due+')':''));
+    (t.subtasks||[]).forEach(function(s){lines.push('    '+(s.done?'[x] ':'[ ] ')+s.text)});});
   download(list().name.replace(/\s+/g,'_')+'.txt',lines.join('\n'),'text/plain');
 }
 

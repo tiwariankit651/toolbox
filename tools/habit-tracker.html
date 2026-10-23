@@ -210,7 +210,7 @@ function htCopyToday(){
   due.forEach(function(h){
     var streak=getStreak(h);
     lines.push((isDone(h,TODAY)?'[x] ':'[ ] ')+h.name+
-      (streak>1?('  '+streak+'-day streak'):''));
+      (streak>1?('  '+streak+'-'+streakUnit(h,1)+' streak'):''));
   });
   var out=lines.join('\n');
   try{
@@ -239,9 +239,11 @@ function htExportCsv(){
       })));
     });
     rows.push([]);
-    rows.push(['Habit','Current streak','Longest streak','Completion rate %']);
+    rows.push(['Habit','Current streak','Longest streak','Unit','Completion rate % (30 days)']);
     H.habits.forEach(function(h){
-      rows.push([h.name,getStreak(h),getLongestStreak(h),getCompletionRate(h)]);
+      /* getCompletionRate(h) with no day count looped zero times, so every daily
+         habit exported 0% */
+      rows.push([h.name,getStreak(h),getLongestStreak(h),streakUnit(h,2),getCompletionRate(h,30)]);
     });
     var csv=rows.map(function(r){
       return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',');
@@ -289,10 +291,12 @@ function isScheduled(h,dateStr){
   if(h.schedule==='daily')return true;
   if(h.schedule==='weekdays'){var dow=_parseYMD(dateStr).getDay();return(h.days||[]).indexOf(dow)>=0;}
   if(h.schedule==='weekly'){
-    var weekStart=_parseYMD(dateStr);weekStart.setDate(weekStart.getDate()-weekStart.getDay());
-    var count=0;
-    for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var k=_localYMD(d);if(h.log&&h.log[k])count++;}
-    return count<(h.timesPerWeek||3);
+    /* An "N times a week" habit can be done on any day, so every day is a
+       scheduled day. The old rule ("scheduled while the week's quota is
+       unmet") un-scheduled the whole week - done days included - the moment
+       the quota was reached, so a user who hit 3/3 every week saw a streak
+       of 0. Weekly habits are judged per week instead: see weekMet(). */
+    return true;
   }
   return true;
 }
@@ -302,7 +306,26 @@ function isDone(h,dateStr){
   return(h.log[dateStr]||0)>=(h.target||1);
 }
 function getVal(h,dateStr){if(!h.log||!h.log[dateStr])return 0;if(h.type==='yesno')return h.log[dateStr]?1:0;return h.log[dateStr]||0;}
+/* ---- weekly ("N times per week") habits: streaks count whole weeks ---- */
+function weekStartOf(d){var w=new Date(d.getFullYear(),d.getMonth(),d.getDate());w.setDate(w.getDate()-w.getDay());return w}
+function weekCount(h,ws){var n=0;for(var i=0;i<7;i++){var d=new Date(ws);d.setDate(d.getDate()+i);if(isDone(h,_localYMD(d)))n++}return n}
+function weekMet(h,ws){return weekCount(h,ws)>=(h.timesPerWeek||3)}
+function weeklyStreak(h){
+  var ws=weekStartOf(new Date()),n=0;
+  /* the current week counts once met; while it is still in progress and unmet it does not break the streak */
+  if(weekMet(h,ws))n++;
+  for(var i=0;i<260;i++){ws.setDate(ws.getDate()-7);if(weekMet(h,ws))n++;else break}
+  return n;
+}
+function weeklyLongest(h){
+  var keys=Object.keys(h.log||{}).filter(function(k){return isDone(h,k)}).sort();if(!keys.length)return 0;
+  var ws=weekStartOf(_parseYMD(keys[0])),end=weekStartOf(new Date()),max=0,cur=0;
+  while(ws<=end){if(weekMet(h,ws)){cur++;if(cur>max)max=cur}else if(ws<end)cur=0;ws.setDate(ws.getDate()+7)}
+  return max;
+}
+function streakUnit(h,n){return h.schedule==='weekly'?(n===1?'week':'weeks'):(n===1?'day':'days')}
 function getStreak(h){
+  if(h.schedule==='weekly')return weeklyStreak(h);
   var streak=0;var d=new Date();
   for(var j=0;j<365;j++){
     var key=_localYMD(d);
@@ -313,6 +336,7 @@ function getStreak(h){
   return streak;
 }
 function getLongestStreak(h){
+  if(h.schedule==='weekly')return weeklyLongest(h);
   var keys=Object.keys(h.log||{}).sort();if(!keys.length)return 0;
   var max=0;var cur=0;var prev=null;
   keys.forEach(function(k){
@@ -325,6 +349,9 @@ function getLongestStreak(h){
   return max;
 }
 function getCompletionRate(h,days){
+  /* weekly habits: share of the target met over the period (3 of 3 = 100%), not of all 7 days */
+  if(h.schedule==='weekly'){var wk=Math.max(1,Math.round((days||30)/7)),ws=weekStartOf(new Date()),got=0,want=0,t=h.timesPerWeek||3;
+    for(var w=0;w<wk;w++){got+=Math.min(t,weekCount(h,ws));want+=t;ws.setDate(ws.getDate()-7)}return want?Math.round(got/want*100):0}
   var scheduled=0;var done=0;
   for(var i=0;i<days;i++){var d=new Date();d.setDate(d.getDate()-i);var k=_localYMD(d);
     if(isScheduled(h,k)){scheduled++;if(isDone(h,k))done++;}
@@ -350,7 +377,7 @@ function renderHabits(){
     html+='<div style="font-size:.75rem;color:var(--text2)">'+escH(h.type)+' | '+escH(h.schedule==='weekdays'?'Selected days':h.schedule==='weekly'?h.timesPerWeek+'x/week':'Daily')+'</div>';
     html+='<div style="margin-top:3px">'+last7+'</div></div>';
     html+='<div style="display:flex;gap:.8rem;flex-wrap:wrap;text-align:center">';
-    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--accent-text)">'+streak+'</div><div style="font-size:.75rem;color:var(--text2)">streak</div></div>';
+    html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--accent-text)">'+streak+'</div><div style="font-size:.75rem;color:var(--text2)">'+streakUnit(h,streak)+' streak</div></div>';
     html+='<div><div style="font-size:1.1rem;font-weight:700;color:var(--warn)">'+longest+'</div><div style="font-size:.75rem;color:var(--text2)">best</div></div>';
     html+='<div><div style="font-size:1.1rem;font-weight:700">'+totalDone+'</div><div style="font-size:.75rem;color:var(--text2)">total</div></div>';
     html+='</div>';

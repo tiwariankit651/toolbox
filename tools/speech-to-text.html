@@ -110,7 +110,7 @@
           <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“full stop” / “period” → .</div>
           <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“question mark” → ?</div>
           <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“exclamation mark” → !</div>
-          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“new line” → ↵</div>
+          <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“new line” → ↵</div><div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“पूर्ण विराम” → ।  “अल्पविराम” → ,</div><div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“प्रश्नवाचक चिह्न” → ?  “नई पंक्ति” → ↵</div>
           <div style="border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem">“new paragraph” → ↵↵</div>
         </div>
       </div>
@@ -194,20 +194,34 @@ const CMDS=[
   {re:/\bnew paragraph\b/gi,rep:'\n\n'},
   {re:/\bnew line\b/gi,rep:'\n'},
   {re:/\bfull stop\b/gi,rep:'. '},
-  {re:/\bperiod\b/gi,rep:'. '},
+  /* "period" is also an ordinary word ("the rainy period starts in June" became
+     "The rainy. Starts in June"). Treat it as punctuation only at the end of
+     what was said, the way people dictate it. */
+  {re:/\s*\bperiod\s*$/gi,rep:'. '},
   {re:/\bquestion mark\b/gi,rep:'? '},
   {re:/\bexclamation mark\b/gi,rep:'! '},
   {re:/\bexclamation point\b/gi,rep:'! '},
   {re:/\bcomma\b/gi,rep:', '},
   {re:/\bsemicolon\b/gi,rep:'; '},
-  {re:/\bcolon\b/gi,rep:': '}
+  {re:/\bcolon\b/gi,rep:': '},
+  /* Hindi dictation. \b is ASCII-only in JS, so these use explicit
+     whitespace/start/end boundaries. Hindi ends a sentence with the danda. */
+  {re:/(^|\s)नया पैराग्राफ(?=\s|$)/g,rep:'\n\n'},
+  {re:/(^|\s)नई (पंक्ति|लाइन)(?=\s|$)/g,rep:'\n'},
+  {re:/(^|\s)पूर्ण ?विराम(?=\s|$)/g,rep:'। '},
+  {re:/(^|\s)प्रश्न ?(वाचक|सूचक) ?(चिह्न|चिन्ह)(?=\s|$)/g,rep:'? '},
+  {re:/(^|\s)अल्प ?विराम(?=\s|$)/g,rep:', '}
 ];
 function applyCommands(str){
   if(!document.getElementById('voiceCmds').checked)return str;
   let s=str;
   CMDS.forEach(c=>{s=s.replace(c.re,c.rep)});
   // tidy spaces before punctuation
-  s=s.replace(/\s+([,.!?;:])/g,'$1');
+  s=s.replace(/[ \t]+([,.!?;:।])/g,'$1');
+  /* each command adds its own trailing space and the engine adds one after
+     every phrase, which left double spaces after every comma and full stop,
+     and stray spaces either side of each new line */
+  s=s.replace(/[ \t]{2,}/g,' ').replace(/[ \t]*\n[ \t]*/g,'\n');
   return s;
 }
 function autoCapitalise(str){
