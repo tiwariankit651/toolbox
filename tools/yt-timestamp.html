@@ -295,13 +295,21 @@ function checkRules(){
   var valid=list.filter(function(c){return c.sec!=null});
   var sorted=valid.slice().sort(function(a,b){return a.sec-b.sec});
   var firstZero=valid.length&&valid[0].sec===0;
+  /* YouTube also needs the timestamps in ascending order, and this was never
+     checked: "1:30, 0:00, 5:00" passed every rule except first-at-0:00,
+     which then failed for a misleading reason (0:00 IS there, just not
+     first). Say what is actually wrong, and offer the sort. */
+  var ascending=true;
+  for(var k=1;k<valid.length;k++){if(valid[k].sec<=valid[k-1].sec){ascending=false;break}}
+  var hasZero=valid.some(function(c){return c.sec===0});
   var atLeast3=list.length>=3;
   var allValidTime=valid.length===list.length;
   var minGapOk=true;
   for(var i=1;i<sorted.length;i++){if(sorted[i].sec-sorted[i-1].sec<10){minGapOk=false;break}}
   function rule(ok,txt){return '<div class="rule '+(ok?"pass":"fail")+'"><span class="icon">'+(ok?"✅":"❌")+'</span>'+txt+'</div>'}
   el.innerHTML='<strong>YouTube chapter rules</strong>'+
-    rule(firstZero,"First chapter starts at 00:00")+
+    rule(firstZero,"First chapter starts at 00:00"+(!firstZero&&hasZero?" (00:00 is there, but not first)":""))+
+    rule(ascending,"Timestamps are in ascending order"+(ascending?"":' <button class="btn btn-outline" style="font-size:.75rem;padding:.15rem .5rem" onclick="sortChapters()">Sort them</button>'))+
     rule(atLeast3,"At least 3 chapters ("+list.length+" added)")+
     rule(minGapOk,"Each chapter is at least 10 seconds long")+
     rule(allValidTime,"All timestamps are valid");
@@ -313,6 +321,7 @@ function sortChapters(){
   var list=getChapters().filter(function(c){return c.time&&c.label&&c.sec!=null}).sort(function(a,b){return a.sec-b.sec});
   document.getElementById("chapters").innerHTML="";
   list.forEach(function(c){addRow(c.time,c.label)});
+  refresh();   /* without this the rule checklist still showed the old order */
 }
 
 function applyOffset(){
