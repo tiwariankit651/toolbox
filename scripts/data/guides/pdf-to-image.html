@@ -1,0 +1,21 @@
+<h2>Choosing Resolution, Format and Clean-up for PDF Page Exports</h2>
+
+<h3>How DPI and dimensions decide your output size</h3>
+<p>The tool renders each page with pdf.js at a scale derived from your DPI setting: a PDF point is 1/72 inch, so 150 DPI renders at roughly twice the page's native pixel dimensions and 300 DPI at about four times. That is why the estimate line updates the moment you change DPI — it multiplies the resulting pixel area by a per-format factor to predict file size. The practical reading: 72 DPI is screen-only, 150 is the sensible default, 300 matches print, and 600 produces large archival files you probably do not want for web use.</p>
+<p>If you also set an explicit width or height, "Fit within" scales the page proportionally into that box, while "Exact (may stretch)" forces both dimensions and can distort the aspect ratio. When only one dimension is given, the other is derived to keep proportions. Use exact mode only when a portal demands a precise pixel size.</p>
+
+<h3>Format and quality, and when the slider disappears</h3>
+<p>JPG and WEBP expose a quality slider from 20 to 100; PNG hides it because PNG is lossless and the slider would do nothing. Choose JPG or WEBP for photographic scans where smaller files matter, and PNG for pages with sharp text, line art or where you need transparency-free fidelity. Pages are always rendered onto a white background first, so a PDF with a transparent or coloured page will come out on white.</p>
+
+<h3>Selecting pages and cleaning up scans</h3>
+<p>Every page appears as a clickable thumbnail; the All, None, Odd, Even and Invert buttons set the selection, and a counter confirms how many of the total are chosen before you commit. Each selected page becomes its own image, which you can save individually, copy to the clipboard as PNG, or download together as a ZIP.</p>
+<p>Three clean-up checkboxes operate on the rendered pixels:</p>
+<ul>
+<li>Crop white margins scans for the content bounding box using a luminance threshold and trims to it with a small six-pixel pad, only acting if the detected region is larger than a few pixels so it will not destroy a nearly blank page.</li>
+<li>Grayscale converts using the standard luminance weighting (roughly 30% red, 59% green, 11% blue).</li>
+<li>Invert colours flips every channel, and the crop logic correctly flips its "blank" test so cropping still works on an inverted page.</li>
+</ul>
+<p>The presets bundle these: WhatsApp is low-quality JPG for easy sharing, Scan cleanup is 300 DPI PNG with grayscale and margin crop enabled, and Web, Print and Archive set format and DPI to match their names.</p>
+
+<h3>Verifying the result and the stitch option</h3>
+<p>Because copying an image to the clipboard reliably accepts only PNG, a JPG or WEBP page is re-encoded to PNG before copying. The "Stitch into one long image" option renders the selected pages and stacks them vertically into a single tall PNG, centred to the widest page — convenient for sending a whole document as one image. Everything runs locally via pdf.js with no upload, and your last format, DPI and quality are remembered. If a PDF fails to open, it is most likely encrypted, and the tool reports that rather than producing blank pages.</p>

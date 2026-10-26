@@ -1,0 +1,25 @@
+<h2>Hitting an exact KB limit without wrecking the image</h2>
+
+<p>Most compression failures on exam portals come from treating file size and visual quality as the same dial — they are not. This tool separates them: the quality slider is a fixed JPEG/WebP quality, while the Target Size (KB) field triggers a different code path that searches for the quality which lands just under your limit. Understanding which one is active for a given run is the difference between a rejected upload and a clean one.</p>
+
+<h3>How the target-size search actually works</h3>
+
+<p>When you set a Target Size, the compressor runs a binary search over the encoder quality — eight iterations between quality 0.01 and 0.95 — keeping the largest result that stays at or under your byte limit. Because it is only eight steps, it converges quickly but lands near your target rather than exactly on it; the output is always below the limit, not pixel-perfectly at it. If even the lowest quality cannot fit (common when the dimensions are large and the KB cap is tiny), the result is flagged "⚠️ Could not reach target" instead of pretending it succeeded. The fix in that case is to also set a smaller Max Width/Height so there are fewer pixels to encode.</p>
+
+<h3>What the exam presets set, and a caveat</h3>
+
+<p>Each exam preset writes three fields at once — Max Width, Max Height, Target KB — and forces the output format to JPEG, which is what government portals expect. A few behaviours worth knowing:</p>
+
+<ul>
+<li>If both width and height are set (as the photo presets do), the image is forced to exactly those pixel dimensions, so a source with a different aspect ratio will be stretched. Crop to the right ratio first if that matters.</li>
+<li>If only one dimension is set, the other is scaled proportionally to preserve aspect ratio.</li>
+<li>The signature presets pair small dimensions with tight KB caps, which the binary search can usually satisfy; photo presets are more generous.</li>
+</ul>
+
+<h3>Formats, enhancement, and what gets stripped</h3>
+
+<p>Output can be JPG, PNG, WebP, or AVIF. AVIF is detected at load; if your browser cannot encode it, the tool silently falls back to WebP and shows a notice, so you are never left with an empty file. The "Enhance Quality" option is an unsharp mask (it blurs a copy, then adds back the difference at 0.8 strength) plus a mild 1.1× contrast stretch, applied before compression — genuinely helpful for soft scans, but it can exaggerate noise on already-sharp photos, so compare before keeping it.</p>
+
+<h3>Verifying the result</h3>
+
+<p>Each file row shows original size → compressed size, the percent saved, and the final pixel dimensions, so you can confirm both the KB and the dimensions match the portal's rule in one glance. The first image also gets a draggable before/after slider to judge quality honestly. Everything is processed on a canvas in your browser, which has a side effect worth noting: the re-encode drops EXIF metadata, so orientation tags and camera data do not carry over — check that a phone photo is not rotated unexpectedly.</p>

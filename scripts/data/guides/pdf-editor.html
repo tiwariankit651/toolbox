@@ -1,0 +1,19 @@
+<h2>Understanding the Flatten-on-Save Model and Its Consequences</h2>
+
+<h3>What "editing" means here, and the key trade-off</h3>
+<p>The single most important thing to understand is how your edits are written back. When you save, the tool composites three layers onto one canvas per page — the rendered page image, your annotation overlay, and any sticky notes — then embeds that as a JPEG and rebuilds the PDF. The practical result is that the saved pages become flattened images. The original selectable, searchable text is replaced by a picture of the page. This is why annotations never shift or reflow, but it also means you cannot later select text or run extraction on the saved file. Keep your original: saving is effectively one-way for the text layer.</p>
+
+<h3>The annotation tools and the presets</h3>
+<p>You get Text (four fonts — Arial, Times New Roman, Courier, Georgia — with a size from 8 to 72 and a colour), freehand Draw, a yellow Highlight, White-out that fills white or black, Rectangle, Arrow, draggable Sticky Notes, and Image insert. The style presets set several controls at once for common jobs:</p>
+<ul>
+<li>Review uses thin red, Signature thin black, Teaching thick blue.</li>
+<li>Redaction switches white-out to black for covering sensitive content — but remember the caution below.</li>
+<li>Highlighter sets a yellow marker.</li>
+</ul>
+<p>An important security note on redaction: because white-out and black-out are drawn on top as a filled rectangle and the page is only flattened to an image on save, the covered text is genuinely gone in the exported file — but it is still underneath in the live editor until you save. Treat the downloaded, flattened PDF as the redacted artefact, not the on-screen state.</p>
+
+<h3>Extracting text versus editing</h3>
+<p>"Extract All Text" is a separate feature from editing. It reads the existing text layer of every page via pdf.js and lists it labelled per page, ready to copy or download as a <code>.txt</code>. Two things follow: it works only on PDFs that already contain real text, not scanned images (there is no OCR here), and it reads the current document's text before your annotations are flattened. If extraction returns nothing, the PDF is almost certainly a scan — a picture of text rather than text.</p>
+
+<h3>Navigation, verification and problem files</h3>
+<p>Multi-page PDFs are handled with Prev/Next navigation and zoom from 1× to 4×; zoom in before placing fine annotations, since the overlay is drawn at the current scale. A live counter tells you how many annotations (including sticky notes) are on the current page, which helps you confirm a mark actually registered. Undo steps back through the overlay history for the current page. If a file is password-protected the tool asks you to remove the password first, and a corrupt or mis-renamed file is reported as not a readable PDF rather than failing silently with a blank screen. Export ZIP gives you each annotated page as a PNG alongside the edited PDF, which is useful when you want the pages as images too. Everything runs locally in your browser.</p>

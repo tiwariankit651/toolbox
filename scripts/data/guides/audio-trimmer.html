@@ -1,0 +1,20 @@
+<h2>Getting a Clean Cut: WAV Output, Silence Detection and Segment Splitting</h2>
+
+<h3>Why the download is WAV, and which settings affect its size</h3>
+<p>Every export here is a WAV file written byte by byte in the browser; there is no MP3 option because MP3 requires a separate encoder library the tool deliberately does not load. WAV is uncompressed, so the file size is predictable: it is roughly the selection length in seconds multiplied by the sample rate, the channel count, and the bytes per sample. That is why the estimated output size updates the moment you change bit depth, sample rate or channels.</p>
+<p>Two knobs dominate that size. Bit depth offers 16-bit PCM or 32-bit float — 32-bit doubles the data and is only worth it for further editing, not for a finished clip. Channels let you force mono, which halves a stereo file; the downmix averages the left and right channels rather than dropping one, so you keep both sides' content.</p>
+
+<h3>What Auto Silence Trim actually detects</h3>
+<p>This feature scans only the first channel. It finds the single loudest sample (the peak), sets a threshold at your chosen percentage of that peak (default 2%), then walks inward from the start and from the end until a sample crosses the threshold. The selection handles jump to those points.</p>
+<p>The important limitation: it trims leading and trailing quiet only. A pause in the middle of a recording is untouched, because the scan stops at the first loud sample from each side. If the threshold is too high it will clip the soft opening of a word; too low and it leaves background hiss in. Nudge the percentage and re-run rather than expecting one setting to fit every recording.</p>
+
+<h3>Fades, gain and normalise — the processing order</h3>
+<p>When you export, the tool applies gain first, then fades, then optional normalisation. Fade-in ramps linearly from silence over the seconds you specify, and fade-out ramps down to the end; setting a fade longer than the selection simply fades the whole clip. Normalise scales the peak up to −0.1 dBFS, so it is applied after gain and fades and will undo an overly quiet gain setting. The export presets are shortcuts that set these together: a ringtone gets short fades and stereo, a voice note gets mono and normalise, music keeps 32-bit stereo with no normalise.</p>
+
+<h3>Splitting, timestamps and verifying the result</h3>
+<ul>
+<li>Split points are entered in seconds, comma-separated; any value that is not a number or falls outside the clip is ignored, the rest are sorted, and the tool cuts at zero, each point, and the end, bundling every piece into a ZIP.</li>
+<li>Each split segment inherits the same fades, gain, normalise and channel choices, so set those before splitting.</li>
+<li>The Copy timestamps button writes the selection as minutes:seconds, handy for noting edit points elsewhere.</li>
+</ul>
+<p>To check your cut before committing, use Play Selection with Loop on and nudge the start and end handles with the arrow keys (Shift for the end handle). The waveform's shaded region and the selection-duration readout confirm exactly what will be written, and the success message reports the final length and file size so you can catch an empty or mis-timed selection immediately.</p>

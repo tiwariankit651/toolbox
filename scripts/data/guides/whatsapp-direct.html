@@ -1,0 +1,23 @@
+<h2>What a click-to-chat link does and where people get it wrong</h2>
+
+<p>This tool builds WhatsApp click-to-chat links (wa.me and api.whatsapp.com) and QR codes; it does not send anything. Opening a link launches WhatsApp with your message already typed into the chat box, but the final send is always a manual tap by whoever opens it. That distinction matters: the links are shareable and public by nature, so anyone who has the link can open that chat with that pre-filled text. Nothing about generating a link reveals your own number to the recipient until you actually message them.</p>
+
+<h3>How the number is cleaned, and the traps it avoids</h3>
+
+<p>You choose a country code (26 options, India +91 by default) and type the national number. The sanitiser then strips spaces, dashes, brackets and the plus sign, removes leading zeros, and — importantly — detects and removes a duplicated country code if you paste a full international number like 919876543210 under the +91 setting. This last step prevents the classic mistake of ending up with the code twice. It validates loosely: fewer than 6 digits is flagged as too short, more than 14 as too long, and the confirmed result is shown as "+code number" so you can eyeball it before opening.</p>
+
+<h3>The bulk tab is a link generator, not a broadcaster</h3>
+
+<p>The Bulk tab takes one number per line, with an optional name after a comma, and a message template where {name} is replaced per recipient (falling back to "there" when no name is given). It outputs a table of individual open links plus Copy All and a CSV download. Read the warning it displays seriously: this only produces links, and using them to send mass unsolicited messages violates WhatsApp's Terms of Service and can get your number banned. The responsible use is a known list of people who expect to hear from you, each opened and sent deliberately.</p>
+
+<h3>Templates, formatting, and the QR code</h3>
+
+<ul>
+<li>Templates cover common Indian scenarios (business enquiry, order confirmation, delivery update, appointment and payment reminders, festival greeting, support reply, job and tuition enquiries). Fill the placeholder fields, preview, then push the text into the Single Link tab.</li>
+<li>The formatting helper documents WhatsApp's own syntax — *bold*, _italic_, ~strikethrough~, and ```monospace``` — with a live preview. The preview is approximate; WhatsApp itself renders the final styling.</li>
+<li>The QR code encodes the wa.me link and can be downloaded as PNG for counters or posters. It deliberately uses the library's UTF-8 encoder so a Hindi name, the rupee sign, or an emoji in the message scans correctly rather than as garbled bytes.</li>
+</ul>
+
+<h3>What persists and what to verify</h3>
+
+<p>Up to 15 saved contacts are kept locally in your browser (not synced anywhere), and saving happens automatically when you open a chat. Before printing a QR on anything permanent, scan it yourself and confirm the chat opens to the right number with the intended message — the link embeds both, so a typo in either is baked into the code.</p>

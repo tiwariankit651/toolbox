@@ -1,0 +1,20 @@
+<h2>Shipping a Favicon That Survives Small Sizes and Dark Tabs</h2>
+
+<h3>Why the output is PNG, not .ico</h3>
+<p>A classic favicon is a multi-resolution <code>.ico</code>, but that container cannot be assembled reliably from a browser canvas, so this tool generates PNGs instead. That is not a shortcut with consequences — every current browser accepts a PNG icon through <code>&lt;link rel="icon" type="image/png"&gt;</code>, and the HTML snippet it produces already declares those links. The only scenario where you still need an <code>.ico</code> is a very old browser, in which case you take the 32×32 PNG to a dedicated ICO converter. For everything modern, the PNG set is complete.</p>
+
+<h3>The three modes and what the canvas actually does</h3>
+<p>Text/Initials draws one or two characters on a solid or gradient background, with font, colour, shape and padding controls; padding works by shrinking the drawable box and scaling the text to fit, so a high padding value makes the glyph smaller rather than cropping it. Emoji mode renders the chosen emoji as text at 75% of the icon size, optionally on a background. Image Upload is the most involved: it takes a square crop driven by zoom and horizontal/vertical position sliders.</p>
+<ul>
+<li>"Fill transparent areas" paints your chosen colour behind a transparent PNG so the icon is not see-through on a coloured tab bar.</li>
+<li>"Trim transparent padding" scans the image's alpha channel to find the non-transparent bounding box and crops to it, which fixes logos that have large empty margins and appear tiny at 16px.</li>
+<li>Shape (square, rounded, circle) is a clipping mask applied at every size.</li>
+</ul>
+
+<h3>Checking legibility before you ship</h3>
+<p>The single most useful habit this tool encourages is the Live Preview. It renders your icon inside a browser tab, a bookmark bar, an iOS home-screen tile and an Android round launcher, so you see how aggressively the 16px version loses detail. Ticking "Dark-mode preview" repaints those mockups with dark backgrounds, which is how you catch the common failure of a dark-coloured icon vanishing against a dark tab bar. Decide your colours against both backgrounds, not just the editor's.</p>
+<p>Remember that two-letter initials and fine logo detail rarely read at 16×16 — the small canvases next to the main preview exist precisely so you can confirm the smallest size still communicates.</p>
+
+<h3>The package contents and how to install them</h3>
+<p>Download Full Package produces a ZIP of PNGs at 16, 32, 48, 64, 96, 128, 150, 180, 192 and 512 pixels. Two are named for their purpose: 180 becomes <code>apple-touch-icon.png</code> for iOS, and 150 becomes <code>mstile-150x150.png</code> for Windows tiles. The ZIP also includes a ready-to-paste <code>favicon-links.html</code> snippet and a <code>site.webmanifest</code> that declares the 192 and 512 icons plus a 512 "any maskable" entry for installable web apps.</p>
+<p>To install, copy the link tags into your page's <code>&lt;head&gt;</code> and place the PNGs at the paths they reference (the snippet uses root-relative paths like <code>/favicon-32x32.png</code>, so adjust them if your icons live in a subfolder). Everything is generated in your browser; your colour, font and shape choices are remembered locally between visits, so repeated projects start from your last settings.</p>

@@ -1,0 +1,23 @@
+<h2>Scoring, negative marking, and reading your result correctly</h2>
+
+<p>The number on the score card is not a raw count of right answers — it is your correct count minus a penalty, and misreading that is the commonest source of confusion. If you set negative marking, each wrong answer subtracts the chosen fraction (0.25, 0.33, 0.50 or 1.00) from your tally, skipped questions cost nothing, and the final figure is correct-minus-penalty. The percentage is then computed against the number of questions, floored at zero so a heavily penalised run cannot show a negative percent. This mirrors how SSC and banking exams actually mark, so practising with the matching penalty gives a realistic score rather than an inflated one.</p>
+
+<h3>How the timers and auto-answer interact</h3>
+
+<p>There are two independent clocks. The per-question timer (15–90 seconds) auto-reveals the correct answer when it expires and records that question as skipped — it does not pick a wrong option for you, so an expired question never incurs the negative-marking penalty. The total time limit (up to 10 minutes) ends the whole attempt the moment it runs out and jumps straight to the score card, scoring only what you answered. If you use both, whichever fires first wins for that question or the session.</p>
+
+<h3>Shuffling, and why it changes the correct index</h3>
+
+<p>Shuffle Questions reorders the set; Shuffle Options reorders the four choices within each question. The second one is handled carefully in the code — when options are shuffled, the stored correct-answer index is remapped to the option's new position, so the right answer is still marked correctly. This matters if you are reviewing afterwards: the letter (A/B/C/D) shown as correct reflects the shuffled layout you actually saw, not the original source order.</p>
+
+<h3>Bookmarks, the wrong-answer bank, and review</h3>
+
+<ul>
+<li>Any question you answer incorrectly is automatically added to a wrong-answer bank, which you can later drill with "Practice Wrong Answers" — a targeted way to revisit weak spots.</li>
+<li>Bookmarking is manual and persists across sessions, so "Practice Bookmarked" builds a custom set over time.</li>
+<li>The review screen shows your choice, the correct answer, and the explanation for each question, with an option to filter to wrong answers only. History keeps your last five attempts and the leaderboard keeps the top five by percentage. All of this is stored locally in your browser, not on a server.</li>
+</ul>
+
+<h3>Importing, exporting, and sharing a quiz you build</h3>
+
+<p>Custom questions can be imported from JSON, from CSV (one row of question,A,B,C,D,correct), or from three pasted text layouts (Q:/A:/B: labelled, pipe-separated, or numbered with "Answer: a"). The drop zones enforce file type, so a CSV dropped on the JSON zone is refused rather than silently mis-parsed. For sharing, the Share URL encodes the entire quiz into the link itself — convenient, but note it makes long URLs for large quizzes and anyone with the link can load it. The Teaching Pack ZIP is the most complete export: it contains a re-importable quiz.json, a student question paper with no answers, a separate answer key, a CSV, and a README explaining each file.</p>

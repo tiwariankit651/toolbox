@@ -1,0 +1,25 @@
+<h2>Reading the output forecast before you split</h2>
+
+<p>The single most useful habit with this splitter is to read the live forecast line before clicking Split/Extract. As you tick thumbnails or change the mode, the tool recalculates exactly what it will produce — for example "→ 1 PDF with 7 pages", "→ 4 PDFs (3 pages each, last has 1)", or "→ 12 PDFs, one page each (ZIP)". If the forecast says "No pages selected" or "No valid pages in range", the split will refuse to run, so the forecast is your check that the operation is set up correctly.</p>
+
+<h3>Why single files download directly and others arrive as a ZIP</h3>
+
+<p>The tool decides the delivery format by counting outputs, not by the mode name. Selected pages, a custom range, or one half each resolve to a single PDF and download straight away. Modes that generate several files — individual pages, every-N chunks, or both halves of a split — are bundled with JSZip into one archive (split_pages.zip). This matters when you expect one file and get a ZIP: it means your range or selection resolved to more than one output. Everything runs locally through pdf-lib and pdf.js, so nothing is uploaded.</p>
+
+<h3>How rotation and deletion actually affect the result</h3>
+
+<p>Deleting a page is not cosmetic. A deleted page is removed from every mode's output and is automatically deselected, so even "Select All" and range parsing skip it. Rotation is baked in: each 90° click adds to the page's existing rotation, and at export the tool reads the page's current angle and adds your rotation on top, so a page that was already landscape stays correct. The running summary ("5 of 10 pages selected · 2 deleted · 1 rotated") is the quickest way to confirm the document state before extracting.</p>
+
+<h3>Getting page ranges right</h3>
+
+<p>Range syntax accepts comma-separated numbers and hyphenated ranges together, such as 1-3,5,8-10. Pages are 1-based in what you type but the parser clamps to the document: numbers below 1 or above the last page are silently dropped rather than causing an error, and any page you deleted is filtered out of the range too. A few things to keep in mind:</p>
+
+<ul>
+<li>A reversed range like 10-8 produces nothing, because the loop runs from the lower to the higher bound only.</li>
+<li>"Split every N pages" chunks the surviving (non-deleted) pages in document order, so the last file may contain fewer than N pages.</li>
+<li>The Copy page range button turns your current tick selection back into a compact string like 1-3,7, which is handy for reusing the same selection elsewhere.</li>
+</ul>
+
+<h3>Confirming the extraction worked</h3>
+
+<p>After splitting, the result line reports the output size (or the number of PDFs and ZIP size for multi-file runs). Open the downloaded PDF and check the page count against the forecast — they should match. If a file fails to load, the tool shows the pdf-lib error message rather than failing silently; the usual fix suggested is to re-save the source PDF and upload it again, which resolves many malformed or encrypted-structure files.</p>

@@ -1,0 +1,26 @@
+<h2>Reading the smallest render is the whole point</h2>
+
+<p>A thumbnail that looks great at full size in your editor is a poor predictor of performance, because almost nobody sees it at that size. This tool exists to show your image at the real pixel dimensions YouTube and other platforms actually use, so the question you should be asking as you scan the previews is: does it still read in the 168×94 sidebar box? That is the smallest YouTube render here, and if your text or subject survives there, it will survive everywhere else.</p>
+
+<h3>What the contexts actually simulate</h3>
+
+<p>The YouTube previews are drawn at concrete sizes — desktop search 360×202, mobile search 320×180, home grid 246×138, sidebar 168×94, plus end screen and channel page — and the "other platforms" row adds Instagram feed and 1:1 grid crop, Facebook link, Twitter/X card, LinkedIn post and a WhatsApp forward. The 1:1 Instagram crop is especially useful: it centre-crops your 16:9 image to a square, so anything important near the left or right edge gets cut. The overlays reproduce the duration badge, the red progress-watched bar, and the title text, and the safe-area guides mark exactly those zones — keep key elements out of the bottom strip and bottom-right corner where they get covered.</p>
+
+<h3>How to use the legibility checker honestly</h3>
+
+<p>The checker reports measured facts, not opinions. It flags aspect ratio when it is not close to 16:9, warns when the image is below the 1280×720 minimum, and samples the pixels to report average brightness and contrast range, each out of 255. Two numbers are worth acting on:</p>
+
+<ul>
+<li>Brightness: very dark thumbnails (low value) can vanish against YouTube's dark mode, while very bright ones wash out — the tool suggests adjusting when it reads extreme.</li>
+<li>Contrast range below about 90/255 is called out as low, meaning the image lacks the bright-highlight-to-dark-shadow separation that makes a thumbnail pop in a busy feed.</li>
+</ul>
+
+<p>The "text size guide" is an estimate: it back-calculates from the 168px sidebar render that any in-image text smaller than roughly a certain source-pixel size will be unreadable there. Treat it as a prompt to make your words larger and bolder, not as a precise measurement of your actual font.</p>
+
+<h3>A/B testing and exporting</h3>
+
+<p>The A/B section renders two uploads side by side in the four key YouTube contexts as a table, which is the fastest way to settle a design debate — look at the sidebar column first, since that is where weak designs fall apart. For sharing, Export Contact Sheet PNG composites every context into one labelled image, Download all previews (ZIP) saves one PNG per platform, and Copy preview puts a single selected platform's render on your clipboard where the browser supports it.</p>
+
+<h3>Privacy and limits</h3>
+
+<p>Everything is rendered on a local canvas; your image never leaves the device, and your title, channel and overlay settings persist locally between visits (the images themselves are never stored). Keep in mind the previews are faithful to size and layout but are a simulation — real platform UI changes over time, and the "123K views" and channel row are placeholder chrome to make the mockup realistic, not data about your video.</p>

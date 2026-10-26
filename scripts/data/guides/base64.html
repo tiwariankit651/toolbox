@@ -1,0 +1,19 @@
+<h2>Encoding Text and Files Without Corruption: UTF-8, URL-Safe and Type Detection</h2>
+
+<h3>Why this avoids the classic btoa bug</h3>
+<p>The common way to make Base64 in a browser, <code>btoa</code>, throws or corrupts when given anything outside Latin-1 — accented letters, Devanagari, emoji. This tool encodes through TextEncoder first, converting your text to UTF-8 bytes before Base64, so a string with é, ₹ or 😀 round-trips back to exactly what you typed. Decoding uses a strict UTF-8 decoder, which means genuinely invalid input fails loudly with an error rather than returning silent garbage.</p>
+<p>Base64 inherently grows data by about a third because it represents three bytes as four characters. The tool shows this directly as a percentage overhead after encoding, so the larger output size is expected, not a malfunction.</p>
+
+<h3>URL-safe and padding, and when you need them</h3>
+<p>Standard Base64 uses <code>+</code> and <code>/</code>, which are unsafe in URLs and filenames. The URL-safe checkbox swaps them for <code>-</code> and <code>_</code>. The padding checkbox controls the trailing <code>=</code> characters. These only matter for interoperability: if a system gave you a token with <code>-</code> and <code>_</code> and no <code>=</code>, decode it with URL-safe on. Helpfully, the decoder is forgiving in one direction — it detects URL-safe characters automatically and re-adds missing padding before decoding, so a stripped token usually decodes even if you forget to tick the box.</p>
+
+<h3>Turning files into data URIs the right way</h3>
+<p>On the File tab you can output either raw Base64 or a full data URI that includes the MIME type (the <code>data:image/png;base64,…</code> form). For images the tool also builds a ready-to-paste <code>background-image: url("data:…")</code> CSS snippet and shows a live preview, so you can confirm the embed renders before copying. A size readout reports the original versus Base64 size with the overhead percentage. Files beyond roughly 8MB trigger a slow-encoding warning because the work happens on the main thread in your browser; very large embeds also bloat the HTML or CSS they land in, which is a reason to prefer a linked file over a data URI for big assets.</p>
+
+<h3>Decoding back to a file, and the other tabs</h3>
+<p>Base64 → File detects the type one of two ways. If you paste a full data URI it trusts the declared MIME type. If you paste raw Base64 it decodes the bytes and inspects the first few (the "magic numbers") to recognise PNG, JPEG, GIF, PDF, ZIP, WAV, MP3, BMP or XML, defaulting to a generic binary type when nothing matches. It then downloads with a sensible extension, or a filename you supply.</p>
+<ul>
+<li>The Hex tab converts text to space-separated hex bytes and back as UTF-8, rejecting odd-length or non-hex input.</li>
+<li>The URL tab distinguishes encodeURI (whole URLs) from encodeURIComponent (single values), and treats <code>+</code> as a space when decoding.</li>
+</ul>
+<p>Your text draft, the URL-safe and padding choices, and the active tab are autosaved locally and restored on reload; the Clear draft button removes them. Nothing you paste or drop is uploaded — all conversion runs in the browser.</p>

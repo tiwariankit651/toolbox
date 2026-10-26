@@ -1,0 +1,25 @@
+<h2>Making the planned-versus-target loop actually work</h2>
+
+<p>The feature that separates this from a plain grid is the link between subjects and time. If you only click cells and type labels, you get a schedule; if you first define subjects with target hours, the tool becomes a planning instrument that tells you whether your week adds up. The intended workflow is: add each subject with a weekly target in the Subjects tab, then fill the grid, and watch the planned-versus-target summary update. A subject sitting at 4/8 hours is a concrete signal that your plan is half-built, which a colour-coded grid alone never surfaces.</p>
+
+<h3>The grid, the days, and the hours it covers</h3>
+
+<p>The grid spans all seven days (Mon–Sun) in one-hour blocks from 6 AM to 10 PM. Click a single cell to open the editor; click and drag across several cells to fill a block at once, which is how you enter double periods or long study sessions without repeating yourself. On touch devices the drag works too. Each filled cell stores both a subject name and a colour, and planned hours are counted by tallying filled cells for that subject — so a two-hour block genuinely counts as two toward the target.</p>
+
+<h3>How Auto-Generate distributes your subjects</h3>
+
+<p>Auto-Generate only works once subjects have target hours set; it will refuse otherwise. Within your chosen start/end hours, days, lunch slot and break cadence, it repeatedly places the subject with the most remaining hours, with one deliberate rule: it will not schedule the same subject for more than two consecutive hours, inserting variety instead. A few consequences to expect:</p>
+
+<ul>
+<li>It fills day by day and front-loads whichever subjects are furthest from their targets, so the distribution is driven by your numbers, not by subject order.</li>
+<li>Lunch and breaks are placed as fixed slots (orange and grey) and reset the run counter, so a break genuinely interrupts a long stretch.</li>
+<li>If total target hours exceed the available slots, some targets simply will not be met — the summary will still show the shortfall, which is the honest outcome rather than an error.</li>
+</ul>
+
+<h3>Templates as a starting point</h3>
+
+<p>The School, College and Competitive Exam templates pre-fill the grid and register their subjects in the manager (with zero target hours, which you can then set). The Exam template in particular lays out a realistic SSC/UPSC-style week with subject blocks, breaks, a Saturday full mock and lighter Sunday revision. Loading a template replaces the current grid after a confirmation, so save your work first if you want to keep it.</p>
+
+<h3>Saving, exporting, and sharing</h3>
+
+<p>You can keep any number of named timetables ("Sem 1", "Exam week") and switch between them; saving over an existing name now asks before replacing. Everything is stored locally in your browser — nothing is uploaded. Beyond PNG and print, the practical outputs are the plain-text copy (ideal for a WhatsApp group), the CSV (opens in Excel or Sheets), JSON for backup, and an "export all as ZIP" that bundles every saved timetable as both text and CSV with a README. One correctness note: subject names are escaped before display, so a label imported via JSON cannot run as code — a quiet but real safeguard.</p>

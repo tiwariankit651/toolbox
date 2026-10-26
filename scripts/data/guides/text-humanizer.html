@@ -1,0 +1,25 @@
+<h2>What a rule engine can and cannot do to your writing</h2>
+
+<p>It helps to be precise about what this tool is: a deterministic, pattern-matching rewriter that runs entirely in your browser. It contains no language model and makes no claim about AI detectors — there is no probability, no understanding of meaning, just a fixed list of regular expressions firing on your text. That honesty is a feature. It means every change is explainable and reversible, but it also means the tool cannot judge whether a replacement actually fits your sentence's meaning. You are the editor; it only proposes.</p>
+
+<h3>The seven rules, and where each can misfire</h3>
+
+<p>The engine applies seven rule types: replacing stock phrases ("delve into", "a plethora of"), simplifying nominalisations ("utilisation" → "use"), deleting redundant intensifiers ("very", "literally"), converting an obvious passive ("was X by Y") to active, splitting sentences over 35 words at a conjunction, varying a repeated sentence opener, and optionally adding contractions. Because these are literal patterns, they have blind spots worth anticipating:</p>
+
+<ul>
+<li>The passive-to-active rule only matches the narrow "was/were [verb]ed by [agent]" shape, so most real passives slip past it, and its verb conversion is best-effort — review those closely.</li>
+<li>Dropping an intensifier removes the word even when it carried emphasis you wanted; that is why each suggestion is a checkbox, not an automatic edit.</li>
+<li>Stock-phrase replacements are picked from a fixed dictionary, so an unusual filler phrase it has not catalogued will not be touched.</li>
+</ul>
+
+<h3>How tone and contractions interact</h3>
+
+<p>The Tone menu does not rewrite anything on its own — it selects which wording a stock-phrase replacement uses. "delve into" becomes "explore" under Natural, "dig into" under Conversational, and "examine" under Professional. The "Add contractions" toggle is deliberately gated: it only takes effect when the tone is not Professional, so professional output keeps "it is" and "do not" spelled out even with the box ticked. If contractions are not appearing, check that your tone is not set to Professional.</p>
+
+<h3>Reading the suggestions and the stats</h3>
+
+<p>Every suggestion is listed with the original text, the replacement (or "(removed)"), and a short reason, each pre-checked. Overlapping suggestions are resolved by keeping the earlier one, so you will not see two edits fighting over the same span. The "Changes at a glance" diff strikes removed text in red and highlights additions in green. The stats panel reports Flesch reading ease, average sentence length, and sentence-length variation (standard deviation) before and after — the last metric is a useful proxy for rhythm, since monotone writing tends to have low variation.</p>
+
+<h3>Checking the output is actually better</h3>
+
+<p>Do not accept all blindly. Apply selectively, then read the refined text aloud in your head: the mechanical cleanup around removals and splits (collapsing double spaces, fixing punctuation gaps) is cosmetic and occasionally leaves a sentence that is grammatical but awkward. If a split sentence reads abruptly or an active-voice conversion changed the subject subtly, reject that one change and keep the rest. The draft autosaves locally, so you can experiment without losing your original.</p>

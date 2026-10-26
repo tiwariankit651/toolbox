@@ -1,0 +1,18 @@
+<h2>Building Scannable QR Codes: Payloads, Encoding and Error Correction</h2>
+
+<h3>The payload is what the scanner reads, not the picture</h3>
+<p>A QR code is only a container for a text string; what makes a WiFi code connect or a UPI code open a payment app is the exact format of that string. This tool builds eight payload formats for you: a plain URL or text, a <code>WIFI:</code> string with SSID, password, encryption type and hidden flag, a vCard contact block, a <code>mailto:</code> link with subject and body, an <code>sms:</code> link, a <code>tel:</code> link, a <code>upi://pay</code> link with payee, amount and note, and a <code>wa.me</code> WhatsApp link. Because the structure is generated for you, the common mistake of hand-typing a malformed WiFi or UPI string is avoided — but it also means a scanner's behaviour depends on the receiving app (a UPI code only does anything in a UPI-capable app, for instance).</p>
+
+<h3>Why UTF-8 encoding matters here</h3>
+<p>The underlying QR library's default byte encoder keeps only the low 8 bits of each character, which corrupts anything beyond basic Latin — Hindi, accented letters, emoji, and notably the rupee sign. This tool explicitly switches the library to its UTF-8 encoder, so a UPI note like "Pay ₹1,250" or a Devanagari label encodes correctly instead of scanning as empty or as mojibake. Everything is generated locally from a bundled JavaScript library with no external QR API call, so your payload content is never sent anywhere.</p>
+
+<h3>Styling without breaking the scan</h3>
+<p>You can set foreground and background colours, choose square, rounded or circle dots, pick a size from 128 to 1200 pixels, and apply a two-colour gradient. A centre logo is supported, and when you add one the tool automatically raises error correction to level H — the highest — because the logo physically covers modules and the extra redundancy lets scanners reconstruct the hidden data. Without a logo it uses level M. Keep these realities in mind:</p>
+<ul>
+<li>Contrast is what scanners rely on; a light foreground on a light background, or a heavy gradient, can make a code unreadable even though it looks fine on screen.</li>
+<li>Circle and rounded dots are more decorative and slightly harder to decode than plain squares.</li>
+<li>The tool warns you to test with a phone camera before printing, which is the single most reliable check — do it at the actual printed size.</li>
+</ul>
+
+<h3>Batch generation and export</h3>
+<p>Batch mode takes up to 100 lines, one URL or text per line, renders each with your current style settings (no logo, since per-line logos rarely make sense in bulk), and packs them into a ZIP. Filenames are derived from each line — stripped of the protocol and unsafe characters, truncated, and de-duplicated with a numeric suffix if two lines would collide. For a single code you can download PNG or SVG (the SVG simply embeds the PNG raster), or copy the image to the clipboard as a PNG where the browser supports it. Your style preferences — size, colours and dot shape — are remembered locally, while the payload fields are deliberately not stored, so sensitive content like a WiFi password is never persisted.</p>

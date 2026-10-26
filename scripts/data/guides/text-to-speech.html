@@ -1,0 +1,25 @@
+<h2>Why you cannot save the audio, and what you can do instead</h2>
+
+<p>The single most important thing to understand about this tool is that it uses the browser's built-in Web Speech API, which synthesises speech live through your operating system and hands you no audio stream. There is no technical way for the page to capture that output as an MP3 or WAV — the "download" it can genuinely offer is the text plus your voice settings, not the sound. If you need an actual audio file, the honest workaround is to run a screen or audio recorder while the page speaks. Treating this as a player rather than an exporter sets the right expectation.</p>
+
+<h3>Voices depend on your device, not the tool</h3>
+
+<p>The voice dropdown is populated from whatever voices your OS and browser expose, so the list on Android, Windows, iOS and Chrome versus Firefox will differ, sometimes dramatically. You can search by name or language and the list is grouped by language code. Your chosen voice is remembered locally, but if you open the tool on a device that lacks that voice, the saved choice is simply skipped and you fall back to a default. If a language sounds wrong or robotic, the fix is to install better system voices, which the tool cannot do for you.</p>
+
+<h3>Speed, presets, and the duration estimate</h3>
+
+<p>Speed ranges from 0.5x to 2x and pitch from 0 to 2. The five presets each set speed and pitch together: Natural (1.0x), Slow &amp; clear (0.7x), Study pace (0.9x), Fast (1.5x), and Proofreading (0.8x with pitch nudged to 1.1 so mistakes stand out when you listen back). The duration estimate assumes a baseline of 150 words per minute scaled by your rate, so it is an approximation — real speech rate varies by voice and by punctuation, and the estimate does not account for dictation pauses.</p>
+
+<h3>How long text and dictation mode behave</h3>
+
+<p>Long passages are split into chunks of about 200 characters on sentence and then word boundaries, read in sequence with a progress bar and word highlighting driven by the API's boundary events. Note that word highlighting only works if your browser fires those events; some voices do not, in which case the whole current chunk is highlighted instead. Dictation mode is the standout feature for students:</p>
+
+<ul>
+<li>It reads each sentence 1–3 times (default 2) with a configurable 1–15 second pause (default 4) and displays "Write now..." during the gap.</li>
+<li>It shows which sentence and which repeat it is on, so you can keep your place.</li>
+<li>It uses the same voice, speed, pitch and volume as normal playback.</li>
+</ul>
+
+<h3>Practical checks</h3>
+
+<p>If playback stalls or cuts off mid-sentence, that is usually the OS speech engine rather than the text — pressing Stop then Speak re-queues cleanly, and shorter text is more reliable on mobile. The "Export reading chunks as ZIP" option splits text into ~400-word parts for session-by-session listening and includes a README with your current settings; it declines if the text fits in a single part, pointing you to the plain .txt download instead.</p>

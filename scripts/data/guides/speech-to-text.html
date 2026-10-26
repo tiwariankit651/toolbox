@@ -1,0 +1,20 @@
+<h2>Dictating Accurately: Privacy, Voice Commands and Continuous Mode</h2>
+
+<h3>Where your voice actually goes</h3>
+<p>It is worth being precise about the privacy model, because "runs in your browser" does not mean the audio stays local. This tool uses the browser's Web Speech API, and that API hands your recorded audio to the browser vendor's servers — Google for Chrome, Microsoft for Edge — which return the transcribed text. The site itself never receives or stores your audio, and the transcript and session history remain on your device, but the vendor does process the sound. Two consequences follow: it will not work offline, and you should not dictate confidential material through it.</p>
+<p>Because it depends on the Web Speech API, recognition works mainly in Chrome and Edge. An unsupported browser shows a clear notice rather than failing silently, so if the microphone button is disabled, switching browsers is the fix.</p>
+
+<h3>Punctuation and the "period" edge case</h3>
+<p>With voice commands enabled, spoken words become characters: "comma", "full stop" or "period", "question mark", "exclamation mark", "new line" and "new paragraph" all insert the matching symbol, and Hindi equivalents such as "पूर्ण विराम" (।) and "अल्पविराम" (,) are handled too. One detail shows careful design: the word "period" is only converted when it appears at the very end of what you just said. That prevents a sentence like "the rainy period starts in June" from being mangled into "the rainy. starts in June". After substitution the tool also tidies doubled spaces and spaces around new lines, so the output reads cleanly rather than littered with gaps.</p>
+<p>Auto-capitalise, when on, capitalises the first letter of the text and anything following a full stop, question mark, exclamation mark or newline.</p>
+
+<h3>Continuous mode and the interim preview</h3>
+<p>The recognition service naturally stops after a pause, which would end dictation mid-thought. Continuous mode works around this by automatically restarting recognition whenever the service drops, showing a brief "Reconnecting" status, so you can speak for long stretches. You will see two text streams: finalised phrases are committed to the editable box, while the dashed interim preview shows the engine's best current guess before it settles — that guess can change as you keep talking, which is normal.</p>
+<ul>
+<li>The transcript is a normal editable textarea, so you can fix recognition errors by typing.</li>
+<li>Undo keeps a stack of recent states, letting you step back after a bad auto-insert or an accidental clear.</li>
+<li>A genuine "not-allowed" microphone-permission error stops recording rather than looping, so check your browser's mic permission if dictation never starts.</li>
+</ul>
+
+<h3>Saving work and checking the result</h3>
+<p>Your current text autosaves locally as you dictate, and finished sessions are remembered — the most recent eight are kept in the history list, each reloadable with a click. Word and character counts plus a timer update live so you can gauge length. Download writes a plain <code>.txt</code>, and crucially an empty box is blocked from downloading so you do not end up with a zero-byte file. The reliable way to verify accuracy is simply to read the committed text, not the interim preview: accents and regional pronunciation reduce accuracy, so expect to correct names and technical terms by hand.</p>

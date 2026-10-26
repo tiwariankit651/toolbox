@@ -1,0 +1,27 @@
+<h2>The caption spacing trick and why it depends on a hidden character</h2>
+
+<p>The caption formatter solves a specific, maddening Instagram behaviour: when you paste a caption with blank lines between paragraphs, Instagram collapses them and your spacing vanishes. This tool works around it by walking through your text line by line and, on every line that is empty, inserting a single zero-width space (U+200B) — an invisible character that Instagram treats as content rather than whitespace, so the blank line survives. Knowing that is the key to using it well: the "blank" lines in your pasted caption are not truly empty, and if you later edit the caption inside Instagram and delete those lines, the spacing is gone again.</p>
+
+<h3>Character limits are enforced, not decorative</h3>
+
+<p>Each tool counts against Instagram's real limits as you type. The caption counter tracks the 2,200-character cap and turns red when you exceed it; the bio builder enforces 150 characters the same way. These are live counts, so trim before you copy rather than discovering the truncation after posting. The bio builder also preserves line breaks using the same zero-width-space technique, since Instagram bios strip multi-line formatting in the same way captions do.</p>
+
+<h3>What the image resizer outputs, and the crop decision</h3>
+
+<p>The resizer exports four exact Instagram dimensions — Square 1080×1080, Portrait 1080×1350, Landscape 1080×566, and Story/Reel 1080×1920 — as JPEG or PNG with a quality slider. The choice that matters most is Crop to fill versus Letterbox (fit):</p>
+
+<ul>
+<li>Crop to fill covers the whole frame and centre-crops the overflow, so edges of a wide photo are lost in a portrait export.</li>
+<li>Letterbox fits the entire image inside the frame on white, keeping everything visible but adding bars.</li>
+<li>The story safe-area guide only appears on the 1080×1920 format: it shades the top ~250px and bottom ~310px where Instagram's interface sits, so you keep text out of covered zones.</li>
+</ul>
+
+<p>Everything is drawn on a local canvas and never leaves the device, which also means the resizer re-encodes the file and drops the original's metadata.</p>
+
+<h3>Hashtag sets, the bio checklist, and the grid planner</h3>
+
+<p>The hashtag manager ships curated niche sets (study, motivation, travel, fitness and more), counts against the 30-tag maximum, de-duplicates on request, and lets you save your own sets to the browser's localStorage for reuse. The bio builder's checklist is a quick sanity pass — it verifies the text fits 150 characters, uses line breaks, contains an emoji, and references a link — nudging you toward a bio that reads well and converts. The grid planner lets you upload several images and drag to reorder them in a 3-column mock feed, so you can judge whether your next posts sit together coherently before publishing.</p>
+
+<h3>The one thing it deliberately will not do</h3>
+
+<p>It cannot download Instagram photos or videos, and the tool states this plainly rather than pretending. A web page cannot fetch Instagram media because the platform requires authentication, blocks cross-origin access, and forbids scraping in its Terms of Service. To export your own content, the correct route is Instagram's official "Download Your Information" in Accounts Center. Treat this toolkit as covering the parts of posting that genuinely run in a browser — captions, tags, bios, images and feed layout — not as a downloader.</p>

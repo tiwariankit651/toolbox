@@ -24,7 +24,7 @@ Exit code 1 blocks the commit. Run from the repository root.
 import glob
 import itertools
 import os
-import re
+import re, collections, html
 import subprocess
 import sys
 
@@ -186,6 +186,46 @@ def main():
                     errors.append(f'{new}: same search as existing {old} '
                                   f'(shared: {", ".join(sorted(nw & ow))}). '
                                   f'Extend the existing article instead.')
+
+    # 6. Thin / duplicated content (AdSense "low-value content", Oct 2026).
+    #    The site was rejected after a 5-question FAQ was pasted onto 113 tools.
+    #    Block that pattern from coming back:
+    #    a) a sentence of 8+ words repeated on 8+ indexable pages (template text);
+    #    b) an indexable tool or blog page with under 450 words of its own.
+    def body_sentences(c):
+        c = re.sub(r'(?is)<(script|style|noscript|svg|nav|footer|header)[^>]*>.*?</\1>', ' ', c)
+        c = re.sub(r'(?is)<!-- related-articles:start -->.*?<!-- related-articles:end -->', ' ', c)
+        c = re.sub(r'(?is)<div class="tool-section"[^>]*><h2>(🔗 Related Tools|📚 Related Guides)[^<]*</h2>.*?</div>', ' ', c)
+        t = html.unescape(re.sub(r'<[^>]+>', '\n', c))
+        out = []
+        for blk in t.split('\n'):
+            for s in re.split(r'(?<=[.!?])\s+', blk.strip()):
+                s = re.sub(r'\s+', ' ', s).strip()
+                if len(s.split()) >= 8:
+                    out.append(s)
+        return out
+    content = [(p, c) for p, c in all_pages if 'noindex' not in c and p != '404.html'
+               and (p.startswith('tools/') or (p.startswith('blog/') and p != 'blog/index.html'))]
+    seen = collections.Counter()
+    sents = {}
+    for p, c in content:
+        sents[p] = body_sentences(c)
+        seen.update(set(sents[p]))
+    for s, n in seen.most_common():
+        if n < 8:
+            break
+        errors.append(f'template text on {n} pages: "{s[:90]}" - write page-specific content instead')
+    def all_words(c):
+        c = re.sub(r'(?is)<(script|style|noscript|svg|nav|footer|header)[^>]*>.*?</\1>', ' ', c)
+        c = re.sub(r'(?is)<!-- related-articles:start -->.*?<!-- related-articles:end -->', ' ', c)
+        c = re.sub(r'(?is)<div class="tool-section"[^>]*><h2>(🔗 Related Tools|📚 Related Guides)[^<]*</h2>.*?</div>', ' ', c)
+        return len(re.findall(r'\w+', html.unescape(re.sub(r'<[^>]+>', ' ', c))))
+    for p, c in content:
+        # every word on the page, minus sentences that also appear on other pages
+        own = all_words(c) - sum(len(s.split()) for s in sents[p] if seen[s] > 1)
+        if own < 450:
+            errors.append(f'{p}: only {own} words of its own - thin content (AdSense low-value). '
+                          f'Add real, page-specific substance or noindex+redirect it')
 
     if errors:
         print(f'  INDEXING GUARD: {len(errors)} problem(s) would hurt indexing\n')

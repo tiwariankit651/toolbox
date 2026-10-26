@@ -1,0 +1,19 @@
+<h2>Finding Errors, Choosing Indentation and Converting JSON Safely</h2>
+
+<h3>Reading the error message when parsing fails</h3>
+<p>When JSON is rejected, the tool does more than say "invalid". It extracts the character position from the parser, walks the text to convert that into a line and column number, and adds a context-aware hint based on the error text. If the message mentions an unexpected end, the hint points you at a missing closing <code>}</code> or <code>]</code>; an unexpected token hint flags the usual culprits — a trailing comma, single quotes instead of double, or an unquoted key; a property-name error reminds you that object keys must be double-quoted. This turns the browser's terse native parser error into something that tells you where to look. Use the Validate button when you only want this check without reformatting the text.</p>
+
+<h3>Indentation, key sorting and why Diff-friendly exists</h3>
+<p>You can indent with 2 spaces, 4 spaces or a tab, and optionally sort keys alphabetically. The sort is deep — it recurses through nested objects and arrays — so the whole document is reordered, not just the top level. The presets package these choices for a purpose:</p>
+<ul>
+<li>Readable is 2 spaces, the general default.</li>
+<li>Diff-friendly adds sorted keys, which is the one that matters in practice: two JSON files with the same data but different key orders produce a noisy diff, and sorting both first makes the real changes stand out.</li>
+<li>Wide uses 4 spaces, and Tabs uses a tab character.</li>
+</ul>
+<p>Minify strips all whitespace and reports the bytes saved, which is the figure you care about when trimming a payload for production.</p>
+
+<h3>The tree view and stats</h3>
+<p>Tree View renders a collapsible structure where every node shows its type badge and a copyable JSON path like <code>$.users[0].name</code> — clicking the path copies it, which is the fastest way to reference a deep value in code. The search box filters nodes by key or value as you type. The Stats panel is a quick sanity check on shape: it reports total keys, maximum nesting depth, a per-type count (string, number, boolean, null, object, array) and both the pretty and minified byte sizes. An unexpectedly high depth or key count often reveals a structure you did not intend.</p>
+
+<h3>Converting, and where conversions have limits</h3>
+<p>The tool converts JSON to CSV, YAML, a URL query string and an inferred TypeScript interface. These are genuine transformations rather than reformatting, so expect the output to depend on your data's shape. CSV works cleanly when you have an array of flat objects — it collects the union of keys as columns; a deeply nested value is stringified into its cell rather than exploded into columns. The TypeScript conversion infers types from the actual values, so an empty array becomes <code>any[]</code> and a null becomes <code>null</code> because there is nothing to infer from. The schema validator checks simple <code>key: type</code> rules and reports which paths have the wrong type, and the JSON Diff lists additions, removals and changed values by path between two documents. Everything runs locally and your input autosaves to your browser; the "Export all formats (ZIP)" button bundles every representation with a README in one download.</p>
