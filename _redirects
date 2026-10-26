@@ -89,6 +89,10 @@
 # carry the old URL's signals to it. Specific rules must sit ABOVE
 # the generic .html rule to match first, so they are prepended.
 
+# index.html must go to the folder, not to /index (one hop, not two)
+/index.html  /  301
+/blog/index.html  /blog/  301
+
 # Last rule (splats must follow every specific rule): any other /page.html -> /page as a PERMANENT 301. Without this rule the
 # platform answers 307 (temporary), which tells Google to keep the .html URL.
 /*.html  /:splat  301
