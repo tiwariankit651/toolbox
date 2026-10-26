@@ -485,8 +485,14 @@ function autoCrop(canvas){
   return tmp;
 }
 
+/* An empty canvas downloaded as a blank white JPG (or an empty PNG). A user who
+   pressed Download before drawing got a file that a portal would accept as
+   their "signature". Refuse until there is ink. */
+function sigHasInk(canvas){var d=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;for(var i=3;i<d.length;i+=16){if(d[i]>10)return true}return false}
+function sigEmptyNote(){notify(currentMode==='type'?'Type your name first.':currentMode==='upload'?'Upload a signature image first.':'Draw your signature first.','warn')}
 function downloadSig(format){
   var src=getActiveCanvas();
+  if(!sigHasInk(src)){sigEmptyNote();return}
   var outputSizeVal=document.getElementById("outputSize").value;
   var padding=+document.getElementById("outputPadding").value;
 
@@ -560,6 +566,7 @@ function buildSigCanvas(){
   return out;
 }
 function copySig(){
+  if(!sigHasInk(getActiveCanvas())){sigEmptyNote();return}
   if(!(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)){
     notify("Your browser cannot copy images to the clipboard. Use the Download button instead.","error");
     return;

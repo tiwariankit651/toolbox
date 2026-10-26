@@ -267,7 +267,7 @@ function renderSubjectsList(){
     var planned=getPlannedHours(s.name);
     var pct=s.targetHrs>0?Math.min(100,Math.round(planned/s.targetHrs*100)):0;
     var barColor=planned>=s.targetHrs?'#4caf50':s.color;
-    html+='<div class="sub-item"><div class="sub-color" style="background:'+s.color+'"></div><span class="sub-name">'+s.name+'</span><span class="sub-hrs">'+planned+'/'+(s.targetHrs||'–')+' hrs';
+    html+='<div class="sub-item"><div class="sub-color" style="background:'+ttColor(s.color)+'"></div><span class="sub-name">'+ttEsc(s.name)+'</span><span class="sub-hrs">'+planned+'/'+(s.targetHrs||'–')+' hrs';
     if(s.targetHrs>0)html+=' ('+pct+'%)';
     html+='</span><button onclick="deleteSubject('+i+')" title="Remove">×</button></div>';
     if(s.targetHrs>0)html+='<div class="target-bar"><div class="target-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>';
@@ -283,7 +283,7 @@ function updateHoursSummary(){
     if(s.targetHrs>0){
       var planned=getPlannedHours(s.name);
       var status=planned>=s.targetHrs?'✅':'⚠️';
-      parts.push(status+' '+s.name+': '+planned+'/'+s.targetHrs+'h');
+      parts.push(status+' '+ttEsc(s.name)+': '+planned+'/'+s.targetHrs+'h');
     }
   });
   html+=parts.length?parts.join(' · '):'Add target hours in Subjects tab';
@@ -298,13 +298,22 @@ function updateHoursSummary(){
    have "Sem 1", "Exam week" and "Holidays" side by side. Exporting one at a time
    is the tedious part; a single ZIP with every saved timetable as both text and
    CSV is the actual use case. */
+/* A cell is {subject, color}. The text, CSV, copy and ZIP exports treated it
+   as a string, so every slot exported as "[object Object]". Older saves may
+   hold plain strings; accept both. */
+/* Subject and timetable names are user text and were concatenated straight
+   into innerHTML, so a subject named <img src=x onerror=...> ran script -
+   including from an imported JSON. Escape everything shown as HTML. */
+function ttEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function ttColor(c){return /^#[0-9a-f]{3,8}$/i.test(String(c||''))?c:'#6366f1'}
+function cellText(v){return v==null?'':typeof v==='object'?String(v.subject||''):String(v)}
 function gridAsText(g, title){
-  var filled=Object.keys(g).filter(function(k){return g[k]&&String(g[k]).trim()});
+  var filled=Object.keys(g).filter(function(k){return g[k]&&cellText(g[k]).trim()});
   if(!filled.length)return null;
   var byDay={};
   filled.forEach(function(k){
     var i=k.lastIndexOf('-');
-    (byDay[k.slice(0,i)]=byDay[k.slice(0,i)]||[]).push({h:k.slice(i+1),v:g[k]});
+    (byDay[k.slice(0,i)]=byDay[k.slice(0,i)]||[]).push({h:k.slice(i+1),v:cellText(g[k])});
   });
   var L=[(title||'TIMETABLE').toUpperCase()];
   DAYS.forEach(function(d){
@@ -324,14 +333,14 @@ function gridAsText(g, title){
 }
 
 function gridAsCsv(g){
-  var filled=Object.keys(g).filter(function(k){return g[k]&&String(g[k]).trim()});
+  var filled=Object.keys(g).filter(function(k){return g[k]&&cellText(g[k]).trim()});
   if(!filled.length)return null;
   var hours={};
   filled.forEach(function(k){hours[k.slice(k.lastIndexOf('-')+1)]=true});
   var hrList=Object.keys(hours).sort(function(a,b){return (+a)-(+b)});
   var rows=[['Time'].concat(DAYS)];
   hrList.forEach(function(h){
-    rows.push([h+':00'].concat(DAYS.map(function(d){return g[d+'-'+h]||''})));
+    rows.push([h+':00'].concat(DAYS.map(function(d){return cellText(g[d+'-'+h])})));
   });
   return rows.map(function(r){
     return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',');
@@ -343,7 +352,7 @@ async function exportAllTimetables(){
   var saved=storeGet('tt_saved', {});
   var names=Object.keys(saved);
   /* include the timetable on screen even if it was never saved under a name */
-  var current=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  var current=Object.keys(grid).filter(function(k){return grid[k]&&cellText(grid[k]).trim()});
   if(!names.length&&!current.length){
     notify('Nothing to export yet. Fill in some slots or save a timetable first.','warn');
     return;
@@ -385,13 +394,13 @@ async function exportAllTimetables(){
 }
 
 function timetableAsText(){
-  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&cellText(grid[k]).trim()});
   if(!filled.length)return null;
   var byDay={};
   filled.forEach(function(k){
     var i=k.lastIndexOf('-');
     var day=k.slice(0,i), hour=k.slice(i+1);
-    (byDay[day]=byDay[day]||[]).push({h:hour,v:grid[k]});
+    (byDay[day]=byDay[day]||[]).push({h:hour,v:cellText(grid[k])});
   });
   var L=['MY TIMETABLE'];
   DAYS.forEach(function(d){
@@ -425,14 +434,14 @@ function downloadTimetableText(){
 }
 
 function exportTimetableCsv(){
-  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&cellText(grid[k]).trim()});
   if(!filled.length){notify('Fill in some slots first.','warn');return}
   var hours={};
   filled.forEach(function(k){hours[k.slice(k.lastIndexOf('-')+1)]=true});
   var hrList=Object.keys(hours).sort(function(a,b){return (+a)-(+b)});
   var rows=[['Time'].concat(DAYS)];
   hrList.forEach(function(h){
-    rows.push([h+':00'].concat(DAYS.map(function(d){return grid[d+'-'+h]||''})));
+    rows.push([h+':00'].concat(DAYS.map(function(d){return cellText(grid[d+'-'+h])})));
   });
   var csv=rows.map(function(r){
     return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',');
@@ -451,8 +460,8 @@ function buildTable(){
     DAYS.forEach(function(d){
       var key=d+'-'+h;
       var cell=grid[key];
-      var bg=cell?'background:'+cell.color+';color:#fff':'';
-      html+='<td data-key="'+key+'" style="'+bg+'">'+(cell?cell.subject:'')+'</td>';
+      var bg=cell?'background:'+ttColor(cell.color)+';color:#fff':'';
+      html+='<td data-key="'+key+'" style="'+bg+'">'+ttEsc(cellText(cell))+'</td>';
     });
     html+='</tr>';
   });
@@ -496,7 +505,7 @@ function openModal(){
   var inp=document.getElementById('subjectInput');
   var sel=document.getElementById('subjectSelect');
   sel.innerHTML='<option value="">— Pick a subject or type below —</option>';
-  subjects.forEach(function(s){sel.innerHTML+='<option value="'+s.name+'" data-color="'+s.color+'">'+s.name+'</option>'});
+  subjects.forEach(function(s){sel.innerHTML+='<option value="'+ttEsc(s.name)+'" data-color="'+ttColor(s.color)+'">'+ttEsc(s.name)+'</option>'});
   if(selectedCells.length===1&&grid[selectedCells[0]]){
     inp.value=grid[selectedCells[0]].subject;
     setActiveColor(grid[selectedCells[0]].color);
@@ -563,7 +572,7 @@ function autoLoad(){
 function saveTT(){
   var name=document.getElementById('ttName').value.trim();
   if(!name){notify('Enter a name', 'warn');return}
-  var filled=Object.keys(grid).filter(function(k){return grid[k]&&String(grid[k]).trim()});
+  var filled=Object.keys(grid).filter(function(k){return grid[k]&&cellText(grid[k]).trim()});
   if(!filled.length){notify('Fill in some slots before saving.','warn');return}
   var saved=storeGet('tt_saved', {});
   /* Saving over an existing name silently replaced it, which is easy to do when
@@ -621,7 +630,7 @@ function loadList(){
   var sel=document.getElementById('ttList');
   var saved=storeGet('tt_saved', {});
   sel.innerHTML='<option value="">— Load Saved —</option>';
-  Object.keys(saved).forEach(function(n){sel.innerHTML+='<option value="'+n+'">'+n+'</option>'});
+  Object.keys(saved).forEach(function(n){sel.innerHTML+='<option value="'+ttEsc(n)+'">'+ttEsc(n)+'</option>'});
 }
 function loadSaved(){
   var name=document.getElementById('ttList').value;

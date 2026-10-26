@@ -175,7 +175,7 @@ function createNode(text,x,y,parentId,color,shape){
 }
 
 function renderAll(){
-  wrap.querySelectorAll(".node,.conn-label,.inline-edit").forEach(function(el){el.remove()});
+  wrap.querySelectorAll(".node,.conn-label,.inline-edit").forEach(function(el){if(el.classList.contains("inline-edit"))el.onblur=null;if(el.parentNode)el.remove()});
   svg.innerHTML="";
   nodes.forEach(function(n){
     if(!isNodeVisible(n.id))return;
@@ -257,16 +257,21 @@ function startInlineEdit(id){
   input.style.transform="scale("+scale+")";input.style.transformOrigin="top left";
   wrap.appendChild(input);
   input.focus();input.select();
+  /* renderAll() and Clear remove every .inline-edit; removing a focused input
+     fires blur -> finish() while the node is already being detached, and the
+     second remove() threw "node is no longer a child". One-shot guard. */
+  var done=false;
   function finish(){
+    if(done)return;done=true;
     if(input.parentNode){
       n.text=input.value||n.text;
-      input.remove();
+      input.onblur=null;input.remove();
       if(selectedId===id){document.getElementById("edit-text").value=n.text}
       renderAll();
     }
   }
   input.onblur=finish;
-  input.onkeydown=function(e){if(e.key==="Enter")finish();if(e.key==="Escape"){input.remove();renderAll()}};
+  input.onkeydown=function(e){if(e.key==="Enter")finish();if(e.key==="Escape"){done=true;input.onblur=null;input.remove();renderAll()}};
 }
 
 function renameNode(){

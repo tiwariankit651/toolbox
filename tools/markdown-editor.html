@@ -85,7 +85,7 @@
         <button type="button" class="btn btn-outline" onclick="insLine('### ')" title="Heading 3">H3</button>
         <span class="sep"></span>
         <button type="button" class="btn btn-outline" onclick="ins('[','](url)')" title="Link (Ctrl+K)">🔗</button>
-        <button type="button" class="btn btn-outline" onclick="ins('![alt](',')')" title="Image">🖼</button>
+        <button type="button" class="btn btn-outline" onclick="insImage()" title="Image">🖼</button>
         <button type="button" class="btn btn-outline" onclick="ins('`','`')" title="Inline Code">&lt;/&gt;</button>
         <button type="button" class="btn btn-outline" onclick="insBlock('```\n','\n```')" title="Code Block">{ }</button>
         <span class="sep"></span>
@@ -262,6 +262,15 @@ function ins(before,after){
   ta.focus();render();
 }
 window.ins=ins;
+/* The Image button inserted ![alt](text): the preview then requested
+   /tools/text and logged a 404. Insert the selection as alt text and select
+   a URL placeholder to type over. */
+function insImage(){
+  var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,alt=v.substring(s,e)||'alt text',url='https://example.com/image.png';
+  var md='!['+alt+']('+url+')';ta.value=v.substring(0,s)+md+v.substring(e);
+  ta.selectionStart=s+alt.length+4;ta.selectionEnd=ta.selectionStart+url.length;ta.focus();render();
+}
+window.insImage=insImage;
 
 function insLine(prefix){
   var s=ta.selectionStart,v=ta.value;
@@ -434,20 +443,33 @@ function parseList(lines,start,type){
 }
 
 function inlineFormat(text){
+  /* 1. Code spans first, stashed, so nothing inside them is formatted:
+        `[a](b)` and `snake_case` must stay literal. */
+  var codes=[];
+  text=text.replace(/`([^`]+)`/g,function(m,code){codes.push(code);return '\u0000'+(codes.length-1)+'\u0000'});
+  /* 2. Only http(s), mailto, tel, relative and #anchor URLs. A link written as
+        [x](javascript:...) used to become a clickable javascript: link (and an
+        image src), so a shared .md file could run script when clicked. */
+  function safeUrl(u){
+    u=String(u).trim().replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+    var plain=u.replace(/[\u0000-\u0020]/g,'').toLowerCase();
+    if(/^[a-z][a-z0-9+.\-]*:/.test(plain)&&!/^(https?|mailto|tel):/.test(plain))return null;
+    return u.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  }
   // Images (before links)
-  text=text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1">');
+  text=text.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,function(m,alt,url){var u=safeUrl(url);return u?'<img src="'+u+'" alt="'+alt+'">':m});
   // Links
-  text=text.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  text=text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,function(m,label,url){var u=safeUrl(url);return u?'<a href="'+u+'" target="_blank" rel="noopener">'+label+'</a>':m});
   // Bold
   text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  text=text.replace(/__(.+?)__/g,'<strong>$1</strong>');
+  text=text.replace(/(^|[^\w])__(.+?)__(?!\w)/g,'$1<strong>$2</strong>');
   // Strikethrough
   text=text.replace(/~~(.+?)~~/g,'<del>$1</del>');
-  // Italic
+  // Italic. Underscores inside a word (snake_case_name) are not emphasis.
   text=text.replace(/\*(.+?)\*/g,'<em>$1</em>');
-  text=text.replace(/_(.+?)_/g,'<em>$1</em>');
-  // Inline code
-  text=text.replace(/`([^`]+)`/g,'<code>$1</code>');
+  text=text.replace(/(^|[^\w])_(.+?)_(?!\w)/g,'$1<em>$2</em>');
+  // Restore code spans
+  text=text.replace(/\u0000(\d+)\u0000/g,function(m,i){return '<code>'+codes[+i]+'</code>'});
   return text;
 }
 

@@ -189,6 +189,10 @@ function parseCol(v){if(!v)return null;v=v.trim().toLowerCase();var m;
 /* ===== Contrast maths ===== */
 function luminance(r,g,b){var a=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return a[0]*0.2126+a[1]*0.7152+a[2]*0.0722}
 function contrastRatio(fg,bg){var l1=luminance(fg.r,fg.g,fg.b);var l2=luminance(bg.r,bg.g,bg.b);var lighter=Math.max(l1,l2);var darker=Math.min(l1,l2);return(lighter+0.05)/(darker+0.05)}
+/* Saved pairs store only {fg, bg}; the report and CSV read p.ratio, which never
+   existed, so every saved pair exported as "NaN:1" and failed every level.
+   Compute it from the colours. */
+function pairRatio(p){var h=function(x){x=String(x||'').replace('#','');if(x.length===3)x=x.replace(/./g,'$&$&');var n=parseInt(x,16);return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}};return contrastRatio(h(p.fg),h(p.bg))}
 
 /* ===== APCA-style guidance (Lc estimate, clearly labelled draft) ===== */
 function apcaLc(fg,bg){
@@ -350,7 +354,7 @@ function ccReportText() {
     L.push('');
     L.push('Saved pairs');
     pairs.forEach(function (p) {
-      L.push('  ' + p.fg + ' on ' + p.bg + '  ' + (+p.ratio).toFixed(2) + ':1');
+      L.push('  ' + p.fg + ' on ' + p.bg + '  ' + pairRatio(p).toFixed(2) + ':1');
     });
   }
   return L.join('\n');
@@ -380,7 +384,7 @@ function ccDownloadCsv() {
   };
   if (fg && bg) out += row(rgbToHex(fg.r, fg.g, fg.b), rgbToHex(bg.r, bg.g, bg.b),
                            contrastRatio(fg, bg));
-  (pairs || []).forEach(function (p) { out += row(p.fg, p.bg, +p.ratio) });
+  (pairs || []).forEach(function (p) { out += row(p.fg, p.bg, pairRatio(p)) });
   download(new Blob([out], { type: 'text/csv;charset=utf-8' }), 'contrast-report.csv');
   notify('CSV downloaded with ' + ((pairs || []).length + (fg && bg ? 1 : 0)) + ' row(s).', 'ok');
 }
