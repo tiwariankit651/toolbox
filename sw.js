@@ -4,7 +4,7 @@
    storage helpers were added kept getting the old common.js forever and every
    tool threw "storeGet is not defined". Keep this name in step with any change
    to the files in PRECACHE. */
-const CACHE = 'fth-v8';
+const CACHE = 'fth-v9';
 const PRECACHE = ['/', '/css/style.css', '/js/common.js'];
 
 /* Our own JS and CSS must never be served from cache without checking the

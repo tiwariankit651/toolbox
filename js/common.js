@@ -47,7 +47,7 @@ function formatSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFix
 function setupDrop(dropId,inputId,cb){const drop=document.getElementById(dropId),inp=document.getElementById(inputId);if(!drop||!inp)return;drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');cb(e.dataTransfer.files)});inp.addEventListener('change',()=>cb(inp.files))}
 
 // Register Service Worker for offline support & speed
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=8').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=9').then(function(reg){if(reg.waiting)reg.waiting.postMessage('skipWaiting');reg.addEventListener('updatefound',function(){var sw=reg.installing;if(sw)sw.addEventListener('statechange',function(){if(sw.state==='installed'&&navigator.serviceWorker.controller)sw.postMessage('skipWaiting')})})}).catch(()=>{});
 
 // Offline banner
 window.addEventListener('online',function(){var ob=document.getElementById('offlineBanner');if(ob)ob.remove()});
@@ -80,7 +80,7 @@ if(document.querySelector('.tool-section h1')&&!document.querySelector('.tools-g
     h1.parentNode.insertBefore(shareDiv,badge.nextSibling);
 
     // Related Tools section
-    var relatedMap={image:['image-compressor','image-resizer','image-converter','image-cropper','png-to-jpg'],text:['word-counter','lorem-generator','text-diff','markdown-editor','text-to-speech'],dev:['json-formatter','base64','color-picker','regex-tester'],file:['pdf-merge','qr-generator'],media:['audio-trimmer','gif-maker','screen-recorder','video-to-gif','audio-converter'],seo:[],calc:['age-calculator','bmi-calculator','unit-converter','loan-calculator'],social:['whatsapp-direct','instagram-downloader','social-image-resizer','link-shortener']};
+    var relatedMap={image:['image-compressor','image-resizer','image-converter'],text:['word-counter','lorem-generator','diff-checker','markdown-editor','text-to-speech'],dev:['json-formatter','base64','color-picker','regex-tester'],file:['pdf-merger','qr-generator'],media:['audio-trimmer','video-to-gif','screen-recorder'],seo:[],calc:['age-calculator','bmi-calculator','unit-converter','loan-calculator'],social:['whatsapp-direct','instagram-toolkit','image-resizer','url-shortener']};
     var curPath=window.location.pathname.replace('/tools/','').replace('.html','').replace('/','');
     var relatedTools=[];
     Object.keys(relatedMap).forEach(function(cat){if(relatedMap[cat].indexOf(curPath)>-1){relatedTools=relatedMap[cat].filter(function(t){return t!==curPath}).slice(0,4)}});

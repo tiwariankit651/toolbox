@@ -83,6 +83,13 @@ def main():
     redirected = redirected_paths()
 
     for p, c in all_pages:
+        # A noindex page is reported by Search Console as 'Excluded by noindex'
+        # for as long as it exists. Old URLs must be 301s in _redirects, not
+        # stub pages. Only the 404 page may be noindex.
+        if re.search(r'<meta[^>]+name="robots"[^>]+noindex', c) and p != '404.html':
+            errors.append(f'{p}: noindex page - Google reports it as excluded. '
+                          'Delete it and add a 301 in _redirects instead')
+            continue
         if 'noindex' in c:
             continue
         for href in re.findall(r'href="([^"#?]+)"', c):
