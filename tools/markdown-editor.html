@@ -452,6 +452,7 @@ function inlineFormat(text){
         image src), so a shared .md file could run script when clicked. */
   function safeUrl(u){
     u=String(u).trim().replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+    if(/\u0000/.test(u))return null; /* a code span inside the URL is not a URL */
     var plain=u.replace(/[\u0000-\u0020]/g,'').toLowerCase();
     if(/^[a-z][a-z0-9+.\-]*:/.test(plain)&&!/^(https?|mailto|tel):/.test(plain))return null;
     return u.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
