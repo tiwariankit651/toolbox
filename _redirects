@@ -56,8 +56,6 @@
 /tools/social-image-resizer  /tools/image-resizer  301
 /tools/text-diff  /tools/diff-checker  301
 /vocab-builder  /tools/vocab-builder  301
-# (No generic /*.html rule: Cloudflare Pages already 301s /page.html to
-# /page itself - verified live for /about.html and /tools/*.html.)
 /essay-outline.html  /tools/essay-outline  301
 /grammar-checker.html  /tools/grammar-checker  301
 /handwriting.html  /tools/handwriting  301
@@ -74,7 +72,6 @@
 /tools/social-image-resizer.html  /tools/image-resizer  301
 /tools/text-diff.html  /tools/diff-checker  301
 /vocab-builder.html  /tools/vocab-builder  301
-/*.html.html  /:splat  301
 
 # /tools is the obvious guess on a site where every tool lives under /tools/,
 # and it 404s because there is no directory index there — the tools are listed
@@ -91,3 +88,7 @@
 # currently not indexed". Merged into the stronger page; these 301s
 # carry the old URL's signals to it. Specific rules must sit ABOVE
 # the generic .html rule to match first, so they are prepended.
+
+# Last rule (splats must follow every specific rule): any other /page.html -> /page as a PERMANENT 301. Without this rule the
+# platform answers 307 (temporary), which tells Google to keep the .html URL.
+/*.html  /:splat  301
