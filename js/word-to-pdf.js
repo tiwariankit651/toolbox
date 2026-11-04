@@ -918,7 +918,33 @@
       });
       pg.addEventListener('click', onPageClick, true);
     });
-    doc.addEventListener('input', function (e) { ED.edited = true; checkOverflow(e.target); });
+    /* When the whole text of a paragraph is selected and retyped, the browser
+       deletes the styled <span> runs too and the new text loses the font,
+       size and colour. Remember the first run's look on focus and re-apply
+       it to any bare text typed straight into the block. */
+    doc.addEventListener('focusin', function (e) {
+      var b = e.target.closest && e.target.closest('.w2p-page [contenteditable]');
+      if (!b || b._w2pRun) return;
+      var sp = b.querySelector('span');
+      if (sp) b._w2pRun = { cls: sp.className, css: sp.getAttribute('style') || '' };
+    });
+    doc.addEventListener('input', function (e) {
+      ED.edited = true;
+      var b = e.target.closest && e.target.closest('.w2p-page [contenteditable]');
+      if (b && b._w2pRun) {
+        Array.prototype.slice.call(b.childNodes).forEach(function (n) {
+          if (n.nodeType === 3 && n.nodeValue) {
+            var sp = doc.createElement('span');
+            if (b._w2pRun.cls) sp.className = b._w2pRun.cls;
+            if (b._w2pRun.css) sp.setAttribute('style', b._w2pRun.css);
+            n.parentNode.insertBefore(sp, n); sp.appendChild(n);
+            var sel = doc.getSelection(), r = doc.createRange();       // keep the caret at the end of the typed text
+            r.setStart(n, n.nodeValue.length); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+          }
+        });
+      }
+      checkOverflow(e.target);
+    });
     // paste as plain text, so no foreign formatting ends up in the PDF
     doc.addEventListener('paste', function (e) {
       if (!(e.target.closest && e.target.closest('[contenteditable]'))) return;
@@ -1101,6 +1127,7 @@
   function padPos(e) { var r = $('w2pPadCanvas').getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
   function padInk() { PAD.ctx.strokeStyle = PAD.ctx.fillStyle = $('w2pPadColor').value; PAD.ctx.lineWidth = +$('w2pPadWidth').value; }
   function padDown(e) {
+    if ($('w2pPadType').value) { $('w2pPadType').value = ''; padTok++; padWipe(); }   // drawing replaces a typed name
     PAD.drawing = true; PAD.last = padPos(e); padInk();
     $('w2pPadCanvas').setPointerCapture(e.pointerId);
     PAD.ctx.beginPath(); PAD.ctx.arc(PAD.last.x, PAD.last.y, PAD.ctx.lineWidth / 2, 0, Math.PI * 2); PAD.ctx.fill();
@@ -1118,12 +1145,19 @@
     PAD.ctx.save(); PAD.ctx.setTransform(1, 0, 0, 1, 0, 0); PAD.ctx.clearRect(0, 0, c.width, c.height); PAD.ctx.restore();
   }
   function padClear() { padWipe(); $('w2pPadType').value = ''; $('w2pPadUse').disabled = true; }
-  async function padTyped() {
-    var t = $('w2pPadType').value.trim();
+  /* Typing draws the name in a script font. The font may still be loading
+     on the first keystroke, so each call waits for it, and only the latest
+     keystroke draws (older calls are dropped via the token). */
+  var padTok = 0, padTypedDone = Promise.resolve();
+  function padTyped() { padTypedDone = drawTyped(); return padTypedDone; }
+  async function drawTyped() {
+    var tok = ++padTok, t = $('w2pPadType').value.trim();
     padWipe(); $('w2pPadUse').disabled = !t;
     if (!t) return;
     var c = $('w2pPadCanvas'), r = c.getBoundingClientRect();
-    try { await document.fonts.load('48px "Dancing Script"'); } catch (e) {}
+    try { await Promise.race([document.fonts.load('48px "Dancing Script"'), new Promise(function (res) { setTimeout(res, 3000); })]); } catch (e) {}
+    if (tok !== padTok) return;
+    padWipe();
     var size = Math.max(20, Math.min(64, r.width / Math.max(3, t.length) * 1.7));
     padInk();
     PAD.ctx.font = size + 'px "Dancing Script", "Segoe Script", cursive';
@@ -1131,7 +1165,8 @@
     PAD.ctx.fillText(t, r.width / 2, r.height / 2, r.width - 20);
   }
   /* crop to the inked area so the signature has no empty margin */
-  function padUse() {
+  async function padUse() {
+    if ($('w2pPadType').value.trim()) await padTypedDone;   // typed name may still be drawing
     var c = $('w2pPadCanvas'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     var x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
     for (var y = 0; y < c.height; y++) for (var x = 0; x < c.width; x++) {
