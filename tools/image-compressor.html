@@ -49,6 +49,24 @@
     .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff;z-index:2}
     .compare-slider .cs-label-left{left:8px}
     .compare-slider .cs-label-right{right:8px}
+    .ic-total{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);padding:.8rem 1rem;border-radius:12px;margin-bottom:.6rem;text-align:left}
+    .ic-total .btn{margin:0;width:auto}
+    .ic-card{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid var(--border);padding:.8rem 1rem;border-radius:12px;margin:.5rem 0;text-align:left}
+    .ic-thumbs{display:flex;align-items:center;gap:.35rem;flex:none}
+    .ic-thumbs img,.preview-area .ic-thumbs img{width:72px;height:56px;max-height:none;object-fit:contain;border-radius:8px;border:2px solid var(--border);background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 0 0/10px 10px}
+    .ic-thumbs img:last-child{border-color:var(--ok)}
+    .ic-arrow{color:var(--text2)}
+    .ic-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.15rem}
+    .ic-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ic-size{font-size:.95rem}
+    .ic-meta{font-size:.8rem;color:var(--text2)}
+    .ic-badge{display:inline-block;margin-left:.5rem;padding:1px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
+    .ic-badge.ok{background:rgba(34,197,94,.15);color:var(--ok)}
+    .ic-badge.warn{background:rgba(251,191,36,.15);color:var(--warn)}
+    .ic-note{font-size:.8rem}
+    .ic-note.ok{color:var(--ok)}.ic-note.warn{color:var(--warn)}
+    .ic-dl{flex:none;width:auto!important;margin:0!important;padding:.65rem 1.1rem!important;font-size:.9rem!important}
+    @media(max-width:600px){.ic-card{flex-wrap:wrap;gap:.6rem}.ic-info{flex:1 1 100%}.ic-name{white-space:normal;word-break:break-all}.ic-dl{width:100%!important}.ic-total .btn{width:100%}}
     .up-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin:.6rem 0}
     .up-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.4rem;text-align:center;font-size:.72rem;color:var(--text2);position:relative}
     .up-item img,.preview-area .up-item img{width:100%;height:90px;max-height:none;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 0 0/12px 12px;display:block}
@@ -56,7 +74,7 @@
     .up-item .rm{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(185,28,28,.9);color:#fff;cursor:pointer;font-size:.8rem;line-height:1}
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which exam and ID presets are built in?", "acceptedAnswer": {"@type": "Answer", "text": "One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (150×200, <50KB), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that's what portals expect."}}, {"@type": "Question", "name": "How does it hit an exact target file size in KB?", "acceptedAnswer": {"@type": "Answer", "text": "Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can't reach the target even at the lowest quality, the result is flagged with a 'Could not reach target' warning rather than failing silently."}}, {"@type": "Question", "name": "What output formats are available and what does 'Enhance Quality' do?", "acceptedAnswer": {"@type": "Answer", "text": "Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can't encode AVIF). The 'Enhance Quality' checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening."}}, {"@type": "Question", "name": "Can I compress many images at once and compare the result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, it's batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode."}}]}</script>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which exam and ID presets are built in?", "acceptedAnswer": {"@type": "Answer", "text": "One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (140×60, <20KB — the 4.0 × 2.0 cm SSC size), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that's what portals expect."}}, {"@type": "Question", "name": "How does it hit an exact target file size in KB?", "acceptedAnswer": {"@type": "Answer", "text": "Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can't reach the target even at the lowest quality, the result is flagged with a 'Could not reach target' warning rather than failing silently."}}, {"@type": "Question", "name": "What output formats are available and what does 'Enhance Quality' do?", "acceptedAnswer": {"@type": "Answer", "text": "Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can't encode AVIF). The 'Enhance Quality' checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening."}}, {"@type": "Question", "name": "Can I compress many images at once and compare the result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, it's batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode."}}]}</script>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -71,11 +89,11 @@
       <h3 style="margin:1rem 0 .5rem" role="heading" aria-level="2">📐 Exam & Government Presets</h3>
       <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem">
         <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">SSC Photo (3.5x4.5cm)</button>
-        <button class="btn btn-outline" onclick="setPreset(150,200,50)" style="font-size:.8rem">SSC Signature (150x200, &lt;50KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit',10)" style="font-size:.8rem">SSC Signature (140x60, &lt;20KB)</button>
         <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">UPSC Photo (200x230)</button>
-        <button class="btn btn-outline" onclick="setPreset(140,60,30)" style="font-size:.8rem">UPSC Signature (140x60)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,30,'fit')" style="font-size:.8rem">UPSC Signature (140x60)</button>
         <button class="btn btn-outline" onclick="setPreset(200,230,50)" style="font-size:.8rem">IBPS Photo (200x230)</button>
-        <button class="btn btn-outline" onclick="setPreset(140,60,20)" style="font-size:.8rem">IBPS Signature (140x60)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit')" style="font-size:.8rem">IBPS Signature (140x60)</button>
         <button class="btn btn-outline" onclick="setPreset(600,800,100)" style="font-size:.8rem">Passport Photo (600x800)</button>
         <button class="btn btn-outline" onclick="setPreset(400,400,200)" style="font-size:.8rem">Aadhar Photo (400x400)</button>
         <button class="btn btn-outline" onclick="setPreset(0,0,100)" style="font-size:.8rem">Under 100KB</button>
@@ -91,26 +109,20 @@
       <div class="row"><label>Quality: <strong id="qv">70</strong>%</label><input type="range" id="qual" min="5" max="100" value="70" oninput="document.getElementById('qv').textContent=this.value;updateEstimate()" style="flex:3"><span id="estimate" class="info" style="min-width:100px;text-align:right"></span></div>
       <div class="row" style="flex-wrap:wrap;gap:.5rem">
         <div><label>Output:</label><select id="outFmt"><option value="image/jpeg">JPG (smaller)</option><option value="image/png">PNG (lossless)</option><option value="image/webp">WebP (best)</option><option value="image/avif">AVIF (smallest)</option></select></div>
-        <div><label>Max Width (px):</label><input type="number" id="maxW" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
-        <div><label>Max Height (px):</label><input type="number" id="maxH" value="0" min="0" placeholder="0 = no resize" style="width:90px"></div>
-        <div><label>Target Size (KB):</label><input type="number" id="targetKB" value="0" min="0" placeholder="0 = no limit" style="width:90px"></div>
+        <div><label>Max Width (px):</label><input type="number" id="maxW" value="0" min="0" oninput="presetFit='crop';presetMinKB=0" placeholder="0 = no resize" style="width:90px"></div>
+        <div><label>Max Height (px):</label><input type="number" id="maxH" value="0" min="0" oninput="presetFit='crop';presetMinKB=0" placeholder="0 = no resize" style="width:90px"></div>
+        <div><label>Target Size (KB):</label><input type="number" id="targetKB" value="0" min="0" oninput="presetMinKB=0" placeholder="0 = no limit" style="width:90px"></div>
       </div>
       <div class="row" style="margin-top:.5rem">
         <label><input type="checkbox" id="enhance"> ✨ Enhance Quality (sharpen + contrast boost)</label>
       </div>
       <button class="btn" onclick="compressAll()" id="goBtn" disabled style="width:100%;margin-top:.5rem">Compress All Images</button>
       <div id="result" class="preview-area"></div>
-      <div class="faq"><h2>FAQ</h2>
-        <details><summary>How much can images be compressed?</summary><p>Typically 50-90% size reduction depending on the quality setting. A quality of 70% gives great results for most images.</p></details>
-        <details><summary>Does it reduce image quality?</summary><p>Slightly, but at 70-80% quality the difference is invisible to the human eye. Enable "Enhance Quality" to sharpen before compressing.</p></details>
-        <details><summary>What formats are supported?</summary><p>JPG, PNG, WebP, BMP, GIF — any image your browser can display.</p></details>
-        <details><summary>How to compress for SSC/UPSC/IBPS?</summary><p>Click the preset button for your exam. It auto-sets the correct dimensions and target file size as per official requirements.</p></details>
-        <details><summary>What does Enhance Quality do?</summary><p>It applies sharpening and slight contrast boost to make blurry/low-quality photos look clearer before compressing. Great for old scanned photos.</p></details>
-      </div></div>
+</div>
     <div style="min-height:90px">
 <!-- tool-faq:start -->
 <h2>Frequently Asked Questions</h2>
-<details><summary>Which exam and ID presets are built in?</summary><p>One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (150×200, &lt;50KB), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that&#x27;s what portals expect.</p></details>
+<details><summary>Which exam and ID presets are built in?</summary><p>One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (140×60, &lt;20KB — the 4.0 × 2.0 cm SSC size), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that&#x27;s what portals expect.</p></details>
 <details><summary>How does it hit an exact target file size in KB?</summary><p>Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can&#x27;t reach the target even at the lowest quality, the result is flagged with a &#x27;Could not reach target&#x27; warning rather than failing silently.</p></details>
 <details><summary>What output formats are available and what does &#x27;Enhance Quality&#x27; do?</summary><p>Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can&#x27;t encode AVIF). The &#x27;Enhance Quality&#x27; checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening.</p></details>
 <details><summary>Can I compress many images at once and compare the result?</summary><p>Yes, it&#x27;s batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode.</p></details>
@@ -194,7 +206,9 @@
   c.toBlob(function(b){avifSupported=!!b},"image/avif",0.5);
 })();
 function updateEstimate(){var q=+document.getElementById("qual").value;var est=q<30?"~90% smaller":q<50?"~70% smaller":q<70?"~50% smaller":q<85?"~30% smaller":"~10% smaller";document.getElementById("estimate").textContent=est}
-function setPreset(w,h,maxKB){
+var presetFit='crop',presetMinKB=0;
+function setPreset(w,h,maxKB,fit,minKB){
+  presetFit=fit||'crop';presetMinKB=minKB||0;
   document.getElementById("maxW").value=w||0;
   document.getElementById("maxH").value=h||0;
   document.getElementById("targetKB").value=maxKB||0;
@@ -265,14 +279,30 @@ function canvasToBlob(canvas,fmt,quality){
 
 // Binary search for target KB
 async function compressToTarget(canvas,fmt,targetBytes){
-  var lo=0.01,hi=0.95,best=null;
-  for(var iter=0;iter<8;iter++){
-    var mid=(lo+hi)/2;
-    var blob=await canvasToBlob(canvas,fmt,mid);
-    if(blob.size<=targetBytes){best=blob;lo=mid;}else{hi=mid;}
+  /* Search quality down to 0.3 only: below that JPEG turns into grey blocks.
+     If the target still is not met, shrink the image 15% at a time (keeping
+     the shape) and search again, so the result stays a usable picture. */
+  async function search(cv){
+    var lo=0.3,hi=0.95,best=null;
+    var floor=await canvasToBlob(cv,fmt,lo);
+    if(floor.size>targetBytes)return {blob:floor,ok:false};
+    best=floor;
+    for(var iter=0;iter<7;iter++){
+      var mid=(lo+hi)/2,blob=await canvasToBlob(cv,fmt,mid);
+      if(blob.size<=targetBytes){best=blob;lo=mid}else hi=mid;
+    }
+    return {blob:best,ok:true};
   }
-  if(!best)best=await canvasToBlob(canvas,fmt,lo);
-  return best;
+  var cv=canvas,r=await search(cv),steps=0;
+  while(!r.ok&&steps<12&&cv.width>32&&cv.height>32){
+    var n=document.createElement("canvas");
+    n.width=Math.max(1,Math.round(cv.width*0.85));n.height=Math.max(1,Math.round(cv.height*0.85));
+    var x=n.getContext("2d");x.imageSmoothingEnabled=true;x.imageSmoothingQuality="high";
+    if(fmt==="image/jpeg"){x.fillStyle="#fff";x.fillRect(0,0,n.width,n.height)}
+    x.drawImage(cv,0,0,n.width,n.height);cv=n;steps++;r=await search(cv);
+  }
+  r.blob.w=cv.width;r.blob.h=cv.height;   // final size, if it had to shrink
+  return r.blob;
 }
 
 // Comparison slider. ratio = output width/height, so the box has the shape
@@ -327,7 +357,7 @@ var maxW=+document.getElementById("maxW").value;
 var maxH=+document.getElementById("maxH").value;
 var targetKB=+document.getElementById("targetKB").value;
 var doEnhance=document.getElementById("enhance").checked;
-var html=avifNotice;var totalOrig=0,totalComp=0;compressedBlobs=[];
+var rows=[];var totalOrig=0,totalComp=0;compressedBlobs=[];
 var firstOrigUrl=null,firstCompUrl=null,firstRatio=0;
 
 for(var i=0;i<files.length;i++){
@@ -337,24 +367,32 @@ for(var i=0;i<files.length;i++){
   try{ img=await loadImage(file) }
   catch(err){ notify(file.name+" could not be read, skipping it.","warn"); continue }
   var w=img.width,h=img.height;
-  var crop=null;
+  var crop=null,shrunk=false;
   if(maxW>0&&maxH>0){
     /* Exact size (exam presets): fill the box and crop the overflow from the
        centre. Drawing straight into maxW x maxH used to stretch the photo. */
     w=maxW;h=maxH;
-    var sc=Math.max(w/img.width,h/img.height),sw=w/sc,sh=h/sc;
-    crop=[(img.width-sw)/2,(img.height-sh)/2,sw,sh];
+    if(presetFit==='fit'){
+      /* Signatures: never cut. Fit the whole image inside the box on white. */
+      var fs=Math.min(w/img.width,h/img.height);
+      crop={fit:[(w-img.width*fs)/2,(h-img.height*fs)/2,img.width*fs,img.height*fs]};
+    }else{
+      var sc=Math.max(w/img.width,h/img.height),sw=w/sc,sh=h/sc;
+      crop=[(img.width-sw)/2,(img.height-sh)/2,sw,sh];
+    }
   }
   else if(maxW>0&&img.width>maxW){h=Math.round(img.height*(maxW/img.width));w=maxW}
   else if(maxH>0&&img.height>maxH){w=Math.round(img.width*(maxH/img.height));h=maxH}
   var c=document.createElement("canvas");c.width=w;c.height=h;
   var ctx=c.getContext("2d");
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
-  if(crop)ctx.drawImage(img,crop[0],crop[1],crop[2],crop[3],0,0,w,h);else ctx.drawImage(img,0,0,w,h);
+  if(crop&&crop.fit){ctx.fillStyle="#ffffff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,crop.fit[0],crop.fit[1],crop.fit[2],crop.fit[3])}
+  else if(crop)ctx.drawImage(img,crop[0],crop[1],crop[2],crop[3],0,0,w,h);else ctx.drawImage(img,0,0,w,h);
   if(doEnhance)enhanceImage(ctx,w,h);
   var blob;
   if(targetKB>0){
     blob=await compressToTarget(c,fmt,targetKB*1024);
+    shrunk=!!blob.w&&(blob.w!==w||blob.h!==h);if(shrunk){w=blob.w;h=blob.h}
   }else{
     blob=await canvasToBlob(c,fmt,qual);
   }
@@ -369,17 +407,12 @@ for(var i=0;i<files.length;i++){
   var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
   var outName="compressed_"+file.name.replace(/\.[^.]+$/,"."+ext);
   compressedBlobs.push({blob:blob,name:outName});
-  window["_cb"+i]=blob;
   var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
   if(firstOrigUrl===null){firstOrigUrl=origUrl;firstCompUrl=compUrl;firstRatio=w/h;}
-  var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"\u2705":"\u26a0\ufe0f Could not reach target"):"";
-  if(grewNote)sizeOk=(sizeOk?sizeOk+" \u00b7 ":"")+grewNote;
-  html+="<div style='background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap'><div style='display:flex;gap:.3rem;align-items:center'><img src='"+origUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c' title='Original'><span style='font-size:.75rem'>\u2192</span><img src='"+compUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60' title='Compressed'></div><div style='flex:1;min-width:150px'><strong>"+file.name+"</strong><br><span class='info'>"+formatSize(file.size)+" \u2192 "+formatSize(blob.size)+" ("+saved+"% smaller) "+w+"x"+h+"px</span>"+(sizeOk?"<br><span style='font-size:.8rem'>"+sizeOk+"</span>":"")+"</div><button class='btn' onclick=\"download(window._cb"+i+",'"+outName+"')\">\ud83d\udcbe</button></div>";
+  rows.push({shrunk:targetKB>0&&!!shrunk,file:file,blob:blob,outName:outName,origUrl:origUrl,compUrl:compUrl,w:w,h:h,iw:img.width,ih:img.height,saved:saved,grewNote:grewNote,ext:ext});
 }
 if(!compressedBlobs.length){document.getElementById("result").innerHTML="<p class='info' style='color:var(--danger)'>None of the images could be read.</p>";return}
-var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
-html="<div style='background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center'><strong>Total: "+formatSize(totalOrig)+" \u2192 "+formatSize(totalComp)+" ("+totalSaved+"% saved)</strong>"+(compressedBlobs.length>1?"<br><button class='btn' style='margin-top:.5rem' onclick='downloadZip()'>\ud83d\udce6 Download All as ZIP</button>":"")+"</div>"+html;
-document.getElementById("result").innerHTML=html;
+renderResults(rows,totalOrig,totalComp,targetKB,avifNotice);
 // Add before/after comparison slider for first image
 if(firstOrigUrl&&firstCompUrl){
   var sliderContainer=document.createElement("div");
@@ -391,6 +424,48 @@ if(firstOrigUrl&&firstCompUrl){
   sliderContainer.appendChild(createCompareSlider(firstOrigUrl,firstCompUrl,firstRatio));
   document.getElementById("result").appendChild(sliderContainer);
 }
+}
+/* One card per image: thumbnails, sizes, dimensions, what happened to the
+   target, and a labelled download button. Built with DOM nodes so a file
+   name can never be read as HTML. */
+function renderResults(rows,totalOrig,totalComp,targetKB,avifNotice){
+  var res=document.getElementById("result");res.innerHTML=avifNotice||"";
+  function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+  if(rows.length>1){
+    var tot=el("div","ic-total");
+    var pct=((1-totalComp/totalOrig)*100).toFixed(1);
+    tot.appendChild(el("strong",null,rows.length+" images: "+formatSize(totalOrig)+" \u2192 "+formatSize(totalComp)+" ("+pct+"% saved)"));
+    var z=el("button","btn","\ud83d\udce6 Download all as ZIP");z.type="button";z.onclick=downloadZip;tot.appendChild(z);
+    res.appendChild(tot);
+  }
+  rows.forEach(function(r){
+    var card=el("div","ic-card");
+    var th=el("div","ic-thumbs");
+    var a=el("img");a.src=r.origUrl;a.alt="Original";a.title="Original";
+    var b=el("img");b.src=r.compUrl;b.alt="Compressed";b.title="Compressed";
+    th.appendChild(a);th.appendChild(el("span","ic-arrow","\u2192"));th.appendChild(b);
+    var info=el("div","ic-info");
+    info.appendChild(el("strong","ic-name",r.file.name));
+    var smaller=+r.saved>0;
+    var line=el("div","ic-size");
+    line.appendChild(document.createTextNode(formatSize(r.file.size)+" \u2192 "));
+    line.appendChild(el("b",null,formatSize(r.blob.size)));
+    line.appendChild(el("span",smaller?"ic-badge ok":"ic-badge warn",smaller?r.saved+"% smaller":Math.abs(+r.saved)+"% larger"));
+    info.appendChild(line);
+    var dims=(r.iw===r.w&&r.ih===r.h)?r.w+"\u00d7"+r.h+" px":r.iw+"\u00d7"+r.ih+" \u2192 "+r.w+"\u00d7"+r.h+" px";
+    info.appendChild(el("div","ic-meta",dims+" \u00b7 "+r.ext.toUpperCase()));
+    if(targetKB>0){
+      var hit=r.blob.size<=targetKB*1024;
+      info.appendChild(el("div",hit?"ic-note ok":"ic-note warn",hit?"\u2705 Under the "+targetKB+" KB target"+(r.shrunk?" (made smaller to fit)":""):"\u26a0\ufe0f Could not get under "+targetKB+" KB without ruining the picture \u2014 try a larger target"));
+    }
+    if(presetMinKB&&r.blob.size<presetMinKB*1024)info.appendChild(el("div","ic-note warn","\u26a0\ufe0f "+formatSize(r.blob.size)+" is below the "+presetMinKB+" KB minimum this form asks for, and some portals reject smaller files. A 140\u00d760 JPEG is usually smaller than that \u2014 check the current notice, or scan the signature at a larger size."));
+    if(r.grewNote)info.appendChild(el("div","ic-note warn",r.grewNote));
+    var btn=el("button","btn ic-dl","\u2b07\ufe0f Download");btn.type="button";
+    btn.setAttribute("aria-label","Download "+r.outName);
+    btn.onclick=function(){download(r.blob,r.outName)};
+    card.appendChild(th);card.appendChild(info);card.appendChild(btn);
+    res.appendChild(card);
+  });
 }
 async function downloadZip(){var zip=new JSZip();compressedBlobs.forEach(function(item){zip.file(item.name,item.blob)});var content=await zip.generateAsync({type:"blob"});download(content,"compressed_images.zip")}</script>
 </body></html>
