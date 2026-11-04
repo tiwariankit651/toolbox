@@ -28,7 +28,10 @@
       <div id="honestNote" class="info" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:.7rem .9rem;margin:.6rem 0"><strong>ℹ️ Honest note:</strong> This is classical interpolation, not AI super-resolution. It cannot invent detail that was never captured — it makes images larger and sharper-looking, not magically higher-resolution. For genuine detail reconstruction you would need a dedicated AI upscaler.</div>
       <div id="editor" style="display:none">
         <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo" style="text-align:center"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
-        <div id="origInfo" class="info" style="margin:.5rem 0"></div>
+        <div id="origWrap" style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin:.5rem 0">
+          <img id="origPreview" alt="Uploaded image" style="max-width:160px;max-height:120px;border-radius:8px;border:1px solid var(--border);background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 0 0/12px 12px;display:none">
+          <div id="origInfo" class="info" style="margin:0"></div>
+        </div>
 
         <h2 style="font-size:1rem;margin-top:1rem">1. Algorithm & Scale</h2>
         <div class="row" style="flex-wrap:wrap">
@@ -163,7 +166,7 @@ setupDrop("drop","inp",function(f){
   var loaded=0;
   files.forEach(function(file,i){
     loadImage(file).then(function(img){
-      items[i]={img:img,name:file.name,inSize:file.size,outBlob:null,outW:0,outH:0,status:"pending"};
+      items[i]={img:img,file:file,name:file.name,inSize:file.size,outBlob:null,outW:0,outH:0,status:"pending"};
       loaded++;
       if(loaded===files.length){
         items=items.filter(Boolean);
@@ -183,6 +186,9 @@ function updateOrigInfo(){
   var it=items[curIdx];
   var label=items.length>1?"Image "+(curIdx+1)+"/"+items.length+": ":"";
   document.getElementById("origInfo").textContent=label+"Original "+it.img.width+" x "+it.img.height+" px ("+formatSize(it.inSize)+")";
+  var pv=document.getElementById("origPreview");
+  if(pv._url)URL.revokeObjectURL(pv._url);
+  pv._url=URL.createObjectURL(it.file);pv.src=pv._url;pv.alt="Uploaded image: "+it.name;pv.style.display="block";
   if(items.length>1)document.getElementById("batchInfo").textContent=(curIdx+1)+" / "+items.length;
   document.getElementById("result").innerHTML="";
 }

@@ -554,9 +554,8 @@ function save() { storeSet(DE_KEY, { version: 1, docs: docs }, true) }
 })();
 
 setupDrop('importDrop', 'importFile', function (files) { handleImport(files[0]) });
-document.getElementById('importFile').addEventListener('change', function () {
-  if (this.files && this.files[0]) handleImport(this.files[0]);
-});
+/* setupDrop() (common.js) already handles both picking and dropping a
+   file; a second 'change' listener here ran the handler twice. */
   </script>
 </body>
 </html>

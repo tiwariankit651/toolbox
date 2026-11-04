@@ -587,12 +587,8 @@ function clearCsv() {
 /* ---------- wiring ---------- */
 setupDrop('xDrop', 'xFile', function (files) { handleExcelFile(files[0]) });
 setupDrop('cDrop', 'cFile', function (files) { handleCsvFile(files[0]) });
-document.getElementById('xFile').addEventListener('change', function () {
-  if (this.files && this.files[0]) handleExcelFile(this.files[0]);
-});
-document.getElementById('cFile').addEventListener('change', function () {
-  if (this.files && this.files[0]) handleCsvFile(this.files[0]);
-});
+/* setupDrop() (common.js) already handles both picking and dropping a
+   file; a second 'change' listener here ran the handler twice. */
 ['xSep', 'xTrim', 'xBom', 'cSep', 'cHeaderBold', 'cAutoWidth'].forEach(function (id) {
   var e = document.getElementById(id);
   if (e) e.addEventListener('change', savePrefs);

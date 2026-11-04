@@ -33,15 +33,27 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/image-compressor">
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    .compare-slider{position:relative;display:inline-block;max-width:100%;overflow:hidden;border-radius:10px;touch-action:none;user-select:none}
-    .compare-slider img{display:block;max-width:100%;max-height:300px;pointer-events:none}
-    .compare-slider .cs-overlay{position:absolute;top:0;left:0;height:100%;overflow:hidden}
-    .compare-slider .cs-overlay img{display:block;max-height:300px;width:auto;height:100%}
-    .compare-slider .cs-handle{position:absolute;top:0;width:3px;height:100%;background:var(--accent);cursor:ew-resize}
-    .compare-slider .cs-handle::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-    .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff}
+    /* Before/after slider. Both images fill the SAME box with object-fit:contain,
+       so they line up even when the output was resized to a different shape
+       (e.g. a 1600x1000 photo cropped to a 200x230 exam preset). The original
+       is revealed with clip-path, not by shrinking its container. */
+    .compare-slider{position:relative;width:100%;max-width:640px;margin:0 auto;aspect-ratio:var(--cs-ratio,4/3);max-height:70vh;overflow:hidden;border-radius:10px;touch-action:none;user-select:none;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 0 0/16px 16px;cursor:ew-resize}
+    .compare-slider img,.preview-area .compare-slider img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;max-width:none;max-height:none;border-radius:0}
+    /* The box has the output's shape. "cover" frames the original exactly the
+       way the exam presets crop it (centre crop); when only resizing, the
+       shapes match and cover shows the whole image. */
+    .compare-slider .cs-orig,.preview-area .compare-slider .cs-orig{object-fit:cover;clip-path:inset(0 50% 0 0)}
+    .compare-slider .cs-handle{position:absolute;top:0;left:50%;width:3px;height:100%;background:var(--accent);transform:translateX(-50%);outline:none}
+    .compare-slider .cs-handle::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid #fff}
+    .compare-slider .cs-handle:focus-visible::after{box-shadow:0 0 0 3px var(--accent-text)}
+    .compare-slider .cs-label{position:absolute;top:8px;padding:2px 8px;border-radius:4px;font-size:.75rem;background:rgba(0,0,0,.6);color:#fff;z-index:2}
     .compare-slider .cs-label-left{left:8px}
     .compare-slider .cs-label-right{right:8px}
+    .up-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin:.6rem 0}
+    .up-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.4rem;text-align:center;font-size:.72rem;color:var(--text2);position:relative}
+    .up-item img,.preview-area .up-item img{width:100%;height:90px;max-height:none;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 0 0/12px 12px;display:block}
+    .up-item .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:.3rem;color:var(--text)}
+    .up-item .rm{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(185,28,28,.9);color:#fff;cursor:pointer;font-size:.8rem;line-height:1}
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 <script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which exam and ID presets are built in?", "acceptedAnswer": {"@type": "Answer", "text": "One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (150×200, <50KB), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that's what portals expect."}}, {"@type": "Question", "name": "How does it hit an exact target file size in KB?", "acceptedAnswer": {"@type": "Answer", "text": "Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can't reach the target even at the lowest quality, the result is flagged with a 'Could not reach target' warning rather than failing silently."}}, {"@type": "Question", "name": "What output formats are available and what does 'Enhance Quality' do?", "acceptedAnswer": {"@type": "Answer", "text": "Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can't encode AVIF). The 'Enhance Quality' checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening."}}, {"@type": "Question", "name": "Can I compress many images at once and compare the result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, it's batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode."}}]}</script>
@@ -193,7 +205,39 @@ function setPreset(w,h,maxKB){
   document.getElementById("presetInfo").style.display="block";
   document.getElementById("presetText").textContent="\u2705 Preset applied: "+info;
 }
-setupDrop("drop","inp",function(f){files=Array.from(f);document.getElementById("goBtn").disabled=false;document.getElementById("result").innerHTML="<p class='info'>"+files.length+" file(s) loaded: "+files.map(function(f){return f.name+" ("+formatSize(f.size)+")"}).join(", ")+"</p>";updateEstimate()});
+var upUrls=[];
+function renderUploads(){
+  upUrls.forEach(function(u){URL.revokeObjectURL(u)});upUrls=[];
+  var res=document.getElementById("result");res.innerHTML="";
+  document.getElementById("goBtn").disabled=!files.length;
+  if(!files.length)return;
+  var total=files.reduce(function(a,f){return a+f.size},0);
+  var p=document.createElement("p");p.className="info";
+  p.textContent=files.length+" image"+(files.length>1?"s":"")+" ready · "+formatSize(total)+" total";
+  var grid=document.createElement("div");grid.className="up-grid";
+  files.forEach(function(f,i){
+    var it=document.createElement("div");it.className="up-item";
+    var im=document.createElement("img");var u=URL.createObjectURL(f);upUrls.push(u);
+    im.src=u;im.alt=f.name;
+    var nm=document.createElement("div");nm.className="nm";nm.textContent=f.name;nm.title=f.name;
+    var meta=document.createElement("div");meta.textContent=formatSize(f.size);
+    im.onload=function(){meta.textContent=formatSize(f.size)+" · "+im.naturalWidth+"×"+im.naturalHeight};
+    im.onerror=function(){meta.textContent="cannot preview this file";it.style.borderColor="var(--danger)"};
+    var rm=document.createElement("button");rm.className="rm";rm.type="button";rm.textContent="✕";
+    rm.setAttribute("aria-label","Remove "+f.name);
+    rm.onclick=function(){files.splice(i,1);renderUploads()};
+    it.appendChild(im);it.appendChild(rm);it.appendChild(nm);it.appendChild(meta);grid.appendChild(it);
+  });
+  res.appendChild(p);res.appendChild(grid);
+}
+setupDrop("drop","inp",function(f){
+  var all=Array.from(f);
+  files=all.filter(function(x){return !x.type||x.type.indexOf("image/")===0});
+  if(all.length&&!files.length)notify("Those files are not images. Try JPG, PNG or WEBP.","error");
+  else if(all.length>files.length)notify("Skipped "+(all.length-files.length)+" file(s) that are not images.","warn");
+  renderUploads();updateEstimate();
+  document.getElementById("inp").value="";
+});
 
 function enhanceImage(ctx,w,h){
   var imageData=ctx.getImageData(0,0,w,h);var d=imageData.data;
@@ -231,33 +275,41 @@ async function compressToTarget(canvas,fmt,targetBytes){
   return best;
 }
 
-// Comparison slider
-function createCompareSlider(origUrl,compUrl){
+// Comparison slider. ratio = output width/height, so the box has the shape
+// of the compressed image and the original is fitted into the same box.
+function createCompareSlider(origUrl,compUrl,ratio){
   var wrap=document.createElement("div");
   wrap.className="compare-slider";
-  wrap.innerHTML="<img src='"+compUrl+"' style='display:block;width:100%'><div class='cs-overlay'><img src='"+origUrl+"'></div><div class='cs-handle'></div><span class='cs-label cs-label-left'>Original</span><span class='cs-label cs-label-right'>Compressed</span>";
-  var overlay=wrap.querySelector(".cs-overlay");
-  var handle=wrap.querySelector(".cs-handle");
-  function setPos(x){
-    var rect=wrap.getBoundingClientRect();
-    var pct=Math.max(0,Math.min(1,(x-rect.left)/rect.width));
-    overlay.style.width=(pct*100)+"%";
-    handle.style.left=(pct*100)+"%";
+  if(ratio>0)wrap.style.setProperty("--cs-ratio",String(ratio));
+  var comp=document.createElement("img");comp.src=compUrl;comp.alt="Compressed image";
+  var orig=document.createElement("img");orig.src=origUrl;orig.alt="Original image";orig.className="cs-orig";
+  var handle=document.createElement("div");handle.className="cs-handle";
+  handle.tabIndex=0;handle.setAttribute("role","slider");handle.setAttribute("aria-label","Compare original and compressed");
+  handle.setAttribute("aria-valuemin","0");handle.setAttribute("aria-valuemax","100");
+  wrap.appendChild(comp);wrap.appendChild(orig);wrap.appendChild(handle);
+  wrap.insertAdjacentHTML("beforeend","<span class='cs-label cs-label-left'>Original</span><span class='cs-label cs-label-right'>Compressed</span>");
+  var pct=50;
+  function apply(){
+    orig.style.clipPath="inset(0 "+(100-pct)+"% 0 0)";
+    handle.style.left=pct+"%";handle.setAttribute("aria-valuenow",String(Math.round(pct)));
   }
+  function setPos(x){var r=wrap.getBoundingClientRect();pct=Math.max(0,Math.min(100,(x-r.left)/r.width*100));apply()}
   var dragging=false;
-  function startDrag(e){dragging=true;e.preventDefault();setPos(e.touches?e.touches[0].clientX:e.clientX)}
-  function moveDrag(e){if(!dragging)return;e.preventDefault();setPos(e.touches?e.touches[0].clientX:e.clientX)}
+  function pt(e){return e.touches?e.touches[0].clientX:e.clientX}
+  function startDrag(e){dragging=true;e.preventDefault();setPos(pt(e))}
+  function moveDrag(e){if(!dragging)return;e.preventDefault();setPos(pt(e))}
   function endDrag(){dragging=false}
-  handle.addEventListener("mousedown",startDrag);
-  handle.addEventListener("touchstart",startDrag,{passive:false});
   wrap.addEventListener("mousedown",startDrag);
   wrap.addEventListener("touchstart",startDrag,{passive:false});
   document.addEventListener("mousemove",moveDrag);
   document.addEventListener("touchmove",moveDrag,{passive:false});
   document.addEventListener("mouseup",endDrag);
   document.addEventListener("touchend",endDrag);
-  // Set initial at 50%
-  setTimeout(function(){overlay.style.width="50%";handle.style.left="50%"},50);
+  handle.addEventListener("keydown",function(e){
+    if(e.key==="ArrowLeft"){pct=Math.max(0,pct-5);apply();e.preventDefault()}
+    else if(e.key==="ArrowRight"){pct=Math.min(100,pct+5);apply();e.preventDefault()}
+  });
+  apply();
   return wrap;
 }
 
@@ -276,7 +328,7 @@ var maxH=+document.getElementById("maxH").value;
 var targetKB=+document.getElementById("targetKB").value;
 var doEnhance=document.getElementById("enhance").checked;
 var html=avifNotice;var totalOrig=0,totalComp=0;compressedBlobs=[];
-var firstOrigUrl=null,firstCompUrl=null;
+var firstOrigUrl=null,firstCompUrl=null,firstRatio=0;
 
 for(var i=0;i<files.length;i++){
   var file=files[i];
@@ -285,13 +337,20 @@ for(var i=0;i<files.length;i++){
   try{ img=await loadImage(file) }
   catch(err){ notify(file.name+" could not be read, skipping it.","warn"); continue }
   var w=img.width,h=img.height;
-  if(maxW>0&&maxH>0){w=maxW;h=maxH}
+  var crop=null;
+  if(maxW>0&&maxH>0){
+    /* Exact size (exam presets): fill the box and crop the overflow from the
+       centre. Drawing straight into maxW x maxH used to stretch the photo. */
+    w=maxW;h=maxH;
+    var sc=Math.max(w/img.width,h/img.height),sw=w/sc,sh=h/sc;
+    crop=[(img.width-sw)/2,(img.height-sh)/2,sw,sh];
+  }
   else if(maxW>0&&img.width>maxW){h=Math.round(img.height*(maxW/img.width));w=maxW}
   else if(maxH>0&&img.height>maxH){w=Math.round(img.width*(maxH/img.height));h=maxH}
   var c=document.createElement("canvas");c.width=w;c.height=h;
   var ctx=c.getContext("2d");
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
-  ctx.drawImage(img,0,0,w,h);
+  if(crop)ctx.drawImage(img,crop[0],crop[1],crop[2],crop[3],0,0,w,h);else ctx.drawImage(img,0,0,w,h);
   if(doEnhance)enhanceImage(ctx,w,h);
   var blob;
   if(targetKB>0){
@@ -299,15 +358,25 @@ for(var i=0;i<files.length;i++){
   }else{
     blob=await canvasToBlob(c,fmt,qual);
   }
+  /* Re-encoding an already small or flat image can make it BIGGER. If nothing
+     else changed (same format, same size, no enhance), hand back the original;
+     otherwise say so instead of reporting a negative saving silently. */
+  var grewNote="";
+  if(blob.size>=file.size){
+    if(file.type===fmt&&w===img.width&&h===img.height&&!doEnhance){blob=file;grewNote="\u2139\ufe0f Already optimised \u2014 original kept"}
+    else grewNote="\u26a0\ufe0f Larger than the original \u2014 try a lower quality or WebP";
+  }
   var saved=((1-blob.size/file.size)*100).toFixed(1);totalOrig+=file.size;totalComp+=blob.size;
   var outName="compressed_"+file.name.replace(/\.[^.]+$/,"."+ext);
   compressedBlobs.push({blob:blob,name:outName});
   window["_cb"+i]=blob;
   var origUrl=URL.createObjectURL(file);var compUrl=URL.createObjectURL(blob);
-  if(i===0){firstOrigUrl=origUrl;firstCompUrl=compUrl;}
+  if(firstOrigUrl===null){firstOrigUrl=origUrl;firstCompUrl=compUrl;firstRatio=w/h;}
   var sizeOk=targetKB>0?(blob.size<=targetKB*1024?"\u2705":"\u26a0\ufe0f Could not reach target"):"";
+  if(grewNote)sizeOk=(sizeOk?sizeOk+" \u00b7 ":"")+grewNote;
   html+="<div style='background:var(--card);padding:.8rem;border-radius:10px;margin:.4rem 0;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap'><div style='display:flex;gap:.3rem;align-items:center'><img src='"+origUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #e74c3c' title='Original'><span style='font-size:.75rem'>\u2192</span><img src='"+compUrl+"' style='width:50px;height:50px;object-fit:cover;border-radius:6px;border:2px solid #27ae60' title='Compressed'></div><div style='flex:1;min-width:150px'><strong>"+file.name+"</strong><br><span class='info'>"+formatSize(file.size)+" \u2192 "+formatSize(blob.size)+" ("+saved+"% smaller) "+w+"x"+h+"px</span>"+(sizeOk?"<br><span style='font-size:.8rem'>"+sizeOk+"</span>":"")+"</div><button class='btn' onclick=\"download(window._cb"+i+",'"+outName+"')\">\ud83d\udcbe</button></div>";
 }
+if(!compressedBlobs.length){document.getElementById("result").innerHTML="<p class='info' style='color:var(--danger)'>None of the images could be read.</p>";return}
 var totalSaved=((1-totalComp/totalOrig)*100).toFixed(1);
 html="<div style='background:var(--card);padding:1rem;border-radius:10px;margin-bottom:.5rem;text-align:center'><strong>Total: "+formatSize(totalOrig)+" \u2192 "+formatSize(totalComp)+" ("+totalSaved+"% saved)</strong>"+(compressedBlobs.length>1?"<br><button class='btn' style='margin-top:.5rem' onclick='downloadZip()'>\ud83d\udce6 Download All as ZIP</button>":"")+"</div>"+html;
 document.getElementById("result").innerHTML=html;
@@ -319,7 +388,7 @@ if(firstOrigUrl&&firstCompUrl){
   sliderTitle.className="info";
   sliderTitle.textContent="\ud83d\udd0d Before / After Comparison (drag to compare)";
   sliderContainer.appendChild(sliderTitle);
-  sliderContainer.appendChild(createCompareSlider(firstOrigUrl,firstCompUrl));
+  sliderContainer.appendChild(createCompareSlider(firstOrigUrl,firstCompUrl,firstRatio));
   document.getElementById("result").appendChild(sliderContainer);
 }
 }

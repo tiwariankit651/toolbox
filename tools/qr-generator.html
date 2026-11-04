@@ -104,8 +104,9 @@
       <!-- Center Logo -->
       <div class="row" style="margin-top:.8rem;align-items:center">
         <label style="white-space:nowrap">Center Logo:</label>
-        <input type="file" id="qrLogo" accept="image/*" onchange="gen()" style="flex:1">
-        <button class="btn btn-outline" onclick="document.getElementById('qrLogo').value='';gen()" style="font-size:.8rem;padding:.3rem .6rem">✕ Remove</button>
+        <input type="file" id="qrLogo" accept="image/*" onchange="qrLogoPreview();gen()" style="flex:1">
+        <img id="qrLogoThumb" alt="Selected logo" style="display:none;flex:0 0 40px;width:40px;min-width:40px;max-width:40px;height:40px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:#fff">
+        <button class="btn btn-outline" onclick="document.getElementById('qrLogo').value='';qrLogoPreview();gen()" style="font-size:.8rem;padding:.3rem .6rem">✕ Remove</button>
       </div>
 
       <button class="btn" onclick="gen()" style="margin-top:1rem;width:100%">Generate QR Code</button>
@@ -359,5 +360,15 @@ function restoreQRPrefs(){
   if(el)el.addEventListener('change',saveQRPrefs);
 });
 restoreQRPrefs();
-  </script>
+  
+/* Show the chosen logo next to the picker, so it is clear what was picked
+   even before a QR code has been generated. */
+function qrLogoPreview(){
+  var inp=document.getElementById('qrLogo'),th=document.getElementById('qrLogoThumb');
+  if(th._url){URL.revokeObjectURL(th._url);th._url=null}
+  var f=inp.files&&inp.files[0];
+  if(!f){th.style.display='none';th.removeAttribute('src');return}
+  th._url=URL.createObjectURL(f);th.src=th._url;th.style.display='inline-block';
+}
+</script>
 </body></html>

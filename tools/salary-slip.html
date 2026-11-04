@@ -875,12 +875,8 @@ function setSelIfOption(id, v) {
 
 setupDrop('logoDrop', 'logoFile', function (files) { handleLogo(files[0]) });
 setupDrop('csvDrop', 'csvFile', function (files) { handleCsvFile(files[0]) });
-document.getElementById('logoFile').addEventListener('change', function () {
-  if (this.files && this.files[0]) handleLogo(this.files[0]);
-});
-document.getElementById('csvFile').addEventListener('change', function () {
-  if (this.files && this.files[0]) handleCsvFile(this.files[0]);
-});
+/* setupDrop() (common.js) already handles both picking and dropping a
+   file; a second 'change' listener here ran the handler twice. */
 
 function handleCsvFile(file) {
   if (!file) return;
