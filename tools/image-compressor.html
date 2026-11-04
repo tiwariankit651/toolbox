@@ -74,7 +74,7 @@
     .up-item .rm{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(185,28,28,.9);color:#fff;cursor:pointer;font-size:.8rem;line-height:1}
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which exam and ID presets are built in?", "acceptedAnswer": {"@type": "Answer", "text": "One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (140×60, <20KB — the 4.0 × 2.0 cm SSC size), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that's what portals expect."}}, {"@type": "Question", "name": "How does it hit an exact target file size in KB?", "acceptedAnswer": {"@type": "Answer", "text": "Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can't reach the target even at the lowest quality, the result is flagged with a 'Could not reach target' warning rather than failing silently."}}, {"@type": "Question", "name": "What output formats are available and what does 'Enhance Quality' do?", "acceptedAnswer": {"@type": "Answer", "text": "Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can't encode AVIF). The 'Enhance Quality' checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening."}}, {"@type": "Question", "name": "Can I compress many images at once and compare the result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, it's batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode."}}]}</script>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which exam and ID presets are built in?", "acceptedAnswer": {"@type": "Answer", "text": "One-click presets set the pixel size, the upper size limit and the lower limit: SSC Photo 200×230 (20–50 KB) and Signature 140×60 (10–20 KB, the 4.0 × 2.0 cm size); UPSC Photo 350×350 (20–200 KB; UPSC sets the file size and face coverage, not a pixel size, so a square 350×350 is used) and Signature 500×350 (20–100 KB, the 350–500 pixel range in the 2026 UPSC guidelines); IBPS Photo 200×230 (20–50 KB) and Signature 140×60 (10–20 KB); Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100 KB, 50 KB and 20 KB. Photos are centre-cropped to the box; signatures are fitted whole on white so nothing is cut. If the result is below the lower limit you get a warning. Notices change between recruitments, so check the one you are applying for."}}, {"@type": "Question", "name": "How does it hit an exact target file size in KB?", "acceptedAnswer": {"@type": "Answer", "text": "Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can't reach the target even at the lowest quality, the result is flagged with a 'Could not reach target' warning rather than failing silently."}}, {"@type": "Question", "name": "What output formats are available and what does 'Enhance Quality' do?", "acceptedAnswer": {"@type": "Answer", "text": "Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can't encode AVIF). The 'Enhance Quality' checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening."}}, {"@type": "Question", "name": "Can I compress many images at once and compare the result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, it's batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode."}}]}</script>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -88,12 +88,12 @@
 
       <h3 style="margin:1rem 0 .5rem" role="heading" aria-level="2">📐 Exam & Government Presets</h3>
       <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem">
-        <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">SSC Photo (3.5x4.5cm)</button>
-        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit',10)" style="font-size:.8rem">SSC Signature (140x60, &lt;20KB)</button>
-        <button class="btn btn-outline" onclick="setPreset(200,230,20)" style="font-size:.8rem">UPSC Photo (200x230)</button>
-        <button class="btn btn-outline" onclick="setPreset(140,60,30,'fit')" style="font-size:.8rem">UPSC Signature (140x60)</button>
-        <button class="btn btn-outline" onclick="setPreset(200,230,50)" style="font-size:.8rem">IBPS Photo (200x230)</button>
-        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit')" style="font-size:.8rem">IBPS Signature (140x60)</button>
+        <button class="btn btn-outline" onclick="setPreset(200,230,50,'crop',20)" style="font-size:.8rem">SSC Photo (200x230, 20–50KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit',10)" style="font-size:.8rem">SSC Signature (140x60, 10–20KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(350,350,200,'crop',20)" style="font-size:.8rem">UPSC Photo (350x350, 20–200KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(500,350,100,'fit',20)" style="font-size:.8rem">UPSC Signature (500x350, 20–100KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(200,230,50,'crop',20)" style="font-size:.8rem">IBPS Photo (200x230, 20–50KB)</button>
+        <button class="btn btn-outline" onclick="setPreset(140,60,20,'fit',10)" style="font-size:.8rem">IBPS Signature (140x60, 10–20KB)</button>
         <button class="btn btn-outline" onclick="setPreset(600,800,100)" style="font-size:.8rem">Passport Photo (600x800)</button>
         <button class="btn btn-outline" onclick="setPreset(400,400,200)" style="font-size:.8rem">Aadhar Photo (400x400)</button>
         <button class="btn btn-outline" onclick="setPreset(0,0,100)" style="font-size:.8rem">Under 100KB</button>
@@ -101,6 +101,7 @@
         <button class="btn btn-outline" onclick="setPreset(0,0,20)" style="font-size:.8rem">Under 20KB</button>
       </div>
 
+      <p class="info" style="font-size:.78rem;margin:-.3rem 0 .6rem">Sizes as given in recent SSC, UPSC and IBPS notices. Each notice can change them — always check the one you are applying for.</p>
       <div id="presetInfo" style="display:none;background:var(--card);padding:.8rem;border-radius:8px;margin-bottom:.8rem">
         <p class="info" id="presetText"></p>
       </div>
@@ -122,7 +123,7 @@
     <div style="min-height:90px">
 <!-- tool-faq:start -->
 <h2>Frequently Asked Questions</h2>
-<details><summary>Which exam and ID presets are built in?</summary><p>One-click presets set dimensions and a target size for SSC Photo (200×230) and Signature (140×60, &lt;20KB — the 4.0 × 2.0 cm SSC size), UPSC Photo (200×230) and Signature (140×60), IBPS Photo/Signature, Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100KB, 50KB and 20KB. Each preset forces JPEG output since that&#x27;s what portals expect.</p></details>
+<details><summary>Which exam and ID presets are built in?</summary><p>One-click presets set the pixel size, the upper size limit and the lower limit: SSC Photo 200×230 (20–50 KB) and Signature 140×60 (10–20 KB, the 4.0 × 2.0 cm size); UPSC Photo 350×350 (20–200 KB; UPSC sets the file size and face coverage, not a pixel size, so a square 350×350 is used) and Signature 500×350 (20–100 KB, the 350–500 pixel range in the 2026 UPSC guidelines); IBPS Photo 200×230 (20–50 KB) and Signature 140×60 (10–20 KB); Passport Photo (600×800) and Aadhaar Photo (400×400), plus size-only presets for under 100 KB, 50 KB and 20 KB. Photos are centre-cropped to the box; signatures are fitted whole on white so nothing is cut. If the result is below the lower limit you get a warning. Notices change between recruitments, so check the one you are applying for.</p></details>
 <details><summary>How does it hit an exact target file size in KB?</summary><p>Enter a Target Size (KB) and the compressor runs a binary search of about 8 iterations on the JPEG/WebP quality to find the largest quality that stays under your limit. If it can&#x27;t reach the target even at the lowest quality, the result is flagged with a &#x27;Could not reach target&#x27; warning rather than failing silently.</p></details>
 <details><summary>What output formats are available and what does &#x27;Enhance Quality&#x27; do?</summary><p>Output can be JPG, PNG, WebP, or AVIF (with automatic fallback to WebP if your browser can&#x27;t encode AVIF). The &#x27;Enhance Quality&#x27; checkbox applies an unsharp-mask sharpen and a slight contrast boost before compressing — useful for old scanned photos — using a blurred copy to compute the sharpening.</p></details>
 <details><summary>Can I compress many images at once and compare the result?</summary><p>Yes, it&#x27;s batch: drop multiple files, compress them together, download each individually or all as a ZIP, with a total before/after size summary. The first image also gets a draggable before/after comparison slider. Everything runs in your browser via canvas — nothing is uploaded, and EXIF is dropped by the canvas re-encode.</p></details>
@@ -392,6 +393,18 @@ for(var i=0;i<files.length;i++){
   var blob;
   if(targetKB>0){
     blob=await compressToTarget(c,fmt,targetKB*1024);
+    /* Forms also set a MINIMUM (e.g. 20-50 KB). If the result is under it,
+       raise the quality - never past the maximum - to land inside the range. */
+    if(presetMinKB&&blob.size<presetMinKB*1024&&!(blob.w&&(blob.w!==w||blob.h!==h))&&fmt!=="image/png"){
+      var minB=presetMinKB*1024,maxB=targetKB*1024;
+      var top=await canvasToBlob(c,fmt,1.0);
+      if(top.size>=minB){
+        var lo2=0.3,hi2=1.0,best2=top.size<=maxB?top:null;
+        for(var k=0;k<8;k++){var m2=(lo2+hi2)/2,b2=await canvasToBlob(c,fmt,m2);
+          if(b2.size<minB)lo2=m2;else{hi2=m2;if(b2.size<=maxB)best2=b2}}
+        if(best2)blob=best2;
+      }else blob=top;   // even best quality is under the minimum: keep the best we have, warning shows
+    }
     shrunk=!!blob.w&&(blob.w!==w||blob.h!==h);if(shrunk){w=blob.w;h=blob.h}
   }else{
     blob=await canvasToBlob(c,fmt,qual);
@@ -458,7 +471,7 @@ function renderResults(rows,totalOrig,totalComp,targetKB,avifNotice){
       var hit=r.blob.size<=targetKB*1024;
       info.appendChild(el("div",hit?"ic-note ok":"ic-note warn",hit?"\u2705 Under the "+targetKB+" KB target"+(r.shrunk?" (made smaller to fit)":""):"\u26a0\ufe0f Could not get under "+targetKB+" KB without ruining the picture \u2014 try a larger target"));
     }
-    if(presetMinKB&&r.blob.size<presetMinKB*1024)info.appendChild(el("div","ic-note warn","\u26a0\ufe0f "+formatSize(r.blob.size)+" is below the "+presetMinKB+" KB minimum this form asks for, and some portals reject smaller files. A 140\u00d760 JPEG is usually smaller than that \u2014 check the current notice, or scan the signature at a larger size."));
+    if(presetMinKB&&r.blob.size<presetMinKB*1024)info.appendChild(el("div","ic-note warn","\u26a0\ufe0f "+formatSize(r.blob.size)+" is below the "+presetMinKB+" KB minimum this form asks for, even at the best quality \u2014 a "+r.w+"\u00d7"+r.h+" picture cannot hold more data. Most portals accept it; if yours rejects it, check the notice for a larger allowed size."));
     if(r.grewNote)info.appendChild(el("div","ic-note warn",r.grewNote));
     var btn=el("button","btn ic-dl","\u2b07\ufe0f Download");btn.type="button";
     btn.setAttribute("aria-label","Download "+r.outName);
