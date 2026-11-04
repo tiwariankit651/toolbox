@@ -13,7 +13,7 @@
 </script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Word to PDF Converter — DOCX to PDF, No Upload | FreeToolHubs</title>
-  <meta name="description" content="Convert a Word .docx file to PDF in your browser. Keeps page size, margins, headers, footers, tables and images. The file never leaves your device.">
+  <meta name="description" content="Convert a Word .docx file to PDF in your browser. Edit text, add a signature or images first, then download. Keeps page size, margins, tables and images. No upload.">
   <meta property="og:title" content="Word to PDF Converter — Free, No Upload | FreeToolHubs">
   <meta property="og:description" content="Convert .docx to PDF in your browser — the file is never uploaded.">
   <meta property="og:type" content="website">
@@ -32,6 +32,7 @@
   <meta name="keywords" content="word to pdf, docx to pdf, convert word to pdf, word to pdf without upload">
   <link rel="canonical" href="https://freetoolhubs.com/tools/word-to-pdf">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
   <style>
     .w2p-file{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.7rem 1rem;margin:.8rem 0;font-size:.9rem}
@@ -53,12 +54,42 @@
     /* The pages are laid out here at their real size (pt), measured, then
        captured. Kept in the document flow but outside the viewport so fonts
        and images load and layout is real; aria-hidden so screen readers skip it. */
+    .w2p-go{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+    .w2p-go .btn{width:100%;margin:0}
+    @media(max-width:600px){.w2p-go{grid-template-columns:1fr}}
+    .w2p-editor{margin-top:1rem;border:1px solid var(--border);border-radius:14px;padding:.8rem;background:var(--card)}
+    .w2p-tools{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
+    .w2p-tools .btn{margin:0;padding:.55rem .85rem;font-size:.85rem;width:auto}
+    .w2p-filebtn{position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center}
+    .w2p-filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .w2p-mini{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--text2)}
+    .w2p-mini select{width:auto;min-height:34px;padding:.3rem .5rem;margin:0}
+    .w2p-mini input[type=color]{width:38px;height:32px;padding:0;border:1px solid var(--border);border-radius:6px;background:none}
+    .w2p-close{margin-left:auto!important}
+    .w2p-howto{font-size:.8rem}
+    #w2pHint{color:var(--accent-text);font-weight:600;min-height:1.2em;margin:.4rem 0}
+    .w2p-view{position:relative;overflow:auto;max-height:80vh;border-radius:10px;background:#525659;-webkit-overflow-scrolling:touch}
+    .w2p-view-inner{position:relative;margin:0 auto;min-height:120px}
+    .w2p-pad{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:1rem}
+    .w2p-pad[hidden]{display:none}
+    .w2p-pad-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;width:min(560px,100%)}
+    #w2pPadCanvas{display:block;width:100%;height:200px;background:#fff;border-radius:10px;touch-action:none;cursor:crosshair;border:1px solid var(--border)}
+    .w2p-pad-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.6rem}
+    .w2p-pad-row .btn{margin:0;width:auto;flex:1}
+    .w2p-pad-row input[type=text]{flex:1 1 180px;margin:0;min-width:0}
+    .w2p-actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:.5rem 0}
+    .w2p-actions .btn{margin:0;width:auto;text-decoration:none;display:inline-block}
+    .w2p-upload{margin:.8rem auto 0;max-width:560px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.6rem .9rem}
+    .w2p-upload summary{cursor:pointer;font-weight:600;font-size:.9rem}
+    .w2p-upload label{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;color:var(--text2);margin-top:.5rem}
+    .w2p-upload input{margin:0}
+    .w2p-upload .btn{margin-top:.6rem;width:100%}
     #w2pStage{position:absolute;left:-100000px;top:0;width:auto}
     #w2pStage .w2p-page{background:#fff;color:#000;box-sizing:border-box;position:relative;overflow:hidden;display:flex;flex-direction:column}
     #w2pStage .w2p-page>header,#w2pStage .w2p-page>footer{flex:none}
     #w2pStage .w2p-page>.w2p-body{flex:1 1 auto;overflow:hidden;position:relative}
   </style>
-<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does my Word file get uploaded to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. The .docx is opened with JavaScript in this tab, laid out into pages here, and the PDF is built here with pdf-lib. The page loads its libraries and the free fonts it uses from public CDNs, but your document is never sent anywhere. You can disconnect from the internet after the page has loaded and convert a file."}}, {"@type": "Question", "name": "Why can the PDF have a different number of pages than Word?", "acceptedAnswer": {"@type": "Answer", "text": "Word decides where each page ends using its own text engine and the fonts installed on your computer. This tool lays the text out again in the browser. Calibri, Cambria, Arial, Times New Roman and Courier New are swapped for free fonts with the same letter widths (Carlito, Caladea, Arimo, Tinos, Cousine), so lines usually break in the same places, but a page can still end a few lines earlier or later. The file box shows Word's own page count so you can compare."}}, {"@type": "Question", "name": "Can I search or copy text in the converted PDF?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, when 'Make text selectable & searchable' is ticked. Each page is stored as a picture, and an invisible text layer is placed over it line by line, so Ctrl+F and copy work. That layer uses a standard PDF font, so it covers English and other Latin-script text; Hindi and other Devanagari text is visible in the PDF but is not searchable."}}, {"@type": "Question", "name": "Which Word features are not converted?", "acceptedAnswer": {"@type": "Answer", "text": "Charts, SmartArt and old EMF/WMF images are not drawn, and text boxes are placed only approximately. Comments are left out and tracked changes are shown as accepted. The table of contents keeps the page numbers Word last saved. The tool tells you in the notes under the Convert button when your file contains any of these. Old .doc files (Word 97–2003) must be saved as .docx first."}}]}</script>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does my Word file get uploaded to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. The .docx is opened, edited and turned into a PDF in this tab, so the document is never sent anywhere. The page only loads its libraries and free fonts from public CDNs. After the PDF is made there is an optional 'Upload the PDF to a link' box: it sends the PDF only to an address you type in yourself, and only when you press Upload."}}, {"@type": "Question", "name": "Can I sign the document or change text before making the PDF?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Press 'Edit, sign or add images first'. The pages open in an editor where you can click any paragraph or table cell and retype it, draw or type a signature, add a signature from a photo (its white background is removed), add any image, or add a text box such as a date. Items can be dragged, resized with the round handle and removed with ✕. Then press 'Create PDF with my changes'. The original .docx file is not changed."}}, {"@type": "Question", "name": "Why can the PDF have a different number of pages than Word?", "acceptedAnswer": {"@type": "Answer", "text": "Word decides where each page ends using its own text engine and the fonts installed on your computer. This tool lays the text out again in the browser. Calibri, Cambria, Arial, Times New Roman and Courier New are swapped for free fonts with the same letter widths (Carlito, Caladea, Arimo, Tinos, Cousine), so lines usually break in the same places, but a page can still end a few lines earlier or later. The file box shows Word's own page count so you can compare."}}, {"@type": "Question", "name": "Can I search or copy text in the converted PDF?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, when 'Make text selectable & searchable' is ticked. Each page is stored as a picture, and an invisible text layer is placed over it line by line, so Ctrl+F and copy work. That layer uses a standard PDF font, so it covers English and other Latin-script text; Hindi and other Devanagari text is visible in the PDF but is not searchable."}}, {"@type": "Question", "name": "Which Word features are not converted?", "acceptedAnswer": {"@type": "Answer", "text": "Charts, SmartArt and old EMF/WMF images are not drawn, and text boxes are placed only approximately. Comments are left out and tracked changes are shown as accepted. The table of contents keeps the page numbers Word last saved. The tool tells you in the notes under the Convert button when your file contains any of these. Old .doc files (Word 97–2003) must be saved as .docx first."}}]}</script>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -67,7 +98,7 @@
     <div style="min-height:90px"></div>
     <div class="tool-section">
       <h1>📝➜📄 Word to PDF Converter</h1>
-      <p class="info">Turn a Word <strong>.docx</strong> file into a PDF with the page size, margins, headers, footers, tables and images from the document. Conversion happens in this browser tab — the file is not uploaded anywhere.</p>
+      <p class="info">Turn a Word <strong>.docx</strong> file into a PDF with the page size, margins, headers, footers, tables and images from the document. Before converting you can change text, sign it, or add images and text. Everything happens in this browser tab — the file is not uploaded anywhere.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()" role="button" tabindex="0" aria-label="Choose a Word document">Drop a .docx file here, or click to choose one<input type="file" id="inp" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></div>
       <div class="w2p-file" id="w2pFile" style="display:none"></div>
 
@@ -90,7 +121,45 @@
         <label class="chk"><input type="checkbox" id="w2pText" checked> Make text selectable &amp; searchable</label>
       </div>
 
-      <button class="btn" id="goBtn" onclick="w2pConvert()" disabled style="width:100%">Convert to PDF</button>
+      <div class="w2p-go">
+        <button class="btn" id="goBtn" onclick="w2pConvert()" disabled>Convert to PDF</button>
+        <button class="btn btn-outline" id="editBtn" onclick="w2pEdit()" disabled>✏️ Edit, sign or add images first</button>
+      </div>
+
+      <div id="w2pEditor" class="w2p-editor" hidden>
+        <div class="w2p-tools" role="toolbar" aria-label="Editing tools">
+          <button type="button" class="btn btn-outline" onclick="w2pOpenPad()">✍️ Signature</button>
+          <label class="btn btn-outline w2p-filebtn">🖊️ Signature from photo<input type="file" id="w2pSigFile" accept="image/*" onchange="w2pPickImage('sign')"></label>
+          <label class="btn btn-outline w2p-filebtn">🖼️ Image<input type="file" id="w2pImgFile" accept="image/*" onchange="w2pPickImage('image')"></label>
+          <button type="button" class="btn btn-outline" onclick="w2pAddText()">🔤 Text box</button>
+          <label class="w2p-mini">Size <select id="w2pTextSize"><option>10</option><option>12</option><option selected>14</option><option>16</option><option>20</option><option>28</option></select></label>
+          <label class="w2p-mini">Colour <input type="color" id="w2pTextColor" value="#000000"></label>
+          <label class="w2p-mini chk"><input type="checkbox" id="w2pSigClean" checked> Remove white background from signature photos</label>
+          <label class="w2p-mini">Zoom <select id="w2pZoom" onchange="w2pFit()"><option value="fit" selected>Fit</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option></select></label>
+          <button type="button" class="btn btn-outline w2p-close" onclick="w2pCloseEdit()">✕ Close editor</button>
+        </div>
+        <p class="info" id="w2pHint" aria-live="polite"></p>
+        <p class="info" id="w2pOverflow" role="alert" hidden style="color:var(--warn);font-weight:600"></p>
+        <p class="info w2p-howto">Click any text on a page to change it. Added items can be dragged; the round handle resizes them and ✕ removes them. Text boxes move with the ✥ handle.</p>
+        <div class="w2p-view" id="w2pView"><div id="w2pViewInner" class="w2p-view-inner"></div></div>
+      </div>
+
+      <div class="w2p-pad" id="w2pPad" hidden role="dialog" aria-modal="true" aria-labelledby="w2pPadTitle">
+        <div class="w2p-pad-box">
+          <h3 id="w2pPadTitle" style="margin:0 0 .5rem;font-size:1rem">✍️ Draw your signature</h3>
+          <canvas id="w2pPadCanvas" tabindex="0" aria-label="Signature drawing area — draw with mouse, finger or stylus"></canvas>
+          <div class="w2p-pad-row">
+            <label class="w2p-mini">Ink <input type="color" id="w2pPadColor" value="#0b2a6f"></label>
+            <label class="w2p-mini">Pen <select id="w2pPadWidth"><option value="1.5">Thin</option><option value="2.5" selected>Medium</option><option value="4">Bold</option></select></label>
+            <input type="text" id="w2pPadType" placeholder="…or type your name" oninput="w2pPadTyped()" aria-label="Type your name as a signature">
+          </div>
+          <div class="w2p-pad-row">
+            <button type="button" class="btn btn-outline" onclick="w2pPadClear()">Clear</button>
+            <button type="button" class="btn btn-outline" onclick="w2pPadClose()">Cancel</button>
+            <button type="button" class="btn" id="w2pPadUse" onclick="w2pPadUse()" disabled>Use signature</button>
+          </div>
+        </div>
+      </div>
       <div class="w2p-bar" id="w2pBar"><i></i></div>
       <div id="w2pStatus" role="status" aria-live="polite"></div>
       <ul id="w2pNotes"></ul>
@@ -101,7 +170,8 @@
     <div style="min-height:90px">
 <!-- tool-faq:start -->
 <h2>Frequently Asked Questions</h2>
-<details><summary>Does my Word file get uploaded to a server?</summary><p>No. The .docx is opened with JavaScript in this tab, laid out into pages here, and the PDF is built here with pdf-lib. The page loads its libraries and the free fonts it uses from public CDNs, but your document is never sent anywhere. You can disconnect from the internet after the page has loaded and convert a file.</p></details>
+<details><summary>Does my Word file get uploaded to a server?</summary><p>No. The .docx is opened, edited and turned into a PDF in this tab, so the document is never sent anywhere. The page only loads its libraries and free fonts from public CDNs. After the PDF is made there is an optional &#x27;Upload the PDF to a link&#x27; box: it sends the PDF only to an address you type in yourself, and only when you press Upload.</p></details>
+<details><summary>Can I sign the document or change text before making the PDF?</summary><p>Yes. Press &#x27;Edit, sign or add images first&#x27;. The pages open in an editor where you can click any paragraph or table cell and retype it, draw or type a signature, add a signature from a photo (its white background is removed), add any image, or add a text box such as a date. Items can be dragged, resized with the round handle and removed with ✕. Then press &#x27;Create PDF with my changes&#x27;. The original .docx file is not changed.</p></details>
 <details><summary>Why can the PDF have a different number of pages than Word?</summary><p>Word decides where each page ends using its own text engine and the fonts installed on your computer. This tool lays the text out again in the browser. Calibri, Cambria, Arial, Times New Roman and Courier New are swapped for free fonts with the same letter widths (Carlito, Caladea, Arimo, Tinos, Cousine), so lines usually break in the same places, but a page can still end a few lines earlier or later. The file box shows Word&#x27;s own page count so you can compare.</p></details>
 <details><summary>Can I search or copy text in the converted PDF?</summary><p>Yes, when &#x27;Make text selectable &amp; searchable&#x27; is ticked. Each page is stored as a picture, and an invisible text layer is placed over it line by line, so Ctrl+F and copy work. That layer uses a standard PDF font, so it covers English and other Latin-script text; Hindi and other Devanagari text is visible in the PDF but is not searchable.</p></details>
 <details><summary>Which Word features are not converted?</summary><p>Charts, SmartArt and old EMF/WMF images are not drawn, and text boxes are placed only approximately. Comments are left out and tracked changes are shown as accepted. The table of contents keeps the page numbers Word last saved. The tool tells you in the notes under the Convert button when your file contains any of these. Old .doc files (Word 97–2003) must be saved as .docx first.</p></details>
@@ -115,8 +185,8 @@
 <li><strong>Step 1:</strong> Drop your <code>.docx</code> file in the box or click it to pick one. The page count and page size from the document show up straight away.</li>
 <li><strong>Step 2:</strong> Pick a quality. Standard keeps the file small for email and portal uploads; High sharpens very small text; Print is for paper copies and makes the largest file.</li>
 <li><strong>Step 3:</strong> Leave the page size on "As set in the document" unless a portal insists on A4 or Letter.</li>
-<li><strong>Step 4:</strong> Press Convert. Each page is laid out and drawn in your browser, and you get small previews of every page.</li>
-<li><strong>Step 5:</strong> Check the previews and any notes listed under the button, then download the PDF.</li>
+<li><strong>Step 4:</strong> Press Convert — or, to change a word, sign or add a picture first, press "Edit, sign or add images first", make the changes on the page and press "Create PDF with my changes".</li>
+<li><strong>Step 5:</strong> Check the previews and any notes, then download, open or share the PDF — or upload it to a link of your own.</li>
 </ol>
 <h2>Common Use Cases</h2>
 <ul style="margin-left:1.5rem;line-height:2">
@@ -125,6 +195,7 @@
 <li>Turning an application, leave letter or affidavit draft into PDF on a computer without MS Office</li>
 <li>Converting a confidential document without uploading it to an online converter</li>
 <li>Making a PDF of a document received on WhatsApp or email as a .docx</li>
+<li>Signing a leave letter, declaration or consent form and sending it back as a PDF</li>
 </ul>
 </div>
 <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>This converter reads the Word file in your browser, lays each section out at the page size and margins stored in the document, splits the content into pages, repeats the header and footer on every page with the correct page number, and writes the pages into a PDF. A text layer can be added on top of every page image so you can still search the PDF and copy text out of it. Because the conversion runs on your own device there is no file-size limit set by a server and nothing is stored anywhere — closing the tab clears it. It works with the modern .docx format used by Word 2007 and later, Google Docs (File → Download → .docx), LibreOffice and WPS Office.</p></div>
@@ -143,6 +214,9 @@
 
 <h3>Choosing a quality setting</h3>
 <p>Every page is drawn as an image at the quality you choose. Standard, the default, is about 144 DPI: text reads cleanly on screen and the file stays small enough for email and most upload portals. High is about 192 DPI and helps with very small print such as footnotes. Print is about 288 DPI for paper copies and makes the file roughly twice the size of High. Because every page is an image, a long document grows with its page count: a plain-text page is roughly 250 KB at Standard. If a portal sets a strict size limit, convert at Standard, or run the result through the PDF Compressor. The text layer is unaffected by this setting, so search and copy work at every quality.</p>
+
+<h3>Editing and signing before you convert</h3>
+<p>"Edit, sign or add images first" opens the laid-out pages in an editor instead of converting straight away. Text changes are made on the page itself: click a paragraph or a table cell and type. Each page keeps its size, so added text pushes the rest of that page down but does not flow onto the next page; if a page gets more text than fits, it is outlined in red and a warning appears, because those lines would be cut off. A drawn or typed signature is cropped to the ink, so it can be placed tightly on a signature line; a photographed signature works best on plain white paper, and its background is made transparent. Everything you add is drawn into the page image at the size you set, so it prints exactly where it appears in the editor. The Word file itself is not modified — to keep the changes in Word as well, make them in Word.</p>
 </div><!-- tool-guide:end -->
   <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/pdf-compressor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Compressor</a><a href="/tools/pdf-merger" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Merger</a><a href="/tools/pdf-splitter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Splitter</a><a href="/tools/image-to-pdf" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Image to PDF</a><a href="/tools/pdf-to-image" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF to Image</a><a href="/tools/resume-builder" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Resume Builder</a></div></div>
   <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-pdf-tools-online-2026">Best Free PDF Tools Online 2026 — No Signup, No Upload</a></li><li><a href="/blog/how-to-compress-pdf-for-government-portals">How to Compress PDF for Government Portal Uploads</a></li><li><a href="/blog/how-to-merge-pdf-files-online">How to Merge PDFs Without Common Mistakes</a></li><li><a href="/blog/how-to-make-resume-for-freshers-free">How to Make Resume for Freshers — Complete Free Guide</a></li></ul></div>
