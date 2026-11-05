@@ -1,0 +1,19 @@
+<h2>Right-angle turns are free; free angles cost pixels</h2>
+
+<p>There are two completely different things happening behind the rotate buttons, and knowing which one you are using explains the result. Turning an image 90°, 180° or 270°, or flipping it, only rearranges pixels that already exist — no pixel is invented or destroyed, so the quality is identical to the original. Rotating by an arbitrary angle, say 7° to straighten a horizon, is different: the output grid no longer lines up with the input grid, so every pixel has to be interpolated from its neighbours. That is unavoidable for any tool, and this one at least does it at full resolution with high-quality smoothing rather than on a shrunken preview.</p>
+
+<h3>The bounding-box maths behind "expand to fit"</h3>
+
+<p>When you rotate by a free angle and ask the canvas to expand, the image has to grow or its tilted corners would be clipped. The new dimensions come straight from trigonometry of the rotated rectangle: width' = |w·cos θ| + |h·sin θ| and height' = |w·sin θ| + |h·cos θ|. For a 4000×3000 photo at 30° that works out to roughly 4964×4598. You can verify it yourself — the output size is printed under the preview. The leftover triangular corners are transparent by default, which PNG and WebP preserve; export to JPG and you must choose a fill colour because JPG has no transparency.</p>
+
+<h3>Expand versus crop to original size</h3>
+
+<p>The canvas mode changes what you keep. "Expand to fit" guarantees nothing is lost, at the price of a larger file with filled corners — right for turning a landscape shot fully portrait, or any rotation you want intact. "Crop to original size" keeps the file's original dimensions and lets the rotation spill over the edges, so the corners of the picture are trimmed away. That is what you want for a small straightening nudge of a degree or two, where expanding would add ugly wedges for no benefit. A pure 90° turn in crop mode simply swaps width and height, since that is the honest "original size" after a quarter turn.</p>
+
+<h3>Flipping, and why it isn't the same as rotating</h3>
+
+<p>Flipping mirrors the image across an axis; rotating turns it. A horizontal flip is what you need when a selfie came out with text backwards, or to face a portrait the other way. It is done with a canvas scale of −1 on one axis, which is exact and reversible — flip twice and you are back where you started. Horizontal and vertical flips combine freely with any rotation, and the preview shows every transform applied together so there are no surprises at download.</p>
+
+<h3>Batch, format and metadata</h3>
+
+<p>Drop several files and the same operation — steps, flips, free angle, canvas mode, fill colour — applies to all of them, packed into a ZIP made in your browser. Unreadable files are skipped and reported rather than aborting the run. Output can keep the original format or convert to JPG, PNG or WebP, and because every image is rebuilt on a canvas, EXIF and GPS metadata are dropped from the saved files. Phone photos are decoded upright first, so your rotation is applied on top of the correct orientation, never fighting it.</p>

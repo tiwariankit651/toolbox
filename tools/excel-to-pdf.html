@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel to PDF Converter — XLSX, XLS &amp; CSV to PDF Free | FreeToolHubs</title>
+  <meta name="description" content="Convert Excel (.xlsx/.xls) and CSV files to PDF in your browser. Pick sheets, A4/Letter/Legal, portrait or landscape, fit-to-width, repeating headers, page numbers. Hindi and ₹ print correctly. Nothing uploaded.">
+  <meta property="og:title" content="Excel to PDF Converter — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Convert XLSX, XLS and CSV spreadsheets to PDF in your browser. Hindi and ₹ supported, nothing uploaded.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/excel-to-pdf">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Excel to PDF Converter — FreeToolHubs">
+  <meta name="twitter:description" content="Convert XLSX, XLS and CSV spreadsheets to PDF in your browser">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Excel to PDF Converter","url":"https://freetoolhubs.com/tools/excel-to-pdf","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"description":"Convert Excel (XLSX/XLS) and CSV spreadsheets to PDF entirely in the browser, with page size, orientation, fit-to-width, repeating headers and page numbers."}
+  </script>
+  <meta name="keywords" content="excel to pdf, xlsx to pdf, csv to pdf, convert excel to pdf online, spreadsheet to pdf, xls to pdf free">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/excel-to-pdf">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Will the ₹ rupee sign and Hindi text print correctly in the PDF?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Instead of embedding a limited PDF font that only covers Latin letters, each sheet is drawn onto a high-resolution canvas using the fonts your browser already has, and that canvas is embedded into the PDF. So any Unicode text the browser can display — the ₹ symbol, Devanagari, Tamil, Marathi — prints exactly as it looks, rather than turning into boxes or question marks."}}, {"@type": "Question", "name": "My sheet has 25 columns and they run off the page. What can I do?", "acceptedAnswer": {"@type": "Answer", "text": "Two options under 'When columns don't fit'. 'Fit to width' scales every column down proportionally so they all sit across one page (combine with landscape for very wide sheets). 'Split columns across pages' keeps the font size and continues the extra columns on following pages, repeating the first column as a label so you can still tell which row is which."}}, {"@type": "Question", "name": "Does it keep merged title cells, column widths and show numbers the way Excel does?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Merged ranges from the workbook's !merges are drawn as a single spanning cell, column widths from !cols (wpx or wch) and row heights from !rows are honoured when present, numeric cells are right-aligned by default, and the header row can be bolded. Crucially it uses each cell's formatted text (SheetJS .w), so a date, percentage or currency value reads the same as it does in Excel rather than as a raw number."}}, {"@type": "Question", "name": "Can I convert only some sheets, and how is the file named?", "acceptedAnswer": {"@type": "Answer", "text": "Every sheet in the workbook is listed with a checkbox, so you convert exactly the ones you tick and each starts fresh in the combined PDF. If you convert a single sheet the file is saved as <file>-<sheet>.pdf; if you convert several it is saved as <file>.pdf. Empty sheets are skipped and reported."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a><button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button></div></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 📊 Excel to PDF</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section"><h1>📊 Excel to PDF</h1>
+      <p class="info">Turn an Excel workbook or CSV into a clean, printable PDF — pick which sheets, the page size and orientation, whether columns should fit the page width, and whether the header row repeats on every page. The file is read in this tab with SheetJS and the PDF is built here with pdf-lib, so your spreadsheet is never uploaded.</p>
+
+      <div id="drop" class="drop-zone" style="padding:1.2rem;margin:.4rem 0" onclick="document.getElementById('file').click()">
+        📥 Drop an .xlsx, .xlsm, .xls or .csv file here, or click to browse
+        <input type="file" id="file" accept=".xlsx,.xlsm,.xls,.csv,text/csv" style="display:none">
+      </div>
+      <div id="info" class="info" style="display:none"></div>
+
+      <div id="options" style="display:none">
+        <div class="tool-section" style="margin:.6rem 0;padding:1rem">
+          <h3 role="heading" aria-level="2" style="margin-top:0">Sheets</h3>
+          <div id="sheetList" style="display:flex;flex-wrap:wrap;gap:.5rem 1.2rem"></div>
+        </div>
+
+        <div class="row">
+          <label style="flex:1">Page size
+            <select id="pageSize" onchange="scheduleRender()">
+              <option value="A4">A4 (210 × 297 mm)</option>
+              <option value="Letter">Letter (8.5 × 11 in)</option>
+              <option value="Legal">Legal (8.5 × 14 in)</option>
+            </select>
+          </label>
+          <label style="flex:1">Orientation
+            <select id="orientation" onchange="scheduleRender()">
+              <option value="auto">Auto (landscape if wide)</option>
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <label style="flex:1">When columns don't fit
+            <select id="overflow" onchange="scheduleRender()">
+              <option value="fit">Fit to width (scale columns down)</option>
+              <option value="split">Split columns across pages</option>
+            </select>
+          </label>
+          <label style="flex:1">Long cell text
+            <select id="wrap" onchange="scheduleRender()">
+              <option value="wrap">Wrap within the column</option>
+              <option value="clip">Clip with … (no wrap)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <label style="flex:1">Font size (pt)
+            <input type="number" id="fontSize" value="9" min="5" max="20" step="0.5" onchange="scheduleRender()">
+          </label>
+          <label style="flex:1">Margin (mm)
+            <input type="number" id="margin" value="12" min="0" max="40" step="1" onchange="scheduleRender()">
+          </label>
+        </div>
+
+        <div class="row">
+          <label style="flex:1"><input type="checkbox" id="optGrid" checked onchange="scheduleRender()"> Show gridlines</label>
+          <label style="flex:1"><input type="checkbox" id="optHeader" checked onchange="scheduleRender()"> Repeat header row on every page</label>
+        </div>
+        <div class="row">
+          <label style="flex:1"><input type="checkbox" id="optBoldHeader" checked onchange="scheduleRender()"> Bold the header row</label>
+          <label style="flex:1"><input type="checkbox" id="optPageNum" checked onchange="scheduleRender()"> Page numbers ("Page x of y")</label>
+        </div>
+        <div class="row">
+          <label style="flex:1"><input type="checkbox" id="optSheetName" checked onchange="scheduleRender()"> Sheet name as a heading</label>
+          <label style="flex:1"><input type="checkbox" id="optRightNum" checked onchange="scheduleRender()"> Right-align numbers</label>
+        </div>
+
+        <div id="previewWrap" style="display:none;margin-top:.8rem">
+          <h3 role="heading" aria-level="2">Preview — first page</h3>
+          <div id="previewHost" class="preview-area" style="text-align:center;background:var(--surface);padding:.6rem;border-radius:var(--radius)"></div>
+          <p class="info" id="previewNote" aria-live="polite"></p>
+        </div>
+
+        <div class="row" style="margin-top:.4rem">
+          <button class="btn" id="goBtn" onclick="makePdf()">💾 Download PDF</button>
+          <button class="btn btn-outline" onclick="refreshPreview()">🔄 Refresh preview</button>
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+    <ol style="margin-left:1.5rem;line-height:2">
+    <li><strong>Drop your spreadsheet</strong> — an <code>.xlsx</code>, <code>.xlsm</code>, older <code>.xls</code> or a <code>.csv</code>. Every sheet in the workbook is listed with a checkbox so you choose exactly which ones go into the PDF.</li>
+    <li><strong>Pick the page size and orientation.</strong> Leave orientation on "Auto" and the tool switches a wide sheet to landscape by itself; force portrait or landscape if you prefer.</li>
+    <li><strong>Decide what happens to wide sheets.</strong> "Fit to width" shrinks the columns so they all sit on one page across; "Split columns across pages" keeps the font size and continues the extra columns on following pages, repeating the first (label) column.</li>
+    <li><strong>Turn on repeating headers and page numbers</strong> so a long register stays readable — the header row is reprinted at the top of every page and "Page x of y" is stamped at the foot.</li>
+    <li><strong>Check the first-page preview, then Download PDF.</strong> One sheet saves as <code>&lt;file&gt;-&lt;sheet&gt;.pdf</code>; several sheets save as <code>&lt;file&gt;.pdf</code>.</li>
+    </ol>
+    <h2>Common Use Cases</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li>Marksheet, attendance register or fee register kept in Excel that has to be submitted or printed as PDF</li>
+    <li>A GST or sales report with ₹ amounts that must look exactly as it does in Excel — the rupee sign prints correctly here</li>
+    <li>A wide stock or inventory sheet with 20+ columns that needs to fit one page across</li>
+    <li>A Hindi or regional-language sheet (names, addresses) that other converters turn into boxes</li>
+    <li>A multi-sheet workbook where each sheet should start on its own page in a single PDF</li>
+    <li>A CSV export from a bank or portal that you want as a tidy, paginated PDF</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2>
+    <p>Convert Excel and CSV files to PDF without installing software or uploading anything. The workbook is parsed in your browser by SheetJS — using each cell's <em>formatted</em> text, so numbers, dates, percentages and currency appear just as they do in Excel — and the PDF is assembled locally with pdf-lib. Each sheet is drawn to a high-resolution canvas and embedded as a crisp image page, which is why Devanagari text and the ₹ symbol print correctly instead of coming out as question marks or empty boxes. Merged title cells (<code>!merges</code>), column widths (<code>!cols</code>) and row heights are honoured where the workbook stores them, numbers are right-aligned, and the header row can be bolded and repeated on every page.</p>
+    <h2>Benefits of Using This Tool</h2>
+    <ul style="margin-left:1.5rem;line-height:2">
+    <li><strong>Nothing is uploaded</strong> — salary, marks and customer data stay in this tab</li>
+    <li><strong>₹ and Hindi print correctly</strong> — the canvas-based renderer draws any Unicode text your browser can show</li>
+    <li><strong>Fits wide sheets</strong> — scale every column to one page width, or split extra columns onto later pages</li>
+    <li><strong>Print-ready output</strong> — A4/Letter/Legal, portrait or landscape, repeating headers and "Page x of y"</li>
+    <li><strong>Works offline</strong> after the first visit, so you can convert on a patchy connection</li>
+    </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>Will the ₹ rupee sign and Hindi text print correctly in the PDF?</summary><p>Yes. Instead of embedding a limited PDF font that only covers Latin letters, each sheet is drawn onto a high-resolution canvas using the fonts your browser already has, and that canvas is embedded into the PDF. So any Unicode text the browser can display — the ₹ symbol, Devanagari, Tamil, Marathi — prints exactly as it looks, rather than turning into boxes or question marks.</p></details>
+<details><summary>My sheet has 25 columns and they run off the page. What can I do?</summary><p>Two options under &#x27;When columns don&#x27;t fit&#x27;. &#x27;Fit to width&#x27; scales every column down proportionally so they all sit across one page (combine with landscape for very wide sheets). &#x27;Split columns across pages&#x27; keeps the font size and continues the extra columns on following pages, repeating the first column as a label so you can still tell which row is which.</p></details>
+<details><summary>Does it keep merged title cells, column widths and show numbers the way Excel does?</summary><p>Yes. Merged ranges from the workbook&#x27;s !merges are drawn as a single spanning cell, column widths from !cols (wpx or wch) and row heights from !rows are honoured when present, numeric cells are right-aligned by default, and the header row can be bolded. Crucially it uses each cell&#x27;s formatted text (SheetJS .w), so a date, percentage or currency value reads the same as it does in Excel rather than as a raw number.</p></details>
+<details><summary>Can I convert only some sheets, and how is the file named?</summary><p>Every sheet in the workbook is listed with a checkbox, so you convert exactly the ones you tick and each starts fresh in the combined PDF. If you convert a single sheet the file is saved as &lt;file&gt;-&lt;sheet&gt;.pdf; if you convert several it is saved as &lt;file&gt;.pdf. Empty sheets are skipped and reported.</p></details>
+<!-- tool-faq:end --></div>
+
+    <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>From Spreadsheet to Print-Ready PDF: Fitting, Headers and Why ₹ Prints Correctly</h2>
+
+<h3>Formatted values, not raw numbers</h3>
+<p>When the workbook is read, the tool deliberately asks SheetJS for each cell's <em>formatted</em> text rather than its underlying number. A date stored as the serial 45658 is pulled out as "01/01/2025", a percentage shows as "12%" and a currency cell shows as "₹1,250.00" — exactly the string Excel paints on screen. This matters because a PDF is a frozen picture of your data: if it showed 45658 where you expected a date, the document would be useless. The one place raw type is still consulted is alignment — cells Excel treats as numeric are right-aligned by default, matching spreadsheet convention, while text stays left-aligned. You can turn that behaviour off if a column of ID numbers reads better on the left.</p>
+
+<h3>Deciding orientation and making wide sheets fit</h3>
+<p>A spreadsheet has no natural page, so the tool has to invent one. First it measures every column — using the workbook's stored widths (<code>!cols</code>) when they exist, otherwise the widest piece of text in the column, capped so one enormous cell can't push everything off-screen. It adds those widths up. On "Auto" orientation, if the total is wider than the usable page it switches to landscape by itself; you can also force portrait or landscape. If the columns still overflow, two strategies are offered. <strong>Fit to width</strong> multiplies every column by a single scale factor so they collapse onto one page across — ideal for a 25-column inventory sheet you want on a single landscape page. <strong>Split columns across pages</strong> keeps the font readable and instead carries the extra columns onto following pages, reprinting the first column as a row label so you never lose track of which line is which.</p>
+
+<h3>Repeating headers, page numbers and merged cells</h3>
+<p>Long registers are only usable if you can read them away from page one. Tick "Repeat header row on every page" and the first row is redrawn at the top of each page, bolded if you like, with a light shaded background. "Page x of y" is stamped at the foot so a printed stack stays in order, and the sheet name can sit as a heading above the table. Merged title cells from <code>!merges</code> are drawn as a single wide cell spanning their columns, and the cells hidden underneath the merge are skipped so text is never printed twice. Row heights from <code>!rows</code> are respected where the file stores them. For long cell text you choose between wrapping inside the column — the row grows taller to fit — or clipping with an ellipsis when you prefer every row the same height.</p>
+
+<h3>Why the PDF is built from canvas pages</h3>
+<p>The hardest part of any spreadsheet-to-PDF tool is text that isn't plain English. The standard PDF fonts only cover the WinAnsi character set, which has no ₹ and no Devanagari, so a naive converter prints boxes or question marks — a real problem for Indian sheets where the rupee sign is everywhere. This tool sidesteps that entirely: each page is drawn on a high-resolution canvas using the fonts your own browser has, then embedded into the PDF with pdf-lib as a crisp image. Whatever your browser can display — ₹, Hindi, Tamil, emoji — appears in the PDF. The trade-off is that the PDF stores pictures of pages rather than selectable text, so you can't copy text out of it; in exchange you get a document that looks right in every language and prints identically everywhere. Everything happens in your browser, so a salary sheet or student register is never uploaded.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/excel-csv" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Excel ↔ CSV</a><a href="/tools/word-to-pdf" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Word to PDF</a><a href="/tools/image-to-pdf" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Image to PDF</a><a href="/tools/pdf-merger" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Merger</a><a href="/tools/pdf-compressor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Compressor</a><a href="/tools/json-csv" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON ↔ CSV</a></div></div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/excel-to-csv-conversion-guide">Excel to CSV Kaise Kare — Aur Jo Problems Aati Hain Unka Asli Fix</a></li><li><a href="/blog/best-free-pdf-tools-online-2026">Best Free PDF Tools Online 2026 — No Signup, No Upload</a></li><li><a href="/blog/how-to-compress-pdf-for-government-portals">How to Compress PDF for Government Portal Uploads</a></li><li><a href="/blog/how-to-merge-pdf-files-online">How to Merge PDFs Without Common Mistakes</a></li></ul></div>
+  </div>
+
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/contact">Contact</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by FreeToolHubs — everything runs in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+    integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"
+    integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
+  <script src="../js/common.js"></script>
+  <script>
+/* Excel/CSV -> PDF. SheetJS parses the workbook using each cell's formatted
+   text (.w), so numbers, dates, percentages and ₹ amounts read exactly as they
+   do in Excel. Each sheet is laid out on a high-DPI canvas (so any Unicode the
+   browser can draw — Devanagari, ₹ — renders correctly) and the canvas pages
+   are embedded into a PDF with pdf-lib. Nothing is uploaded. */
+
+var workbook = null;
+var baseName = 'spreadsheet';
+var sheetData = {};        // name -> {aoa, merges, colWpx, rowHpx, numeric}
+var renderTimer = null;
+
+/* ---- page geometry, in PDF points (72 pt = 1 inch) ---- */
+var PAGE_PT = {
+  A4:     { w: 595.28, h: 841.89 },
+  Letter: { w: 612,    h: 792    },
+  Legal:  { w: 612,    h: 1008   }
+};
+var MM_TO_PT = 72 / 25.4;
+var SCALE = 2;             // canvas supersampling for crisp text in the PDF
+
+function val(id){ var e=document.getElementById(id); return e?e.value:'' }
+function chk(id){ var e=document.getElementById(id); return e?e.checked:false }
+function num(id,d){ var v=parseFloat(val(id)); return isFinite(v)?v:d }
+
+/* ---------- load ---------- */
+function handleFile(file){
+  if(!file) return;
+  baseName = file.name.replace(/\.[^.]+$/, '').replace(/[\\\/:*?"<>|]+/g,'_') || 'spreadsheet';
+  if(file.size > 30*1024*1024){
+    notify('That file is '+formatSize(file.size)+'. Files above 30 MB may not fit in memory on a phone.','warn');
+  }
+  var r = new FileReader();
+  r.onerror = function(){ notify('"'+file.name+'" could not be read. It may be corrupt.','error') };
+  r.onload = function(e){
+    try{
+      workbook = XLSX.read(e.target.result, { type:'array', cellDates:true, cellStyles:true });
+    }catch(err){
+      workbook = null;
+      notify('"'+file.name+'" is not a readable spreadsheet. Try an .xlsx, .xls or .csv file.','error');
+      document.getElementById('options').style.display='none';
+      document.getElementById('info').style.display='none';
+      return;
+    }
+    if(!workbook.SheetNames || !workbook.SheetNames.length){
+      notify('That workbook has no sheets in it.','error'); return;
+    }
+    sheetData = {};
+    buildSheetList(file);
+    document.getElementById('options').style.display='block';
+    scheduleRender();
+    notify('Loaded '+workbook.SheetNames.length+(workbook.SheetNames.length===1?' sheet.':' sheets.'),'ok');
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function buildSheetList(file){
+  var info = document.getElementById('info');
+  info.style.display='block';
+  info.textContent = '📊 '+file.name+' · '+formatSize(file.size)+' · '+
+    workbook.SheetNames.length+(workbook.SheetNames.length===1?' sheet: ':' sheets: ')+
+    workbook.SheetNames.join(', ');
+  var host = document.getElementById('sheetList');
+  host.innerHTML = '';
+  workbook.SheetNames.forEach(function(name, i){
+    var id = 'sheet_'+i;
+    var lbl = document.createElement('label');
+    lbl.style.cssText = 'display:flex;align-items:center;gap:.4rem;min-width:unset';
+    var cb = document.createElement('input');
+    cb.type='checkbox'; cb.id=id; cb.checked=true; cb.dataset.sheet=name;
+    cb.addEventListener('change', scheduleRender);
+    lbl.appendChild(cb);
+    var span = document.createElement('span');
+    span.textContent = name;                     // textContent — never innerHTML with sheet names
+    lbl.appendChild(span);
+    host.appendChild(lbl);
+  });
+}
+
+function selectedSheets(){
+  return Array.prototype.slice.call(document.querySelectorAll('#sheetList input:checked'))
+    .map(function(cb){ return cb.dataset.sheet; });
+}
+
+/* ---------- extract a sheet into an array-of-arrays using formatted text ----
+   defval '' keeps empty cells as empty columns; raw:false gives us the .w
+   formatted string so dates/currency/percent look like Excel. We then trim the
+   empty trailing rows/cols using !ref but keeping interior blanks. */
+function extractSheet(name){
+  if(sheetData[name]) return sheetData[name];
+  var ws = workbook.Sheets[name];
+  var out = { aoa:[], merges:[], colWpx:[], rowHpx:[], numeric:{} };
+  if(!ws){ sheetData[name]=out; return out; }
+
+  var ref = ws['!ref'];
+  if(!ref){ sheetData[name]=out; return out; }
+  var range = XLSX.utils.decode_range(ref);
+
+  // formatted text matrix + a parallel "is this cell numeric" matrix
+  var aoa = [], numeric = [];
+  for(var R=range.s.r; R<=range.e.r; R++){
+    var row = [], nrow = [];
+    for(var C=range.s.c; C<=range.e.c; C++){
+      var addr = XLSX.utils.encode_cell({ r:R, c:C });
+      var cell = ws[addr];
+      if(cell){
+        var text = (cell.w !== undefined && cell.w !== null) ? cell.w
+                 : (cell.v !== undefined && cell.v !== null ? String(cell.v) : '');
+        row.push(text);
+        nrow.push(cell.t === 'n');          // numeric type
+      } else { row.push(''); nrow.push(false); }
+    }
+    aoa.push(row); numeric.push(nrow);
+  }
+
+  // trim fully-empty trailing rows
+  while(aoa.length && aoa[aoa.length-1].every(function(c){ return String(c).trim()===''; })){
+    aoa.pop(); numeric.pop();
+  }
+  // trim fully-empty trailing columns
+  var width = aoa.reduce(function(m,r){ return Math.max(m,r.length); },0);
+  var lastUsed = -1;
+  for(var c=0;c<width;c++){
+    var used = aoa.some(function(r){ return String(r[c]===undefined?'':r[c]).trim()!==''; });
+    if(used) lastUsed = c;
+  }
+  if(lastUsed < width-1){
+    aoa = aoa.map(function(r){ return r.slice(0, lastUsed+1); });
+    numeric = numeric.map(function(r){ return r.slice(0, lastUsed+1); });
+  }
+
+  // merges, shifted to be relative to the extracted range origin
+  if(ws['!merges']){
+    ws['!merges'].forEach(function(m){
+      out.merges.push({
+        r: m.s.r - range.s.r, c: m.s.c - range.s.c,
+        rs: m.e.r - m.s.r + 1, cs: m.e.c - m.s.c + 1
+      });
+    });
+  }
+  // column widths (wpx preferred, else wch ~ 7px/char), relative to origin
+  if(ws['!cols']){
+    for(var i=range.s.c;i<=range.e.c;i++){
+      var col = ws['!cols'][i];
+      var wpx = col && (col.wpx || (col.wch ? col.wch*7 : 0));
+      out.colWpx[i-range.s.c] = wpx || 0;
+    }
+  }
+  // row heights (hpx preferred, else hpt), relative to origin
+  if(ws['!rows']){
+    for(var j=range.s.r;j<=range.e.r;j++){
+      var rw = ws['!rows'][j];
+      var hpx = rw && (rw.hpx || (rw.hpt ? rw.hpt*96/72 : 0));
+      out.rowHpx[j-range.s.r] = hpx || 0;
+    }
+  }
+
+  out.aoa = aoa; out.numeric = numeric;
+  sheetData[name] = out;
+  return out;
+}
+
+/* ---------- lay out ONE sheet onto one or more canvas pages ----------
+   Returns an array of canvases (device pixels, already supersampled). The same
+   routine is used for the on-page preview (returns the first canvas) and for
+   the PDF (returns every canvas). opts carries the page/orientation settings. */
+function layoutSheet(name, opts){
+  var data = extractSheet(name);
+  var aoa = data.aoa;
+  var canvases = [];
+  if(!aoa.length){
+    return { canvases: canvases, empty: true };
+  }
+
+  var cols = aoa.reduce(function(m,r){ return Math.max(m,r.length); },0);
+  // pad rows to full width
+  aoa = aoa.map(function(r){ var o=r.slice(); while(o.length<cols) o.push(''); return o; });
+  var numeric = data.numeric.map(function(r){ var o=r.slice(); while(o.length<cols) o.push(false); return o; });
+
+  var fontPt = opts.fontSize;
+  var pad = Math.max(2, fontPt*0.4);
+  var lineH = fontPt * 1.3;
+
+  // decide page orientation
+  var base = PAGE_PT[opts.pageSize];
+  // natural column widths (points): from !cols if present, else measured text
+  var measureCanvas = document.createElement('canvas');
+  var mctx = measureCanvas.getContext('2d');
+  mctx.font = fontPt+'px Helvetica, Arial, sans-serif';
+  var boldFont = 'bold '+fontPt+'px Helvetica, Arial, sans-serif';
+  var normFont = fontPt+'px Helvetica, Arial, sans-serif';
+
+  var colW = [];
+  for(var c=0;c<cols;c++){
+    if(data.colWpx[c]){
+      colW[c] = data.colWpx[c] * 72/96;         // px (96dpi) -> pt
+    } else {
+      var w = fontPt*4;
+      for(var r=0;r<aoa.length;r++){
+        mctx.font = (r===0 && opts.boldHeader) ? boldFont : normFont;
+        var tw = mctx.measureText(String(aoa[r][c])).width + pad*2;
+        if(tw>w) w=tw;
+      }
+      colW[c] = Math.min(w, fontPt*30);          // cap very wide columns
+    }
+  }
+
+  // orientation decision
+  var totalW = colW.reduce(function(a,b){ return a+b; },0);
+  var marginPt = opts.marginMm * MM_TO_PT;
+  var landscape;
+  if(opts.orientation==='portrait') landscape=false;
+  else if(opts.orientation==='landscape') landscape=true;
+  else landscape = (totalW > (base.w - 2*marginPt));   // auto
+  var pageW = landscape ? base.h : base.w;
+  var pageH = landscape ? base.w : base.h;
+  var availW = pageW - 2*marginPt;
+  var availH = pageH - 2*marginPt;
+
+  // heading line height
+  var headingH = opts.sheetName ? (fontPt*1.6 + 6) : 0;
+  var footerH = opts.pageNum ? (fontPt*1.4) : 0;
+
+  // fit-to-width: scale all columns down to availW
+  var colGroups;    // arrays of column index-sets, one per horizontal page
+  var scale = 1;
+  if(totalW > availW){
+    if(opts.overflow==='fit'){
+      scale = availW/totalW;
+      colW = colW.map(function(w){ return w*scale; });
+      colGroups = [ range(0,cols) ];
+    } else {
+      // split columns across pages, repeating column 0 as a label
+      colGroups = [];
+      var cur = [], curW = 0;
+      var labelW = colW[0];
+      for(var ci=0; ci<cols; ci++){
+        var cw = colW[ci];
+        if(cur.length && (curW + cw) > availW){
+          colGroups.push(cur);
+          cur = (ci>0) ? [0] : [];           // repeat label column
+          curW = (ci>0) ? labelW : 0;
+        }
+        cur.push(ci); curW += cw;
+      }
+      if(cur.length) colGroups.push(cur);
+    }
+  } else {
+    colGroups = [ range(0,cols) ];
+  }
+
+  // row heights (points)
+  function rowHeight(r, usableCols){
+    var h = data.rowHpx[r] ? data.rowHpx[r]*72/96 : lineH;
+    if(opts.wrap==='wrap'){
+      // compute wrapped lines for the tallest cell in this row
+      var maxLines = 1;
+      for(var k=0;k<usableCols.length;k++){
+        var c = usableCols[k];
+        mctx.font = (r===0 && opts.boldHeader) ? boldFont : normFont;
+        var lines = wrapText(mctx, String(aoa[r][c]), colW[c]-pad*2);
+        if(lines.length>maxLines) maxLines=lines.length;
+      }
+      h = Math.max(h, maxLines*lineH);
+    }
+    return h;
+  }
+
+  // build pages: for each column group, paginate rows vertically
+  var pageList = [];     // {cols:[...], rows:[startR..endR], repeatHeader}
+  colGroups.forEach(function(group){
+    var r = 0;
+    var headerRows = (opts.repeatHeader && aoa.length) ? 1 : 0;
+    while(r < aoa.length){
+      var startBody = r;
+      var used = headingH + footerH;
+      var rowsOnPage = [];
+      // always include header row at the top if repeating (and not the very first slice already starting at 0)
+      if(headerRows && startBody!==0){
+        used += rowHeight(0, group);
+      }
+      while(r < aoa.length){
+        var rh = rowHeight(r, group);
+        if(used + rh > availH && rowsOnPage.length>0) break;
+        used += rh; rowsOnPage.push(r); r++;
+      }
+      pageList.push({ cols: group, rows: rowsOnPage, headerAtTop: (headerRows && startBody!==0) });
+    }
+  });
+
+  var totalPages = pageList.length;
+
+  // draw each page to a canvas
+  pageList.forEach(function(pg, pi){
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(pageW*SCALE);
+    cv.height = Math.round(pageH*SCALE);
+    var ctx = cv.getContext('2d');
+    ctx.scale(SCALE, SCALE);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,pageW,pageH);
+    ctx.textBaseline = 'top';
+
+    var y = marginPt;
+    // heading
+    if(opts.sheetName){
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold '+(fontPt*1.3)+'px Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(name, marginPt, y);
+      y += headingH;
+    }
+
+    var group = pg.cols;
+    // x offset for each column in the group
+    var xs = []; var x = marginPt;
+    group.forEach(function(c){ xs.push(x); x += colW[c]; });
+    var tableRight = x;
+
+    // rows to draw: optional repeated header + body rows
+    var drawRows = [];
+    if(pg.headerAtTop) drawRows.push({ r:0, header:true });
+    pg.rows.forEach(function(r){ drawRows.push({ r:r, header:(r===0) }); });
+
+    // merges that apply within this column group (simple handling: draw merged
+    // text once spanning its covered columns, skip covered cells)
+    var covered = {};   // "r,c" covered by a merge origin elsewhere
+    data.merges.forEach(function(m){
+      for(var rr=m.r; rr<m.r+m.rs; rr++){
+        for(var cc=m.c; cc<m.c+m.cs; cc++){
+          if(!(rr===m.r && cc===m.c)) covered[rr+','+cc]=true;
+        }
+      }
+    });
+    function mergeAt(r,c){
+      for(var i=0;i<data.merges.length;i++){
+        var m=data.merges[i];
+        if(m.r===r && m.c===c) return m;
+      }
+      return null;
+    }
+
+    var ry = y;
+    drawRows.forEach(function(dr){
+      var r = dr.r;
+      var rh = rowHeight(r, group);
+      // gridlines + cells
+      for(var k=0;k<group.length;k++){
+        var c = group[k];
+        var cx = xs[k];
+        var cw = colW[c];
+        if(covered[r+','+c]) continue;   // skip a cell hidden under a merge
+        var mg = mergeAt(r,c);
+        var spanW = cw, spanH = rh;
+        if(mg){
+          // width across the covered columns that are present in this group
+          spanW = 0;
+          for(var gg=k; gg<group.length && group[gg] < c+mg.cs; gg++){ spanW += colW[group[gg]]; }
+          spanH = 0;
+          // only single-page vertical span handled; approximate with rh*rs capped
+          spanH = rh; // row-merges drawn as the top row height (kept simple, text still shows)
+        }
+        if(opts.grid){
+          ctx.strokeStyle = '#999999';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(cx, ry, spanW, spanH);
+        }
+        // header shading
+        if(dr.header){
+          ctx.fillStyle = '#eef0f7';
+          ctx.fillRect(cx+0.25, ry+0.25, spanW-0.5, spanH-0.5);
+        }
+        var text = String(aoa[r][c]===undefined?'':aoa[r][c]);
+        if(text===''){ continue; }
+        ctx.fillStyle = '#111111';
+        ctx.font = (dr.header && opts.boldHeader) ? boldFont : normFont;
+        var isNum = numeric[r] && numeric[r][c];
+        var alignRight = opts.rightNum && isNum && !dr.header;
+        var innerW = spanW - pad*2;
+        if(opts.wrap==='wrap' && !mg){
+          var lines = wrapText(ctx, text, innerW);
+          var ty = ry + pad;
+          lines.forEach(function(ln){
+            if(alignRight){ ctx.textAlign='right'; ctx.fillText(ln, cx+spanW-pad, ty); }
+            else { ctx.textAlign='left'; ctx.fillText(ln, cx+pad, ty); }
+            ty += lineH;
+          });
+        } else {
+          var shown = text;
+          if(opts.wrap==='clip'){
+            shown = clipText(ctx, text, innerW);
+          }
+          if(alignRight){ ctx.textAlign='right'; ctx.fillText(shown, cx+spanW-pad, ry+pad); }
+          else { ctx.textAlign='left'; ctx.fillText(shown, cx+pad, ry+pad); }
+        }
+      }
+      ry += rh;
+    });
+
+    // footer page number
+    if(opts.pageNum){
+      ctx.fillStyle = '#555555';
+      ctx.font = (fontPt*0.9)+'px Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Page '+(pi+1)+' of '+totalPages, pageW-marginPt, pageH-marginPt+2);
+    }
+
+    canvases.push({ canvas: cv, wPt: pageW, hPt: pageH });
+  });
+
+  return { canvases: canvases, empty:false, pages: totalPages, landscape: landscape, cols: cols, rows: aoa.length };
+}
+
+function range(a,b){ var o=[]; for(var i=a;i<b;i++) o.push(i); return o; }
+
+function wrapText(ctx, text, maxW){
+  if(maxW<=0) return [text];
+  var words = String(text).split(/\s+/);
+  var lines = [], line = '';
+  for(var i=0;i<words.length;i++){
+    var test = line ? line+' '+words[i] : words[i];
+    if(ctx.measureText(test).width > maxW && line){
+      lines.push(line); line = words[i];
+      // hard-break a single long word
+      while(ctx.measureText(line).width > maxW && line.length>1){
+        var cut = line.length-1;
+        while(cut>1 && ctx.measureText(line.slice(0,cut)).width > maxW) cut--;
+        lines.push(line.slice(0,cut)); line = line.slice(cut);
+      }
+    } else { line = test; }
+  }
+  if(line) lines.push(line);
+  return lines.length?lines:[''];
+}
+
+function clipText(ctx, text, maxW){
+  if(ctx.measureText(text).width <= maxW) return text;
+  var ell='…';
+  var s = text;
+  while(s.length>1 && ctx.measureText(s+ell).width > maxW) s = s.slice(0,-1);
+  return s+ell;
+}
+
+/* ---------- gather options ---------- */
+function gatherOpts(){
+  return {
+    pageSize: val('pageSize'),
+    orientation: val('orientation'),
+    overflow: val('overflow'),
+    wrap: val('wrap'),
+    fontSize: Math.max(5, Math.min(20, num('fontSize',9))),
+    marginMm: Math.max(0, Math.min(40, num('margin',12))),
+    grid: chk('optGrid'),
+    repeatHeader: chk('optHeader'),
+    boldHeader: chk('optBoldHeader'),
+    pageNum: chk('optPageNum'),
+    sheetName: chk('optSheetName'),
+    rightNum: chk('optRightNum')
+  };
+}
+
+/* ---------- preview (first page of first selected sheet) ---------- */
+function scheduleRender(){
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(refreshPreview, 200);
+}
+
+function refreshPreview(){
+  if(!workbook) return;
+  var sel = selectedSheets();
+  var wrap = document.getElementById('previewWrap');
+  var host = document.getElementById('previewHost');
+  var note = document.getElementById('previewNote');
+  if(!sel.length){ wrap.style.display='none'; notify('Tick at least one sheet to convert.','warn'); return; }
+  var opts = gatherOpts();
+  var res = layoutSheet(sel[0], opts);
+  host.innerHTML = '';
+  if(res.empty || !res.canvases.length){
+    wrap.style.display='block';
+    note.textContent = 'Sheet "'+sel[0]+'" is empty.';
+    return;
+  }
+  var first = res.canvases[0];
+  var img = document.createElement('img');
+  img.src = first.canvas.toDataURL('image/png');
+  img.alt = 'First page preview of '+sel[0];
+  img.style.cssText = 'max-width:100%;height:auto;max-height:520px;border:1px solid var(--border);background:#fff';
+  host.appendChild(img);
+  wrap.style.display='block';
+  note.textContent = 'Preview of "'+sel[0]+'" · '+res.rows+' rows × '+res.cols+' columns · '+
+    (res.landscape?'landscape':'portrait')+' '+opts.pageSize+' · this sheet makes '+
+    res.pages+(res.pages===1?' page':' pages')+'. '+
+    (sel.length>1?(sel.length-1)+' more sheet(s) will follow.':'');
+}
+
+/* ---------- build the PDF ---------- */
+async function makePdf(){
+  if(!workbook){ notify('Load a spreadsheet first.','warn'); return; }
+  if(typeof PDFLib==='undefined'){ notify('The PDF library did not load. Check your connection.','error'); return; }
+  var sel = selectedSheets();
+  if(!sel.length){ notify('Tick at least one sheet to convert.','warn'); return; }
+  var opts = gatherOpts();
+  var btn = document.getElementById('goBtn');
+  btn.disabled = true; var label = btn.textContent; btn.textContent = 'Building PDF…';
+  try{
+    var pdfDoc = await PDFLib.PDFDocument.create();
+    var added = 0, skipped = [];
+    for(var s=0;s<sel.length;s++){
+      var res = layoutSheet(sel[s], opts);
+      if(res.empty || !res.canvases.length){ skipped.push(sel[s]); continue; }
+      for(var p=0;p<res.canvases.length;p++){
+        var cvObj = res.canvases[p];
+        var pngUrl = cvObj.canvas.toDataURL('image/png');
+        var pngBytes = dataUrlToBytes(pngUrl);
+        var png = await pdfDoc.embedPng(pngBytes);
+        var page = pdfDoc.addPage([cvObj.wPt, cvObj.hPt]);
+        page.drawImage(png, { x:0, y:0, width:cvObj.wPt, height:cvObj.hPt });
+        added++;
+      }
+    }
+    if(!added){ notify('Every selected sheet is empty, so there is nothing to convert.','warn'); return; }
+    var bytes = await pdfDoc.save();
+    var blob = new Blob([bytes], { type:'application/pdf' });
+    var outName = (sel.length===1)
+      ? baseName+'-'+safe(sel[0])+'.pdf'
+      : baseName+'.pdf';
+    download(blob, outName);
+    notify('PDF ready · '+added+(added===1?' page':' pages')+' · '+formatSize(blob.size)+
+      (skipped.length?' · '+skipped.length+' empty sheet(s) skipped.':''),'ok');
+  }catch(err){
+    notify('Could not build the PDF: '+(err&&err.message?err.message:'unknown error'),'error');
+  }finally{
+    btn.disabled=false; btn.textContent=label;
+  }
+}
+
+function safe(s){ return String(s).replace(/[\\\/:*?"<>|]+/g,'_').trim() || 'sheet'; }
+
+function dataUrlToBytes(url){
+  var b64 = url.split(',')[1];
+  var bin = atob(b64);
+  var arr = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return arr;
+}
+
+/* ---------- wiring ---------- */
+setupDrop('drop','file', function(files){ handleFile(files[0]); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organize PDF — Reorder, Rotate &amp; Delete Pages Online Free | FreeToolHubs</title>
+  <meta name="description" content="Reorder PDF pages by drag and drop, rotate single pages 90°, delete pages with undo, duplicate a page, insert a blank page, and pull pages in from a second PDF. Runs in your browser.">
+  <meta property="og:title" content="Organize PDF — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Reorder, rotate, delete, duplicate and insert PDF pages in your browser — nothing is uploaded.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/pdf-organize">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Organize PDF — FreeToolHubs">
+  <meta name="twitter:description" content="Reorder, rotate, delete, duplicate and insert PDF pages in your browser.">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Organize PDF","url":"https://freetoolhubs.com/tools/pdf-organize","description":"Reorder, rotate, delete, duplicate and insert PDF pages in your browser.","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="organize pdf, reorder pdf pages, rotate pdf pages, delete pdf pages online free, rearrange pdf">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/pdf-organize">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.7rem;margin:1rem 0}
+    .org-card{position:relative;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:.4rem;text-align:center;touch-action:none;user-select:none}
+    .org-card.selected{border-color:var(--accent)}
+    .org-card.dragging{opacity:.4}
+    .org-card.drop-before{box-shadow:-3px 0 0 0 var(--accent)}
+    .org-card.drop-after{box-shadow:3px 0 0 0 var(--accent)}
+    .org-card img,.org-card canvas{width:100%;border-radius:6px;background:#fff;display:block}
+    .org-thumb{min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:.8rem}
+    .org-badge{position:absolute;top:4px;left:4px;background:var(--accent);color:var(--accent-text);border-radius:6px;font-size:.7rem;padding:1px 5px;font-weight:600}
+    .org-tag{position:absolute;top:4px;right:4px;background:var(--surface);color:var(--text2);border-radius:6px;font-size:.62rem;padding:1px 4px}
+    .org-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:.3rem}
+    .org-btns button{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.72rem;cursor:pointer;padding:2px 5px;line-height:1.2}
+    .org-btns button:hover{border-color:var(--accent)}
+    .org-cap{font-size:.72rem;color:var(--text2);margin-top:.25rem}
+  </style>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does dragging to reorder work on a phone?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Reordering is built on pointer events rather than the HTML5 drag-and-drop API, so the same press-and-drag gesture works with a mouse on desktop and a finger on a touch screen. A marker shows whether the page will drop before or after the card you are hovering over. Every card also has ▲ and ▼ buttons that move it one slot, which work by keyboard and are there for accessibility when dragging is not convenient."}}, {"@type": "Question", "name": "If I delete a page by mistake, can I get it back?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Deleting one page, or several selected pages at once, stores them so an \"Undo delete\" button can restore them to their original positions. The button shows how many pages are waiting to be restored. Undo holds the most recent delete; once you make another delete, that becomes the undoable one. You can also select multiple pages (tap to toggle the highlight) and rotate or delete them together."}}, {"@type": "Question", "name": "Can I combine pages from another PDF, add blanks, or duplicate a page?", "acceptedAnswer": {"@type": "Answer", "text": "Yes to all three. \"Add pages from another PDF\" appends every page of a second file to the grid, where you can then drag them anywhere. \"Blank page at end\" inserts an empty page the size of the first page in the document. The duplicate button on each card drops an identical copy right after it. Password-protected or unreadable second files are skipped with a message rather than breaking the batch."}}, {"@type": "Question", "name": "Is the page content kept intact, and what is the saved file called?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — pages are copied with pdf-lib's copyPages, which preserves the original content exactly rather than re-rendering it to an image. Any rotation you applied is added on top of the page's existing rotation, so a page already stored rotated stays correct. Blank pages are added at the chosen size. The result downloads as your-file-organized.pdf, and because everything runs in your browser the PDFs are never uploaded."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🗂️ Organize PDF</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section">
+      <h1>🗂️ Organize PDF</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="25" width="45" height="60" rx="4" fill="none" stroke="#6366f1" stroke-width="3"/><rect x="80" y="25" width="45" height="60" rx="4" fill="none" stroke="#8b5cf6" stroke-width="3"/><rect x="130" y="25" width="45" height="60" rx="4" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M60,95 h20 m-6,-5 l6,5 l-6,5" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M110,95 h20 m-6,-5 l6,5 l-6,5" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <p class="info">Reorder pages by dragging (works with touch), rotate a single page, delete pages (with undo), duplicate a page, insert a blank page, or bring in pages from a second PDF — then download. Everything runs in your browser; nothing is uploaded.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop a PDF here or click to browse<input type="file" id="inp" accept=".pdf"></div>
+      <div id="fileInfo"></div>
+      <div id="toolbar" style="display:none">
+        <div class="row" style="flex-wrap:wrap;gap:6px;margin:.8rem 0;align-items:center">
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="reverseOrder()">↕ Reverse order</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="sortOriginal()">↺ Sort to original</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="selectAll()">Select all</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="clearSelection()">Clear selection</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="rotateSelected()">↻ Rotate selected</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0;border-color:var(--danger);color:var(--danger)" onclick="deleteSelected()">🗑 Delete selected</button>
+        </div>
+        <div class="row" style="flex-wrap:wrap;gap:6px;margin:.4rem 0;align-items:center">
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="insertBlankAtEnd()">＋ Blank page at end</button>
+          <button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="document.getElementById('inp2').click()">📎 Add pages from another PDF<input type="file" id="inp2" accept=".pdf" style="display:none"></button>
+          <span id="undoWrap" style="display:none"><button class="btn btn-outline" style="font-size:.8rem;padding:.35rem .7rem;margin:0" onclick="undoDelete()">↩ Undo delete (<span id="undoCount">0</span>)</button></span>
+        </div>
+        <div id="countInfo" class="info" style="font-weight:600;margin:.4rem 0" aria-live="polite"></div>
+        <div id="grid" class="org-grid"></div>
+        <button class="btn" id="goBtn" style="width:100%" onclick="buildOutput()">Save Organized PDF</button>
+      </div>
+      <div id="status" aria-live="polite" style="margin-top:.6rem"></div>
+      <div id="result"></div>
+    </div>
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>Does dragging to reorder work on a phone?</summary><p>Yes. Reordering is built on pointer events rather than the HTML5 drag-and-drop API, so the same press-and-drag gesture works with a mouse on desktop and a finger on a touch screen. A marker shows whether the page will drop before or after the card you are hovering over. Every card also has ▲ and ▼ buttons that move it one slot, which work by keyboard and are there for accessibility when dragging is not convenient.</p></details>
+<details><summary>If I delete a page by mistake, can I get it back?</summary><p>Yes. Deleting one page, or several selected pages at once, stores them so an &quot;Undo delete&quot; button can restore them to their original positions. The button shows how many pages are waiting to be restored. Undo holds the most recent delete; once you make another delete, that becomes the undoable one. You can also select multiple pages (tap to toggle the highlight) and rotate or delete them together.</p></details>
+<details><summary>Can I combine pages from another PDF, add blanks, or duplicate a page?</summary><p>Yes to all three. &quot;Add pages from another PDF&quot; appends every page of a second file to the grid, where you can then drag them anywhere. &quot;Blank page at end&quot; inserts an empty page the size of the first page in the document. The duplicate button on each card drops an identical copy right after it. Password-protected or unreadable second files are skipped with a message rather than breaking the batch.</p></details>
+<details><summary>Is the page content kept intact, and what is the saved file called?</summary><p>Yes — pages are copied with pdf-lib&#x27;s copyPages, which preserves the original content exactly rather than re-rendering it to an image. Any rotation you applied is added on top of the page&#x27;s existing rotation, so a page already stored rotated stays correct. Blank pages are added at the chosen size. The result downloads as your-file-organized.pdf, and because everything runs in your browser the PDFs are never uploaded.</p></details>
+<!-- tool-faq:end -->
+</div>
+  </div>
+
+  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+<ol style="margin-left:1.5rem;line-height:2">
+<li><strong>Drop your PDF</strong> — thumbnails are rendered in batches so even a long document stays responsive.</li>
+<li><strong>Drag a page</strong> to a new position (hold and drag on touch screens), or use the ▲ ▼ arrows on each card.</li>
+<li><strong>Rotate, delete or duplicate</strong> individual pages with the buttons on each card; deleted pages can be restored with Undo.</li>
+<li><strong>Insert a blank page</strong> or <strong>add pages from a second PDF</strong> if you need to combine documents.</li>
+<li><strong>Click Save Organized PDF</strong> — the new file keeps all page content and downloads as <code>&lt;name&gt;-organized.pdf</code>.</li>
+</ol>
+<h2>Common Use Cases</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li>Fixing a scan where pages came out in the wrong order</li>
+<li>Rotating sideways-scanned pages so they read upright</li>
+<li>Removing blank or duplicate pages from a scanned document</li>
+<li>Inserting a cover or separator page between sections</li>
+<li>Pulling a few pages from one PDF into another without a full merge</li>
+</ul>
+</div>
+<div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Organize PDF lets you rearrange a document page by page without uploading anything. Thumbnails are rendered with pdf.js in small batches so large files do not freeze the tab. You can reorder pages by dragging — implemented with pointer events so it works the same with a mouse or a finger on mobile — or with the up/down arrow buttons on each card for keyboard and accessibility. Each page can be rotated 90° at a time, deleted (with an undo that restores the last removed pages), or duplicated. You can insert a blank page the size of the first page, and add pages from a second PDF that are copied in with their content intact. Whole-document actions include reverse order, sort back to the original order, select all and clear selection. When you save, pages are copied with pdf-lib's copyPages so their content is preserved exactly, any rotation you applied is added on top of the page's existing rotation, and the result downloads as your-file-organized.pdf.</p></div>
+  <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Rearranging a PDF page by page without re-rendering it</h2>
+
+<p>Organize PDF treats a document as a tray of cards you can shuffle, turn, drop or duplicate. It is aimed at the everyday mess of scanned files: pages in the wrong order, a couple turned sideways, a stray blank in the middle, or a cover that belongs in front of everything. Because the work is done with pdf-lib and pdf.js in the browser, the file is never uploaded, and the pages that come out are the original pages — not flattened images.</p>
+
+<h3>Dragging that works with a mouse and a finger</h3>
+
+<p>Reordering uses pointer events rather than the old HTML5 drag-and-drop API. That choice matters: HTML5 dragging simply does not fire on most touch screens, so a mobile user would be stuck. Here the same press-and-move gesture drives reordering on a laptop and a phone alike, and as you move over a card a marker shows whether the dragged page will land before or after it. For keyboard users, or when precise dragging is fiddly, every card also carries ▲ and ▼ buttons that nudge it one position at a time. A small badge on each card shows its current place in the sequence so you always know what position you are editing.</p>
+
+<h3>Deleting safely, and acting on many pages at once</h3>
+
+<p>Tap a card to highlight it; tap again to clear it. With one or more pages selected you can rotate or delete them together, which is far quicker than working card by card. Deletion is reversible: the removed pages are held, and an "Undo delete" button — labelled with how many pages are waiting — puts them back in their original slots. Undo covers the most recent deletion, so delete a batch, check the result, and restore it in one click if it was wrong. Whole-document controls round this out: reverse the entire order, sort everything back to the original order, select all, or clear the selection.</p>
+
+<h3>Adding, duplicating and inserting pages</h3>
+
+<p>Three actions grow the document rather than just rearrange it. The duplicate button on a card drops an identical copy directly after it, handy for repeating a form page. "Blank page at end" inserts an empty page sized to match the first page in the grid, useful as a separator or a signature sheet. "Add pages from another PDF" appends every page of a second file, which then behave like any other card — drag them wherever they belong. A second file that is password-protected or unreadable is skipped with a message, so one bad file never derails the batch. Thumbnails for large documents are rendered in small batches so a long PDF does not freeze the tab while previews catch up.</p>
+
+<h3>What the saved file contains</h3>
+
+<p>Saving copies each page with pdf-lib's copyPages, which preserves the original content exactly. Any rotation you applied in the grid is added on top of the page's existing rotation, so a page already stored rotated ends up correct rather than double-counted. Blank pages are written at their chosen size. The output downloads as <code>your-file-organized.pdf</code>, and the page count shown above the grid is your quick check that the result matches what you arranged.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/pdf-page-numbers" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Add Page Numbers</a><a href="/tools/pdf-merger" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Merger</a><a href="/tools/pdf-splitter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Splitter</a><a href="/tools/pdf-editor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF Editor</a><a href="/tools/pdf-to-image" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">PDF to Image</a><a href="/tools/image-to-pdf" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Image to PDF</a></div></div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-pdf-tools-online-2026">Best Free PDF Tools Online 2026 — No Signup, No Upload</a></li><li><a href="/blog/how-to-merge-pdf-files-online">How to Merge PDFs Without Common Mistakes</a></li><li><a href="/blog/how-to-split-pdf-extract-pages-free">PDF Split Kaise Kare Free — Extract Pages from PDF Online</a></li><li><a href="/blog/how-to-make-pdf-from-phone-photos">How to Make PDF from Phone Photos — Free Guide</a></li></ul></div>
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+        <a href="https://github.com/tiwariankit651" target="_blank" rel="noopener" title="GitHub" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💻</a>
+        <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" title="LinkedIn" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💼</a>
+        <a href="https://twitter.com/the_ank_tiwari" target="_blank" rel="noopener" title="Twitter" style="color:var(--text2);text-decoration:none;font-size:1.2rem">🐦</a>
+        <a href="https://instagram.com/imakt07" target="_blank" rel="noopener" title="Instagram" style="color:var(--text2);text-decoration:none;font-size:1.2rem">📷</a>
+      </div>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+    </div>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous"></script>
+  <script src="../js/common.js"></script>
+  <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var mainFile = null;
+var mainBytes = null;          // ArrayBuffer of the primary PDF
+var pdfjsDoc = null;           // pdf.js doc of the primary PDF (for thumbs)
+var extraDocs = [];            // {bytes, pdfjsDoc} for second PDFs
+/*
+ items[] = ordered list of page descriptors:
+   { uid, src:'main'|extraIndex, srcPage:0-based, rotate:0..270,
+     blank:false, size:{w,h}, thumb:dataURL|null, label:'Page n'|'Blank'|'B: 3' }
+*/
+var items = [];
+var uidSeq = 1;
+var lastDeleted = null;        // {items:[...], note}
+var thumbQueue = [];
+var rendering = false;
+
+setupDrop("drop", "inp", function (f) { loadMain(f[0]); });
+document.getElementById('inp2').addEventListener('change', function () {
+  if (this.files && this.files[0]) addSecondPdf(this.files[0]);
+  this.value = '';
+});
+
+async function loadMain(f) {
+  if (!f) return;
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('status').textContent = '';
+  if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+    document.getElementById('toolbar').style.display = 'none';
+    showFileError('That is not a PDF file. Please choose a .pdf file.');
+    return;
+  }
+  setFileInfo('Loading ' + f.name + '…');
+  try {
+    mainFile = f;
+    mainBytes = await f.arrayBuffer();
+    var probe;
+    try {
+      probe = await PDFLib.PDFDocument.load(mainBytes);
+    } catch (encErr) {
+      if (/encrypt|password/i.test(encErr && encErr.message ? encErr.message : '')) {
+        throw new Error('This PDF is password-protected. Remove the password first, then organize it.');
+      }
+      throw encErr;
+    }
+    var count = probe.getPageCount();
+    pdfjsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(mainBytes.slice(0)) }).promise;
+    items = [];
+    for (var i = 0; i < count; i++) {
+      items.push(makeItem('main', i, 'Page ' + (i + 1)));
+    }
+    extraDocs = [];
+    lastDeleted = null;
+    updateUndo();
+    setFileInfo('Loaded: ' + f.name + ' (' + count + ' page' + (count === 1 ? '' : 's') + ', ' + formatSize(f.size) + ')');
+    document.getElementById('toolbar').style.display = 'block';
+    renderGrid();
+    queueThumbs();
+  } catch (err) {
+    document.getElementById('toolbar').style.display = 'none';
+    showFileError(err.message || 'Could not read that PDF.');
+  }
+}
+
+function makeItem(src, srcPage, label) {
+  return { uid: uidSeq++, src: src, srcPage: srcPage, rotate: 0, blank: false,
+           thumb: null, label: label, selected: false };
+}
+
+async function addSecondPdf(f) {
+  if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+    notify('That is not a PDF file.', 'error'); return;
+  }
+  try {
+    var bytes = await f.arrayBuffer();
+    var probe;
+    try {
+      probe = await PDFLib.PDFDocument.load(bytes);
+    } catch (encErr) {
+      if (/encrypt|password/i.test(encErr && encErr.message ? encErr.message : '')) {
+        notify('That PDF is password-protected and was skipped.', 'error'); return;
+      }
+      notify('That PDF could not be read and was skipped.', 'error'); return;
+    }
+    var count = probe.getPageCount();
+    var pjs = await pdfjsLib.getDocument({ data: new Uint8Array(bytes.slice(0)) }).promise;
+    var idx = extraDocs.length;
+    extraDocs.push({ bytes: bytes, pdfjsDoc: pjs, name: f.name });
+    for (var i = 0; i < count; i++) {
+      items.push(makeItem(idx, i, 'B' + (idx + 1) + ': ' + (i + 1)));
+    }
+    notify('Added ' + count + ' page' + (count === 1 ? '' : 's') + ' from ' + f.name + '.', 'ok');
+    renderGrid();
+    queueThumbs();
+  } catch (err) {
+    notify('Could not add that PDF: ' + (err.message || 'unknown error'), 'error');
+  }
+}
+
+/* ---------- thumbnail rendering (lazy / batched) ---------- */
+function queueThumbs() {
+  thumbQueue = [];
+  for (var i = 0; i < items.length; i++) {
+    if (!items[i].blank && items[i].thumb === null) thumbQueue.push(items[i].uid);
+  }
+  if (!rendering) renderNextBatch();
+}
+
+async function renderNextBatch() {
+  rendering = true;
+  var BATCH = 4;
+  for (var b = 0; b < BATCH && thumbQueue.length; b++) {
+    var uid = thumbQueue.shift();
+    var it = itemByUid(uid);
+    if (!it || it.blank || it.thumb !== null) continue;
+    try {
+      var doc = it.src === 'main' ? pdfjsDoc : (extraDocs[it.src] && extraDocs[it.src].pdfjsDoc);
+      if (!doc) continue;
+      var page = await doc.getPage(it.srcPage + 1);
+      var vp = page.getViewport({ scale: 0.28 });
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(vp.width));
+      canvas.height = Math.max(1, Math.round(vp.height));
+      var ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      it.thumb = canvas.toDataURL('image/jpeg', 0.7);
+      if (!it.size) it.size = { w: vp.width / 0.28, h: vp.height / 0.28 };
+      updateThumbImg(it);
+    } catch (e) { /* leave placeholder */ }
+  }
+  if (thumbQueue.length) {
+    setTimeout(renderNextBatch, 0);
+  } else {
+    rendering = false;
+  }
+}
+
+function updateThumbImg(it) {
+  var card = document.querySelector('.org-card[data-uid="' + it.uid + '"] .org-thumb');
+  if (!card || !it.thumb) return;
+  card.innerHTML = '';
+  var img = document.createElement('img');
+  img.src = it.thumb;
+  img.alt = it.label;
+  img.draggable = false;
+  img.style.transform = 'rotate(' + it.rotate + 'deg)';
+  card.appendChild(img);
+}
+
+function itemByUid(uid) {
+  for (var i = 0; i < items.length; i++) if (items[i].uid === uid) return items[i];
+  return null;
+}
+function indexByUid(uid) {
+  for (var i = 0; i < items.length; i++) if (items[i].uid === uid) return i;
+  return -1;
+}
+
+/* ---------- grid render ---------- */
+function renderGrid() {
+  var grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (var i = 0; i < items.length; i++) {
+    grid.appendChild(buildCard(items[i], i));
+  }
+  updateCount();
+}
+
+function buildCard(it, pos) {
+  var card = document.createElement('div');
+  card.className = 'org-card' + (it.selected ? ' selected' : '');
+  card.setAttribute('data-uid', it.uid);
+  card.setAttribute('role', 'listitem');
+
+  var badge = document.createElement('div');
+  badge.className = 'org-badge';
+  badge.textContent = (pos + 1);
+  card.appendChild(badge);
+
+  if (it.src !== 'main' || it.blank) {
+    var tag = document.createElement('div');
+    tag.className = 'org-tag';
+    tag.textContent = it.blank ? 'blank' : 'added';
+    card.appendChild(tag);
+  }
+
+  var thumb = document.createElement('div');
+  thumb.className = 'org-thumb';
+  if (it.blank) {
+    thumb.textContent = 'Blank page';
+    thumb.style.background = '#fff';
+    thumb.style.color = '#999';
+    thumb.style.minHeight = '150px';
+  } else if (it.thumb) {
+    var img = document.createElement('img');
+    img.src = it.thumb; img.alt = it.label;
+    img.style.transform = 'rotate(' + it.rotate + 'deg)';
+    thumb.appendChild(img);
+  } else {
+    thumb.textContent = 'Rendering…';
+  }
+  card.appendChild(thumb);
+
+  var cap = document.createElement('div');
+  cap.className = 'org-cap';
+  cap.textContent = it.label + (it.rotate ? ' · ' + it.rotate + '°' : '');
+  card.appendChild(cap);
+
+  var btns = document.createElement('div');
+  btns.className = 'org-btns';
+  btns.appendChild(mkBtn('▲', 'Move left/up', function (e) { e.stopPropagation(); moveItem(it.uid, -1); }));
+  btns.appendChild(mkBtn('▼', 'Move right/down', function (e) { e.stopPropagation(); moveItem(it.uid, 1); }));
+  btns.appendChild(mkBtn('↻', 'Rotate 90°', function (e) { e.stopPropagation(); rotateItem(it.uid); }));
+  btns.appendChild(mkBtn('⧉', 'Duplicate', function (e) { e.stopPropagation(); duplicateItem(it.uid); }));
+  btns.appendChild(mkBtn('✕', 'Delete', function (e) { e.stopPropagation(); deleteItem(it.uid); }));
+  card.appendChild(btns);
+
+  // selection toggle on card click (ignores button clicks via stopPropagation)
+  card.addEventListener('click', function () {
+    it.selected = !it.selected;
+    card.classList.toggle('selected', it.selected);
+    updateCount();
+  });
+
+  attachPointerDrag(card);
+  return card;
+}
+
+function mkBtn(label, title, handler) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = label;
+  b.title = title;
+  b.setAttribute('aria-label', title);
+  b.addEventListener('click', handler);
+  return b;
+}
+
+/* ---------- pointer-based drag reorder (works on mouse AND touch) ---------- */
+var drag = null; // {uid, startX, startY, moved, overUid, before}
+
+function attachPointerDrag(card) {
+  card.addEventListener('pointerdown', function (e) {
+    // ignore drags starting on a button
+    if (e.target.closest('button')) return;
+    // stop the browser's native image/text drag, which would fire pointercancel
+    // and kill our reorder gesture.
+    e.preventDefault();
+    var uid = parseInt(card.getAttribute('data-uid'), 10);
+    drag = { uid: uid, startX: e.clientX, startY: e.clientY, moved: false, overUid: null, before: true };
+    try { card.setPointerCapture(e.pointerId); } catch (ignore) {}
+  });
+  card.addEventListener('pointermove', function (e) {
+    if (!drag || drag.uid !== parseInt(card.getAttribute('data-uid'), 10)) return;
+    var dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    if (!drag.moved) {
+      drag.moved = true;
+      card.classList.add('dragging');
+    }
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    var overCard = el && el.closest ? el.closest('.org-card') : null;
+    clearDropMarkers();
+    if (overCard && overCard !== card) {
+      var overUid = parseInt(overCard.getAttribute('data-uid'), 10);
+      var rect = overCard.getBoundingClientRect();
+      var before = (e.clientX < rect.left + rect.width / 2);
+      drag.overUid = overUid; drag.before = before;
+      overCard.classList.add(before ? 'drop-before' : 'drop-after');
+    } else {
+      drag.overUid = null;
+    }
+  });
+  card.addEventListener('pointerup', function (e) {
+    if (!drag || drag.uid !== parseInt(card.getAttribute('data-uid'), 10)) return;
+    card.classList.remove('dragging');
+    clearDropMarkers();
+    if (drag.moved && drag.overUid != null) {
+      reorderTo(drag.uid, drag.overUid, drag.before);
+    } else if (!drag.moved) {
+      // treat as a plain click → selection toggle handled by click listener
+    }
+    try { card.releasePointerCapture(e.pointerId); } catch (ignore) {}
+    drag = null;
+  });
+  card.addEventListener('pointercancel', function () {
+    card.classList.remove('dragging');
+    clearDropMarkers();
+    drag = null;
+  });
+}
+
+function clearDropMarkers() {
+  document.querySelectorAll('.org-card').forEach(function (c) {
+    c.classList.remove('drop-before', 'drop-after');
+  });
+}
+
+function reorderTo(uid, targetUid, before) {
+  var from = indexByUid(uid);
+  if (from < 0) return;
+  var moved = items.splice(from, 1)[0];
+  var t = indexByUid(targetUid);
+  if (t < 0) { items.splice(from, 0, moved); return; }
+  var insertAt = before ? t : t + 1;
+  items.splice(insertAt, 0, moved);
+  renderGrid();
+}
+
+/* ---------- per-page actions ---------- */
+function moveItem(uid, dir) {
+  var i = indexByUid(uid);
+  var j = i + dir;
+  if (i < 0 || j < 0 || j >= items.length) return;
+  var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+  renderGrid();
+}
+function rotateItem(uid) {
+  var it = itemByUid(uid);
+  if (!it) return;
+  it.rotate = (it.rotate + 90) % 360;
+  renderGrid();
+}
+function duplicateItem(uid) {
+  var i = indexByUid(uid);
+  if (i < 0) return;
+  var src = items[i];
+  var copy = makeItem(src.src, src.srcPage, src.label + ' (copy)');
+  copy.rotate = src.rotate; copy.blank = src.blank; copy.thumb = src.thumb; copy.size = src.size;
+  items.splice(i + 1, 0, copy);
+  renderGrid();
+  if (copy.thumb === null && !copy.blank) queueThumbs();
+}
+function deleteItem(uid) {
+  var i = indexByUid(uid);
+  if (i < 0) return;
+  lastDeleted = { entries: [{ item: items[i], index: i }] };
+  items.splice(i, 1);
+  updateUndo();
+  renderGrid();
+}
+
+/* ---------- whole-document & selection actions ---------- */
+function selectedItems() { return items.filter(function (it) { return it.selected; }); }
+function selectAll() { items.forEach(function (it) { it.selected = true; }); renderGrid(); }
+function clearSelection() { items.forEach(function (it) { it.selected = false; }); renderGrid(); }
+function rotateSelected() {
+  var sel = selectedItems();
+  if (!sel.length) { notify('Select one or more pages first.', 'warn'); return; }
+  sel.forEach(function (it) { it.rotate = (it.rotate + 90) % 360; });
+  renderGrid();
+}
+function deleteSelected() {
+  var entries = [];
+  for (var i = items.length - 1; i >= 0; i--) {
+    if (items[i].selected) { entries.push({ item: items[i], index: i }); }
+  }
+  if (!entries.length) { notify('Select one or more pages first.', 'warn'); return; }
+  entries.sort(function (a, b) { return a.index - b.index; });
+  lastDeleted = { entries: entries };
+  // remove from highest index first
+  entries.slice().reverse().forEach(function (e) { items.splice(e.index, 1); });
+  updateUndo();
+  renderGrid();
+}
+function undoDelete() {
+  if (!lastDeleted || !lastDeleted.entries.length) return;
+  // reinsert in ascending index order
+  lastDeleted.entries.forEach(function (e) {
+    var at = Math.min(e.index, items.length);
+    e.item.selected = false;
+    items.splice(at, 0, e.item);
+  });
+  lastDeleted = null;
+  updateUndo();
+  renderGrid();
+}
+function reverseOrder() { items.reverse(); renderGrid(); }
+function sortOriginal() {
+  // original order = main pages in source order first, then added docs, blanks keep relative order.
+  items.sort(function (a, b) {
+    var ra = rankOf(a), rb = rankOf(b);
+    if (ra[0] !== rb[0]) return ra[0] - rb[0];
+    return ra[1] - rb[1];
+  });
+  renderGrid();
+}
+function rankOf(it) {
+  if (it.blank) return [2, it.uid];
+  if (it.src === 'main') return [0, it.srcPage];
+  return [1, it.src * 100000 + it.srcPage];
+}
+function insertBlankAtEnd() {
+  var b = makeItem('main', -1, 'Blank');
+  b.blank = true;
+  // blank page uses the size of the first real page, or A4 default
+  var first = items.find(function (x) { return x.size; });
+  b.size = first && first.size ? { w: first.size.w, h: first.size.h } : { w: 595.28, h: 841.89 };
+  items.push(b);
+  renderGrid();
+}
+
+function updateUndo() {
+  var wrap = document.getElementById('undoWrap');
+  var n = lastDeleted ? lastDeleted.entries.length : 0;
+  document.getElementById('undoCount').textContent = n;
+  wrap.style.display = n ? 'inline' : 'none';
+}
+function updateCount() {
+  var sel = selectedItems().length;
+  document.getElementById('countInfo').textContent =
+    items.length + ' page' + (items.length === 1 ? '' : 's') +
+    (sel ? ' · ' + sel + ' selected' : '');
+}
+
+/* ---------- build & save ---------- */
+async function buildOutput() {
+  if (!items.length) { notify('Nothing to save — add at least one page.', 'warn'); return; }
+  var btn = document.getElementById('goBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  document.getElementById('status').textContent = 'Building your PDF…';
+  try {
+    var out = await PDFLib.PDFDocument.create();
+    // cache loaded source docs
+    var srcCache = {};
+    async function srcDoc(key) {
+      if (srcCache[key]) return srcCache[key];
+      var bytes = key === 'main' ? mainBytes : extraDocs[key].bytes;
+      var d = await PDFLib.PDFDocument.load(bytes.slice(0));
+      srcCache[key] = d;
+      return d;
+    }
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.blank) {
+        var sz = it.size || { w: 595.28, h: 841.89 };
+        out.addPage([sz.w, sz.h]);
+        continue;
+      }
+      var d = await srcDoc(it.src);
+      var copied = await out.copyPages(d, [it.srcPage]);
+      var pg = copied[0];
+      if (it.rotate) {
+        var cur = pg.getRotation().angle || 0;
+        pg.setRotation(PDFLib.degrees((cur + it.rotate) % 360));
+      }
+      out.addPage(pg);
+    }
+    var bytes = await out.save();
+    var blob = new Blob([bytes], { type: 'application/pdf' });
+    var base = (mainFile ? mainFile.name : 'document').replace(/\.pdf$/i, '');
+    download(blob, base + '-organized.pdf');
+    document.getElementById('status').textContent = '';
+    document.getElementById('result').innerHTML =
+      '<p class="info" style="color:var(--ok)">✅ Saved ' + items.length + ' page' +
+      (items.length === 1 ? '' : 's') + ' · ' + formatSize(bytes.length) + '</p>';
+  } catch (err) {
+    document.getElementById('status').textContent = '';
+    var p = document.createElement('p');
+    p.style.color = 'var(--danger)';
+    p.textContent = '❌ ' + (err.message || 'Something went wrong while saving.');
+    var r = document.getElementById('result'); r.innerHTML = ''; r.appendChild(p);
+  }
+  btn.disabled = false; btn.textContent = 'Save Organized PDF';
+}
+
+/* ---------- small DOM helpers ---------- */
+function setFileInfo(text) {
+  var fi = document.getElementById('fileInfo');
+  fi.innerHTML = '';
+  var p = document.createElement('p'); p.className = 'info'; p.textContent = text;
+  fi.appendChild(p);
+}
+function showFileError(text) {
+  var fi = document.getElementById('fileInfo');
+  fi.innerHTML = '';
+  var p = document.createElement('p'); p.style.color = 'var(--danger)'; p.textContent = '❌ ' + text;
+  fi.appendChild(p);
+}
+</script>
+</body>
+</html>

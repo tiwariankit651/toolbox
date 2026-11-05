@@ -1,0 +1,19 @@
+<h2>Getting page numbers exactly where you want them</h2>
+
+<p>Adding page numbers sounds trivial until the first page is a cover, the document continues from an earlier file, or half the pages were scanned sideways. This tool is built around those awkward cases: you choose the corner, the wording, where the count starts and which pages get touched, and a live preview confirms the result before you commit. Everything happens in your browser through pdf-lib, so the PDF is never uploaded.</p>
+
+<h3>Start number versus the range of pages to number</h3>
+
+<p>Two settings are easy to confuse, so it helps to treat them separately. The "Pages to number" box decides <em>which</em> pages receive a stamp — <code>all</code>, a range such as <code>3-10</code>, or a comma list like <code>1,4,6</code>. The "Start number" decides what the first stamped page is <em>labelled</em>. If a report begins with two unnumbered front pages, set the range to <code>3-10</code> and the start to 1, and page three reads "1". For a volume that continues from another document, leave the range on <code>all</code> and set the start to, say, 24. The "Skip first page (cover)" checkbox is a shortcut that drops page one from the numbered set regardless of the range, which is the common title-page case.</p>
+
+<h3>Choosing a format that counts correctly</h3>
+
+<p>Five formats are offered: a plain <code>1</code>, <code>Page 1</code>, <code>1 of N</code>, <code>Page 1 of N</code>, and <code>- 1 -</code>. The two "of N" variants are worth understanding, because N is the number of pages actually being numbered, not the raw page count of the file. Number pages 3 to 10 and the last one shows "8 of 8", because eight pages were stamped. This keeps the totals honest when you deliberately leave some pages unnumbered. Position, font size in points, margin from the edge, and colour are all independent, so a discreet grey "1" in the bottom-right and a bold "Page 1 of 20" centred at the top are both a few clicks away.</p>
+
+<h3>Why rotated and mixed-size pages still work</h3>
+
+<p>A PDF can mix A4, Letter and landscape pages in one file, and individual pages can carry a <code>/Rotate</code> flag that turns them when displayed. The tool measures every page on its own and, for a rotated page, computes where your chosen corner sits in the <em>visual</em> orientation the reader sees, then maps that point back into the page's real coordinate space and pre-rotates the text so it reads upright. In practice that means a page stored portrait but rotated 90° for viewing still gets its number in the visual bottom-right, the right way up — not stranded in the unrotated corner.</p>
+
+<h3>Preview, then download</h3>
+
+<p>Before anything is written, a pdf.js preview renders page one and, if different, the first page that will actually be numbered, with the label drawn on top where it will land. Adjusting any setting re-renders it. When you are happy, the tool embeds the standard Helvetica font, stamps each page in the numbered set, and saves the file as <code>your-file-numbered.pdf</code>. If the PDF is password-protected, pdf-lib cannot open it and the tool says so plainly rather than failing silently — remove the password first, then number it.</p>

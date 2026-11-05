@@ -1,0 +1,19 @@
+<h2>Cropping in original pixels, and why the preview is only a guide</h2>
+
+<p>Almost every browser-based cropper has the same quiet problem: the box you draw lives on a picture that has been shrunk to fit your screen. If the tool crops that on-screen picture, a 4000-pixel photo cropped on a 900-pixel preview throws away three-quarters of the detail before you even press the button. This tool avoids that entirely. The decoded image is held at full resolution, the box is translated back into the original pixel grid, and the crop is cut from the real file — so the X, Y, W and H numbers you see are the true dimensions of what you will get.</p>
+
+<h3>Reading and typing the pixel boxes</h3>
+
+<p>The four fields — X, Y, W, H — are the top-left corner and the size of the crop in original pixels. They are two-way: drag the box and the numbers update; type a number and the box jumps to match. This matters when a form is specific, for example "upload a 350×350 photo". Type 350 into W, and if an aspect ratio is locked the H fills in to keep the proportions. For a free crop you can set all four by hand and position the region to the pixel. The status line below always restates the region size against the full image size so you can sanity-check before downloading.</p>
+
+<h3>Aspect ratios and the passport case</h3>
+
+<p>The preset buttons lock the box to a shape: 1:1 for a square profile picture, 16:9 and 9:16 for banners and stories, 3:2 for classic photo proportions, and 35×45 for the passport ratio used by many ID forms. With a ratio locked, every handle keeps the shape — drag a corner and both sides move together. The custom ratio field takes any two numbers, so a form asking for an unusual proportion is still one entry away. Note a ratio fixes the <em>shape</em>, not the pixel count; combine it with the W field, or follow up in the Image Resizer, when a form also dictates an exact size.</p>
+
+<h3>Why phone photos stay upright</h3>
+
+<p>Pictures from a phone are usually stored in landscape with an EXIF orientation tag telling the viewer to rotate them. A cropper that ignores the tag reads the pixels sideways, and you end up selecting the wrong part of the image. Here the file is decoded with createImageBitmap using <code>imageOrientation: 'from-image'</code>, which bakes the rotation into the pixels before anything is drawn, with a fallback to the browser's native orientation for older environments. The upshot is that a portrait selfie behaves like a portrait, and the region you select is the region that comes out.</p>
+
+<h3>Keyboard nudging and the rule-of-thirds grid</h3>
+
+<p>Once the box is roughly placed, the arrow keys move it one pixel at a time, or ten pixels with Shift held — far more precise than dragging on a small screen. The faint grid dividing the box into thirds is the photographer's rule of thirds: placing a subject or horizon on those lines usually composes better than dead centre. When you are happy, pick a format — keep the original, or convert to JPG, PNG or WebP — and the re-encode also strips EXIF and GPS data from the saved file.</p>

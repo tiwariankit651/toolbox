@@ -1,0 +1,19 @@
+<h2>Rearranging a PDF page by page without re-rendering it</h2>
+
+<p>Organize PDF treats a document as a tray of cards you can shuffle, turn, drop or duplicate. It is aimed at the everyday mess of scanned files: pages in the wrong order, a couple turned sideways, a stray blank in the middle, or a cover that belongs in front of everything. Because the work is done with pdf-lib and pdf.js in the browser, the file is never uploaded, and the pages that come out are the original pages — not flattened images.</p>
+
+<h3>Dragging that works with a mouse and a finger</h3>
+
+<p>Reordering uses pointer events rather than the old HTML5 drag-and-drop API. That choice matters: HTML5 dragging simply does not fire on most touch screens, so a mobile user would be stuck. Here the same press-and-move gesture drives reordering on a laptop and a phone alike, and as you move over a card a marker shows whether the dragged page will land before or after it. For keyboard users, or when precise dragging is fiddly, every card also carries ▲ and ▼ buttons that nudge it one position at a time. A small badge on each card shows its current place in the sequence so you always know what position you are editing.</p>
+
+<h3>Deleting safely, and acting on many pages at once</h3>
+
+<p>Tap a card to highlight it; tap again to clear it. With one or more pages selected you can rotate or delete them together, which is far quicker than working card by card. Deletion is reversible: the removed pages are held, and an "Undo delete" button — labelled with how many pages are waiting — puts them back in their original slots. Undo covers the most recent deletion, so delete a batch, check the result, and restore it in one click if it was wrong. Whole-document controls round this out: reverse the entire order, sort everything back to the original order, select all, or clear the selection.</p>
+
+<h3>Adding, duplicating and inserting pages</h3>
+
+<p>Three actions grow the document rather than just rearrange it. The duplicate button on a card drops an identical copy directly after it, handy for repeating a form page. "Blank page at end" inserts an empty page sized to match the first page in the grid, useful as a separator or a signature sheet. "Add pages from another PDF" appends every page of a second file, which then behave like any other card — drag them wherever they belong. A second file that is password-protected or unreadable is skipped with a message, so one bad file never derails the batch. Thumbnails for large documents are rendered in small batches so a long PDF does not freeze the tab while previews catch up.</p>
+
+<h3>What the saved file contains</h3>
+
+<p>Saving copies each page with pdf-lib's copyPages, which preserves the original content exactly. Any rotation you applied in the grid is added on top of the page's existing rotation, so a page already stored rotated ends up correct rather than double-counted. Blank pages are written at their chosen size. The output downloads as <code>your-file-organized.pdf</code>, and the page count shown above the grid is your quick check that the result matches what you arranged.</p>

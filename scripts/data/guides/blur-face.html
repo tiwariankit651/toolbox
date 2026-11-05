@@ -1,0 +1,19 @@
+<h2>Hiding a detail so it stays hidden</h2>
+
+<p>The trap with blurring sensitive parts of a photo is that a weak blur is not the same as removing information. A gentle blur spreads each pixel into its neighbours, but the underlying values are still there in a recoverable form — researchers have repeatedly shown that lightly blurred or naively pixelated text can be reconstructed. If the thing you are hiding is a face among strangers, a soft blur is usually fine. If it is a name, an account number, a one-time code or a car number plate, "usually fine" is not good enough. This tool is built around that distinction.</p>
+
+<h3>How the blur is made irreversible</h3>
+
+<p>When you choose Blur, the selected region is not simply smeared in place. It is drawn into a tiny off-screen canvas — a few pixels across, with the exact size driven by the strength slider — and then scaled back up to fill the region, with a light smoothing pass so the edges are not blocky. Shrinking to a handful of pixels physically discards the detail; enlarging cannot invent back what was thrown away. The result looks like a smooth blur but behaves like a deletion. Turn the strength up for small or text-like content, where even a destroyed-but-large region can leave a readable silhouette.</p>
+
+<h3>Pixelate and solid box, and when to prefer them</h3>
+
+<p>Pixelate replaces the region with a mosaic whose block size you control; bigger blocks mean fewer, coarser squares and less recoverable structure. It reads clearly as "this was censored", which is sometimes exactly the signal you want. The Solid box paints a flat colour over the region and removes the content outright — no gradient, no residual edges, nothing to reconstruct. For anything where the cost of a leak is real — IDs, signatures, financial details — the solid box is the honest choice, and the on-page notice says so rather than overselling the blur.</p>
+
+<h3>Manual regions and optional face detection</h3>
+
+<p>You draw regions by dragging on the image; each can be a rectangle or an ellipse, and an ellipse frames a face more tightly than a box. Regions stack, Undo removes the last, and Clear removes them all, all working with touch as well as mouse. Pressing "Detect faces" loads Google's MediaPipe BlazeFace short-range model on demand — it is never fetched unless you ask — and turns each detected face into a normal, editable region. The short-range model is tuned for faces within about two metres, so it can miss small, distant or side-turned faces; treat it as a first pass and check every face by eye. If the model cannot load, the tool tells you and manual mode carries on unaffected.</p>
+
+<h3>What the saved file does and doesn't carry</h3>
+
+<p>Exporting rebuilds the image on a canvas and re-encodes it, which strips EXIF metadata — including GPS coordinates, camera model and timestamp — so the file you share does not quietly reveal where or when the photo was taken. That is a second, separate privacy win on top of hiding the visible detail. You can keep the original format or save as JPG, PNG or WebP, and the whole process, detection included, runs on your device with nothing uploaded.</p>

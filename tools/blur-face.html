@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blur Face / Hide Details in Photo — Free Online | FreeToolHubs</title>
+  <meta name="description" content="Blur, pixelate or black out faces and sensitive details in a photo. Draw regions by hand or auto-detect faces with MediaPipe. Strong irreversible blur, strips EXIF/GPS. Nothing uploaded.">
+  <meta property="og:title" content="Blur Face / Hide Details in Photo — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Hide faces, number plates, names and screenshots — blur, pixelate or solid box, with optional face detection, in your browser">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/blur-face">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Blur Face / Hide Details — FreeToolHubs">
+  <meta name="twitter:description" content="Hide faces and sensitive details in a photo, in your browser">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Blur Face / Hide Details in Photo","url":"https://freetoolhubs.com/tools/blur-face","description":"Blur, pixelate or black out faces and sensitive details in a photo online for free","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="blur face online, hide face in photo, pixelate image, blur number plate, redact screenshot, censor photo free">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/blur-face">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    .bf-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.6rem 0}
+    .bf-row label{font-weight:600;font-size:.88rem}
+    .bf-btns{display:flex;flex-wrap:wrap;gap:6px;margin:.5rem 0}
+    .bf-btns button{font-size:.82rem}
+    .bf-btns button.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+    #bfStageWrap{text-align:center;margin:1rem 0;position:relative;display:inline-block;max-width:100%}
+    #bfCanvas{max-width:100%;border-radius:8px;border:1px solid var(--border);touch-action:none;cursor:crosshair}
+    #bfHint{font-size:.78rem;color:var(--text2);text-align:center;margin:.3rem 0}
+    .bf-warn{background:var(--surface);border:1px solid var(--warn);border-radius:10px;padding:.7rem .9rem;margin:.6rem 0;font-size:.85rem}
+    .bf-regions{font-size:.82rem;color:var(--text2);margin:.3rem 0}
+  </style>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is the blur strong enough that it can't be undone?", "acceptedAnswer": {"@type": "Answer", "text": "The blur is deliberately destructive: the region is shrunk to a few pixels, then enlarged again with a light smoothing pass. Because the original pixels are thrown away at the downscale step, sharpening cannot bring the detail back — unlike a mild CSS-style blur that merely spreads pixels and can sometimes be reversed. That said, a light blur over small text can still occasionally be read, so for names, number plates or OTPs use a high blur strength, a large pixel block, or the solid box, which removes the content entirely."}}, {"@type": "Question", "name": "How does the automatic face detection work, and what can it miss?", "acceptedAnswer": {"@type": "Answer", "text": "Pressing 'Detect faces' loads Google's MediaPipe Tasks Vision BlazeFace short-range model (about a few MB, Apache-2.0) only at that moment — it isn't downloaded unless you ask for it. Each detected face becomes an ordinary region you can resize, move past or delete. The short-range model is tuned for faces within roughly two metres of the camera, so it may miss small, distant or side-on faces. Always check the result before sharing. If the model fails to load, the tool says so and manual drawing keeps working."}}, {"@type": "Question", "name": "What's the difference between blur, pixelate and solid box?", "acceptedAnswer": {"@type": "Answer", "text": "Blur softens the region into an unreadable smear (via the downscale-and-enlarge method above) and looks the most natural. Pixelate replaces it with a mosaic of large blocks whose size you set — recognisable as censoring and hard to reverse. Solid box paints a flat colour over the region, removing the content completely; it's the safest for text and IDs. Each region can also be a rectangle or an ellipse, which suits faces better."}}, {"@type": "Question", "name": "Does saving the photo remove the location and camera data too?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The image is rebuilt on a canvas and re-encoded, which drops EXIF metadata including GPS coordinates, camera model and timestamp — so the saved file doesn't leak where or when the photo was taken. You can keep the original format or export JPG, PNG or WebP. Nothing is uploaded; the photo, the regions and the face detection all run on your device."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🙈 Blur Face / Hide Details</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section"><h1>🙈 Blur Face / Hide Details in Photo</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="15" width="140" height="90" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><circle cx="80" cy="55" r="22" fill="#8b5cf6" opacity=".4"/><rect x="60" y="38" width="40" height="34" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="5 3"/></svg></div>
+      <p class="info">Draw boxes over faces, names, number plates or anything private, then blur, pixelate or black them out. Optional automatic face detection. Everything runs in your browser — the photo is never uploaded.</p>
+      <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop an image here — JPG, PNG, WebP, GIF, BMP and iPhone HEIC<input type="file" id="inp" accept="image/*,.heic,.heif,image/heic,image/heif"></div>
+
+      <div id="editor" style="display:none">
+        <div class="bf-btns">
+          <label style="font-weight:600;font-size:.88rem;align-self:center">Effect:</label>
+          <button type="button" class="btn btn-outline active" data-fx="blur" onclick="setEffect('blur')">Blur</button>
+          <button type="button" class="btn btn-outline" data-fx="pixelate" onclick="setEffect('pixelate')">Pixelate</button>
+          <button type="button" class="btn btn-outline" data-fx="solid" onclick="setEffect('solid')">Solid box</button>
+        </div>
+        <div class="bf-row">
+          <label style="align-self:center">Shape:</label>
+          <button type="button" class="btn btn-outline active" id="shapeRect" onclick="setShape('rect')" style="font-size:.82rem">▭ Rectangle</button>
+          <button type="button" class="btn btn-outline" id="shapeEllipse" onclick="setShape('ellipse')" style="font-size:.82rem">⬭ Ellipse</button>
+        </div>
+        <div class="bf-row" id="rowBlur"><label>Blur strength: <strong id="blurVal">14</strong></label><input type="range" id="blur" min="4" max="40" value="14" style="flex:1;min-width:140px"></div>
+        <div class="bf-row" id="rowPixel" style="display:none"><label>Pixel block: <strong id="pixelVal">16</strong></label><input type="range" id="pixel" min="6" max="48" value="16" style="flex:1;min-width:140px"></div>
+        <div class="bf-row" id="rowSolid" style="display:none"><label>Box colour:</label><input type="color" id="solidColor" value="#000000"></div>
+
+        <div class="bf-btns">
+          <button type="button" class="btn btn-outline" id="detectBtn" onclick="detectFaces()">🙂 Detect faces (auto)</button>
+          <button type="button" class="btn btn-outline" onclick="undoRegion()">↶ Undo</button>
+          <button type="button" class="btn btn-outline" onclick="clearRegions()">🗑️ Clear all</button>
+        </div>
+        <p class="bf-regions" id="regionCount" aria-live="polite">0 regions. Drag on the image to add one.</p>
+
+        <div style="text-align:center">
+          <div id="bfStageWrap"><canvas id="bfCanvas" aria-label="Image with hide regions"></canvas></div>
+          <div id="bfHint">Drag to draw a box. Tap/click inside a box then "Undo" removes the last one. Touch works.</div>
+        </div>
+
+        <div class="bf-warn" id="reversibleNote">
+          <strong>About how strong the hiding is:</strong> Blur is applied on a <em>downscaled</em> copy of the region and scaled back up, which destroys the original pixels so the result is not reversible by sharpening. Even so, a <em>light</em> blur over small text can sometimes still be read — for text, names or plates prefer a higher blur strength, a large pixel block, or the solid box. The solid box removes the content completely.
+        </div>
+
+        <div class="bf-row">
+          <label>Output format:
+            <select id="fmt" style="padding:.4rem;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text)">
+              <option value="keep">Keep original</option>
+              <option value="image/jpeg">JPG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+            </select>
+          </label>
+          <label id="qualityWrap">Quality <strong id="qVal">0.92</strong>
+            <input type="range" id="quality" min="40" max="100" value="92" style="vertical-align:middle">
+          </label>
+        </div>
+
+        <button class="btn" id="goBtn" onclick="exportImage()">Apply &amp; Download</button>
+        <div id="result" class="preview-area"></div>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+      <ol style="margin-left:1.5rem;line-height:2">
+        <li><strong>Upload</strong> a photo — drag and drop or tap. iPhone HEIC files are decoded in your browser.</li>
+        <li><strong>Choose an effect</strong> — blur, pixelate, or a solid box — and a shape, rectangle or ellipse.</li>
+        <li><strong>Drag a box</strong> over each face or detail you want to hide. Add as many regions as you like; each is drawn live.</li>
+        <li><strong>Or press "Detect faces"</strong> to load the face detector and add a region over every face it finds. Always check the result — it can miss small or turned faces.</li>
+        <li><strong>Undo</strong> the last region or clear all, tune the strength, then <strong>Apply &amp; Download</strong>. The export strips EXIF and GPS metadata.</li>
+      </ol>
+      <h2>Common Use Cases</h2>
+      <ul style="margin-left:1.5rem;line-height:2">
+        <li>Hiding bystanders' faces before posting a photo publicly</li>
+        <li>Blurring a car number plate or a house number</li>
+        <li>Redacting a name, address, account number or OTP in a screenshot</li>
+        <li>Censoring a signature or ID detail before sharing a document photo</li>
+        <li>Protecting children's faces in shared family or school pictures</li>
+      </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>Hide faces and sensitive details in a photo without any upload. Draw rectangular or elliptical regions over whatever should be concealed, then choose how to hide it: a strong Gaussian-style blur, a pixelation (mosaic) effect with an adjustable block size, or a solid colour box. The blur is deliberately destructive — the region is shrunk to a few pixels, blurred, and enlarged again, so the original detail is gone rather than merely smeared, which matters because a weak blur can sometimes be reversed or read. Optional automatic face detection uses Google's MediaPipe Tasks Vision BlazeFace short-range model, loaded only when you press the button; detected faces become ordinary editable regions you can move past or delete. The short-range model is tuned for faces within roughly two metres of the camera, so it may miss small, distant or side-on faces — always check before sharing. The canvas re-encode strips EXIF and GPS metadata from the saved file.</p></div>
+
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>Is the blur strong enough that it can&#x27;t be undone?</summary><p>The blur is deliberately destructive: the region is shrunk to a few pixels, then enlarged again with a light smoothing pass. Because the original pixels are thrown away at the downscale step, sharpening cannot bring the detail back — unlike a mild CSS-style blur that merely spreads pixels and can sometimes be reversed. That said, a light blur over small text can still occasionally be read, so for names, number plates or OTPs use a high blur strength, a large pixel block, or the solid box, which removes the content entirely.</p></details>
+<details><summary>How does the automatic face detection work, and what can it miss?</summary><p>Pressing &#x27;Detect faces&#x27; loads Google&#x27;s MediaPipe Tasks Vision BlazeFace short-range model (about a few MB, Apache-2.0) only at that moment — it isn&#x27;t downloaded unless you ask for it. Each detected face becomes an ordinary region you can resize, move past or delete. The short-range model is tuned for faces within roughly two metres of the camera, so it may miss small, distant or side-on faces. Always check the result before sharing. If the model fails to load, the tool says so and manual drawing keeps working.</p></details>
+<details><summary>What&#x27;s the difference between blur, pixelate and solid box?</summary><p>Blur softens the region into an unreadable smear (via the downscale-and-enlarge method above) and looks the most natural. Pixelate replaces it with a mosaic of large blocks whose size you set — recognisable as censoring and hard to reverse. Solid box paints a flat colour over the region, removing the content completely; it&#x27;s the safest for text and IDs. Each region can also be a rectangle or an ellipse, which suits faces better.</p></details>
+<details><summary>Does saving the photo remove the location and camera data too?</summary><p>Yes. The image is rebuilt on a canvas and re-encoded, which drops EXIF metadata including GPS coordinates, camera model and timestamp — so the saved file doesn&#x27;t leak where or when the photo was taken. You can keep the original format or export JPG, PNG or WebP. Nothing is uploaded; the photo, the regions and the face detection all run on your device.</p></details>
+<!-- tool-faq:end -->
+</div>
+
+    <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Hiding a detail so it stays hidden</h2>
+
+<p>The trap with blurring sensitive parts of a photo is that a weak blur is not the same as removing information. A gentle blur spreads each pixel into its neighbours, but the underlying values are still there in a recoverable form — researchers have repeatedly shown that lightly blurred or naively pixelated text can be reconstructed. If the thing you are hiding is a face among strangers, a soft blur is usually fine. If it is a name, an account number, a one-time code or a car number plate, "usually fine" is not good enough. This tool is built around that distinction.</p>
+
+<h3>How the blur is made irreversible</h3>
+
+<p>When you choose Blur, the selected region is not simply smeared in place. It is drawn into a tiny off-screen canvas — a few pixels across, with the exact size driven by the strength slider — and then scaled back up to fill the region, with a light smoothing pass so the edges are not blocky. Shrinking to a handful of pixels physically discards the detail; enlarging cannot invent back what was thrown away. The result looks like a smooth blur but behaves like a deletion. Turn the strength up for small or text-like content, where even a destroyed-but-large region can leave a readable silhouette.</p>
+
+<h3>Pixelate and solid box, and when to prefer them</h3>
+
+<p>Pixelate replaces the region with a mosaic whose block size you control; bigger blocks mean fewer, coarser squares and less recoverable structure. It reads clearly as "this was censored", which is sometimes exactly the signal you want. The Solid box paints a flat colour over the region and removes the content outright — no gradient, no residual edges, nothing to reconstruct. For anything where the cost of a leak is real — IDs, signatures, financial details — the solid box is the honest choice, and the on-page notice says so rather than overselling the blur.</p>
+
+<h3>Manual regions and optional face detection</h3>
+
+<p>You draw regions by dragging on the image; each can be a rectangle or an ellipse, and an ellipse frames a face more tightly than a box. Regions stack, Undo removes the last, and Clear removes them all, all working with touch as well as mouse. Pressing "Detect faces" loads Google's MediaPipe BlazeFace short-range model on demand — it is never fetched unless you ask — and turns each detected face into a normal, editable region. The short-range model is tuned for faces within about two metres, so it can miss small, distant or side-turned faces; treat it as a first pass and check every face by eye. If the model cannot load, the tool tells you and manual mode carries on unaffected.</p>
+
+<h3>What the saved file does and doesn't carry</h3>
+
+<p>Exporting rebuilds the image on a canvas and re-encodes it, which strips EXIF metadata — including GPS coordinates, camera model and timestamp — so the file you share does not quietly reveal where or when the photo was taken. That is a second, separate privacy win on top of hiding the visible detail. You can keep the original format or save as JPG, PNG or WebP, and the whole process, detection included, runs on your device with nothing uploaded.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/exif-remover" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">EXIF Remover</a><a href="/tools/crop-image" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Crop Image</a><a href="/tools/watermark" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Watermark Adder</a><a href="/tools/image-compressor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Image Compressor</a><a href="/tools/image-converter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Image Converter</a><a href="/tools/background-remover" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Background Remover</a></div></div>
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/screenshot-mein-sensitive-info-kaise-hide-kare">Screenshot Mein Sensitive Info Kaise Hide Kare — Complete Guide</a></li><li><a href="/blog/remove-exif-metadata-from-photos">Remove EXIF Metadata from Photos</a></li><li><a href="/blog/complete-guide-image-editing-tools-free">Complete Guide to Free Image Editing Tools — No Photoshop Needed</a></li><li><a href="/blog/how-to-remove-image-background-without-photoshop">How to Remove Image Background Without Photoshop</a></li></ul></div>
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+        <a href="https://github.com/tiwariankit651" target="_blank" rel="noopener" title="GitHub" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💻</a>
+        <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" title="LinkedIn" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💼</a>
+        <a href="https://twitter.com/the_ank_tiwari" target="_blank" rel="noopener" title="Twitter" style="color:var(--text2);text-decoration:none;font-size:1.2rem">🐦</a>
+        <a href="https://instagram.com/imakt07" target="_blank" rel="noopener" title="Instagram" style="color:var(--text2);text-decoration:none;font-size:1.2rem">📷</a>
+      </div>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+/* ---- HEIC decode (reused from the Image Converter) ---- */
+var HEIC_LIB="https://cdn.jsdelivr.net/npm/heic-to@1.6.7/dist/iife/heic-to.js";
+var HEIC_SRI="sha384-f0j56i/85T2+bZ9Y5sSaw7lvxHImEr3LuncAm2tNkfvJdhfcNBPj7ES//QWvXCYC";
+var heicLib=null,heicCache=new Map();
+function isHeicName(f){return /\.(heic|heif)$/i.test(f.name||"")||/heic|heif/i.test(f.type||"")}
+async function sniffHeic(f){
+  if(isHeicName(f))return true;
+  try{var b=new Uint8Array(await f.slice(0,32).arrayBuffer());var s=String.fromCharCode.apply(null,b.subarray(4,12));
+    return /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1)/.test(s)}catch(e){return false}
+}
+function loadHeicLib(){
+  if(window.HeicTo)return Promise.resolve(window.HeicTo);
+  if(heicLib)return heicLib;
+  heicLib=new Promise(function(res,rej){
+    var s=document.createElement("script");s.src=HEIC_LIB;s.integrity=HEIC_SRI;s.crossOrigin="anonymous";
+    s.onload=function(){window.HeicTo?res(window.HeicTo):rej(new Error("heic"))};
+    s.onerror=function(){heicLib=null;rej(new Error("heic"))};
+    document.head.appendChild(s);
+  });
+  return heicLib;
+}
+async function decodeHeic(f){
+  if(heicCache.has(f))return heicCache.get(f);
+  var p=loadHeicLib().then(function(H){return H({blob:f,type:"image/png"})}).then(function(b){return Array.isArray(b)?b[0]:b});
+  heicCache.set(f,p);p.catch(function(){heicCache.delete(f)});return p;
+}
+async function decodeUpright(file){
+  var blob=(await sniffHeic(file))?await decodeHeic(file):file;
+  if(window.createImageBitmap){
+    try{
+      var bmp=await createImageBitmap(blob,{imageOrientation:'from-image'});
+      var c=document.createElement('canvas');c.width=bmp.width;c.height=bmp.height;
+      c.getContext('2d').drawImage(bmp,0,0);if(bmp.close)bmp.close();return c;
+    }catch(e){}
+  }
+  var img=await loadImage(blob);
+  var c2=document.createElement('canvas');c2.width=img.naturalWidth||img.width;c2.height=img.naturalHeight||img.height;
+  c2.getContext('2d').drawImage(img,0,0);return c2;
+}
+
+/* ---- State ---- */
+var srcCanvas=null;           // original upright image, full resolution
+var origW=0,origH=0;
+var regions=[];               // {x,y,w,h,shape} in ORIGINAL pixels
+var effect='blur',shape='rect';
+var fileName="image";
+var cv=document.getElementById('bfCanvas');
+var ctx=cv.getContext('2d');
+
+/* display scale: original px per CSS px */
+function dispScale(){var r=cv.getBoundingClientRect();return origW/r.width;}
+
+setupDrop('drop','inp',function(fl){
+  var f=fl&&fl[0];if(!f)return;
+  if(!(f.type&&f.type.indexOf('image/')===0)&&!isHeicName(f)){notify('That is not an image. Try PNG, JPG, WebP or HEIC.','error');return;}
+  fileName=(f.name||'image').replace(/\.[^.]+$/,'');
+  decodeUpright(f).then(function(c){
+    srcCanvas=c;origW=c.width;origH=c.height;regions=[];
+    cv.width=origW;cv.height=origH;
+    document.getElementById('editor').style.display='';
+    redraw();updateCount();
+  }).catch(function(e){notify((e&&e.message)||'Could not read that image.','error');});
+});
+
+/* ---- Effect application into a destination ctx, for one region ---- */
+function applyRegion(dctx,r){
+  // clip to shape
+  dctx.save();
+  dctx.beginPath();
+  if(r.shape==='ellipse'){
+    dctx.ellipse(r.x+r.w/2,r.y+r.h/2,Math.abs(r.w/2),Math.abs(r.h/2),0,0,Math.PI*2);
+  }else{
+    dctx.rect(r.x,r.y,r.w,r.h);
+  }
+  dctx.clip();
+  if(effect==='solid'){
+    dctx.fillStyle=document.getElementById('solidColor').value;
+    dctx.fillRect(r.x,r.y,r.w,r.h);
+  }else if(effect==='pixelate'){
+    var block=+document.getElementById('pixel').value;
+    var cols=Math.max(1,Math.round(Math.abs(r.w)/block));
+    var rows=Math.max(1,Math.round(Math.abs(r.h)/block));
+    var tmp=document.createElement('canvas');tmp.width=cols;tmp.height=rows;
+    var tctx=tmp.getContext('2d');tctx.imageSmoothingEnabled=false;
+    tctx.drawImage(srcCanvas,r.x,r.y,r.w,r.h,0,0,cols,rows);
+    dctx.imageSmoothingEnabled=false;
+    dctx.drawImage(tmp,0,0,cols,rows,r.x,r.y,r.w,r.h);
+    dctx.imageSmoothingEnabled=true;
+  }else{ // blur — downscale hard, blur, upscale => irreversible
+    var strength=+document.getElementById('blur').value; // higher => smaller intermediate
+    var dw=Math.max(1,Math.round(Math.abs(r.w)/strength));
+    var dh=Math.max(1,Math.round(Math.abs(r.h)/strength));
+    var small=document.createElement('canvas');small.width=dw;small.height=dh;
+    var sctx=small.getContext('2d');sctx.imageSmoothingEnabled=true;sctx.imageSmoothingQuality='high';
+    sctx.drawImage(srcCanvas,r.x,r.y,r.w,r.h,0,0,dw,dh);
+    // a second soft blur pass on the upscale for a smooth (non-blocky) look
+    dctx.imageSmoothingEnabled=true;dctx.imageSmoothingQuality='high';
+    try{dctx.filter='blur('+Math.max(1,Math.round(strength/3))+'px)';}catch(e){}
+    dctx.drawImage(small,0,0,dw,dh,r.x,r.y,r.w,r.h);
+    dctx.filter='none';
+  }
+  dctx.restore();
+}
+
+/* Build a fully-processed canvas (used for both export and preview base) */
+function processCanvas(){
+  var out=document.createElement('canvas');out.width=origW;out.height=origH;
+  var octx=out.getContext('2d');
+  octx.drawImage(srcCanvas,0,0);
+  regions.forEach(function(r){
+    // normalise negative width/height
+    var nr={x:Math.min(r.x,r.x+r.w),y:Math.min(r.y,r.y+r.h),w:Math.abs(r.w),h:Math.abs(r.h),shape:r.shape};
+    if(nr.w<2||nr.h<2)return;
+    applyRegion(octx,nr);
+  });
+  return out;
+}
+
+/* Preview = processed image + dashed outlines of each region */
+var pending=null;
+function redraw(){
+  if(!srcCanvas)return;
+  var out=processCanvas();
+  ctx.drawImage(out,0,0);
+  ctx.save();
+  ctx.lineWidth=Math.max(2,origW/400);
+  ctx.strokeStyle='rgba(99,102,241,.95)';
+  ctx.setLineDash([ctx.lineWidth*3,ctx.lineWidth*2]);
+  regions.forEach(function(r){
+    if(r.shape==='ellipse'){ctx.beginPath();ctx.ellipse(r.x+r.w/2,r.y+r.h/2,Math.abs(r.w/2),Math.abs(r.h/2),0,0,Math.PI*2);ctx.stroke();}
+    else ctx.strokeRect(r.x,r.y,r.w,r.h);
+  });
+  if(pending){
+    ctx.strokeStyle='rgba(239,68,68,.95)';
+    if(pending.shape==='ellipse'){ctx.beginPath();ctx.ellipse(pending.x+pending.w/2,pending.y+pending.h/2,Math.abs(pending.w/2),Math.abs(pending.h/2),0,0,Math.PI*2);ctx.stroke();}
+    else ctx.strokeRect(pending.x,pending.y,pending.w,pending.h);
+  }
+  ctx.restore();
+}
+
+function updateCount(){
+  document.getElementById('regionCount').textContent=regions.length+' region'+(regions.length===1?'':'s')+(regions.length?' — Apply & Download to save.':'. Drag on the image to add one.');
+}
+
+/* ---- Drawing with pointer events (mouse + touch) ---- */
+var drawing=null;
+function pt(e){var r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*(origW/r.width),y:(e.clientY-r.top)*(origH/r.height)};}
+cv.addEventListener('pointerdown',function(e){
+  if(!srcCanvas)return;e.preventDefault();
+  var p=pt(e);drawing={x:p.x,y:p.y};pending={x:p.x,y:p.y,w:0,h:0,shape:shape};
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+});
+cv.addEventListener('pointermove',function(e){
+  if(!drawing)return;e.preventDefault();
+  var p=pt(e);pending={x:drawing.x,y:drawing.y,w:p.x-drawing.x,h:p.y-drawing.y,shape:shape};redraw();
+});
+function finishDraw(){
+  if(!drawing)return;drawing=null;
+  if(pending&&Math.abs(pending.w)>=4&&Math.abs(pending.h)>=4){
+    var nr={x:Math.min(pending.x,pending.x+pending.w),y:Math.min(pending.y,pending.y+pending.h),w:Math.abs(pending.w),h:Math.abs(pending.h),shape:pending.shape};
+    regions.push(nr);updateCount();
+  }
+  pending=null;redraw();
+}
+cv.addEventListener('pointerup',finishDraw);
+cv.addEventListener('pointercancel',function(){drawing=null;pending=null;redraw();});
+
+function setEffect(fx){
+  effect=fx;
+  document.querySelectorAll('[data-fx]').forEach(function(b){b.classList.toggle('active',b.dataset.fx===fx);});
+  document.getElementById('rowBlur').style.display=fx==='blur'?'':'none';
+  document.getElementById('rowPixel').style.display=fx==='pixelate'?'':'none';
+  document.getElementById('rowSolid').style.display=fx==='solid'?'':'none';
+  redraw();
+}
+function setShape(s){shape=s;document.getElementById('shapeRect').classList.toggle('active',s==='rect');document.getElementById('shapeEllipse').classList.toggle('active',s==='ellipse');}
+function undoRegion(){regions.pop();updateCount();redraw();}
+function clearRegions(){regions=[];updateCount();redraw();}
+window.setEffect=setEffect;window.setShape=setShape;window.undoRegion=undoRegion;window.clearRegions=clearRegions;
+
+document.getElementById('blur').addEventListener('input',function(){document.getElementById('blurVal').textContent=this.value;redraw();});
+document.getElementById('pixel').addEventListener('input',function(){document.getElementById('pixelVal').textContent=this.value;redraw();});
+document.getElementById('solidColor').addEventListener('input',redraw);
+
+/* ---- Output ---- */
+document.getElementById('quality').addEventListener('input',function(){document.getElementById('qVal').textContent=(this.value/100).toFixed(2);});
+document.getElementById('fmt').addEventListener('change',function(){
+  var f=this.value;document.getElementById('qualityWrap').style.display=(f==='image/jpeg'||f==='image/webp'||f==='keep')?'':'none';
+});
+function exportImage(){
+  if(!srcCanvas){notify('Load an image first.','warn');return;}
+  if(!regions.length){notify('Draw at least one region, or use Detect faces.','warn');return;}
+  var out=processCanvas();
+  var sel=document.getElementById('fmt').value;
+  var mime=sel==='keep'?'image/png':sel;
+  var ext=mime==='image/jpeg'?'jpg':mime==='image/webp'?'webp':'png';
+  var lossy=(mime==='image/jpeg'||mime==='image/webp');
+  var q=document.getElementById('quality').value/100;
+  out.toBlob(function(b){
+    if(!b){notify('Could not encode that format.','error');return;}
+    window._bf=b;
+    var res=document.getElementById('result');res.innerHTML='';
+    var p=document.createElement('p');p.className='info';p.textContent='Saved '+out.width+' × '+out.height+' px — '+formatSize(b.size)+' · EXIF/GPS removed';
+    var im=document.createElement('img');im.src=URL.createObjectURL(b);im.alt='Result';im.style.maxWidth='100%';im.style.borderRadius='8px';
+    var dl=document.createElement('button');dl.className='btn';dl.textContent='Download '+ext.toUpperCase();
+    dl.onclick=function(){download(window._bf,fileName+'-hidden.'+ext);};
+    res.appendChild(p);res.appendChild(im);res.appendChild(document.createElement('br'));res.appendChild(dl);
+  },mime,lossy?q:undefined);
+}
+window.exportImage=exportImage;
+
+/* ---- Optional automatic face detection (MediaPipe Tasks Vision) ---- */
+var MP_URL="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+var MODEL_URL="https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
+var faceDetector=null,mpLoading=false;
+async function detectFaces(){
+  if(!srcCanvas){notify('Load an image first.','warn');return;}
+  var btn=document.getElementById('detectBtn');
+  if(mpLoading)return;
+  mpLoading=true;btn.disabled=true;var label=btn.textContent;btn.textContent='Loading detector…';
+  try{
+    if(!faceDetector){
+      var vision=await import(MP_URL+"/vision_bundle.mjs");
+      var fileset=await vision.FilesetResolver.forVisionTasks(MP_URL+"/wasm");
+      faceDetector=await vision.FaceDetector.createFromOptions(fileset,{
+        baseOptions:{modelAssetPath:MODEL_URL},
+        runningMode:"IMAGE"
+      });
+    }
+    btn.textContent='Detecting…';
+    var res=faceDetector.detect(srcCanvas);
+    var dets=(res&&res.detections)||[];
+    if(!dets.length){notify('No faces detected. The short-range model is for faces within ~2 m — draw regions by hand instead.','warn');}
+    else{
+      dets.forEach(function(d){
+        var bb=d.boundingBox;if(!bb)return;
+        // pad 15% so the whole face/hair is covered
+        var padW=bb.width*0.15,padH=bb.height*0.20;
+        var x=Math.max(0,bb.originX-padW),y=Math.max(0,bb.originY-padH);
+        var w=Math.min(origW-x,bb.width+padW*2),h=Math.min(origH-y,bb.height+padH*2);
+        regions.push({x:x,y:y,w:w,h:h,shape:shape});
+      });
+      updateCount();redraw();
+      notify('Detected '+dets.length+' face'+(dets.length>1?'s':'')+'. Check each one — small or side faces may be missed.','ok');
+    }
+  }catch(err){
+    notify('Face detector could not load ('+((err&&err.message)||'network')+'). Manual mode still works — just drag regions.','error');
+  }finally{
+    mpLoading=false;btn.disabled=false;btn.textContent=label;
+  }
+}
+window.detectFaces=detectFaces;
+
+window.addEventListener('resize',function(){if(srcCanvas)redraw();});
+  </script>
+</body>
+</html>
