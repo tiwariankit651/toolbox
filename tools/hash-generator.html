@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hash Generator — MD5, SHA-256 &amp; HMAC of Text and Files | FreeToolHubs</title>
+  <meta name="description" content="Compute MD5, SHA-1, SHA-256, SHA-384 and SHA-512 of text or files in your browser. HMAC with a secret key, hex or Base64 output, and compare against an expected hash. Large files hashed in chunks.">
+  <meta property="og:title" content="Hash Generator — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="MD5, SHA & HMAC of text and files, entirely in your browser">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/hash-generator">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Hash Generator — FreeToolHubs">
+  <meta name="twitter:description" content="MD5, SHA & HMAC of text and files, entirely in your browser">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Hash Generator","url":"https://freetoolhubs.com/tools/hash-generator","description":"Compute MD5, SHA-1, SHA-256, SHA-384, SHA-512 and HMAC of text and files in the browser","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="hash generator, md5 generator, sha256 online, hmac calculator, file checksum, sha512 hash">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/hash-generator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which algorithms are available, and are HMAC and MD5 both supported?", "acceptedAnswer": {"@type": "Answer", "text": "It computes MD5, SHA-1, SHA-256, SHA-384 and SHA-512. SHA-1/256/384/512 use the browser's built-in Web Crypto (crypto.subtle); MD5 is not part of Web Crypto so it uses the SparkMD5 library. HMAC (keyed hashing) is offered for SHA-256, SHA-384 and SHA-512 — enter a secret key and those rows switch to HMAC. There is no HMAC-MD5 or HMAC-SHA1 row because the tool deliberately keeps HMAC on the strong algorithms."}}, {"@type": "Question", "name": "How is text hashed, and what does the 'trim trailing newline' option do?", "acceptedAnswer": {"@type": "Answer", "text": "Text is encoded as UTF-8 with TextEncoder before hashing, so non-ASCII characters (accents, Devanagari, emoji) are hashed as their real UTF-8 bytes — matching what hashlib or sha256sum produce for the same string. Editors and shells often add a newline at the end of a file; the 'Trim one trailing newline' checkbox removes a single trailing \\n or \\r\\n so your result can match a command-line checksum that was taken without it."}}, {"@type": "Question", "name": "Can it hash a 1 GB file without freezing or uploading it?", "acceptedAnswer": {"@type": "Answer", "text": "Yes for MD5 and SHA-256: the file is read in 4 MB slices and hashed incrementally, so it is never fully loaded into memory and a progress bar updates as it goes. Nothing is uploaded — the file is read locally. SHA-1, SHA-384, SHA-512 and file HMAC are computed over the whole file via Web Crypto and are limited to files up to 512 MB, with an on-screen message when a file is larger, because those paths read the entire file into memory."}}, {"@type": "Question", "name": "How does comparing against an expected hash work?", "acceptedAnswer": {"@type": "Answer", "text": "Paste the hash you expect — hex (any case) or Base64 — into the Compare box. It is normalised and checked against every computed digest on the page, so you do not have to pick the algorithm yourself. A green banner names the algorithm that matched; a red banner means it matched none of them. This is the quick way to verify a downloaded file against a vendor's published checksum."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → #️⃣ Hash Generator</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section"><h1>#️⃣ Hash Generator</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="20" y="30" width="70" height="60" rx="6" fill="none" stroke="#6366f1" stroke-width="4"/><line x1="100" y1="60" x2="130" y2="60" stroke="#8b5cf6" stroke-width="4" stroke-linecap="round"/><polyline points="122,52 130,60 122,68" fill="none" stroke="#8b5cf6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="155" y="66" font-size="22" font-weight="bold" fill="#6366f1">#</text></svg></div>
+
+      <div class="row" style="margin-bottom:.5rem;gap:.4rem">
+        <button class="btn" onclick="setMode('text')" id="mText">📝 Hash Text</button>
+        <button class="btn btn-outline" onclick="setMode('file')" id="mFile">📁 Hash a File</button>
+      </div>
+
+      <!-- TEXT MODE -->
+      <div id="textMode">
+        <label for="htext">Text to hash (encoded as UTF-8):</label>
+        <textarea id="htext" placeholder="Type or paste text — hashes update live as you type" style="font-family:monospace;min-height:120px" oninput="onTextInput()"></textarea>
+        <div class="row" style="flex-wrap:wrap;gap:.6rem;align-items:center">
+          <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem"><input type="checkbox" id="trimNewline" style="width:auto;margin:0" onchange="onTextInput()"> Trim one trailing newline</label>
+        </div>
+      </div>
+
+      <!-- FILE MODE -->
+      <div id="fileMode" style="display:none">
+        <div class="drop-zone" id="fileDrop">📁 Drop a file here or click to browse<br><span class="info" style="font-size:.8rem">Files are read on your device in chunks — nothing is uploaded. Even a 1&nbsp;GB file never leaves your browser.</span>
+          <input type="file" id="hfile" style="display:none">
+        </div>
+        <div id="fileInfo" class="info" style="margin:.4rem 0"></div>
+        <div id="progressWrap" style="display:none;margin:.5rem 0">
+          <div style="background:rgba(148,148,184,.25);border-radius:6px;overflow:hidden;height:10px"><div id="progressBar" style="height:100%;width:0;background:var(--accent);transition:width .1s linear"></div></div>
+          <div id="progressText" class="info" style="text-align:center;margin-top:.2rem" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- SHARED OPTIONS -->
+      <div class="row" style="flex-wrap:wrap;gap:.6rem;margin-top:.6rem">
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem">Output:
+          <select id="outFmt" style="width:auto;margin:0" onchange="rerender()">
+            <option value="hexlower" selected>Hex (lowercase)</option>
+            <option value="hexupper">Hex (UPPERCASE)</option>
+            <option value="base64">Base64</option>
+          </select>
+        </label>
+      </div>
+
+      <h3 style="margin-top:1rem" role="heading" aria-level="2">🔑 HMAC (optional)</h3>
+      <p class="info">Enter a secret key to compute keyed HMAC instead of a plain hash. HMAC is available for SHA-256, SHA-384 and SHA-512 (via the Web Crypto API). Leave blank for ordinary hashes.</p>
+      <div class="row"><input type="text" id="hmacKey" placeholder="HMAC secret key (UTF-8) — leave blank for plain hashes" style="font-family:monospace" oninput="onKeyInput()"></div>
+      <div id="hmacNote" class="info" style="margin:.2rem 0"></div>
+
+      <div id="results" style="margin-top:1rem"></div>
+
+      <h3 style="margin-top:1.2rem" role="heading" aria-level="2">✅ Compare against an expected hash</h3>
+      <p class="info">Paste a hash you expect (hex or Base64, any algorithm above). It is matched case-insensitively against every computed value so you can verify a download or a checksum.</p>
+      <div class="row"><input type="text" id="expected" placeholder="Paste expected hash here" style="font-family:monospace" oninput="compareExpected()"></div>
+      <div id="compareResult" style="margin-top:.5rem" aria-live="polite"></div>
+
+      <div class="info" style="margin-top:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem">
+        <strong>⚠️ Security note:</strong> MD5 and SHA-1 are <strong>broken for security use</strong> — attackers can construct collisions. Use them only for non-security checksums (detecting accidental corruption, cache keys). For integrity or signatures use SHA-256 or stronger.
+      </div>
+    </div>
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>Which algorithms are available, and are HMAC and MD5 both supported?</summary><p>It computes MD5, SHA-1, SHA-256, SHA-384 and SHA-512. SHA-1/256/384/512 use the browser&#x27;s built-in Web Crypto (crypto.subtle); MD5 is not part of Web Crypto so it uses the SparkMD5 library. HMAC (keyed hashing) is offered for SHA-256, SHA-384 and SHA-512 — enter a secret key and those rows switch to HMAC. There is no HMAC-MD5 or HMAC-SHA1 row because the tool deliberately keeps HMAC on the strong algorithms.</p></details>
+<details><summary>How is text hashed, and what does the &#x27;trim trailing newline&#x27; option do?</summary><p>Text is encoded as UTF-8 with TextEncoder before hashing, so non-ASCII characters (accents, Devanagari, emoji) are hashed as their real UTF-8 bytes — matching what hashlib or sha256sum produce for the same string. Editors and shells often add a newline at the end of a file; the &#x27;Trim one trailing newline&#x27; checkbox removes a single trailing \n or \r\n so your result can match a command-line checksum that was taken without it.</p></details>
+<details><summary>Can it hash a 1 GB file without freezing or uploading it?</summary><p>Yes for MD5 and SHA-256: the file is read in 4 MB slices and hashed incrementally, so it is never fully loaded into memory and a progress bar updates as it goes. Nothing is uploaded — the file is read locally. SHA-1, SHA-384, SHA-512 and file HMAC are computed over the whole file via Web Crypto and are limited to files up to 512 MB, with an on-screen message when a file is larger, because those paths read the entire file into memory.</p></details>
+<details><summary>How does comparing against an expected hash work?</summary><p>Paste the hash you expect — hex (any case) or Base64 — into the Compare box. It is normalised and checked against every computed digest on the page, so you do not have to pick the algorithm yourself. A green banner names the algorithm that matched; a red banner means it matched none of them. This is the quick way to verify a downloaded file against a vendor&#x27;s published checksum.</p></details>
+<!-- tool-faq:end -->
+</div>
+  </div>
+
+  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+<ol style="margin-left:1.5rem;line-height:2">
+<li><strong>Pick text or file mode.</strong> Type into the box for text, or drop a file to checksum a download.</li>
+<li><strong>Read the hashes as they appear.</strong> Text hashes update live as you type; a file is hashed once with a progress bar.</li>
+<li><strong>Choose your output format.</strong> Lowercase hex is the usual default; switch to UPPERCASE or Base64 if a system expects it.</li>
+<li><strong>Need a keyed hash?</strong> Type a secret into the HMAC field and the SHA-256/384/512 rows switch to HMAC.</li>
+<li><strong>Verify a download.</strong> Paste the vendor's published checksum into "Compare" — a green match or red mismatch tells you instantly.</li>
+</ol>
+<h2>Common Use Cases</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li>Verify an ISO or installer against the SHA-256 the vendor published, before running it.</li>
+<li>Generate an HMAC-SHA256 signature to test an API or webhook locally.</li>
+<li>Produce a quick MD5 or SHA-1 fingerprint to spot an accidentally changed file.</li>
+<li>Compute a SHA-256 of a password or token to compare with a stored digest (for learning/testing).</li>
+<li>Confirm two files are byte-identical by comparing their checksums.</li>
+</ul>
+</div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>This Hash Generator computes cryptographic digests of text and files entirely inside your browser. Text is encoded as UTF-8 and hashed with MD5, SHA-1, SHA-256, SHA-384 and SHA-512; files are read on your device and hashed, with large files processed in fixed-size chunks and a progress bar so even a gigabyte-scale file never freezes the tab and never gets uploaded. You can switch the output between lowercase hex, uppercase hex and Base64, compute keyed HMAC with a secret key for the SHA-256/384/512 algorithms, and paste an expected hash to get an immediate match or mismatch. MD5 and SHA-1 are provided for non-security checksums only and are clearly marked as unsafe for security.</p></div>
+
+  <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Hashing Text and Large Files Correctly in the Browser</h2>
+
+<h3>Why text is hashed as UTF-8, and the trailing-newline trap</h3>
+<p>A hash is computed over bytes, not characters, so the first question any hashing tool has to answer is how it turns your text into bytes. This tool encodes text as UTF-8 with the browser's <code>TextEncoder</code> before hashing. That matters the moment you type anything outside plain ASCII: the string "नमस्ते" is six Unicode code points but eighteen UTF-8 bytes, and its SHA-256 only matches Python's <code>hashlib.sha256("नमस्ते".encode()).hexdigest()</code> because both sides agree on UTF-8. If a tool silently hashed UTF-16 or Latin-1 instead, your result would disagree with every command-line tool and you would waste an afternoon finding out why.</p>
+<p>The second trap is the invisible newline. Text editors and shells habitually append a line feed to the end of a file, so <code>echo abc | sha256sum</code> hashes four bytes, not three, and disagrees with the digest of the literal string "abc". The <strong>Trim one trailing newline</strong> checkbox removes a single <code>\n</code> or <code>\r\n</code> from the end of your input so you can reproduce a checksum taken either way. Everything you type is hashed live, so the digests update on each keystroke.</p>
+
+<h3>How a gigabyte file is hashed without freezing the tab</h3>
+<p>The Web Crypto API (<code>crypto.subtle.digest</code>) is excellent but has two limits that shape this tool: it has no MD5, and it has no streaming — you hand it one buffer and wait. Loading a 1&nbsp;GB file as a single buffer to hash it is exactly how a browser tab locks up or runs out of memory. So for the two algorithms whose incremental implementations are verified here, MD5 (via SparkMD5) and SHA-256 (a pure-JavaScript FIPS 180-4 implementation), the file is read in 4&nbsp;MB slices and fed to the hashing state one slice at a time. Memory stays flat, a progress bar advances, and the event loop yields between slices so the page stays responsive.</p>
+<p>SHA-1, SHA-384, SHA-512 and file HMAC are computed with Web Crypto over the whole file, which means they are offered only up to 512&nbsp;MB. Above that the tool says so plainly rather than pretending; MD5 and SHA-256 still work at any size. This is an honest trade-off: streaming code is shipped only where it has been checked against known answers.</p>
+
+<h3>HMAC, output formats, and comparing a hash</h3>
+<p>Leave the key box empty for plain hashes. Type a secret and the SHA-256/384/512 rows become HMAC, keyed via Web Crypto, which is what you need to sign or verify an API request. Output can be lowercase hex, uppercase hex, or Base64 — different systems publish checksums in different forms, and the Compare box accepts any of them. Paste the hash you expect and it is matched, case-insensitively, against every value on the page, so verifying a download is a glance at a green or red banner.</p>
+
+<h3>When not to trust MD5 or SHA-1</h3>
+<p>Both are marked "not for security" for a reason: practical collision attacks exist, so an attacker can craft two different files with the same MD5 or SHA-1. They remain fine for catching accidental corruption or as cache keys, but for integrity you can rely on, or anything an adversary might attack, use SHA-256 or stronger.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/base64" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Base64 Encoder</a><a href="/tools/password-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Password Generator</a><a href="/tools/json-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON Formatter</a><a href="/tools/number-converter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Number Converter</a><a href="/tools/regex-tester" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Regex Tester</a><a href="/tools/diff-checker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Diff Checker</a></div></div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-tools-for-developers-2026">Best Free Tools for Developers in 2026</a></li><li><a href="/blog/strong-password-kaise-banaye-tips">Strong Password Kaise Banaye — Complete Guide 2026</a></li><li><a href="/blog/complete-guide-online-privacy-tools-2026">Complete Guide to Online Privacy Tools in 2026</a></li></ul></div>
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+        <a href="https://github.com/tiwariankit651" target="_blank" rel="noopener" title="GitHub" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💻</a>
+        <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" title="LinkedIn" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💼</a>
+        <a href="https://twitter.com/the_ank_tiwari" target="_blank" rel="noopener" title="Twitter" style="color:var(--text2);text-decoration:none;font-size:1.2rem">🐦</a>
+        <a href="https://instagram.com/imakt07" target="_blank" rel="noopener" title="Instagram" style="color:var(--text2);text-decoration:none;font-size:1.2rem">📷</a>
+      </div>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+    </div>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js" integrity="sha384-WAahC3S+69Co45zyyuhCjvdMwo7a42Yn0mM0IgZIUlYNebG24AVkPUltj3BQnM85" crossorigin="anonymous"></script>
+  <script src="../js/common.js"></script>
+  <script>
+"use strict";
+/* =========================================================================
+   Hash Generator — everything runs in the browser, nothing is uploaded.
+
+   Algorithm coverage
+   ------------------
+   Text (small): MD5 via SparkMD5; SHA-1/256/384/512 via crypto.subtle.digest;
+     HMAC-SHA256/384/512 via crypto.subtle (SubtleCrypto has no MD5, and no
+     streaming API).
+   Files (any size): MD5 and SHA-256 are hashed truly incrementally, chunk by
+     chunk, so a 1 GB file is never held in memory all at once and the tab does
+     not freeze. SHA-1/384/512 of a file are computed with crypto.subtle over
+     the whole buffer; those are capped (see FILE_SUBTLE_CAP) with an honest
+     message, because a streaming implementation is only shipped for the two
+     algorithms whose incremental code is verified against known vectors here.
+   HMAC of a file uses crypto.subtle over the whole buffer, same cap.
+   ========================================================================= */
+
+/* ---------- pure-JS incremental SHA-256 (verified against test vectors) ----
+   Standard FIPS 180-4 SHA-256. 32-bit integer math only, so it is correct and
+   fast in JS. update() accepts Uint8Array chunks; digest() finalises. */
+function SHA256(){
+  this.h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  this.block=new Uint8Array(64); this.blockLen=0; this.len=0;
+}
+SHA256.K=[
+0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+SHA256.prototype._compress=function(p){
+  var w=new Uint32Array(64),K=SHA256.K,i;
+  for(i=0;i<16;i++)w[i]=(p[i*4]<<24)|(p[i*4+1]<<16)|(p[i*4+2]<<8)|(p[i*4+3]);
+  for(i=16;i<64;i++){
+    var x15=w[i-15],x2=w[i-2];
+    var s0=((x15>>>7)|(x15<<25))^((x15>>>18)|(x15<<14))^(x15>>>3);
+    var s1=((x2>>>17)|(x2<<15))^((x2>>>19)|(x2<<13))^(x2>>>10);
+    w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
+  }
+  var a=this.h[0],b=this.h[1],c=this.h[2],d=this.h[3],e=this.h[4],f=this.h[5],g=this.h[6],hh=this.h[7];
+  for(i=0;i<64;i++){
+    var S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+    var ch=(e&f)^((~e)&g);
+    var t1=(hh+S1+ch+K[i]+w[i])|0;
+    var S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+    var maj=(a&b)^(a&c)^(b&c);
+    var t2=(S0+maj)|0;
+    hh=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+  }
+  this.h[0]=(this.h[0]+a)|0;this.h[1]=(this.h[1]+b)|0;this.h[2]=(this.h[2]+c)|0;this.h[3]=(this.h[3]+d)|0;
+  this.h[4]=(this.h[4]+e)|0;this.h[5]=(this.h[5]+f)|0;this.h[6]=(this.h[6]+g)|0;this.h[7]=(this.h[7]+hh)|0;
+};
+SHA256.prototype.update=function(data){
+  var i=0,n=data.length;this.len+=n;
+  if(this.blockLen>0){
+    while(i<n&&this.blockLen<64){this.block[this.blockLen++]=data[i++];}
+    if(this.blockLen===64){this._compress(this.block);this.blockLen=0;}
+  }
+  while(i+64<=n){
+    // compress directly from the source to avoid a copy per 64 bytes
+    this._compress(data.subarray(i,i+64));i+=64;
+  }
+  while(i<n){this.block[this.blockLen++]=data[i++];}
+  return this;
+};
+SHA256.prototype.digest=function(){
+  var bitLenHi=Math.floor(this.len/0x20000000);   // len*8 high 32 bits
+  var bitLenLo=(this.len*8)>>>0;
+  var pad=[0x80];
+  var rem=(this.blockLen+1)%64;
+  var zeros=(rem<=56?56-rem:120-rem);
+  for(var z=0;z<zeros;z++)pad.push(0);
+  pad.push((bitLenHi>>>24)&0xff,(bitLenHi>>>16)&0xff,(bitLenHi>>>8)&0xff,bitLenHi&0xff);
+  pad.push((bitLenLo>>>24)&0xff,(bitLenLo>>>16)&0xff,(bitLenLo>>>8)&0xff,bitLenLo&0xff);
+  this.update(new Uint8Array(pad));
+  var out=new Uint8Array(32);
+  for(var i=0;i<8;i++){out[i*4]=(this.h[i]>>>24)&0xff;out[i*4+1]=(this.h[i]>>>16)&0xff;out[i*4+2]=(this.h[i]>>>8)&0xff;out[i*4+3]=this.h[i]&0xff;}
+  return out;
+};
+
+/* ---------- output encoders ---------- */
+function bytesToHex(bytes,upper){
+  var s="",h="0123456789abcdef";
+  for(var i=0;i<bytes.length;i++){s+=h[bytes[i]>>>4]+h[bytes[i]&15];}
+  return upper?s.toUpperCase():s;
+}
+function bytesToB64(bytes){
+  var bin="";
+  for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function formatOut(bytes){
+  var f=document.getElementById("outFmt").value;
+  if(f==="hexupper")return bytesToHex(bytes,true);
+  if(f==="base64")return bytesToB64(bytes);
+  return bytesToHex(bytes,false);
+}
+/* SparkMD5 returns a hex string; convert to bytes so every algorithm shares one
+   formatter and the Compare box works across formats. */
+function hexToBytes(hex){
+  var out=new Uint8Array(hex.length/2);
+  for(var i=0;i<out.length;i++)out[i]=parseInt(hex.substr(i*2,2),16);
+  return out;
+}
+
+/* ---------- which algorithms we show ---------- */
+var ALGOS=["MD5","SHA-1","SHA-256","SHA-384","SHA-512"];
+var HMAC_ALGOS={"SHA-256":"SHA-256","SHA-384":"SHA-384","SHA-512":"SHA-512"};
+var FILE_SUBTLE_CAP=512*1024*1024; // SHA-1/384/512 & HMAC of a file read whole: capped honestly
+
+var mode="text";
+var lastBytes={};      // algo -> digest bytes, so the Compare box can re-check without recompute
+var lastFile=null;
+
+function setMode(m){
+  mode=m;
+  document.getElementById("mText").className=m==="text"?"btn":"btn btn-outline";
+  document.getElementById("mFile").className=m==="file"?"btn":"btn btn-outline";
+  document.getElementById("textMode").style.display=m==="text"?"":"none";
+  document.getElementById("fileMode").style.display=m==="file"?"":"none";
+  lastBytes={};document.getElementById("compareResult").innerHTML="";
+  if(m==="text")onTextInput();
+  else{document.getElementById("results").innerHTML="";if(lastFile)hashFile(lastFile);}
+}
+
+/* ---------- TEXT ---------- */
+function currentText(){
+  var t=document.getElementById("htext").value;
+  if(document.getElementById("trimNewline").checked){
+    if(t.endsWith("\r\n"))t=t.slice(0,-2);
+    else if(t.endsWith("\n")||t.endsWith("\r"))t=t.slice(0,-1);
+  }
+  return t;
+}
+var textSeq=0;
+async function onTextInput(){
+  if(mode!=="text")return;
+  var myseq=++textSeq;
+  var text=currentText();
+  var bytes=new TextEncoder().encode(text);
+  var key=document.getElementById("hmacKey").value;
+  var rows={};
+  try{
+    // MD5 (no HMAC-MD5 via subtle; plain only)
+    rows["MD5"]=key?null:hexToBytes(SparkMD5.ArrayBuffer.hash(bytes.buffer));
+    if(key){
+      // import a fresh key per hash because the algorithm is bound to the key
+      for(var ha in HMAC_ALGOS){
+        var k2=await crypto.subtle.importKey("raw",new TextEncoder().encode(key),{name:"HMAC",hash:ha},false,["sign"]);
+        var sig=await crypto.subtle.sign("HMAC",k2,bytes);
+        rows[ha]=new Uint8Array(sig);
+      }
+      // SHA-1 has no HMAC row shown when key set (we only offer HMAC for 256/384/512)
+    }else{
+      var sub=await Promise.all([
+        crypto.subtle.digest("SHA-1",bytes),
+        crypto.subtle.digest("SHA-256",bytes),
+        crypto.subtle.digest("SHA-384",bytes),
+        crypto.subtle.digest("SHA-512",bytes)
+      ]);
+      rows["SHA-1"]=new Uint8Array(sub[0]);
+      rows["SHA-256"]=new Uint8Array(sub[1]);
+      rows["SHA-384"]=new Uint8Array(sub[2]);
+      rows["SHA-512"]=new Uint8Array(sub[3]);
+    }
+  }catch(e){
+    if(myseq===textSeq)document.getElementById("results").innerHTML="<p class='info' style='color:var(--danger)'>Could not compute hashes: "+String(e&&e.message||e)+"</p>";
+    return;
+  }
+  if(myseq!==textSeq)return; // a newer keystroke superseded us
+  lastBytes=rows;
+  renderRows(rows,!!key);
+  compareExpected();
+}
+function onKeyInput(){updateHmacNote();if(mode==="text")onTextInput();else if(lastFile)hashFile(lastFile);}
+function updateHmacNote(){
+  var key=document.getElementById("hmacKey").value;
+  document.getElementById("hmacNote").textContent=key
+    ? "HMAC mode on — showing HMAC-SHA256/384/512 with your key. MD5 and SHA-1 have no HMAC row here."
+    : "";
+}
+
+/* ---------- render ---------- */
+function rerender(){
+  if(mode==="text")onTextInput();
+  else renderRows(lastBytes,!!document.getElementById("hmacKey").value),compareExpected();
+}
+function renderRows(rows,isHmac){
+  var html="";
+  ALGOS.forEach(function(a){
+    var bytes=rows[a];
+    var label=isHmac&&HMAC_ALGOS[a]?("HMAC-"+a):a;
+    var unsafe=(a==="MD5"||a==="SHA-1");
+    if(isHmac&&(a==="MD5"||a==="SHA-1"))return; // not shown in HMAC mode
+    var value=bytes?formatOut(bytes):"<span class='info'>not available</span>";
+    var enc=bytes?encodeURIComponent(formatOut(bytes)):"";
+    html+="<div style='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem;margin:.4rem 0'>"+
+      "<div style='display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap'>"+
+        "<strong>"+label+(unsafe?" <span style='color:var(--warn);font-size:.72rem;font-weight:600'>⚠ not for security</span>":"")+"</strong>"+
+        (bytes?"<button class='btn btn-outline' style='font-size:.75rem;padding:.25rem .6rem' onclick=\"copyNow(decodeURIComponent('"+enc+"'),'"+label+" copied.')\">📋 Copy</button>":"")+
+      "</div>"+
+      "<div id='row-"+a+"' style='font-family:monospace;font-size:.85rem;word-break:break-all;margin-top:.3rem'>"+value+"</div>"+
+    "</div>";
+  });
+  document.getElementById("results").innerHTML=html;
+}
+
+/* ---------- COMPARE ---------- */
+function normHash(s){return String(s||"").trim().replace(/\s+/g,"").toLowerCase();}
+function compareExpected(){
+  var exp=normHash(document.getElementById("expected").value);
+  var box=document.getElementById("compareResult");
+  if(!exp){box.innerHTML="";return;}
+  var matched=null;
+  for(var a in lastBytes){
+    if(!lastBytes[a])continue;
+    var hexL=bytesToHex(lastBytes[a],false);
+    var b64=bytesToB64(lastBytes[a]);
+    if(exp===hexL||exp===b64.toLowerCase()){matched=a;break;}
+  }
+  var isHmac=!!document.getElementById("hmacKey").value;
+  if(matched){
+    var label=isHmac&&HMAC_ALGOS[matched]?("HMAC-"+matched):matched;
+    box.innerHTML="<div style='background:rgba(46,204,113,.15);border:1px solid var(--ok);border-radius:10px;padding:.6rem .9rem;color:var(--ok);font-weight:600'>✅ Match — the expected hash equals the "+label+" value.</div>";
+  }else{
+    box.innerHTML="<div style='background:rgba(231,76,60,.12);border:1px solid var(--danger);border-radius:10px;padding:.6rem .9rem;color:var(--danger);font-weight:600'>❌ No match — the expected hash does not equal any computed value above.</div>";
+  }
+}
+
+/* ---------- FILE ---------- */
+var CHUNK=4*1024*1024; // 4 MB per slice keeps the UI responsive
+function setupFile(){
+  setupDrop("fileDrop","hfile",function(files){
+    var f=files&&files[0];if(!f)return;
+    lastFile=f;hashFile(f);
+  });
+}
+function human(b){return (typeof formatSize==="function")?formatSize(b):(b+" B");}
+
+async function hashFile(file){
+  document.getElementById("fileInfo").innerHTML="<strong>"+escapeAttr(file.name)+"</strong> — "+human(file.size);
+  var key=document.getElementById("hmacKey").value;
+  var pw=document.getElementById("progressWrap");
+  var pb=document.getElementById("progressBar");
+  var pt=document.getElementById("progressText");
+  pw.style.display="block";pb.style.width="0";pt.textContent="Starting…";
+  document.getElementById("results").innerHTML="";
+  lastBytes={};
+
+  // Incremental MD5 + SHA-256, chunk by chunk (true streaming, any size).
+  var md5=new SparkMD5.ArrayBuffer();
+  var sha256=new SHA256();
+  var offset=0,size=file.size;
+  try{
+    while(offset<size){
+      var slice=file.slice(offset,Math.min(offset+CHUNK,size));
+      var buf=await slice.arrayBuffer();
+      md5.append(buf);
+      sha256.update(new Uint8Array(buf));
+      offset+=buf.byteLength;
+      var pct=size?Math.round(offset/size*100):100;
+      pb.style.width=pct+"%";
+      pt.textContent="Hashing… "+pct+"%  ("+human(offset)+" / "+human(size)+")";
+      await new Promise(function(r){setTimeout(r,0);}); // yield so the bar paints
+    }
+    var rows={};
+    rows["MD5"]=key?null:hexToBytes(md5.end());
+    rows["SHA-256"]=sha256.digest();
+
+    // SHA-1/384/512 (+HMAC) need the whole buffer via subtle: cap honestly.
+    if(size<=FILE_SUBTLE_CAP){
+      pt.textContent="Finalising SHA-1 / SHA-384 / SHA-512…";
+      var whole=await file.arrayBuffer();
+      if(key){
+        for(var ha in HMAC_ALGOS){
+          var k=await crypto.subtle.importKey("raw",new TextEncoder().encode(key),{name:"HMAC",hash:ha},false,["sign"]);
+          var sig=await crypto.subtle.sign("HMAC",k,whole);
+          rows[ha]=new Uint8Array(sig);
+        }
+        // in HMAC mode, recompute HMAC-SHA256 too (overrides the plain SHA-256 row)
+      }else{
+        var s1=await crypto.subtle.digest("SHA-1",whole);rows["SHA-1"]=new Uint8Array(s1);
+        var s384=await crypto.subtle.digest("SHA-384",whole);rows["SHA-384"]=new Uint8Array(s384);
+        var s512=await crypto.subtle.digest("SHA-512",whole);rows["SHA-512"]=new Uint8Array(s512);
+      }
+    }else{
+      pt.textContent="";
+      notify("File is "+human(size)+". MD5 and SHA-256 are computed in chunks; SHA-1/384/512 are only shown for files up to "+human(FILE_SUBTLE_CAP)+" because those read the whole file into memory.","warn");
+    }
+    pw.style.display="none";
+    lastBytes=rows;
+    renderFileRows(rows,!!key,size);
+    compareExpected();
+  }catch(e){
+    pw.style.display="none";
+    notify("Could not hash that file: "+String(e&&e.message||e),"error");
+  }
+}
+function renderFileRows(rows,isHmac,size){
+  var html="";
+  ALGOS.forEach(function(a){
+    if(isHmac&&(a==="MD5"||a==="SHA-1"))return;
+    var bytes=rows[a];
+    var label=isHmac&&HMAC_ALGOS[a]?("HMAC-"+a):a;
+    var unsafe=(a==="MD5"||a==="SHA-1");
+    var value;
+    if(bytes)value=formatOut(bytes);
+    else if(!isHmac&&(a==="SHA-1"||a==="SHA-384"||a==="SHA-512")&&size>FILE_SUBTLE_CAP)
+      value="<span class='info'>skipped — file over "+human(FILE_SUBTLE_CAP)+" (see note)</span>";
+    else value="<span class='info'>not available</span>";
+    var enc=bytes?encodeURIComponent(formatOut(bytes)):"";
+    html+="<div style='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem;margin:.4rem 0'>"+
+      "<div style='display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap'>"+
+        "<strong>"+label+(unsafe?" <span style='color:var(--warn);font-size:.72rem;font-weight:600'>⚠ not for security</span>":"")+"</strong>"+
+        (bytes?"<button class='btn btn-outline' style='font-size:.75rem;padding:.25rem .6rem' onclick=\"copyNow(decodeURIComponent('"+enc+"'),'"+label+" copied.')\">📋 Copy</button>":"")+
+      "</div>"+
+      "<div style='font-family:monospace;font-size:.85rem;word-break:break-all;margin-top:.3rem'>"+value+"</div>"+
+    "</div>";
+  });
+  document.getElementById("results").innerHTML=html;
+}
+
+function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* ---------- init ---------- */
+setupFile();
+updateHmacNote();
+onTextInput();
+  </script>
+</body></html>

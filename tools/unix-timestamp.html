@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unix Timestamp Converter — Epoch to Date &amp; Back | FreeToolHubs</title>
+  <meta name="description" content="Convert Unix timestamps to human dates and back. Auto-detects seconds, milliseconds, microseconds and nanoseconds, shows UTC, IST and any time zone, handles DST and pre-1970 dates. Free, runs in your browser.">
+  <meta property="og:title" content="Unix Timestamp Converter — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Convert Unix epoch timestamps to dates and dates to timestamps, in any time zone">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/unix-timestamp">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Unix Timestamp Converter — FreeToolHubs">
+  <meta name="twitter:description" content="Convert Unix epoch timestamps to dates and dates to timestamps, in any time zone">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Unix Timestamp Converter","url":"https://freetoolhubs.com/tools/unix-timestamp","description":"Convert Unix epoch timestamps to dates and dates to timestamps, in any time zone","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="unix timestamp converter, epoch converter, timestamp to date, date to epoch, unix time, milliseconds to date">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/unix-timestamp">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .uts-live{display:flex;flex-wrap:wrap;gap:.6rem;margin:.6rem 0}
+    .uts-live .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem;flex:1;min-width:150px}
+    .uts-live .big{font-size:1.4rem;font-weight:700;font-family:monospace;word-break:break-all}
+    .uts-live .lbl{color:var(--text2);font-size:.78rem}
+    .uts-grid{display:grid;grid-template-columns:auto 1fr;gap:.4rem .9rem;margin:.6rem 0;font-size:.92rem}
+    .uts-grid .k{color:var(--text2);white-space:nowrap}
+    .uts-grid .v{font-family:monospace;word-break:break-all}
+    .uts-note{background:var(--card);border-left:4px solid var(--warn);border-radius:8px;padding:.6rem .9rem;margin:.6rem 0;font-size:.85rem}
+    table.uts-tbl{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.6rem}
+    table.uts-tbl th,table.uts-tbl td{border:1px solid var(--border);padding:.35rem .5rem;text-align:left;font-family:monospace;word-break:break-all}
+    table.uts-tbl th{background:var(--card);font-family:inherit}
+    .uts-wrap{overflow-x:auto}
+  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How does the tool know if my number is seconds, milliseconds, microseconds or nanoseconds?", "acceptedAnswer": {"@type": "Answer", "text": "It counts the digits. A value with up to 11 digits is read as seconds, up to 14 as milliseconds, up to 17 as microseconds, and longer as nanoseconds — so 1700000000 is seconds and 1700000000000 is milliseconds. The sign is ignored for counting, so negative (pre-1970) values are detected the same way. You can override the guess with the unit dropdown if your value is unusual."}}, {"@type": "Question", "name": "Why does the Date to Timestamp result use the time zone I pick instead of my computer's?", "acceptedAnswer": {"@type": "Answer", "text": "Because the same wall-clock time means a different instant in each zone. The tool reads your date and time as if they were written on a clock in the zone you choose, works out that zone's exact offset for that specific date (including daylight saving) using the browser's time zone data, and then produces the epoch. That is why 2026-01-01 00:00 in Asia/Kolkata gives 1767205800, not whatever your own zone would give."}}, {"@type": "Question", "name": "What happens with a daylight-saving gap or an ambiguous time?", "acceptedAnswer": {"@type": "Answer", "text": "On the spring-forward date some wall-clock times do not exist (the clock jumps, e.g. 02:30 in America/New_York), and on the fall-back date some times happen twice. The tool detects both by comparing the offset before and after the moment: for a gap it uses the instant just after the skip and shows a note, and for an ambiguous time it uses the earlier of the two occurrences and says so, rather than silently picking one."}}, {"@type": "Question", "name": "What is the year 2038 problem the tool mentions?", "acceptedAnswer": {"@type": "Answer", "text": "Unix time stored in a signed 32-bit integer can only reach 2147483647, which is 2038-01-19T03:14:07Z. One second later the value overflows to a negative number, so systems using 32-bit time break. When you enter 2147483647 as seconds the tool shows this date and flags it. Modern 64-bit systems are not affected, but legacy code and some embedded devices still are."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → ⏱️ Unix Timestamp Converter</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section">
+      <h1>⏱️ Unix Timestamp Converter</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="60" cy="60" r="34" fill="none" stroke="#6366f1" stroke-width="4"/><path d="M60 38v22l15 9" fill="none" stroke="#8b5cf6" stroke-width="4" stroke-linecap="round"/><path d="M110 60h60M150 46l20 14-20 14" fill="none" stroke="#ec4899" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <p class="info">A Unix timestamp counts seconds since 1 January 1970 00:00:00 UTC (the "epoch"). This tool converts a timestamp to a readable date in any time zone, and a date back to a timestamp — all in your browser, nothing is uploaded.</p>
+
+      <h2 style="font-size:1rem;margin-top:1.2rem">Current time right now</h2>
+      <div class="uts-live">
+        <div class="card"><div class="lbl">Seconds</div><div class="big" id="liveSec">—</div></div>
+        <div class="card"><div class="lbl">Milliseconds</div><div class="big" id="liveMs">—</div></div>
+      </div>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="copyNow(document.getElementById('liveSec').textContent,'Copied current seconds.')">📋 Copy seconds</button>
+        <button class="btn btn-outline" onclick="copyNow(document.getElementById('liveMs').textContent,'Copied current milliseconds.')">📋 Copy ms</button>
+        <button class="btn btn-outline" onclick="useLive()">⤵ Use now below</button>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2 style="font-size:1rem">Timestamp → Date</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <input type="text" id="tsIn" placeholder="e.g. 1700000000" oninput="convertTs()" style="flex:2;min-width:180px;font-family:monospace">
+        <select id="tsUnit" onchange="convertTs()" style="flex:1;min-width:150px">
+          <option value="auto" selected>Auto-detect unit</option>
+          <option value="s">Seconds</option>
+          <option value="ms">Milliseconds</option>
+          <option value="us">Microseconds</option>
+          <option value="ns">Nanoseconds</option>
+        </select>
+      </div>
+      <div class="row">
+        <label style="flex:2;font-size:.85rem">Extra time zone
+          <select id="tsZone" onchange="convertTs()"></select>
+        </label>
+      </div>
+      <div id="tsResult"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2 style="font-size:1rem">Date → Timestamp</h2>
+      <p class="info" style="font-size:.85rem">The date and time you enter are read <strong>in the chosen time zone</strong>, not your browser's — the correct offset (including daylight saving) is computed for that zone.</p>
+      <div class="row" style="flex-wrap:wrap">
+        <input type="date" id="dtDate" oninput="convertDate()" style="flex:1;min-width:150px">
+        <input type="time" id="dtTime" step="1" oninput="convertDate()" style="flex:1;min-width:130px">
+      </div>
+      <div class="row">
+        <label style="flex:2;font-size:.85rem">Interpret in time zone
+          <select id="dtZone" onchange="convertDate()"></select>
+        </label>
+      </div>
+      <div id="dtResult"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2 style="font-size:1rem">Batch convert</h2>
+      <p class="info" style="font-size:.85rem">Paste many timestamps, one per line. Each is auto-detected and converted to UTC and IST. Download the table as CSV.</p>
+      <textarea id="batchIn" placeholder="1700000000&#10;0&#10;-86400&#10;2147483647" style="font-family:monospace;min-height:120px" oninput="convertBatch()"></textarea>
+      <div class="row">
+        <button class="btn" onclick="convertBatch()">Convert all</button>
+        <button class="btn btn-outline" onclick="downloadBatchCsv()">⬇ Download CSV</button>
+      </div>
+      <div id="batchResult" class="uts-wrap"></div>
+    </div>
+
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>How to Use This Tool</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Read a timestamp:</strong> paste a number into "Timestamp → Date". Leave the unit on Auto-detect and it works out seconds, milliseconds, microseconds or nanoseconds from the digit count.</li>
+        <li><strong>Check a specific zone:</strong> pick any city in the "Extra time zone" dropdown to see that moment there alongside UTC, your local time and IST.</li>
+        <li><strong>Build a timestamp:</strong> in "Date → Timestamp" choose the date, time and the zone that time is written in — the tool finds the offset for that date and outputs both seconds and milliseconds.</li>
+        <li><strong>Convert a batch:</strong> paste a column of timestamps, hit Convert all, and download the result as CSV.</li>
+        <li><strong>Copy the current time:</strong> the live counter at the top ticks every second; copy the current epoch in seconds or milliseconds with one click.</li>
+      </ol>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>Common Use Cases</h2>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Reading a log line</strong> — an API or server log prints <code>1700000000</code> and you need the real date and time, in UTC and in IST.</li>
+        <li><strong>Database and JSON fields</strong> — a <code>created_at</code> stored as epoch milliseconds (13 digits) decoded without guessing the unit.</li>
+        <li><strong>Setting an expiry</strong> — pick a future date in a specific zone and get the exact epoch to put in a token, cookie or cron job.</li>
+        <li><strong>Debugging across zones</strong> — confirm what a stored timestamp means for a user in another country, not just on your own machine.</li>
+        <li><strong>The year 2038 problem</strong> — check whether a value is close to the 32-bit signed limit that overflows on 19 January 2038.</li>
+      </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>About This Tool</h2>
+      <p>Everything runs locally in your browser using its built-in IANA time zone database — the same data your operating system uses — so daylight saving and half-hour zones such as India (+5:30) are handled exactly. No timestamp is sent to a server, there is no account, and the page works offline once loaded.</p>
+      <p>Negative timestamps (dates before 1970) are supported, and the batch converter handles thousands of lines without leaving your device.</p>
+    </div>
+
+    <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Working With Unix Time: Units, Time Zones and the Edge Cases That Trip People Up</h2>
+
+<h3>What the epoch is, and why the unit matters</h3>
+<p>A Unix timestamp is a single number: the count of seconds since 1 January 1970 00:00:00 UTC, a fixed point called the epoch. Because it is anchored to UTC, the same number means the same instant everywhere on Earth — the ambiguity only appears when you display it. The catch is the unit. Plain Unix time is in seconds (ten digits for current dates), but JavaScript, Java and many databases store milliseconds (thirteen digits), and high-resolution systems use microseconds or nanoseconds. This tool guesses the unit from the digit count — up to 11 digits is seconds, up to 14 milliseconds, up to 17 microseconds, longer is nanoseconds — so 1700000000 and 1700000000000 both resolve to the same moment, Tuesday 14 November 2023 22:13:20 UTC. If your value is unusual you can force the unit with the dropdown rather than relying on the guess.</p>
+
+<h3>Negative timestamps and the range limit</h3>
+<p>Dates before 1970 are represented by negative numbers, and they work here: -86400 is exactly one day before the epoch, 1969-12-31T00:00:00Z. The sign is stripped before counting digits so the unit detection still behaves. There is an outer limit — JavaScript can only represent dates within about 273,790 years either side of 1970 — and a value beyond that is rejected with a message rather than producing a nonsense date.</p>
+
+<h3>Converting a date back to a timestamp in a specific zone</h3>
+<p>Going from a human date to an epoch is where most mistakes happen, because a wall-clock time is meaningless without a zone. "1 January 2026, midnight" is a different instant in Mumbai than in London. The Date to Timestamp section asks you which zone the time is written in and computes that zone's real offset for that date, so 2026-01-01 00:00 in Asia/Kolkata gives 1767205800. The offset is derived from the browser's own time zone database by formatting the instant in the target zone and reading it back, which is exact for daylight saving and for half-hour zones like India's +5:30.</p>
+
+<h3>Daylight-saving gaps, ambiguous times and 2038</h3>
+<p>Two dates a year behave strangely. On the spring-forward date a range of wall-clock times never happens because the clock jumps — 2024-03-10 02:30 in America/New_York is one such non-existent time — and the tool shows a note and uses the instant just after the skip. On the fall-back date a time happens twice; 2024-11-03 01:30 in New York is ambiguous, and the tool uses the earlier occurrence and says so. Finally, the Year 2038 problem: 2147483647 seconds is 2038-01-19T03:14:07Z, the largest value a signed 32-bit integer holds. One second later it overflows, which still threatens legacy and embedded systems. The tool flags this value when you enter it. Everything is computed locally; nothing is uploaded.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem">
+      <h2>🔗 Related Tools</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <a href="/tools/timezone-planner" class="btn btn-outline" style="flex:1;min-width:150px">🌍 Time Zone Planner</a>
+        <a href="/tools/age-calculator" class="btn btn-outline" style="flex:1;min-width:150px">🎂 Age Calculator</a>
+        <a href="/tools/number-converter" class="btn btn-outline" style="flex:1;min-width:150px">🔢 Number Converter</a>
+        <a href="/tools/json-formatter" class="btn btn-outline" style="flex:1;min-width:150px">{ } JSON Formatter</a>
+        <a href="/tools/crontab" class="btn btn-outline" style="flex:1;min-width:150px">⏲️ Crontab Builder</a>
+        <a href="/tools/base64" class="btn btn-outline" style="flex:1;min-width:150px">🔐 Base64 Encoder</a>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/timezone-meeting-planning-guide">Time Zone Meeting Planning — DST, IST Gap Aur Overlap Hours</a></li><li><a href="/blog/youtube-timestamp-links-guide">How to Create YouTube Timestamp Links</a></li><li><a href="/blog/best-free-tools-for-developers-2026">Best Free Tools for Developers in 2026</a></li></ul></div>
+
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>How does the tool know if my number is seconds, milliseconds, microseconds or nanoseconds?</summary><p>It counts the digits. A value with up to 11 digits is read as seconds, up to 14 as milliseconds, up to 17 as microseconds, and longer as nanoseconds — so 1700000000 is seconds and 1700000000000 is milliseconds. The sign is ignored for counting, so negative (pre-1970) values are detected the same way. You can override the guess with the unit dropdown if your value is unusual.</p></details>
+<details><summary>Why does the Date to Timestamp result use the time zone I pick instead of my computer&#x27;s?</summary><p>Because the same wall-clock time means a different instant in each zone. The tool reads your date and time as if they were written on a clock in the zone you choose, works out that zone&#x27;s exact offset for that specific date (including daylight saving) using the browser&#x27;s time zone data, and then produces the epoch. That is why 2026-01-01 00:00 in Asia/Kolkata gives 1767205800, not whatever your own zone would give.</p></details>
+<details><summary>What happens with a daylight-saving gap or an ambiguous time?</summary><p>On the spring-forward date some wall-clock times do not exist (the clock jumps, e.g. 02:30 in America/New_York), and on the fall-back date some times happen twice. The tool detects both by comparing the offset before and after the moment: for a gap it uses the instant just after the skip and shows a note, and for an ambiguous time it uses the earlier of the two occurrences and says so, rather than silently picking one.</p></details>
+<details><summary>What is the year 2038 problem the tool mentions?</summary><p>Unix time stored in a signed 32-bit integer can only reach 2147483647, which is 2038-01-19T03:14:07Z. One second later the value overflows to a negative number, so systems using 32-bit time break. When you enter 2147483647 as seconds the tool shows this date and flags it. Modern 64-bit systems are not affected, but legacy code and some embedded devices still are.</p></details>
+<!-- tool-faq:end -->
+    </div>
+  </div>
+
+  <footer>
+    <p><a href="/">Home</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/blog/">Blog</a></p>
+    <p style="margin-top:.5rem">© 2026 FreeToolHubs · Made in India 🇮🇳</p>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* ===== Unix Timestamp Converter =====
+   All conversions use the browser's own Intl time zone data, asked for the
+   SPECIFIC instant, so daylight saving and half-hour zones (IST +5:30) are
+   exact. Nothing is uploaded. */
+
+var IST="Asia/Kolkata";
+
+/* ---- timezone list ------------------------------------------------------ */
+var FALLBACK_ZONES=["UTC","Asia/Kolkata","Asia/Dubai","Asia/Singapore",
+  "Asia/Tokyo","Asia/Shanghai","Asia/Dhaka","Asia/Karachi","Europe/London",
+  "Europe/Paris","Europe/Berlin","Europe/Moscow","America/New_York",
+  "America/Chicago","America/Denver","America/Los_Angeles","America/Sao_Paulo",
+  "Australia/Sydney","Pacific/Auckland"];
+
+function zoneList(){
+  var full=null;
+  try{
+    if(typeof Intl.supportedValuesOf==="function"){
+      var z=Intl.supportedValuesOf("timeZone");
+      if(z&&z.length)full=z.slice();
+    }
+  }catch(e){}
+  if(!full)return FALLBACK_ZONES.slice();
+  /* Some engines expose only the legacy alias (e.g. Asia/Calcutta, not
+     Asia/Kolkata). Make sure the common modern names are present and listed
+     first so IST is easy to find, deduping against what the engine gave. */
+  var seen={};
+  full.forEach(function(z){seen[z]=1;});
+  var head=[];
+  FALLBACK_ZONES.forEach(function(z){if(!seen[z]){head.push(z);seen[z]=1;}});
+  return head.concat(full);
+}
+
+function fillZones(){
+  var local=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"UTC";
+  var zones=zoneList();
+  var opts=zones.map(function(z){return "<option value='"+z+"'>"+z.replace(/_/g," ")+"</option>";}).join("");
+  var tsZ=document.getElementById("tsZone"), dtZ=document.getElementById("dtZone");
+  tsZ.innerHTML=opts; dtZ.innerHTML=opts;
+  /* default the Date->Timestamp zone to the browser's zone, and the Timestamp->Date
+     extra zone to something different from UTC/local/IST so it's useful */
+  dtZ.value=zones.indexOf(local)>=0?local:"UTC";
+  tsZ.value=zones.indexOf("America/New_York")>=0?"America/New_York":zones[0];
+}
+
+/* ---- offset / formatting helpers (same technique as the planner) -------- */
+function offsetMinutes(tz,date){
+  var dtf=new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",
+    year:"numeric",month:"2-digit",day:"2-digit",
+    hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var p={};
+  dtf.formatToParts(date).forEach(function(x){if(x.type!=="literal")p[x.type]=x.value;});
+  var asUtc=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);
+  return Math.round((asUtc-Math.floor(date.getTime()/1000)*1000)/60000);
+}
+function fmtOffset(mins){
+  var sign=mins<0?"-":"+",a=Math.abs(mins);
+  return "UTC"+sign+String(Math.floor(a/60)).padStart(2,"0")+":"+String(a%60).padStart(2,"0");
+}
+
+/* Format an instant in a given zone. Returns the pieces so the caller can
+   build ISO / RFC strings that carry the zone's own offset. */
+function zoneParts(tz,date){
+  var dtf=new Intl.DateTimeFormat("en-GB",{timeZone:tz,hourCycle:"h23",
+    weekday:"long",year:"numeric",month:"2-digit",day:"2-digit",
+    hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var p={};
+  dtf.formatToParts(date).forEach(function(x){if(x.type!=="literal")p[x.type]=x.value;});
+  return p;
+}
+
+var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function human(tz,date){
+  var p=zoneParts(tz,date);
+  return p.weekday+", "+p.day+" "+MONTHS[+p.month-1]+" "+p.year+", "+p.hour+":"+p.minute+":"+p.second;
+}
+
+/* ISO 8601 with the zone's own offset, e.g. 2023-11-15T03:43:20+05:30 */
+function isoInZone(tz,date){
+  var p=zoneParts(tz,date);
+  var off=offsetMinutes(tz,date);
+  var sign=off<0?"-":"+",a=Math.abs(off);
+  var offStr=sign+String(Math.floor(a/60)).padStart(2,"0")+":"+String(a%60).padStart(2,"0");
+  return p.year+"-"+p.month+"-"+p.day+"T"+p.hour+":"+p.minute+":"+p.second+(tz==="UTC"?"Z":offStr);
+}
+
+function relative(date){
+  var diff=date.getTime()-Date.now();
+  var future=diff>0;
+  var s=Math.abs(diff)/1000;
+  var units=[["year",31536000],["month",2592000],["day",86400],["hour",3600],["minute",60],["second",1]];
+  for(var i=0;i<units.length;i++){
+    var v=Math.floor(s/units[i][1]);
+    if(v>=1){
+      var label=v+" "+units[i][0]+(v===1?"":"s");
+      return future?("in "+label):(label+" ago");
+    }
+  }
+  return "just now";
+}
+
+/* ---- unit auto-detection ------------------------------------------------ */
+/* Digit count: 10 -> seconds, 13 -> ms, 16 -> us, 19 -> ns. The sign is
+   stripped first so negative (pre-1970) values are counted by their digits. */
+function detectUnit(raw){
+  var digits=raw.replace(/^[-+]/,"").replace(/\..*$/,"").length;
+  if(digits<=11)return "s";
+  if(digits<=14)return "ms";
+  if(digits<=17)return "us";
+  return "ns";
+}
+function toMs(value,unit){
+  switch(unit){
+    case "s": return value*1000;
+    case "ms": return value;
+    case "us": return value/1000;
+    case "ns": return value/1e6;
+  }
+  return value;
+}
+
+/* ---- timestamp -> date -------------------------------------------------- */
+function convertTs(){
+  var box=document.getElementById("tsResult");
+  var raw=(document.getElementById("tsIn").value||"").trim();
+  if(!raw){box.innerHTML="";return;}
+  if(!/^[-+]?\d+(\.\d+)?$/.test(raw)){
+    box.innerHTML="<p class='info' style='color:var(--danger)'>Enter a whole number (optionally negative). \""+esc(raw.slice(0,20))+"\" is not a timestamp.</p>";
+    return;
+  }
+  var sel=document.getElementById("tsUnit").value;
+  var unit=sel==="auto"?detectUnit(raw):sel;
+  var value=parseFloat(raw);
+  var ms=toMs(value,unit);
+  if(!isFinite(ms)||Math.abs(ms)>8.64e15){
+    box.innerHTML="<p class='info' style='color:var(--danger)'>That value is outside the range JavaScript can represent as a date (about ±273,790 years from 1970).</p>";
+    return;
+  }
+  var date=new Date(ms);
+  if(isNaN(date.getTime())){
+    box.innerHTML="<p class='info' style='color:var(--danger)'>Could not interpret that value as a date.</p>";
+    return;
+  }
+  var localZone=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"local";
+  var extra=document.getElementById("tsZone").value;
+  var detectedNote=sel==="auto"?(" <span style='color:var(--text2)'>(detected as "+unitName(unit)+")</span>"):"";
+  var rfc=date.toUTCString(); /* RFC 2822-style, in GMT */
+  var html="";
+  html+="<p class='info'>Interpreted as <strong>"+esc(raw)+" "+unitName(unit)+"</strong>"+detectedNote+".</p>";
+  html+="<div class='uts-grid'>";
+  html+=row("UTC",human("UTC",date));
+  html+=row("Local ("+esc(localZone.replace(/_/g," "))+")",human(localZone,date));
+  html+=row("IST (Asia/Kolkata)",human(IST,date));
+  if(extra&&extra!=="UTC"&&extra!==localZone&&extra!==IST)
+    html+=row(esc(extra.replace(/_/g," ")),human(extra,date));
+  html+=row("ISO 8601 (UTC)",esc(date.toISOString()));
+  html+=row("ISO 8601 (IST)",esc(isoInZone(IST,date)));
+  html+=row("RFC 2822",esc(rfc));
+  html+=row("Day of week",zoneParts("UTC",date).weekday+" (UTC)");
+  html+=row("Relative",esc(relative(date)));
+  html+=row("Epoch seconds",Math.floor(ms/1000));
+  html+=row("Epoch milliseconds",Math.round(ms));
+  html+="</div>";
+  if(Math.round(value)===2147483647&&unit==="s"){
+    html+="<div class='uts-note'><strong>Year 2038:</strong> 2147483647 is the largest value a signed 32-bit integer can hold. Systems that store Unix time that way overflow one second later, on 2038-01-19T03:14:07Z — the \"Year 2038 problem\".</div>";
+  }
+  box.innerHTML=html;
+}
+function unitName(u){return {s:"seconds",ms:"milliseconds",us:"microseconds",ns:"nanoseconds"}[u]||u;}
+function row(k,v){return "<div class='k'>"+k+"</div><div class='v'>"+v+"</div>";}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---- date -> timestamp -------------------------------------------------- */
+/* The instant for a wall-clock time typed for a given zone. Guess from the
+   zone offset and correct once — the correction only shifts by at most a day,
+   and offsets do not change twice within that window. DST gaps and ambiguous
+   times are detected by comparing the two offsets. */
+/* The instant for a wall-clock time typed for a given zone.
+
+   A wall-clock time can map to zero, one or two real instants:
+     - normal:    exactly one instant,
+     - spring gap: none (the clock skipped this time),
+     - autumn:    two (the clock repeated this time).
+
+   A single offset-correction misses the autumn case when the first guess
+   happens to land on the summer side, so we test BOTH candidate offsets —
+   the one in effect ~18h before and ~18h after the wall time (which bracket
+   any single transition). Each candidate is an instant only if, rendered
+   back in the zone, it reproduces the requested wall-clock time. */
+function wallMinutes(tz,date){
+  var p=zoneParts(tz,date);
+  return ((+p.year)*12+(+p.month-1))*44640 + (+p.day)*1440 + (+p.hour)*60 + (+p.minute);
+}
+function instantFrom(tz,y,mo,d,h,mi,s){
+  var guess=Date.UTC(y,mo-1,d,h,mi,s||0);
+  var want=((y*12+(mo-1))*44640)+d*1440+h*60+mi;
+  var offA=offsetMinutes(tz,new Date(guess-18*3600000));
+  var offB=offsetMinutes(tz,new Date(guess+18*3600000));
+  var cands=[];
+  [offA,offB].forEach(function(o){
+    var inst=guess-o*60000;
+    if(wallMinutes(tz,new Date(inst))===want){
+      /* dedupe identical instants */
+      for(var i=0;i<cands.length;i++)if(cands[i].t===inst)return;
+      cands.push({t:inst,off:o});
+    }
+  });
+  var dstFlag=null, chosen;
+  if(cands.length===0){
+    /* spring-forward gap: this wall time does not exist. Use the instant just
+       after the skip (the later offset applied to the guess). */
+    dstFlag="gap";
+    chosen={t:guess-offB*60000,off:offB};
+  }else if(cands.length===2){
+    /* autumn ambiguity: pick the earlier real instant. */
+    dstFlag="ambiguous";
+    chosen=cands[0].t<cands[1].t?cands[0]:cands[1];
+  }else{
+    chosen=cands[0];
+  }
+  return {date:new Date(chosen.t),off:chosen.off,dst:dstFlag};
+}
+
+function convertDate(){
+  var box=document.getElementById("dtResult");
+  var d=document.getElementById("dtDate").value;
+  var t=document.getElementById("dtTime").value;
+  if(!d||!t){box.innerHTML="";return;}
+  var tz=document.getElementById("dtZone").value;
+  var dp=d.split("-"),tp=t.split(":");
+  var r=instantFrom(tz,+dp[0],+dp[1],+dp[2],+tp[0],+tp[1],+(tp[2]||0));
+  var ms=r.date.getTime();
+  var html="<div class='uts-grid'>";
+  html+=row("Entered",esc(d+" "+t+" in "+tz.replace(/_/g," ")+" ("+fmtOffset(r.off)+")"));
+  html+=row("Epoch seconds","<strong>"+Math.floor(ms/1000)+"</strong>");
+  html+=row("Epoch milliseconds","<strong>"+ms+"</strong>");
+  html+=row("UTC",human("UTC",r.date));
+  html+=row("ISO 8601 (UTC)",esc(r.date.toISOString()));
+  html+="</div>";
+  html+="<div class='row'><button class='btn btn-outline' onclick=\"copyNow('"+Math.floor(ms/1000)+"','Copied seconds.')\">📋 Copy seconds</button>"+
+        "<button class='btn btn-outline' onclick=\"copyNow('"+ms+"','Copied milliseconds.')\">📋 Copy ms</button></div>";
+  if(r.dst==="gap"){
+    html+="<div class='uts-note'><strong>Daylight-saving gap:</strong> the clocks jumped forward in "+esc(tz.replace(/_/g," "))+
+      " and this wall-clock time does not actually exist on that date. It has been read as the moment just after the skip, so the UTC result is one hour off what a naive reading would give.</div>";
+  }else if(r.dst==="ambiguous"){
+    html+="<div class='uts-note'><strong>Ambiguous time:</strong> the clocks fell back in "+esc(tz.replace(/_/g," "))+
+      " so this wall-clock time happens twice on that date. The earlier of the two occurrences has been used.</div>";
+  }
+  box.innerHTML=html;
+}
+
+/* ---- batch -------------------------------------------------------------- */
+var batchRows=[];
+function convertBatch(){
+  var box=document.getElementById("batchResult");
+  var text=(document.getElementById("batchIn").value||"").trim();
+  if(!text){box.innerHTML="";batchRows=[];return;}
+  var lines=text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+  batchRows=[];
+  var html="<table class='uts-tbl'><thead><tr><th>Input</th><th>Unit</th><th>UTC</th><th>IST</th><th>Epoch (s)</th></tr></thead><tbody>";
+  lines.forEach(function(raw){
+    if(!/^[-+]?\d+(\.\d+)?$/.test(raw)){
+      html+="<tr><td>"+esc(raw.slice(0,20))+"</td><td colspan='4' style='color:var(--danger)'>not a number</td></tr>";
+      batchRows.push([raw,"","(invalid)","",""]);
+      return;
+    }
+    var unit=detectUnit(raw);
+    var ms=toMs(parseFloat(raw),unit);
+    if(!isFinite(ms)||Math.abs(ms)>8.64e15){
+      html+="<tr><td>"+esc(raw)+"</td><td>"+unit+"</td><td colspan='3' style='color:var(--danger)'>out of range</td></tr>";
+      batchRows.push([raw,unit,"(out of range)","",""]);
+      return;
+    }
+    var date=new Date(ms);
+    var u=human("UTC",date), i=human(IST,date), es=Math.floor(ms/1000);
+    html+="<tr><td>"+esc(raw)+"</td><td>"+unit+"</td><td>"+esc(u)+"</td><td>"+esc(i)+"</td><td>"+es+"</td></tr>";
+    batchRows.push([raw,unit,u,i,String(es)]);
+  });
+  html+="</tbody></table>";
+  box.innerHTML=html;
+}
+function downloadBatchCsv(){
+  if(!batchRows.length){notify("Nothing to export — paste some timestamps and convert first.","warn");return;}
+  var out="\uFEFFInput,Unit,UTC,IST,Epoch seconds\n";
+  batchRows.forEach(function(r){
+    out+=r.map(function(c){var s=String(c==null?"":c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")+"\n";
+  });
+  download(new Blob([out],{type:"text/csv;charset=utf-8"}),"timestamps.csv");
+}
+
+/* ---- live clock --------------------------------------------------------- */
+function tickLive(){
+  var now=Date.now();
+  document.getElementById("liveSec").textContent=Math.floor(now/1000);
+  document.getElementById("liveMs").textContent=now;
+}
+function useLive(){
+  var now=Date.now();
+  document.getElementById("tsIn").value=Math.floor(now/1000);
+  document.getElementById("tsUnit").value="s";
+  convertTs();
+  document.getElementById("tsResult").scrollIntoView({behavior:"smooth",block:"nearest"});
+  notify("Filled in the current time.","ok");
+}
+
+/* ---- init --------------------------------------------------------------- */
+(function init(){
+  fillZones();
+  tickLive();
+  setInterval(tickLive,1000);
+  /* seed Date->Timestamp with now, in the chosen zone */
+  var local=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"UTC";
+  var p=zoneParts(local,new Date());
+  document.getElementById("dtDate").value=p.year+"-"+p.month+"-"+p.day;
+  document.getElementById("dtTime").value=p.hour+":"+p.minute+":"+p.second;
+  convertDate();
+})();
+
+window.convertTs=convertTs;
+window.convertDate=convertDate;
+window.convertBatch=convertBatch;
+window.downloadBatchCsv=downloadBatchCsv;
+window.useLive=useLive;
+  </script>
+</body>
+</html>

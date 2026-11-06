@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID Generator — v4 &amp; v7 UUIDs, Bulk + Validator | FreeToolHubs</title>
+  <meta name="description" content="Generate v4 random and v7 time-ordered UUIDs in bulk, in standard, uppercase, no-hyphen, braces, URN, JSON or CSV form. Includes a validator that shows version, variant and the embedded v7 timestamp. Runs in your browser.">
+  <meta property="og:title" content="UUID Generator — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Generate v4 and v7 UUIDs in bulk, with a validator/inspector">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/uuid-generator">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="UUID Generator — FreeToolHubs">
+  <meta name="twitter:description" content="Generate v4 and v7 UUIDs in bulk, with a validator/inspector">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"UUID Generator","url":"https://freetoolhubs.com/tools/uuid-generator","description":"Generate v4 and v7 UUIDs in bulk with a validator/inspector","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="uuid generator, guid generator, uuid v4, uuid v7, uuid validator, bulk uuid">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/uuid-generator">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the difference between the v4 and v7 UUIDs it generates?", "acceptedAnswer": {"@type": "Answer", "text": "v4 is 122 bits of cryptographic randomness with the version nibble fixed to 4 and the variant bits to 10 — ideal when you only need uniqueness and no ordering. v7 (RFC 9562) starts with a 48-bit Unix millisecond timestamp, then the version 7 and variant 10 bits, then random data, so a lexicographic sort of v7 UUIDs matches creation order. That ordering makes v7 far friendlier as a database primary key because new rows cluster at the end of the index instead of scattering like v4."}}, {"@type": "Question", "name": "Where does the randomness come from — is it secure?", "acceptedAnswer": {"@type": "Answer", "text": "v4 uses the browser's native crypto.randomUUID() when present, and otherwise falls back to crypto.getRandomValues() with the version and variant bits set correctly by hand. v7 always fills its random portion from crypto.getRandomValues(). Both draw on the browser's cryptographically secure random generator, not Math.random(), and everything happens locally in the page."}}, {"@type": "Question", "name": "If I generate a bulk batch, do the v7 UUIDs stay in order?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Many v7 UUIDs in a batch are created within the same millisecond, which would otherwise leave their order to chance. This tool keeps a per-millisecond counter in the 12 'rand_a' bits, so UUIDs minted in the same millisecond increment that counter and therefore sort in the exact order they were generated. You can generate from 1 to 1000 at once."}}, {"@type": "Question", "name": "What does the validator tell me, and does it decode v7 timestamps?", "acceptedAnswer": {"@type": "Answer", "text": "Paste any UUID — in standard, uppercase, hyphen-free, brace or urn:uuid form — and it reports whether the string is well-formed (32 hex digits in the 8-4-4-4-12 layout), its version nibble and its variant bits. It specially recognises the nil UUID (all zeros) and the max UUID (all ones). For a v7 UUID it reads the 48-bit timestamp back out and shows it both as milliseconds since the epoch and as a decoded UTC and local date."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🆔 UUID Generator</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section"><h1>🆔 UUID Generator</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="30" y="35" width="140" height="50" rx="10" fill="none" stroke="#6366f1" stroke-width="4"/><circle cx="60" cy="60" r="6" fill="#8b5cf6"/><circle cx="90" cy="60" r="6" fill="#8b5cf6"/><circle cx="120" cy="60" r="6" fill="#8b5cf6"/><circle cx="150" cy="60" r="6" fill="#8b5cf6"/></svg></div>
+
+      <div class="row" style="flex-wrap:wrap;gap:.6rem;align-items:center">
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem">Version:
+          <select id="version" style="width:auto;margin:0" onchange="versionHint()">
+            <option value="4" selected>v4 — random</option>
+            <option value="7">v7 — time-ordered (RFC 9562)</option>
+          </select>
+        </label>
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem">Count:
+          <input type="number" id="count" value="5" min="1" max="1000" style="width:90px;margin:0">
+        </label>
+        <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem">Format:
+          <select id="format" style="width:auto;margin:0" onchange="renderOutput()">
+            <option value="standard" selected>Standard</option>
+            <option value="upper">UPPERCASE</option>
+            <option value="nohyphen">No hyphens</option>
+            <option value="braces">Braces {…}</option>
+            <option value="urn">URN (urn:uuid:…)</option>
+            <option value="json">JSON array</option>
+            <option value="csv">CSV</option>
+          </select>
+        </label>
+      </div>
+      <p id="versionHint" class="info" style="margin:.3rem 0"></p>
+
+      <div class="row" style="flex-wrap:wrap"><button class="btn" onclick="generate()">⚙️ Generate</button><button class="btn btn-outline" onclick="copyAll()">📋 Copy All</button><button class="btn btn-outline" onclick="downloadTxt()">⬇ Download .txt</button></div>
+
+      <textarea id="output" readonly style="font-family:monospace;min-height:200px;margin-top:.6rem;font-size:.85rem" placeholder="Generated UUIDs appear here. Click Generate."></textarea>
+      <div id="genStatus" class="info" style="text-align:center" aria-live="polite"></div>
+
+      <h3 style="margin-top:1.4rem" role="heading" aria-level="2">🔎 Validate &amp; Inspect a UUID</h3>
+      <p class="info">Paste any UUID to check whether it is well-formed and see its version, variant, and — for v7 — the millisecond timestamp embedded in it decoded to a date.</p>
+      <div class="row"><input type="text" id="inspectInput" placeholder="e.g. 018f3c9a-4b2d-7c6e-8a1b-2c3d4e5f6a7b" style="font-family:monospace" oninput="inspect()"></div>
+      <div id="inspectResult" style="margin-top:.6rem" aria-live="polite"></div>
+    </div>
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>What is the difference between the v4 and v7 UUIDs it generates?</summary><p>v4 is 122 bits of cryptographic randomness with the version nibble fixed to 4 and the variant bits to 10 — ideal when you only need uniqueness and no ordering. v7 (RFC 9562) starts with a 48-bit Unix millisecond timestamp, then the version 7 and variant 10 bits, then random data, so a lexicographic sort of v7 UUIDs matches creation order. That ordering makes v7 far friendlier as a database primary key because new rows cluster at the end of the index instead of scattering like v4.</p></details>
+<details><summary>Where does the randomness come from — is it secure?</summary><p>v4 uses the browser&#x27;s native crypto.randomUUID() when present, and otherwise falls back to crypto.getRandomValues() with the version and variant bits set correctly by hand. v7 always fills its random portion from crypto.getRandomValues(). Both draw on the browser&#x27;s cryptographically secure random generator, not Math.random(), and everything happens locally in the page.</p></details>
+<details><summary>If I generate a bulk batch, do the v7 UUIDs stay in order?</summary><p>Yes. Many v7 UUIDs in a batch are created within the same millisecond, which would otherwise leave their order to chance. This tool keeps a per-millisecond counter in the 12 &#x27;rand_a&#x27; bits, so UUIDs minted in the same millisecond increment that counter and therefore sort in the exact order they were generated. You can generate from 1 to 1000 at once.</p></details>
+<details><summary>What does the validator tell me, and does it decode v7 timestamps?</summary><p>Paste any UUID — in standard, uppercase, hyphen-free, brace or urn:uuid form — and it reports whether the string is well-formed (32 hex digits in the 8-4-4-4-12 layout), its version nibble and its variant bits. It specially recognises the nil UUID (all zeros) and the max UUID (all ones). For a v7 UUID it reads the 48-bit timestamp back out and shows it both as milliseconds since the epoch and as a decoded UTC and local date.</p></details>
+<!-- tool-faq:end -->
+</div>
+  </div>
+
+  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+<ol style="margin-left:1.5rem;line-height:2">
+<li><strong>Choose a version.</strong> v4 is fully random; v7 encodes the current time so the IDs sort by creation order.</li>
+<li><strong>Set how many you need</strong> — anything from 1 to 1000 in a single batch.</li>
+<li><strong>Pick an output format.</strong> Standard, UPPERCASE, no-hyphens, braces, URN, a JSON array or CSV.</li>
+<li><strong>Click Generate,</strong> then Copy All or Download .txt to use them.</li>
+<li><strong>Inspect an existing UUID.</strong> Paste one into the validator to read its version, variant and (for v7) its timestamp.</li>
+</ol>
+<h2>Common Use Cases</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li>Seed a database table with primary keys without hitting the server.</li>
+<li>Generate v7 IDs so new rows sort by insertion time and index better than random v4.</li>
+<li>Produce a batch of correlation/request IDs for logs and test fixtures.</li>
+<li>Paste a UUID from a log to confirm its version and decode when a v7 ID was created.</li>
+<li>Export a JSON array or CSV column of IDs straight into a seed script or spreadsheet.</li>
+</ul>
+</div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>This UUID Generator creates version 4 (random) and version 7 (time-ordered) UUIDs entirely in your browser, with no network calls. v4 uses the browser's crypto.randomUUID() where available and falls back to crypto.getRandomValues() with the correct version and variant bits set. v7 follows RFC 9562: a 48-bit Unix millisecond timestamp, the version nibble 7, the variant bits 10, and cryptographically random remaining bits — with a per-millisecond counter so a bulk batch generated inside the same millisecond stays in generation order when sorted. You can produce 1 to 1000 at once and output them as standard, uppercase, hyphen-free, brace-wrapped, URN, JSON-array or CSV text, then copy or download them. The built-in validator checks that a UUID is well-formed and reports its version and variant, recognises the nil and max UUIDs, and decodes the embedded timestamp of a v7 UUID to a human-readable date.</p></div>
+
+  <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Generating v4 and v7 UUIDs, and Reading One Back</h2>
+
+<h3>v4: random, with a safe fallback</h3>
+<p>A version 4 UUID is almost entirely random — 122 bits of it — with only the version nibble pinned to 4 and two variant bits pinned to 10. This tool generates one by calling the browser's native <code>crypto.randomUUID()</code> when it exists, because that is the fastest and most direct route. On an older engine that lacks it, the tool falls back to pulling sixteen bytes from <code>crypto.getRandomValues()</code> and setting those same version and variant bits by hand, so the output is indistinguishable and still backed by a cryptographically secure source. The practical upshot: v4 is the right choice whenever you need uniqueness and nothing more. It carries no timestamp, so you cannot sort v4 UUIDs into any meaningful order, and as database keys they scatter across an index.</p>
+
+<h3>v7: time first, so the IDs sort by creation order</h3>
+<p>Version 7, defined in RFC 9562, fixes the sorting problem. The first 48 bits are the current time as Unix milliseconds, laid out big-endian, followed by the version 7 nibble, the variant 10 bits, and random data for the rest. Because the timestamp leads, a plain text sort of v7 UUIDs is a chronological sort — which is why v7 makes a far better primary key than v4: new rows append to the end of the index instead of landing anywhere.</p>
+<p>There is a subtlety the tool handles for you. When you ask for a bulk batch, many UUIDs are created inside the same millisecond, and if the trailing bits were pure random their order would be arbitrary. To keep sorted order equal to generation order, the tool keeps a counter that resets each millisecond and packs it into the 12 "rand_a" bits after the timestamp. Generate a thousand v7 UUIDs at once and they still sort exactly as they were made.</p>
+
+<h3>Formats, bulk, and export</h3>
+<p>Choose any count from 1 to 1000. The output can be rendered as standard lowercase, UPPERCASE, with the hyphens stripped, wrapped in <code>{braces}</code>, as a <code>urn:uuid:</code> URN, as a JSON array, or as CSV with a header row. Changing the format re-renders the current batch instantly without regenerating, so you can grab the same IDs in whichever shape your seed script or spreadsheet wants, then Copy All or Download as a <code>.txt</code> file.</p>
+
+<h3>The validator: version, variant and the v7 timestamp</h3>
+<p>Paste any UUID into the inspector and it first normalises the input — it tolerates braces, a <code>urn:uuid:</code> prefix, uppercase and even hyphen-free 32-character strings — then checks it against the 8-4-4-4-12 hex pattern. A malformed string is rejected with a clear message. A valid one has its version nibble and variant bits decoded and named, and the two special values are called out explicitly: the nil UUID of all zeros and the max UUID of all ones. For a v7 UUID the inspector reads the 48-bit timestamp back out of the first twelve hex digits and shows it as milliseconds since the epoch alongside a decoded UTC and local date, so you can tell exactly when an ID was minted.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/password-generator" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Password Generator</a><a href="/tools/base64" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Base64 Encoder</a><a href="/tools/json-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON Formatter</a><a href="/tools/number-converter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Number Converter</a><a href="/tools/regex-tester" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Regex Tester</a><a href="/tools/crontab" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Crontab Builder</a></div></div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-tools-for-developers-2026">Best Free Tools for Developers in 2026</a></li><li><a href="/blog/binary-hex-decimal-conversion-explained">Binary, Hex, and Decimal Conversion Explained for Beginners</a></li><li><a href="/blog/json-format-kaise-kare-developers-guide">JSON Format Kaise Kare — Developers Guide</a></li></ul></div>
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+        <a href="https://github.com/tiwariankit651" target="_blank" rel="noopener" title="GitHub" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💻</a>
+        <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" title="LinkedIn" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💼</a>
+        <a href="https://twitter.com/the_ank_tiwari" target="_blank" rel="noopener" title="Twitter" style="color:var(--text2);text-decoration:none;font-size:1.2rem">🐦</a>
+        <a href="https://instagram.com/imakt07" target="_blank" rel="noopener" title="Instagram" style="color:var(--text2);text-decoration:none;font-size:1.2rem">📷</a>
+      </div>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+    </div>
+  </footer>
+  <script src="../js/common.js"></script>
+  <script>
+"use strict";
+/* =========================================================================
+   UUID Generator — v4 (random) and v7 (time-ordered, RFC 9562).
+   Everything runs in the browser; nothing is sent anywhere.
+   ========================================================================= */
+
+/* 16 random bytes from the CSPRNG. */
+function randomBytes(n){var b=new Uint8Array(n);crypto.getRandomValues(b);return b;}
+
+function bytesToUuid(b){
+  var h=[],i;
+  for(i=0;i<16;i++)h.push((b[i]+0x100).toString(16).slice(1));
+  return h[0]+h[1]+h[2]+h[3]+"-"+h[4]+h[5]+"-"+h[6]+h[7]+"-"+h[8]+h[9]+"-"+h[10]+h[11]+h[12]+h[13]+h[14]+h[15];
+}
+
+/* ---- v4: prefer the native generator, fall back to getRandomValues ---- */
+function uuidV4(){
+  if(typeof crypto.randomUUID==="function"){
+    try{return crypto.randomUUID();}catch(e){/* fall through */}
+  }
+  var b=randomBytes(16);
+  b[6]=(b[6]&0x0f)|0x40;   // version 4
+  b[8]=(b[8]&0x3f)|0x80;   // variant 10
+  return bytesToUuid(b);
+}
+
+/* ---- v7: 48-bit ms timestamp + version 7 + variant 10 + random rest ----
+   A per-millisecond counter is packed into the 12 "rand_a" bits (and carries
+   into rand_b when it overflows) so that UUIDs minted inside the same
+   millisecond keep their generation order when sorted lexicographically. */
+var _v7LastMs=-1,_v7Counter=0;
+function uuidV7(){
+  var ms=Date.now();
+  if(ms===_v7LastMs){_v7Counter++;}
+  else{_v7LastMs=ms;_v7Counter=0;}
+  var b=randomBytes(16);
+  // 48-bit timestamp, big-endian, bytes 0..5
+  // Date.now() fits in 48 bits until year 10889, and in a JS double exactly.
+  var hi=Math.floor(ms/0x100000000);      // top 16 bits of the 48
+  var lo=ms>>>0;                           // low 32 bits
+  b[0]=(hi>>>8)&0xff;
+  b[1]=hi&0xff;
+  b[2]=(lo>>>24)&0xff;
+  b[3]=(lo>>>16)&0xff;
+  b[4]=(lo>>>8)&0xff;
+  b[5]=lo&0xff;
+  // rand_a (12 bits) = counter, so same-ms order is preserved
+  var c=_v7Counter&0xfff;
+  b[6]=0x70|((c>>>8)&0x0f); // version 7 in the high nibble, counter high bits
+  b[7]=c&0xff;
+  b[8]=(b[8]&0x3f)|0x80;    // variant 10; rest of b[8..15] stays random
+  return bytesToUuid(b);
+}
+
+/* ---- formatting ---- */
+var currentList=[];
+function formatOne(u,fmt){
+  switch(fmt){
+    case "upper":return u.toUpperCase();
+    case "nohyphen":return u.replace(/-/g,"");
+    case "braces":return "{"+u+"}";
+    case "urn":return "urn:uuid:"+u;
+    default:return u;
+  }
+}
+function renderOutput(){
+  var fmt=document.getElementById("format").value;
+  var out=document.getElementById("output");
+  if(!currentList.length){out.value="";return;}
+  if(fmt==="json"){
+    out.value=JSON.stringify(currentList,null,2);
+  }else if(fmt==="csv"){
+    out.value="uuid\n"+currentList.join("\n");
+  }else{
+    out.value=currentList.map(function(u){return formatOne(u,fmt);}).join("\n");
+  }
+}
+
+function generate(){
+  var ver=document.getElementById("version").value;
+  var raw=document.getElementById("count").value.trim();
+  var n=Math.floor(Number(raw));
+  if(!raw||isNaN(n)){notify("Enter how many UUIDs to generate (1–1000).","warn");return;}
+  if(n<1){notify("Count must be at least 1.","warn");return;}
+  if(n>1000){notify("Capped at 1000 per batch. Generating 1000.","warn");n=1000;document.getElementById("count").value=1000;}
+  var list=[];
+  var gen=(ver==="7")?uuidV7:uuidV4;
+  for(var i=0;i<n;i++)list.push(gen());
+  currentList=list;
+  renderOutput();
+  document.getElementById("genStatus").textContent="Generated "+n+" UUID"+(n!==1?"s":"")+" (v"+ver+").";
+}
+
+function copyAll(){
+  var t=document.getElementById("output").value;
+  if(!t){notify("Generate some UUIDs first.","warn");return;}
+  copyNow(t,"Copied all UUIDs to the clipboard.");
+}
+function downloadTxt(){
+  var t=document.getElementById("output").value;
+  if(!t){notify("Generate some UUIDs first.","warn");return;}
+  download(new Blob([t],{type:"text/plain;charset=utf-8"}),"uuids.txt");
+}
+
+function versionHint(){
+  var v=document.getElementById("version").value;
+  document.getElementById("versionHint").textContent=(v==="7")
+    ? "v7 embeds the current time, so a sorted list of v7 UUIDs is in creation order — useful as database keys."
+    : "v4 is 122 bits of randomness. Great for uniqueness; carries no time information.";
+}
+
+/* ---- validate / inspect ---- */
+var UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var NIL="00000000-0000-0000-0000-000000000000";
+var MAX="ffffffff-ffff-ffff-ffff-ffffffffffff";
+
+function variantName(uuid){
+  // variant is the top bits of the 17th hex digit (the first of group 4)
+  var n=parseInt(uuid.replace(/-/g,"").charAt(16),16);
+  if((n&0x8)===0)return "0 (reserved, NCS backward compatible)";
+  if((n&0xc)===0x8)return "10 (RFC 4122 / 9562)";
+  if((n&0xe)===0xc)return "110 (reserved, Microsoft)";
+  return "111 (reserved, future)";
+}
+function v7Timestamp(uuid){
+  var hex=uuid.replace(/-/g,"").slice(0,12); // first 48 bits
+  var hi=parseInt(hex.slice(0,4),16);        // top 16 bits
+  var lo=parseInt(hex.slice(4,12),16);       // low 32 bits
+  return hi*0x100000000+lo;
+}
+function inspect(){
+  var raw=document.getElementById("inspectInput").value.trim();
+  var box=document.getElementById("inspectResult");
+  if(!raw){box.innerHTML="";return;}
+  // allow braces / urn / uppercase / no-hyphen input, then normalise
+  var u=raw.replace(/^urn:uuid:/i,"").replace(/[{}]/g,"").trim().toLowerCase();
+  if(/^[0-9a-f]{32}$/.test(u)){
+    u=u.slice(0,8)+"-"+u.slice(8,12)+"-"+u.slice(12,16)+"-"+u.slice(16,20)+"-"+u.slice(20);
+  }
+  if(!UUID_RE.test(u)){
+    box.innerHTML="<div style='background:rgba(231,76,60,.12);border:1px solid var(--danger);border-radius:10px;padding:.6rem .9rem;color:var(--danger);font-weight:600'>❌ Not a valid UUID — expected 32 hex digits in the 8-4-4-4-12 pattern.</div>";
+    return;
+  }
+  var rows=[];
+  rows.push(["Canonical form",u]);
+  if(u===NIL){rows.push(["Special","Nil UUID (all zero bits)"]);rows.push(["Version","— (nil)"]);rows.push(["Variant","— (nil)"]);}
+  else if(u===MAX){rows.push(["Special","Max UUID (all one bits)"]);rows.push(["Version","— (max)"]);rows.push(["Variant","— (max)"]);}
+  else{
+    var verNibble=u.replace(/-/g,"").charAt(12);
+    var ver=parseInt(verNibble,16);
+    rows.push(["Version",verNibble+" (v"+ver+(ver===4?" — random":ver===7?" — time-ordered":"")+")"]);
+    rows.push(["Variant",variantName(u)]);
+    if(ver===7){
+      var ms=v7Timestamp(u);
+      var d=new Date(ms);
+      rows.push(["Embedded timestamp",ms+" ms since epoch"]);
+      rows.push(["Decoded date (UTC)",isNaN(d.getTime())?"(out of range)":d.toISOString()]);
+      rows.push(["Decoded date (local)",isNaN(d.getTime())?"(out of range)":d.toLocaleString()]);
+    }
+  }
+  var html="<div style='background:rgba(46,204,113,.12);border:1px solid var(--ok);border-radius:10px;padding:.6rem .9rem'><div style='color:var(--ok);font-weight:600;margin-bottom:.3rem'>✅ Valid UUID</div>";
+  html+="<table style='width:100%;border-collapse:collapse;font-size:.88rem'>";
+  rows.forEach(function(r){
+    html+="<tr><td style='padding:.2rem .5rem .2rem 0;color:var(--text2);white-space:nowrap;vertical-align:top'>"+r[0]+"</td>"+
+      "<td style='padding:.2rem 0;font-family:monospace;word-break:break-all'>"+escapeHtml(r[1])+"</td></tr>";
+  });
+  html+="</table></div>";
+  box.innerHTML=html;
+}
+function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---- init ---- */
+versionHint();
+generate();
+  </script>
+</body></html>

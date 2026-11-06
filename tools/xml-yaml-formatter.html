@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XML / YAML Formatter — Pretty-Print & Convert Online Free | FreeToolHubs</title>
+  <meta name="description" content="Format and validate XML or YAML in the browser, with line/column errors, and convert XML↔JSON and YAML↔JSON. Nothing is uploaded.">
+  <meta property="og:title" content="XML / YAML Formatter — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Pretty-print XML and YAML, report parse errors with line/column, and convert to and from JSON — all locally in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/xml-yaml-formatter">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="XML / YAML Formatter — FreeToolHubs">
+  <meta name="twitter:description" content="Pretty-print XML and YAML and convert to and from JSON in the browser.">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"XML / YAML Formatter","url":"https://freetoolhubs.com/tools/xml-yaml-formatter","description":"Pretty-print and validate XML and YAML with line/column errors, and convert between XML, YAML and JSON. Runs entirely in the browser.","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}</script>
+  <meta name="keywords" content="xml formatter, yaml formatter, xml to json, json to xml, yaml to json, json to yaml, pretty print xml online">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/xml-yaml-formatter">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "When my XML is malformed, how do I find the error?", "acceptedAnswer": {"@type": "Answer", "text": "The tool parses XML with the browser's native DOMParser in application/xml mode. If the document is not well-formed, the status line shows the parser's message and, where the browser provides it, the line and column of the fault — so you can jump straight to the unclosed tag or stray character. Validate does this check without producing formatted output."}}, {"@type": "Question", "name": "What parts of an XML document are preserved when formatting?", "acceptedAnswer": {"@type": "Answer", "text": "The XML declaration (<?xml …?>), comments, CDATA sections, processing instructions, attributes and namespace prefixes are all kept. Text inside an element marked xml:space=\"preserve\" is left exactly as written, including its internal spaces, while only the whitespace-only gaps between other elements are collapsed and re-indented. Formatting only ever renders into a read-only text box, never into the page, so parsed markup cannot run."}}, {"@type": "Question", "name": "Does the YAML side keep my comments?", "acceptedAnswer": {"@type": "Answer", "text": "No. YAML is handled by js-yaml 4.1.0, which builds a data model from your document and then re-dumps it; comments are not part of that model, so they are dropped on output. The tool warns you in the status line when your input contained a # comment. Anchors and aliases are resolved, multi-document streams separated by --- are supported, and YAML errors are reported with a line and column."}}, {"@type": "Question", "name": "How do the XML↔JSON and YAML↔JSON conversions work?", "acceptedAnswer": {"@type": "Answer", "text": "For YAML, the tool uses js-yaml to load your document to a value and JSON.stringify it, and in reverse dumps parsed JSON back to YAML. For XML it maps elements to object keys, turns attributes into @-prefixed keys, collects repeated elements into arrays, and stores mixed text under #text; JSON → XML reverses that mapping and adds an XML declaration. Deeply mixed or order-sensitive XML may not round-trip byte-for-byte, but simple documents convert cleanly both ways."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → XML / YAML Formatter</div>
+    <div style="min-height:90px"></div>
+    <div class="tool-section"><h1>🧬 XML / YAML Formatter & Converter</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><polyline points="60,40 35,60 60,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="140,40 165,60 140,80" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="115" y1="25" x2="85" y2="95" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <p class="info">Pretty-print or minify XML and YAML, see exactly where a parse error is (line and column), and convert between XML, YAML and JSON. Everything runs in your browser — nothing is uploaded to any server.</p>
+
+      <div class="row" style="gap:.4rem;margin:.4rem 0">
+        <button class="btn" id="tabXml" onclick="setMode('xml')">XML</button>
+        <button class="btn btn-outline" id="tabYaml" onclick="setMode('yaml')">YAML</button>
+      </div>
+
+      <div class="row" style="flex-wrap:wrap;gap:.6rem;align-items:center">
+        <label style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0">Indent:
+          <select id="indent" onchange="autoFmt()" style="width:auto;margin:0">
+            <option value="2" selected>2 spaces</option>
+            <option value="4">4 spaces</option>
+            <option value="tab">Tab</option>
+          </select>
+        </label>
+        <label id="sortKeysWrap" style="display:none;align-items:center;gap:.4rem;flex:0 0 auto;min-width:0"><input type="checkbox" id="sortKeys" style="width:auto;margin:0" onchange="autoFmt()"> Sort keys A→Z</label>
+        <div class="drop-zone" id="drop" style="margin:0;flex:1;min-width:200px">Drop an .xml / .yaml / .json file here or click to browse<input type="file" id="file" accept=".xml,.yaml,.yml,.json,.txt,text/*" style="display:none"></div>
+      </div>
+
+      <label for="in" style="font-size:.85rem;color:var(--text2)">Input</label>
+      <textarea id="in" placeholder="Paste XML or YAML here…" style="font-family:monospace;min-height:220px" oninput="autosave()"></textarea>
+
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn" onclick="doFormat()">✨ Format / Beautify</button>
+        <button class="btn btn-outline" onclick="doMinify()">⚡ Minify</button>
+        <button class="btn btn-outline" onclick="doValidate()">✔ Validate</button>
+        <button class="btn btn-outline" id="loadExBtn" onclick="loadExample()">📝 Load Example</button>
+      </div>
+
+      <h3 style="margin-top:1.2rem" role="heading" aria-level="2">🔄 Convert</h3>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn btn-outline" id="convA" onclick="convert('toJson')">→ JSON</button>
+        <button class="btn btn-outline" id="convB" onclick="convert('fromJson')">JSON → current</button>
+      </div>
+
+      <div id="status" class="info" role="status" aria-live="polite" style="margin:.6rem 0">Choose XML or YAML, paste some text, then Format.</div>
+
+      <label for="out" style="font-size:.85rem;color:var(--text2)">Output</label>
+      <textarea id="out" readonly placeholder="Formatted output appears here…" style="font-family:monospace;min-height:220px;word-break:break-all"></textarea>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="copyNow(document.getElementById('out').value,'Output copied.')">📋 Copy</button>
+        <button class="btn btn-outline" onclick="dl()">⬇️ Download</button>
+      </div>
+    </div>
+
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>When my XML is malformed, how do I find the error?</summary><p>The tool parses XML with the browser&#x27;s native DOMParser in application/xml mode. If the document is not well-formed, the status line shows the parser&#x27;s message and, where the browser provides it, the line and column of the fault — so you can jump straight to the unclosed tag or stray character. Validate does this check without producing formatted output.</p></details>
+<details><summary>What parts of an XML document are preserved when formatting?</summary><p>The XML declaration (&lt;?xml …?&gt;), comments, CDATA sections, processing instructions, attributes and namespace prefixes are all kept. Text inside an element marked xml:space=&quot;preserve&quot; is left exactly as written, including its internal spaces, while only the whitespace-only gaps between other elements are collapsed and re-indented. Formatting only ever renders into a read-only text box, never into the page, so parsed markup cannot run.</p></details>
+<details><summary>Does the YAML side keep my comments?</summary><p>No. YAML is handled by js-yaml 4.1.0, which builds a data model from your document and then re-dumps it; comments are not part of that model, so they are dropped on output. The tool warns you in the status line when your input contained a # comment. Anchors and aliases are resolved, multi-document streams separated by --- are supported, and YAML errors are reported with a line and column.</p></details>
+<details><summary>How do the XML↔JSON and YAML↔JSON conversions work?</summary><p>For YAML, the tool uses js-yaml to load your document to a value and JSON.stringify it, and in reverse dumps parsed JSON back to YAML. For XML it maps elements to object keys, turns attributes into @-prefixed keys, collects repeated elements into arrays, and stores mixed text under #text; JSON → XML reverses that mapping and adds an XML declaration. Deeply mixed or order-sensitive XML may not round-trip byte-for-byte, but simple documents convert cleanly both ways.</p></details>
+<!-- tool-faq:end -->
+</div>
+  </div>
+
+  <div class="tool-section" style="margin-top:1.5rem"><h2>How to Use This Tool</h2>
+<ol style="margin-left:1.5rem;line-height:2">
+<li><strong>Pick a mode:</strong> Click the XML or YAML tab depending on what you are pasting.</li>
+<li><strong>Paste or drop a file:</strong> Put your document in the input box, or drop an <code>.xml</code>, <code>.yaml</code>, <code>.yml</code> or <code>.json</code> file onto the drop zone.</li>
+<li><strong>Format or Minify:</strong> Format re-indents with your chosen 2-space, 4-space or tab indent; Minify strips the whitespace between elements or produces compact YAML/JSON flow.</li>
+<li><strong>Read the error line:</strong> If parsing fails, the status line names the line and column so you can jump straight to the problem.</li>
+<li><strong>Convert:</strong> Use → JSON to turn XML or YAML into JSON, or JSON → current to go the other way. Copy or download the output.</li>
+</ol>
+<h2>Common Use Cases</h2>
+<ul style="margin-left:1.5rem;line-height:2">
+<li>Cleaning up a one-line XML config or SOAP payload so you can actually read it.</li>
+<li>Finding the exact line a malformed XML document breaks on.</li>
+<li>Tidying a Kubernetes, CI or Docker-Compose YAML file and spotting indentation mistakes.</li>
+<li>Converting a YAML config to JSON to feed an API, or a JSON response to YAML for a config file.</li>
+<li>Turning an XML document into JSON to inspect its structure more easily.</li>
+</ul>
+</div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>About This Tool</h2><p>A combined XML and YAML formatter, validator and converter that works entirely in your browser. XML is parsed with the browser's native <code>DOMParser</code> in <code>application/xml</code> mode, which does not execute scripts, and re-serialised as text so the formatted result is only ever shown inside a read-only text box. It preserves the XML declaration, comments, CDATA sections, processing instructions, attributes and namespace prefixes, and leaves the text of any element marked <code>xml:space="preserve"</code> untouched while tidying the whitespace-only gaps between other elements. YAML is handled by js-yaml 4.1.0 with multi-document support, an indent setting and optional key sorting. It also converts XML and YAML to JSON and back. No data leaves your device.</p></div>
+
+  <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>What this formatter preserves, drops, and how it converts between formats</h2>
+
+<h3>How XML is parsed and re-serialised safely</h3>
+<p>The XML side never uses a regex to guess at structure. It hands your text to the browser's built-in <code>DOMParser</code> in <code>application/xml</code> mode, which builds a real document tree. That parser does not execute scripts, and the tool makes a second guarantee on top of it: the formatted result is only ever written into a read-only text box through the element's value, never injected into the live page. So even markup that looks like a script or an HTML tag is treated as inert text. If the document is not well-formed, the parser produces a <code>parsererror</code> node; the tool reads its message and, where the browser supplies them, the line and column, and shows them in the status line. The Validate button runs exactly this check and reports whether the document is well-formed without producing any output.</p>
+
+<h3>Indentation and the whitespace rules</h3>
+<p>Formatting walks the parsed tree and rebuilds the text with your chosen indent — two spaces, four spaces, or a tab. The declaration line (<code>&lt;?xml …?&gt;</code>) is recovered from the source because the parser drops it, and comments, CDATA sections and processing instructions are written back at their proper depth. Whitespace is where most formatters get XML wrong, so the rules here are deliberate: whitespace-only text nodes between elements are treated as layout and collapsed, but any element carrying <code>xml:space="preserve"</code> has its entire contents serialised untouched, spaces and all. An element whose only child is text stays on one line; an element with child elements is broken out and indented. Minify applies the same preserve rule while stripping the inter-element whitespace, so a formatted document and its minified form carry the same data and round-trip back to each other.</p>
+
+<h3>YAML, and why comments disappear</h3>
+<p>YAML is handled by js-yaml 4.1.0. Loading parses one or more documents — streams separated by <code>---</code> are supported — and dumping writes them back with your indent and an optional alphabetical key sort. Two honest limitations follow from how js-yaml works. First, it resolves anchors and aliases into plain values, so a <code>&amp;anchor</code>/<code>*alias</code> pair becomes duplicated data rather than a reference. Second, comments are not part of the parsed model at all, so re-dumping loses every <code>#</code> comment; the tool detects comments in your input and warns you in the status line rather than pretending they survived. A malformed document throws an error whose line and column are shown. Non-Latin text — Hindi, for instance — passes through unchanged.</p>
+
+<h3>Converting to and from JSON</h3>
+<p>Both formats convert to JSON and back. YAML↔JSON is a direct load-and-stringify in each direction. XML→JSON maps each element to an object key, stores attributes under <code>@</code>-prefixed keys, groups repeated sibling elements into an array, and keeps mixed text under a <code>#text</code> key; JSON→XML reverses that convention and prepends a declaration. Order-sensitive or heavily mixed-content XML will not always return byte-for-byte, but ordinary configuration and data documents convert cleanly both ways, which is usually all you need to inspect a structure or feed it to another tool.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem"><h2>🔗 Related Tools</h2><div class="tools-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-top:.8rem"><a href="/tools/json-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">JSON Formatter</a><a href="/tools/sql-formatter" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">SQL Formatter</a><a href="/tools/base64" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Base64 Encoder</a><a href="/tools/html-editor" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">HTML Editor</a><a href="/tools/diff-checker" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Diff Checker</a><a href="/tools/regex-tester" class="tool-card" style="padding:1rem .8rem;font-size:.9rem">Regex Tester</a></div></div>
+  <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/json-format-kaise-kare-developers-guide">JSON Format Kaise Kare — Developers Guide</a></li><li><a href="/blog/best-free-tools-for-developers-2026">Best Free Tools for Developers in 2026</a></li><li><a href="/blog/json-to-csv-conversion-guide">JSON to CSV Conversion Guide — When, Why, and How</a></li></ul></div>
+  <footer style="border-top:1px solid rgba(255,255,255,.08);margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:1rem">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px"><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff">AT</text></svg>
+        <div><strong style="font-size:1.1rem">FreeToolHubs</strong><br><span style="font-size:.75rem;color:var(--text2)">Free tools. No signup. No uploads.</span></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+        <a href="https://github.com/tiwariankit651" target="_blank" rel="noopener" title="GitHub" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💻</a>
+        <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" title="LinkedIn" style="color:var(--text2);text-decoration:none;font-size:1.2rem">💼</a>
+        <a href="https://twitter.com/the_ank_tiwari" target="_blank" rel="noopener" title="Twitter" style="color:var(--text2);text-decoration:none;font-size:1.2rem">🐦</a>
+        <a href="https://instagram.com/imakt07" target="_blank" rel="noopener" title="Instagram" style="color:var(--text2);text-decoration:none;font-size:1.2rem">📷</a>
+      </div>
+      <div style="text-align:center;font-size:.85rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:.8rem">
+        <a href="../">Home</a> <a href="/about">About</a> <a href="/blog/">Blog</a> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/disclaimer">Disclaimer</a> <a href="/contact">Contact</a>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text2)">Made with ❤️ by <a href="https://www.linkedin.com/in/ankit-kumar-tiwari-5b04a4196/" target="_blank" rel="noopener" style="color:var(--accent-text)">Ankit Tiwari</a> · © 2026 FreeToolHubs</p>
+    </div>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous"></script>
+  <script src="../js/common.js"></script>
+  <script>
+var $=function(id){return document.getElementById(id)};
+var MODE="xml";
+var STORE="xmlYamlFmtV1";
+
+function getIndent(){var v=$("indent").value;return v==="tab"?"\t":parseInt(v,10)}
+function indentStr(){var v=$("indent").value;return v==="tab"?"\t":" ".repeat(parseInt(v,10))}
+
+function setMode(m){
+  MODE=m;
+  $("tabXml").className=m==="xml"?"btn":"btn btn-outline";
+  $("tabYaml").className=m==="yaml"?"btn":"btn btn-outline";
+  $("sortKeysWrap").style.display=m==="yaml"?"flex":"none";
+  $("in").placeholder=m==="xml"?"Paste XML here…":"Paste YAML here…";
+  $("convA").textContent=m==="xml"?"XML → JSON":"YAML → JSON";
+  $("convB").textContent=m==="xml"?"JSON → XML":"JSON → YAML";
+  setStatus("Mode: "+m.toUpperCase()+". Paste text and click Format.","info");
+  autosave();
+}
+function setStatus(msg,kind){
+  var el=$("status");el.textContent=msg;
+  el.style.color=kind==="error"?"var(--danger)":kind==="ok"?"var(--ok)":kind==="warn"?"var(--warn)":"var(--text2)";
+}
+function setOut(t){$("out").value=t}
+
+/* ---------------- XML ---------------- */
+function xmlParse(text){
+  var doc=new DOMParser().parseFromString(text,"application/xml");
+  var err=doc.getElementsByTagName("parsererror");
+  if(err.length){
+    var msg=err[0].textContent||"XML parse error";
+    // Firefox exposes line/column in the message; Chrome puts it in the text too.
+    var lm=msg.match(/[Ll]ine(?:\s*Number)?[:\s]*?(\d+)/);
+    var cm=msg.match(/[Cc]olumn(?:\s*Number)?[:\s]*?(\d+)/);
+    return {ok:false,error:msg.replace(/\s+/g," ").trim(),line:lm?parseInt(lm[1],10):null,col:cm?parseInt(cm[1],10):null};
+  }
+  return {ok:true,doc:doc};
+}
+function xmlEscText(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function xmlEscAttr(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")}
+
+// returns true if the subtree (or an ancestor) has xml:space="preserve"
+function inPreserve(el,inherited){
+  var v=el.getAttribute&&el.getAttribute("xml:space");
+  if(v==="preserve")return true;
+  if(v==="default")return false;
+  return inherited;
+}
+function serializeNode(node,depth,pad,preserve){
+  var NT=node.nodeType;
+  // Element
+  if(NT===1){
+    var name=node.nodeName;
+    var open="<"+name;
+    var attrs=node.attributes;
+    for(var a=0;a<attrs.length;a++){open+=" "+attrs[a].name+'="'+xmlEscAttr(attrs[a].value)+'"'}
+    var childPreserve=inPreserve(node,preserve);
+    var kids=node.childNodes;
+    if(!kids.length){return pad.repeat(depth)+open+"/>\n"}
+    // determine if element has only a single text/cdata child (inline) and not preserved-multi
+    var onlyText=true,hasElem=false;
+    for(var i=0;i<kids.length;i++){var k=kids[i];if(k.nodeType===1||k.nodeType===8||k.nodeType===7){hasElem=true}if(k.nodeType!==3&&k.nodeType!==4){onlyText=false}}
+    if(childPreserve){
+      // keep everything exactly: serialize children with no added whitespace
+      var inner="";
+      for(var p=0;p<kids.length;p++){inner+=serializeInline(kids[p])}
+      return pad.repeat(depth)+open+">"+inner+"</"+name+">\n";
+    }
+    if(onlyText){
+      var txt="";
+      for(var t=0;t<kids.length;t++){txt+=serializeInline(kids[t])}
+      if(txt.trim()===""){return pad.repeat(depth)+open+"/>\n"}
+      return pad.repeat(depth)+open+">"+txt.trim()+"</"+name+">\n";
+    }
+    var out=pad.repeat(depth)+open+">\n";
+    for(var c=0;c<kids.length;c++){
+      var kid=kids[c];
+      if(kid.nodeType===3){ // text: skip whitespace-only between elements
+        if(kid.nodeValue.trim()==="")continue;
+        out+=pad.repeat(depth+1)+xmlEscText(kid.nodeValue.trim())+"\n";
+      }else{
+        out+=serializeNode(kid,depth+1,pad,childPreserve);
+      }
+    }
+    out+=pad.repeat(depth)+"</"+name+">\n";
+    return out;
+  }
+  // Text
+  if(NT===3){if(node.nodeValue.trim()==="")return "";return pad.repeat(depth)+xmlEscText(node.nodeValue.trim())+"\n"}
+  // CDATA
+  if(NT===4){return pad.repeat(depth)+"<![CDATA["+node.nodeValue+"]]>\n"}
+  // Comment
+  if(NT===8){return pad.repeat(depth)+"<!--"+node.nodeValue+"-->\n"}
+  // Processing instruction
+  if(NT===7){return pad.repeat(depth)+"<?"+node.target+" "+node.data+"?>\n"}
+  return "";
+}
+// inline serializer preserves content exactly (used inside xml:space=preserve / text-only)
+function serializeInline(node){
+  var NT=node.nodeType;
+  if(NT===1){
+    var open="<"+node.nodeName;var at=node.attributes;
+    for(var a=0;a<at.length;a++){open+=" "+at[a].name+'="'+xmlEscAttr(at[a].value)+'"'}
+    if(!node.childNodes.length)return open+"/>";
+    var inner="";for(var i=0;i<node.childNodes.length;i++)inner+=serializeInline(node.childNodes[i]);
+    return open+">"+inner+"</"+node.nodeName+">";
+  }
+  if(NT===3)return xmlEscText(node.nodeValue);
+  if(NT===4)return "<![CDATA["+node.nodeValue+"]]>";
+  if(NT===8)return "<!--"+node.nodeValue+"-->";
+  if(NT===7)return "<?"+node.target+" "+node.data+"?>";
+  return "";
+}
+// Extract the XML declaration from the raw source (DOMParser drops it)
+function extractDecl(text){var m=text.match(/^\uFEFF?\s*(<\?xml[\s\S]*?\?>)/);return m?m[1]:null}
+// top-level nodes that live outside the document element (comments, PIs, doctype) before/after root
+function topLevelNodes(doc){var arr=[];var n=doc.firstChild;while(n){arr.push(n);n=n.nextSibling}return arr}
+
+function xmlFormat(text,minify){
+  var decl=extractDecl(text);
+  var r=xmlParse(text);
+  if(!r.ok)return r;
+  var pad=minify?"":indentStr();
+  var nl=minify?"":"\n";
+  var top=topLevelNodes(r.doc);
+  var out="";
+  if(decl)out+=decl+nl;
+  top.forEach(function(node){
+    if(node.nodeType===3){return} // whitespace between top-level nodes
+    if(node.nodeType===10){ // doctype
+      out+="<!DOCTYPE "+node.name+">"+nl;return;
+    }
+    if(minify){out+=minifyNode(node)}
+    else{out+=serializeNode(node,0,pad,false)}
+  });
+  if(!minify)out=out.replace(/\n+$/,"")+"\n";
+  return {ok:true,text:minify?out:out.replace(/\n$/,"")};
+}
+function minifyNode(node){
+  var NT=node.nodeType;
+  if(NT===1){
+    var open="<"+node.nodeName;var at=node.attributes;
+    for(var a=0;a<at.length;a++){open+=" "+at[a].name+'="'+xmlEscAttr(at[a].value)+'"'}
+    var kids=node.childNodes;
+    if(!kids.length)return open+"/>";
+    var preserve=node.getAttribute&&node.getAttribute("xml:space")==="preserve";
+    var inner="";
+    for(var i=0;i<kids.length;i++){
+      var k=kids[i];
+      if(k.nodeType===3&&!preserve&&k.nodeValue.trim()===""){continue}
+      inner+=minifyNode(k);
+    }
+    return open+">"+inner+"</"+node.nodeName+">";
+  }
+  if(NT===3)return xmlEscText(node.nodeValue);
+  if(NT===4)return "<![CDATA["+node.nodeValue+"]]>";
+  if(NT===8)return "<!--"+node.nodeValue+"-->";
+  if(NT===7)return "<?"+node.target+" "+node.data+"?>";
+  return "";
+}
+
+// XML -> plain JS object (attributes as @attr, text as #text when mixed)
+function xmlToObj(node){
+  var obj={};
+  if(node.attributes){
+    for(var a=0;a<node.attributes.length;a++){obj["@"+node.attributes[a].name]=node.attributes[a].value}
+  }
+  var text="";
+  var kids=node.childNodes;
+  for(var i=0;i<kids.length;i++){
+    var k=kids[i];
+    if(k.nodeType===3||k.nodeType===4){text+=k.nodeValue}
+    else if(k.nodeType===1){
+      var child=xmlToObj(k);
+      if(obj[k.nodeName]===undefined)obj[k.nodeName]=child;
+      else{if(!Array.isArray(obj[k.nodeName]))obj[k.nodeName]=[obj[k.nodeName]];obj[k.nodeName].push(child)}
+    }
+  }
+  var keys=Object.keys(obj);
+  if(keys.length===0)return text.trim();
+  if(text.trim()!=="")obj["#text"]=text.trim();
+  return obj;
+}
+// JS object -> XML text
+function objToXml(obj,name,depth,pad){
+  var p=pad.repeat(depth);
+  if(obj===null||typeof obj!=="object"){
+    return p+"<"+name+">"+xmlEscText(obj===null?"":obj)+"</"+name+">\n";
+  }
+  if(Array.isArray(obj)){
+    return obj.map(function(it){return objToXml(it,name,depth,pad)}).join("");
+  }
+  var attrs="",children="",text=null;
+  Object.keys(obj).forEach(function(k){
+    if(k.charAt(0)==="@"){attrs+=" "+k.slice(1)+'="'+xmlEscAttr(obj[k])+'"'}
+    else if(k==="#text"){text=obj[k]}
+    else{children+=objToXml(obj[k],k,depth+1,pad)}
+  });
+  if(children===""&&text!==null){return p+"<"+name+attrs+">"+xmlEscText(text)+"</"+name+">\n"}
+  if(children===""&&text===null){return p+"<"+name+attrs+"/>\n"}
+  return p+"<"+name+attrs+">\n"+children+(text!==null?p+pad+xmlEscText(text)+"\n":"")+p+"</"+name+">\n";
+}
+
+/* ---------------- YAML ---------------- */
+function yamlErr(e){
+  var line=null,col=null;
+  if(e.mark){line=e.mark.line!=null?e.mark.line+1:null;col=e.mark.column!=null?e.mark.column+1:null}
+  return {msg:(e.reason||e.message||String(e)),line:line,col:col};
+}
+function yamlFormat(text,minify){
+  var docs;
+  try{docs=jsyaml.loadAll(text)}catch(e){return {ok:false,yaml:yamlErr(e)}}
+  var opts={indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked,lineWidth:minify?-1:80,flowLevel:minify?0:-1,noRefs:false};
+  if($("indent").value==="tab"){opts.indent=2} // js-yaml requires spaces; tab not valid for YAML indent
+  var parts=docs.map(function(d){return jsyaml.dump(d,opts)});
+  var out=parts.join("---\n");
+  return {ok:true,text:out.replace(/\n+$/,"")};
+}
+
+/* ---------------- actions ---------------- */
+function doFormat(){run(false)}
+function doMinify(){run(true)}
+function autoFmt(){if($("out").value&&$("in").value.trim())run($("out")._lastMin===true)}
+function run(minify){
+  var text=$("in").value;
+  if(!text.trim()){setStatus("Paste some "+MODE.toUpperCase()+" first.","warn");return}
+  if(MODE==="xml"){
+    var r=xmlFormat(text,minify);
+    if(!r.ok){setStatus("❌ Invalid XML: "+r.error+(r.line?(" (line "+r.line+(r.col?", column "+r.col:"")+")"):""),"error");return}
+    setOut(r.text);$("out")._lastMin=minify;
+    setStatus((minify?"✅ Minified":"✅ Formatted")+" XML — "+formatSize(new Blob([text]).size)+" → "+formatSize(new Blob([r.text]).size)+".","ok");
+  }else{
+    var y=yamlFormat(text,minify);
+    if(!y.ok){setStatus("❌ Invalid YAML: "+y.yaml.msg+(y.yaml.line?(" (line "+y.yaml.line+(y.yaml.col?", column "+y.yaml.col:"")+")"):""),"error");return}
+    setOut(y.text);$("out")._lastMin=minify;
+    var note=/#/.test(text)?" Note: js-yaml drops comments when re-dumping.":"";
+    setStatus((minify?"✅ Compact":"✅ Formatted")+" YAML."+note,"ok");
+  }
+  autosave();
+}
+function doValidate(){
+  var text=$("in").value;
+  if(!text.trim()){setStatus("Paste some "+MODE.toUpperCase()+" first.","warn");return}
+  if(MODE==="xml"){
+    var r=xmlParse(text);
+    if(!r.ok){setStatus("❌ Invalid XML: "+r.error+(r.line?(" (line "+r.line+(r.col?", column "+r.col:"")+")"):""),"error");return}
+    setStatus("✅ Well-formed XML — no errors.","ok");
+  }else{
+    try{var n=0;jsyaml.loadAll(text,function(){n++});setStatus("✅ Valid YAML — "+n+" document"+(n===1?"":"s")+".","ok")}
+    catch(e){var y=yamlErr(e);setStatus("❌ Invalid YAML: "+y.msg+(y.line?(" (line "+y.line+(y.col?", column "+y.col:"")+")"):""),"error")}
+  }
+}
+function convert(dir){
+  var text=$("in").value;
+  if(!text.trim()){setStatus("Paste some text first.","warn");return}
+  try{
+    if(MODE==="xml"){
+      if(dir==="toJson"){
+        var r=xmlParse(text);
+        if(!r.ok){setStatus("❌ Invalid XML: "+r.error+(r.line?(" (line "+r.line+")"):""),"error");return}
+        var root=r.doc.documentElement;
+        var obj={};obj[root.nodeName]=xmlToObj(root);
+        setOut(JSON.stringify(obj,null,getIndent()));setStatus("✅ Converted XML → JSON.","ok");
+      }else{
+        var parsed=JSON.parse(text);
+        var keys=Object.keys(parsed);
+        var pad=indentStr();
+        var xml="";
+        if(keys.length===1&&parsed[keys[0]]&&typeof parsed[keys[0]]==="object"){xml=objToXml(parsed[keys[0]],keys[0],0,pad)}
+        else{xml=objToXml(parsed,"root",0,pad)}
+        setOut('<?xml version="1.0" encoding="UTF-8"?>\n'+xml.replace(/\n$/,""));setStatus("✅ Converted JSON → XML.","ok");
+      }
+    }else{
+      if(dir==="toJson"){
+        var docs=jsyaml.loadAll(text);
+        var val=docs.length===1?docs[0]:docs;
+        setOut(JSON.stringify(val,null,getIndent()));setStatus("✅ Converted YAML → JSON.","ok");
+      }else{
+        var j=JSON.parse(text);
+        setOut(jsyaml.dump(j,{indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked}).replace(/\n+$/,""));
+        setStatus("✅ Converted JSON → YAML.","ok");
+      }
+    }
+  }catch(e){setStatus("❌ Conversion failed: "+(e.message||e),"error")}
+  autosave();
+}
+
+var EX_XML='<?xml version="1.0" encoding="UTF-8"?>\n<!-- sample catalog --><ns:catalog xmlns:ns="http://example.com/ns"><book id="b1" xml:space="preserve"> Keep   these    spaces </book><note>Fish &amp; chips</note><![CDATA[<b>raw markup</b>]]><?render mode="fast"?></ns:catalog>';
+var EX_YAML='# anchors + multi-doc demo\ndefaults: &d\n  retries: 3\n  region: in\nservice:\n  <<: *d\n  name: नमस्ते-सेवा\n---\n- one\n- two\n- three';
+function loadExample(){$("in").value=MODE==="xml"?EX_XML:EX_YAML;autosave();doFormat()}
+
+function dl(){
+  var ext=MODE==="xml"?"xml":"yaml";var mime=MODE==="xml"?"application/xml":"text/yaml";
+  var data=$("out").value||$("in").value;
+  if(!data.trim()){setStatus("Nothing to download yet.","warn");return}
+  download(new Blob([data],{type:mime+";charset=utf-8"}),"formatted."+ext);
+}
+
+/* file drop + pick via shared helper (single change listener) */
+setupDrop("drop","file",function(files){
+  var f=files&&files[0];if(!f)return;
+  if(f.size>5*1024*1024){setStatus("That file is over 5 MB — too large for the browser to format quickly.","warn");return}
+  var r=new FileReader();
+  r.onerror=function(){setStatus("Could not read that file.","error")};
+  r.onload=function(){
+    $("in").value=String(r.result||"");
+    var n=f.name.toLowerCase();
+    if(n.endsWith(".yaml")||n.endsWith(".yml"))setMode("yaml");
+    else if(n.endsWith(".xml"))setMode("xml");
+    autosave();doValidate();
+  };
+  r.readAsText(f);
+});
+$("drop").addEventListener("click",function(){$("file").click()});
+
+function autosave(){storeSet(STORE,{mode:MODE,text:$("in").value,indent:$("indent").value,sortKeys:$("sortKeys").checked},true)}
+function restore(){
+  var d=storeGet(STORE,null);
+  if(d){
+    if(d.indent)$("indent").value=d.indent;
+    if(d.sortKeys)$("sortKeys").checked=true;
+    if(d.text)$("in").value=d.text;
+    setMode(d.mode==="yaml"?"yaml":"xml");
+  }else{setMode("xml")}
+}
+restore();
+</script>
+</body>
+</html>

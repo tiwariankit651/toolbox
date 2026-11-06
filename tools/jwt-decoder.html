@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7T3GVY4V7J');
+</script>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT Decoder — Decode &amp; Verify JSON Web Tokens | FreeToolHubs</title>
+  <meta name="description" content="Decode a JWT to see its header and payload, with claims explained and expiry checked. Optional signature verification (HS256, RS256, ES256) in your browser with Web Crypto. Nothing is uploaded.">
+  <meta property="og:title" content="JWT Decoder — Free Online Tool | FreeToolHubs">
+  <meta property="og:description" content="Decode and verify JSON Web Tokens locally in your browser">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://freetoolhubs.com/tools/jwt-decoder">
+  <meta property="og:image" content="https://freetoolhubs.com/og-tools.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://freetoolhubs.com/og-tools.png">
+<meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="JWT Decoder — FreeToolHubs">
+  <meta name="twitter:description" content="Decode and verify JSON Web Tokens locally in your browser">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"JWT Decoder","url":"https://freetoolhubs.com/tools/jwt-decoder","description":"Decode and verify JSON Web Tokens locally in your browser","applicationCategory":"UtilityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ankit Tiwari"}}
+  </script>
+  <meta name="keywords" content="jwt decoder, decode jwt, json web token, jwt verify, jwt signature, jwt expiry checker">
+  <link rel="canonical" href="https://freetoolhubs.com/tools/jwt-decoder">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    #jwtColored{font-family:monospace;font-size:.9rem;word-break:break-all;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;margin:.6rem 0;line-height:1.6}
+    .jwt-h{color:#e74c3c;font-weight:700}
+    .jwt-p{color:#8b5cf6;font-weight:700}
+    .jwt-s{color:#2ecc71;font-weight:700}
+    .jwt-dot{color:var(--text2)}
+    .jwt-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;margin:.5rem 0}
+    .jwt-panel pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:monospace;font-size:.85rem}
+    .jwt-panel h3{margin:.1rem 0 .5rem;font-size:.95rem}
+    .claim-tbl{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:.5rem}
+    .claim-tbl th,.claim-tbl td{border:1px solid var(--border);padding:.35rem .5rem;text-align:left;vertical-align:top}
+    .claim-tbl th{background:var(--card)}
+    .claim-tbl .cname{font-family:monospace;font-weight:700;white-space:nowrap}
+    .status-ok{color:var(--ok);font-weight:700}
+    .status-bad{color:var(--danger);font-weight:700}
+    .status-warn{color:var(--warn);font-weight:700}
+    .jwt-wrap{overflow-x:auto}
+  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does decoding a JWT prove it is genuine?", "acceptedAnswer": {"@type": "Answer", "text": "No. The header and payload are only Base64URL-encoded, not encrypted, so anyone can read and even forge them. Decoding shows what a token claims; it says nothing about whether those claims were really issued by the server. To prove authenticity you must verify the signature with the correct secret or public key, which is what the optional verify section does. Treat a decoded payload as untrusted until it is verified."}}, {"@type": "Question", "name": "Which algorithms can this tool verify, and how?", "acceptedAnswer": {"@type": "Answer", "text": "Verification runs in your browser with the Web Crypto API. For HS256, HS384 and HS512 you supply the shared secret (plain text, or tick the box if it is base64). For RS256/384/512 and ES256/384 you supply the public key as PEM (an SPKI 'BEGIN PUBLIC KEY' block) or as JWK JSON. The tool recomputes the signature over header.payload and reports Verified or Invalid signature. Changing even one character of the payload makes a valid signature fail."}}, {"@type": "Question", "name": "Why does a token with five parts say it cannot be decoded?", "acceptedAnswer": {"@type": "Answer", "text": "A five-part token is a JWE (JSON Web Encryption), not a JWS. Its payload is encrypted, so unlike a normal signed JWT it cannot be read by decoding alone — only someone with the decryption key can see the contents. The tool detects the five-part structure and tells you this rather than printing garbage. A normal readable JWT has exactly three parts."}}, {"@type": "Question", "name": "Why do non-ASCII claims like Hindi names display correctly here?", "acceptedAnswer": {"@type": "Answer", "text": "The Base64URL payload is decoded to raw bytes and then run through a UTF-8 TextDecoder, so multi-byte characters are reconstructed properly. A naive atob() alone would mangle them. That means a claim such as \"नाम\":\"अंकित\" shows its real characters. The tool also fixes Base64URL padding and translates the URL-safe characters before decoding, and reports a clear message instead of crashing on malformed input."}}]}</script>
+</head>
+<body>
+  <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
+  <div class="container">
+    <div class="breadcrumb"><a href="../">Home</a> → 🔑 JWT Decoder</div>
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section">
+      <h1>🔑 JWT Decoder</h1>
+      <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="36" width="120" height="48" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><circle cx="70" cy="60" r="10" fill="none" stroke="#e74c3c" stroke-width="3"/><path d="M70 60v16" stroke="#e74c3c" stroke-width="3"/><path d="M95 50h50M95 60h40M95 70h48" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <p class="info"><strong>Decoding is not verification.</strong> Reading a token only shows what it claims; it does not prove the claims are genuine. Everything here runs in your browser — the token is never sent anywhere. Do not paste a real production token into any online tool you do not trust.</p>
+
+      <h2 style="font-size:1rem;margin-top:1rem">Paste a JWT</h2>
+      <textarea id="jwtIn" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" style="font-family:monospace;min-height:120px" oninput="decodeJwt()"></textarea>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn" onclick="decodeJwt()">Decode</button>
+        <button class="btn btn-outline" onclick="loadSample()">Load sample</button>
+        <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+      </div>
+
+      <div id="jwtColored" style="display:none"></div>
+      <div id="jwtMsg"></div>
+      <div id="jwtOut"></div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem" id="verifySection">
+      <h2 style="font-size:1rem">Verify signature (optional)</h2>
+      <p class="info" style="font-size:.85rem">Verification happens locally with the Web Crypto API. For HS256/384/512 provide the shared secret; for RS256/384/512 and ES256/384 provide the public key (PEM SPKI or JWK). The token and key stay in your browser.</p>
+      <div class="row">
+        <label style="flex:1;font-size:.85rem">Algorithm family
+          <select id="verKind" onchange="toggleSecretLabel()">
+            <option value="hmac">HMAC (HS256/384/512) — shared secret</option>
+            <option value="asym">RSA / ECDSA (RS/ES) — public key</option>
+          </select>
+        </label>
+      </div>
+      <div id="hmacBox">
+        <label style="font-size:.85rem">Shared secret</label>
+        <input type="text" id="verSecret" placeholder="your-256-bit-secret" style="font-family:monospace">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;margin-top:.3rem"><input type="checkbox" id="secretB64" style="width:auto;margin:0"> Secret is base64-encoded</label>
+      </div>
+      <div id="asymBox" style="display:none">
+        <label style="font-size:.85rem">Public key (PEM <code>-----BEGIN PUBLIC KEY-----</code> or JWK JSON)</label>
+        <textarea id="verKey" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----" style="font-family:monospace;min-height:120px"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="verifyJwt()">🔒 Verify signature</button>
+      </div>
+      <div id="verResult"></div>
+    </div>
+
+    <div style="min-height:90px"></div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>How to Use This Tool</h2>
+      <ol style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Paste the token</strong> into the box. It decodes as you type — no button needed, though Decode re-runs it.</li>
+        <li><strong>Read the colour-coded token:</strong> the header is red, the payload purple and the signature green, matching the three dot-separated parts.</li>
+        <li><strong>Review the claims:</strong> the header and payload are shown as formatted JSON, and standard claims (iss, sub, aud, exp, nbf, iat, jti) are explained, with the time claims shown as dates and an expiry status.</li>
+        <li><strong>Verify if you need to:</strong> open the verify section, choose HMAC or RSA/ECDSA, paste the secret or public key, and click Verify. You will see "Verified" or "Invalid signature".</li>
+        <li><strong>Stay safe:</strong> decoding never checks authenticity, and the <code>alg: none</code> case is flagged as unsafe.</li>
+      </ol>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>Common Use Cases</h2>
+      <ul style="line-height:1.9;padding-left:1.2rem">
+        <li><strong>Debugging auth</strong> — see exactly what claims your backend put in a token when a request is unexpectedly rejected.</li>
+        <li><strong>Checking expiry</strong> — read the <code>exp</code> claim as a real date and see whether a token is still valid or how long ago it expired.</li>
+        <li><strong>Inspecting a third-party token</strong> — decode an OAuth/OIDC ID token to confirm issuer, audience and subject.</li>
+        <li><strong>Confirming a signature</strong> — verify an HS256 token against a secret, or an RS256/ES256 token against a public key, without any server round-trip.</li>
+        <li><strong>Spotting the <code>none</code> algorithm</strong> — catch unsigned tokens, a classic JWT security pitfall.</li>
+      </ul>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem">
+      <h2>About This Tool</h2>
+      <p>A JWT has three Base64URL parts separated by dots: a header, a payload, and a signature. This tool decodes the first two (with a UTF-8 decoder, so non-ASCII claims such as Hindi names display correctly) and can optionally verify the signature using the browser's built-in Web Crypto API. A five-part token is JWE — encrypted — and cannot be decoded here without the decryption key.</p>
+      <p>Nothing is uploaded. The token, any secret and any key you paste stay in your browser and are never transmitted. This is why it is safe to use, but also why decoding alone tells you only what the token claims, not whether those claims are trustworthy.</p>
+    </div>
+
+    <!-- tool-guide:start --><div class="tool-section" id="deep-notes" style="margin-top:1.5rem">
+<h2>Reading and Verifying JSON Web Tokens Safely in the Browser</h2>
+
+<h3>The three parts, and why two of them are readable</h3>
+<p>A JWT is three Base64URL strings joined by dots: a header, a payload and a signature. The tool colours them to match — header in red, payload in purple, signature in green — so you can see the structure at a glance. The header and payload are only encoded, not encrypted, which is why anyone can decode them and why this tool can show them to you. Decoding fixes the Base64URL padding, swaps the URL-safe characters back, and runs the bytes through a UTF-8 decoder, so a claim such as <code>"नाम":"अंकित"</code> displays its real characters instead of mojibake. The header and payload are then pretty-printed as JSON. If the input has five parts it is a JWE — an encrypted token — and the tool says it cannot be read without the decryption key rather than printing nonsense.</p>
+
+<h3>Standard claims and expiry</h3>
+<p>The payload often carries registered claims, and the tool explains each one it finds: <code>iss</code> (issuer), <code>sub</code> (subject), <code>aud</code> (audience), <code>exp</code> (expiry), <code>nbf</code> (not before), <code>iat</code> (issued at) and <code>jti</code> (unique id). The three time claims are numeric epochs, so they are rendered as real dates. For <code>exp</code> the tool compares against the current time and shows either "Valid, expires in…" or "Expired … ago"; for <code>nbf</code> it warns if the token is not yet valid. This is the quickest way to answer the common question "is this token still good?" without pasting it into a backend.</p>
+
+<h3>Decoding is not verification</h3>
+<p>This is the point worth repeating. Because the payload is plain Base64URL, anyone can edit it and re-encode it. A decoded payload tells you what the token <em>claims</em>, not whether a trusted server actually issued it. The only thing that proves authenticity is the signature, computed by the issuer over the header and payload with a key you do not have unless you are the issuer or hold its public key. The tool also flags the dangerous <code>alg: none</code> case, where a token is unsigned — any system that accepts such a token is trusting its contents blindly, a classic JWT exploit.</p>
+
+<h3>Verifying signatures with Web Crypto</h3>
+<p>The optional verify section uses the browser's Web Crypto API, so the token and key never leave your device. For HS256/384/512 you paste the shared secret (text, or base64 if you tick the box) and the tool checks the HMAC. For RS256/384/512 and ES256/384 you paste the public key as a PEM SPKI block or as JWK JSON, and the tool imports it and verifies. It recomputes the signature over <code>header.payload</code>, so altering a single character of the payload turns a "Verified" into "Invalid signature". One subtlety for elliptic-curve tokens: a JWS ES signature is the raw r‖s concatenation, which is exactly what Web Crypto expects — no DER conversion is needed here, unlike when checking against tools such as OpenSSL that emit DER. Malformed input, a bad key format or a mismatched algorithm produce a clear message rather than a crash.</p>
+</div><!-- tool-guide:end -->
+  <div class="tool-section" style="margin-top:1.5rem">
+      <h2>🔗 Related Tools</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <a href="/tools/base64" class="btn btn-outline" style="flex:1;min-width:150px">🔐 Base64 Encoder</a>
+        <a href="/tools/json-formatter" class="btn btn-outline" style="flex:1;min-width:150px">{ } JSON Formatter</a>
+        <a href="/tools/unix-timestamp" class="btn btn-outline" style="flex:1;min-width:150px">⏱️ Unix Timestamp</a>
+        <a href="/tools/password-generator" class="btn btn-outline" style="flex:1;min-width:150px">🔑 Password Generator</a>
+        <a href="/tools/regex-tester" class="btn btn-outline" style="flex:1;min-width:150px">🔍 Regex Tester</a>
+        <a href="/tools/diff-checker" class="btn btn-outline" style="flex:1;min-width:150px">🔀 Diff Checker</a>
+      </div>
+    </div>
+
+    <div class="tool-section" style="margin-top:1.5rem"><h2>📚 Related Guides &amp; Articles</h2><ul style="margin-left:1.5rem;line-height:2.2"><li><a href="/blog/best-free-tools-for-developers-2026">Best Free Tools for Developers in 2026</a></li><li><a href="/blog/complete-guide-online-privacy-tools-2026">Complete Guide to Online Privacy Tools in 2026</a></li><li><a href="/blog/binary-hex-decimal-conversion-explained">Binary, Hex, and Decimal Conversion Explained for Beginners</a></li></ul></div>
+
+    <div style="min-height:90px">
+<!-- tool-faq:start -->
+<h2>Frequently Asked Questions</h2>
+<details><summary>Does decoding a JWT prove it is genuine?</summary><p>No. The header and payload are only Base64URL-encoded, not encrypted, so anyone can read and even forge them. Decoding shows what a token claims; it says nothing about whether those claims were really issued by the server. To prove authenticity you must verify the signature with the correct secret or public key, which is what the optional verify section does. Treat a decoded payload as untrusted until it is verified.</p></details>
+<details><summary>Which algorithms can this tool verify, and how?</summary><p>Verification runs in your browser with the Web Crypto API. For HS256, HS384 and HS512 you supply the shared secret (plain text, or tick the box if it is base64). For RS256/384/512 and ES256/384 you supply the public key as PEM (an SPKI &#x27;BEGIN PUBLIC KEY&#x27; block) or as JWK JSON. The tool recomputes the signature over header.payload and reports Verified or Invalid signature. Changing even one character of the payload makes a valid signature fail.</p></details>
+<details><summary>Why does a token with five parts say it cannot be decoded?</summary><p>A five-part token is a JWE (JSON Web Encryption), not a JWS. Its payload is encrypted, so unlike a normal signed JWT it cannot be read by decoding alone — only someone with the decryption key can see the contents. The tool detects the five-part structure and tells you this rather than printing garbage. A normal readable JWT has exactly three parts.</p></details>
+<details><summary>Why do non-ASCII claims like Hindi names display correctly here?</summary><p>The Base64URL payload is decoded to raw bytes and then run through a UTF-8 TextDecoder, so multi-byte characters are reconstructed properly. A naive atob() alone would mangle them. That means a claim such as &quot;नाम&quot;:&quot;अंकित&quot; shows its real characters. The tool also fixes Base64URL padding and translates the URL-safe characters before decoding, and reports a clear message instead of crashing on malformed input.</p></details>
+<!-- tool-faq:end -->
+    </div>
+  </div>
+
+  <footer>
+    <p><a href="/">Home</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/blog/">Blog</a></p>
+    <p style="margin-top:.5rem">© 2026 FreeToolHubs · Made in India 🇮🇳</p>
+  </footer>
+
+  <script src="../js/common.js"></script>
+  <script>
+/* ===== JWT Decoder =====
+   Decoding is NOT verification. The token, secret and key never leave the
+   browser. Signature verification uses the Web Crypto API (SubtleCrypto). */
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ---- base64url ---------------------------------------------------------- */
+/* Fix padding, translate -_ to +/, then decode to bytes and to UTF-8 text so
+   non-ASCII claims (e.g. Hindi) show correctly. */
+function b64urlToBytes(str){
+  str=String(str).replace(/-/g,"+").replace(/_/g,"/");
+  var pad=str.length%4;
+  if(pad===2)str+="==";
+  else if(pad===3)str+="=";
+  else if(pad===1)throw new Error("bad base64url length");
+  var bin=atob(str);
+  var bytes=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+function b64urlToText(str){
+  var bytes=b64urlToBytes(str);
+  return new TextDecoder("utf-8",{fatal:false}).decode(bytes);
+}
+
+/* ---- standard claim help ------------------------------------------------ */
+var CLAIM_INFO={
+  iss:"Issuer — who created and signed the token.",
+  sub:"Subject — the principal (usually a user id) the token is about.",
+  aud:"Audience — the recipient(s) the token is intended for.",
+  exp:"Expiration time — the token must not be accepted after this.",
+  nbf:"Not before — the token must not be accepted before this.",
+  iat:"Issued at — when the token was created.",
+  jti:"JWT ID — a unique identifier, used to prevent replay."
+};
+
+function fmtEpoch(sec){
+  var d=new Date(sec*1000);
+  if(isNaN(d.getTime()))return "(not a valid time)";
+  return d.toISOString().replace(".000Z","Z")+" · "+d.toUTCString();
+}
+function relFromNow(sec){
+  var diff=sec*1000-Date.now();
+  var future=diff>0, s=Math.abs(diff)/1000;
+  var units=[["year",31536000],["month",2592000],["day",86400],["hour",3600],["minute",60],["second",1]];
+  for(var i=0;i<units.length;i++){
+    var v=Math.floor(s/units[i][1]);
+    if(v>=1)return (future?"in ":"")+v+" "+units[i][0]+(v===1?"":"s")+(future?"":" ago");
+  }
+  return "now";
+}
+
+/* ---- decode ------------------------------------------------------------- */
+var lastHeader=null;
+function decodeJwt(){
+  var colored=document.getElementById("jwtColored");
+  var msg=document.getElementById("jwtMsg");
+  var out=document.getElementById("jwtOut");
+  var raw=(document.getElementById("jwtIn").value||"").trim().replace(/\s+/g,"");
+  lastHeader=null;
+  if(!raw){colored.style.display="none";msg.innerHTML="";out.innerHTML="";return;}
+
+  var parts=raw.split(".");
+  /* JWE (encrypted) has 5 parts */
+  if(parts.length===5){
+    colored.style.display="none";
+    msg.innerHTML="<p class='jwt-panel'><span class='status-warn'>This looks like a JWE (5 parts).</span> A JWE is <strong>encrypted</strong> and cannot be decoded here without the decryption key — only the holder of the key can read it.</p>";
+    out.innerHTML="";
+    return;
+  }
+  if(parts.length!==3){
+    colored.style.display="none";
+    msg.innerHTML="<p class='jwt-panel'><span class='status-bad'>Not a JWT.</span> A JWT has exactly three parts separated by dots (header.payload.signature). This input has "+parts.length+" part"+(parts.length===1?"":"s")+".</p>";
+    out.innerHTML="";
+    return;
+  }
+
+  /* colour-coded token */
+  colored.style.display="block";
+  colored.innerHTML="<span class='jwt-h'>"+esc(parts[0])+"</span><span class='jwt-dot'>.</span>"+
+    "<span class='jwt-p'>"+esc(parts[1])+"</span><span class='jwt-dot'>.</span>"+
+    "<span class='jwt-s'>"+(parts[2]?esc(parts[2]):"<em>(empty signature)</em>")+"</span>";
+
+  var header,payload;
+  try{ header=JSON.parse(b64urlToText(parts[0])); }
+  catch(e){ fail("header",e,msg,out); return; }
+  try{ payload=JSON.parse(b64urlToText(parts[1])); }
+  catch(e){ fail("payload",e,msg,out); return; }
+  lastHeader=header;
+
+  var html="";
+  /* alg: none warning */
+  var alg=header&&header.alg;
+  if(alg&&String(alg).toLowerCase()==="none"){
+    html+="<div class='jwt-panel'><span class='status-bad'>⚠ Algorithm is \"none\".</span> This token is <strong>unsigned</strong>. Any system that accepts it is trusting the payload without verification — a well-known JWT vulnerability. Never accept <code>alg: none</code> for authentication.</div>";
+  }
+
+  html+="<div class='jwt-panel'><h3 class='jwt-h'>Header</h3><pre>"+esc(JSON.stringify(header,null,2))+"</pre></div>";
+  html+="<div class='jwt-panel'><h3 class='jwt-p'>Payload</h3><pre>"+esc(JSON.stringify(payload,null,2))+"</pre></div>";
+
+  /* standard claims table */
+  var rows="";
+  Object.keys(CLAIM_INFO).forEach(function(c){
+    if(payload&&Object.prototype.hasOwnProperty.call(payload,c)){
+      var v=payload[c], shown=esc(JSON.stringify(v)), extra="";
+      if((c==="exp"||c==="nbf"||c==="iat")&&typeof v==="number"){
+        extra="<br><span style='color:var(--text2)'>"+esc(fmtEpoch(v))+"</span>";
+        if(c==="exp"){
+          extra+= (v*1000<Date.now())
+            ? "<br><span class='status-bad'>Expired "+relFromNow(v)+"</span>"
+            : "<br><span class='status-ok'>Valid, expires "+relFromNow(v)+"</span>";
+        }
+        if(c==="nbf"&&v*1000>Date.now())
+          extra+="<br><span class='status-warn'>Not yet valid ("+relFromNow(v)+")</span>";
+      }
+      rows+="<tr><td class='cname'>"+c+"</td><td>"+shown+extra+"</td><td>"+esc(CLAIM_INFO[c])+"</td></tr>";
+    }
+  });
+  if(rows){
+    html+="<div class='jwt-wrap'><table class='claim-tbl'><thead><tr><th>Claim</th><th>Value</th><th>Meaning</th></tr></thead><tbody>"+rows+"</tbody></table></div>";
+  }else{
+    html+="<p class='info'>No standard registered claims (iss, sub, aud, exp, nbf, iat, jti) are present in this payload.</p>";
+  }
+
+  /* overall expiry summary */
+  if(payload&&typeof payload.exp==="number"){
+    msg.innerHTML=(payload.exp*1000<Date.now())
+      ? "<p class='jwt-panel'><span class='status-bad'>This token is expired</span> (exp "+relFromNow(payload.exp)+").</p>"
+      : "<p class='jwt-panel'><span class='status-ok'>This token is not expired</span> (expires "+relFromNow(payload.exp)+"). Note: decoding does not verify the signature.</p>";
+  }else{
+    msg.innerHTML="<p class='jwt-panel'>Decoded successfully. <span class='status-warn'>Decoding does not verify the signature</span> — use the verify section below to check authenticity.</p>";
+  }
+  out.innerHTML=html;
+}
+function fail(part,e,msg,out){
+  msg.innerHTML="<p class='jwt-panel'><span class='status-bad'>Could not decode the "+part+".</span> It is not valid Base64URL-encoded JSON ("+esc(e.message)+").</p>";
+  out.innerHTML="";
+}
+
+/* ---- verification (Web Crypto) ----------------------------------------- */
+function toggleSecretLabel(){
+  var asym=document.getElementById("verKind").value==="asym";
+  document.getElementById("asymBox").style.display=asym?"block":"none";
+  document.getElementById("hmacBox").style.display=asym?"none":"block";
+}
+
+var HASH={256:"SHA-256",384:"SHA-384",512:"SHA-512"};
+
+/* base64 (standard, not url) -> bytes, for PEM bodies */
+function b64ToBytes(b64){
+  var bin=atob(b64.replace(/\s+/g,""));
+  var u=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  return u;
+}
+function pemBody(pem){
+  var m=pem.match(/-----BEGIN [^-]+-----([\s\S]*?)-----END [^-]+-----/);
+  return (m?m[1]:pem).replace(/\s+/g,"");
+}
+
+/* ES signatures in a JWS are raw r||s; Web Crypto for ECDSA also expects raw,
+   so no DER conversion is needed here (that is only required when verifying
+   with tools that produce DER, e.g. openssl). */
+async function verifyJwt(){
+  var box=document.getElementById("verResult");
+  box.innerHTML="";
+  var raw=(document.getElementById("jwtIn").value||"").trim().replace(/\s+/g,"");
+  var parts=raw.split(".");
+  if(parts.length!==3){box.innerHTML="<p class='jwt-panel'><span class='status-bad'>Paste a valid 3-part JWT first.</span></p>";return;}
+  if(!lastHeader||!lastHeader.alg){box.innerHTML="<p class='jwt-panel'><span class='status-bad'>Decode the token first so the algorithm is known.</span></p>";return;}
+  var alg=String(lastHeader.alg).toUpperCase();
+  if(alg==="NONE"){box.innerHTML="<p class='jwt-panel'><span class='status-bad'>alg is \"none\" — there is no signature to verify. This token is unsigned.</span></p>";return;}
+
+  var m=alg.match(/^(HS|RS|PS|ES)(256|384|512)$/);
+  if(!m){box.innerHTML="<p class='jwt-panel'><span class='status-warn'>Algorithm "+esc(alg)+" is not supported for verification here. Supported: HS256/384/512, RS256/384/512, ES256/384.</span></p>";return;}
+  var family=m[1], bits=+m[2];
+  var data=new TextEncoder().encode(parts[0]+"."+parts[1]);
+  var sig;
+  try{ sig=b64urlToBytes(parts[2]); }
+  catch(e){ box.innerHTML="<p class='jwt-panel'><span class='status-bad'>Signature is not valid Base64URL.</span></p>"; return; }
+
+  try{
+    var ok=false;
+    if(family==="HS"){
+      var secretText=document.getElementById("verSecret").value;
+      if(!secretText){box.innerHTML="<p class='jwt-panel'><span class='status-warn'>Enter the shared secret.</span></p>";return;}
+      var secretBytes=document.getElementById("secretB64").checked?b64ToBytes(secretText):new TextEncoder().encode(secretText);
+      var hkey=await crypto.subtle.importKey("raw",secretBytes,{name:"HMAC",hash:HASH[bits]},false,["verify"]);
+      ok=await crypto.subtle.verify("HMAC",hkey,sig,data);
+    }else if(family==="RS"||family==="PS"){
+      var keyText=document.getElementById("verKey").value.trim();
+      if(!keyText){box.innerHTML="<p class='jwt-panel'><span class='status-warn'>Paste the RSA public key (PEM or JWK).</span></p>";return;}
+      var algName=family==="PS"?"RSA-PSS":"RSASSA-PKCS1-v1_5";
+      var rkey=await importPublic(keyText,{name:algName,hash:HASH[bits]});
+      var params=family==="PS"?{name:"RSA-PSS",saltLength:bits/8}:{name:"RSASSA-PKCS1-v1_5"};
+      ok=await crypto.subtle.verify(params,rkey,sig,data);
+    }else if(family==="ES"){
+      var keyTextE=document.getElementById("verKey").value.trim();
+      if(!keyTextE){box.innerHTML="<p class='jwt-panel'><span class='status-warn'>Paste the EC public key (PEM or JWK).</span></p>";return;}
+      var curve=bits===256?"P-256":bits===384?"P-384":"P-521";
+      var ekey=await importPublic(keyTextE,{name:"ECDSA",namedCurve:curve});
+      ok=await crypto.subtle.verify({name:"ECDSA",hash:HASH[bits]},ekey,sig,data);
+    }
+    box.innerHTML=ok
+      ? "<p class='jwt-panel'><span class='status-ok'>✔ Verified — the signature is valid for this "+esc(alg)+" token and key.</span></p>"
+      : "<p class='jwt-panel'><span class='status-bad'>✘ Invalid signature — the token does not match this key/secret, or it was altered.</span></p>";
+  }catch(e){
+    box.innerHTML="<p class='jwt-panel'><span class='status-bad'>Verification error:</span> "+esc(e.message||String(e))+". Check the key format (PEM SPKI 'BEGIN PUBLIC KEY', or JWK JSON) and that it matches the algorithm.</p>";
+  }
+}
+
+/* Import a public key from PEM (SPKI) or JWK JSON for the given algorithm. */
+async function importPublic(text,algo){
+  if(/^\s*\{/.test(text)){
+    var jwk=JSON.parse(text);
+    return crypto.subtle.importKey("jwk",jwk,algo,false,["verify"]);
+  }
+  var der=b64ToBytes(pemBody(text));
+  return crypto.subtle.importKey("spki",der.buffer,algo,false,["verify"]);
+}
+
+/* ---- helpers ------------------------------------------------------------ */
+function loadSample(){
+  /* HS256 token, secret "secret", sub/name/iat/exp far future */
+  document.getElementById("jwtIn").value=
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."+
+    "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ."+
+    "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+  decodeJwt();
+  notify("Loaded a sample HS256 token (secret is \"your-256-bit-secret\").","info");
+}
+function clearAll(){
+  document.getElementById("jwtIn").value="";
+  document.getElementById("verResult").innerHTML="";
+  decodeJwt();
+}
+
+toggleSecretLabel();
+window.decodeJwt=decodeJwt;
+window.verifyJwt=verifyJwt;
+window.toggleSecretLabel=toggleSecretLabel;
+window.loadSample=loadSample;
+window.clearAll=clearAll;
+  </script>
+</body>
+</html>
