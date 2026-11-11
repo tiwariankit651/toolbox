@@ -287,11 +287,19 @@ function copyText() {
 }
 
 function pasteText() {
+  /* Reading the clipboard needs permission (and is missing in some browsers,
+     e.g. Firefox). If it is refused, say how to paste instead of failing. */
+  var box = document.getElementById("t");
+  if (!navigator.clipboard || !navigator.clipboard.readText) {
+    box.focus(); notify("Press Ctrl+V (or long-press → Paste) to paste here.", "info"); return;
+  }
   navigator.clipboard.readText().then(function(text) {
     pushHistory();
-    document.getElementById("t").value = text;
+    box.value = text;
     updateStats();
     autoSave();
+  }).catch(function() {
+    box.focus(); notify("Clipboard access was blocked. Press Ctrl+V (or long-press → Paste) to paste here.", "warn");
   });
 }
 
