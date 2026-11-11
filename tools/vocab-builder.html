@@ -1101,31 +1101,65 @@ function boxBadge(w) {
 }
 
 /* ===== WORD BANK TAB ===== */
+/* The bank used to build a card for every one of ~700 words at once, which
+   took several seconds on a phone before the page answered. Cards are now
+   added in batches: the first batch at once, the rest as you scroll (or with
+   "Show more"). Search and filters still cover every word. */
+var BANK_BATCH = 60, bankWords = [], bankShown = 0, bankObserver = null;
+function bankCardHtml(w) {
+  var k = wordKey(w);
+  var isFav = favourites.has(k);
+  var html = '<div class="vb-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.3rem">' +
+    '<div><span class="vb-word">' + esc(w.w) + '</span> ' + boxBadge(w) +
+    (w.pos ? ' <span class="vb-pos">' + esc(w.pos) + '</span>' : '') +
+    '<br><span class="vb-hindi">' + esc(w.m) + '</span></div>' +
+    '<div class="vb-actions">' +
+    '<button onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')" title="Pronounce" aria-label="Pronounce ' + esc(w.w) + '">🔊</button>' +
+    '<button onclick="toggleFav(\'' + esc(k).replace(/'/g,"\\'") + '\')" title="Favourite" aria-label="' + (isFav ? 'Remove from favourites' : 'Add to favourites') + '">' + (isFav ? '⭐' : '☆') + '</button>' +
+    '</div></div>';
+  if (w.syn) html += '<div style="font-size:.82rem;color:var(--text2);margin-top:.2rem"><strong>Syn:</strong> ' + esc(w.syn) + (w.ant ? ' | <strong>Ant:</strong> ' + esc(w.ant) : '') + '</div>';
+  if (w.ex) html += '<div class="vb-example">"' + esc(w.ex) + '"</div>';
+  return html + '</div>';
+}
 function renderBank() {
-  var words = getFilteredWords();
-  if (!words.length) { document.getElementById('panelBank').innerHTML = '<p class="info">No words match your filters.</p>'; return; }
-  var html = '';
-  words.forEach(function(w) {
-    var k = wordKey(w);
-    var isFav = favourites.has(k);
-    html += '<div class="vb-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.3rem">' +
-      '<div><span class="vb-word">' + esc(w.w) + '</span> ' + boxBadge(w) +
-      (w.pos ? ' <span class="vb-pos">' + esc(w.pos) + '</span>' : '') +
-      '<br><span class="vb-hindi">' + esc(w.m) + '</span></div>' +
-      '<div class="vb-actions">' +
-      '<button onclick="speakWord(\'' + esc(w.w).replace(/'/g,"\\'") + '\')" title="Pronounce">🔊</button>' +
-      '<button onclick="toggleFav(\'' + esc(k).replace(/'/g,"\\'") + '\')" title="Favourite">' + (isFav ? '⭐' : '☆') + '</button>' +
-      '</div></div>';
-    if (w.syn) html += '<div style="font-size:.82rem;color:var(--text2);margin-top:.2rem"><strong>Syn:</strong> ' + esc(w.syn) + (w.ant ? ' | <strong>Ant:</strong> ' + esc(w.ant) : '') + '</div>';
-    if (w.ex) html += '<div class="vb-example">"' + esc(w.ex) + '"</div>';
-    html += '</div>';
-  });
-  document.getElementById('panelBank').innerHTML = '<div style="font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Showing ' + words.length + ' words</div>' + html;
+  var panel = document.getElementById('panelBank');
+  bankWords = getFilteredWords(); bankShown = 0;
+  if (bankObserver) { bankObserver.disconnect(); bankObserver = null; }
+  if (!bankWords.length) { panel.innerHTML = '<p class="info">No words match your filters.</p>'; return; }
+  panel.innerHTML = '<div style="font-size:.85rem;color:var(--text2);margin-bottom:.5rem">Showing ' + bankWords.length + ' words</div>' +
+    '<div id="vbBankList"></div><button type="button" class="btn btn-outline" id="vbMore" style="width:100%;margin-top:.6rem" onclick="moreBank()"></button>';
+  moreBank();
+  // moreBank() removes the button when everything fits in one batch
+  var more = document.getElementById('vbMore');
+  if (more && 'IntersectionObserver' in window) {
+    bankObserver = new IntersectionObserver(function (en) { if (en[0].isIntersecting) moreBank(); }, { rootMargin: '600px' });
+    bankObserver.observe(more);
+  }
+}
+function moreBank() {
+  var list = document.getElementById('vbBankList'), btn = document.getElementById('vbMore');
+  if (!list || bankShown >= bankWords.length) return;
+  var end = Math.min(bankWords.length, bankShown + BANK_BATCH), html = '';
+  for (var i = bankShown; i < end; i++) html += bankCardHtml(bankWords[i]);
+  list.insertAdjacentHTML('beforeend', html); bankShown = end;
+  var left = bankWords.length - bankShown;
+  if (left > 0) btn.textContent = 'Show more words (' + left + ' left)';
+  else { btn.remove(); if (bankObserver) { bankObserver.disconnect(); bankObserver = null; } }
 }
 
 function toggleFav(k) {
   if (favourites.has(k)) favourites.delete(k); else favourites.add(k);
   saveFavs();
+  /* In the word bank, update just the star: re-rendering would drop the
+     batches already loaded and jump the user back to the top. */
+  var ev = window.event, btn = ev && ev.target && ev.target.closest ? ev.target.closest('button') : null;
+  var filterFav = document.getElementById('vbExtraFilter').value === 'fav';
+  if (currentVTab === 'bank' && btn && !filterFav) {
+    var on = favourites.has(k);
+    btn.textContent = on ? '⭐' : '☆';
+    btn.setAttribute('aria-label', on ? 'Remove from favourites' : 'Add to favourites');
+    return;
+  }
   renderCurrentTab();
 }
 

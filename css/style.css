@@ -102,7 +102,7 @@ button.icon-btn,button.ec-star,button.note-del,button.md-tool,button.sr-icon{
 }
 
 .hero-gradient{background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(139,92,246,.12),rgba(236,72,153,.15));border-radius:24px;padding:2.8rem;margin-bottom:2rem;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
-.hero-gradient::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(99,102,241,.12),transparent,rgba(236,72,153,.12),transparent);animation:heroSpin 10s linear infinite}
+.hero-gradient::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(99,102,241,.12),transparent,rgba(236,72,153,.12),transparent);animation:heroSpin 10s linear infinite;will-change:transform;pointer-events:none}
 @keyframes heroSpin{to{transform:rotate(360deg)}}
 .tool-card{transition:transform .2s,box-shadow .2s}
 .tool-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(99,102,241,.2)}
@@ -125,7 +125,7 @@ button.icon-btn,button.ec-star,button.note-del,button.md-tool,button.sr-icon{
 .light .tool-section{background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06)}
 
 /* Smooth page load */
-body{animation:pageLoad .5s ease}
+
 @keyframes pageLoad{from{opacity:0}to{opacity:1}}
 
 /* Nav glass effect */
@@ -133,7 +133,7 @@ nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdro
 .light nav{background:rgba(255,255,255,.9)!important}
 
 /* Tool card glow on hover */
-.tool-card{background:var(--surface);backdrop-filter:blur(5px)}
+.tool-card{background:var(--surface)}
 .tool-card:hover{box-shadow:0 12px 40px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.1)}
 
 /* Button shine effect */
@@ -167,9 +167,9 @@ details summary:hover{color:var(--accent-text)}
 details[open] summary{color:var(--accent-text);margin-bottom:.5rem}
 
 /* Card grid stagger animation */
-.tools-grid .tool-card{opacity:0;animation:cardIn .4s ease forwards}
+.tools-grid .tool-card{animation:cardIn .35s ease both}
 .tools-grid .tool-card:nth-child(n){animation-delay:.1s}
-@keyframes cardIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{transform:translateY(8px)}to{transform:translateY(0)}}
 
 /* Breadcrumb arrow */
 .breadcrumb{padding:.5rem 0;font-weight:500}
@@ -399,3 +399,8 @@ button:not([class]):not([style]):not(#themeToggle):active{transform:translateY(0
 }
 
 
+
+/* Off-screen blocks are laid out and painted only when scrolled near: the
+   homepage has 145 tool cards and long pages have big FAQ/guide sections. */
+.tools-grid,.tool-section#deep-notes,.faq,footer{content-visibility:auto;contain-intrinsic-size:auto 600px}
+@media (prefers-reduced-motion:reduce){.hero-gradient::before{animation:none}.tools-grid .tool-card{animation:none}}

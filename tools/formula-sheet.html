@@ -894,81 +894,100 @@ function fsShowSub(s) {
 }
 
 /* ===== FILTERING & RENDERING ===== */
+/* 708 formulas used to be turned into HTML in one go on page load (and again
+   on every bookmark or section toggle), which froze phones for several
+   seconds. Section headers are drawn at once; each section's formulas are
+   filled in when it scrolls near the screen. Search, print and bookmarks
+   still see every formula. */
+var fsGroups = {}, fsQuery = '', fsObserver = null;
+function fsItemHtml(item, q) {
+  var k = fKey(item), isBookmarked = bookmarks.has(k);
+  var nameHtml = q ? highlight(item.n, q) : esc(item.n);
+  var exprHtml = q ? highlight(item.f, q) : esc(item.f);
+  var html = '<div class="fs-formula"><div style="flex:1;min-width:0"><span class="fs-formula-name">' + nameHtml + '</span>';
+  if (item.c) html += '<div class="fs-concept">' + (q ? highlight(item.c, q) : esc(item.c)) + '</div>';
+  html += '</div><span class="fs-formula-expr">' + exprHtml + '</span><span class="fs-actions">';
+  html += '<button onclick="toggleBookmark(\'' + k.replace(/'/g, "\\'") + '\')" title="Bookmark" aria-label="' + (isBookmarked ? 'Remove bookmark' : 'Bookmark') + '">' + (isBookmarked ? '\u2b50' : '\u2606') + '</button>';
+  html += '<button onclick="copyFormula(\'' + esc(item.n).replace(/'/g, "\\'") + ': ' + esc(item.f).replace(/'/g, "\\'") + '\')" title="Copy" aria-label="Copy formula">\ud83d\udccb</button>';
+  return html + '</span></div>';
+}
+function fsFill(body) {
+  if (!body || body.getAttribute('data-filled') === '1') return;
+  var g = fsGroups[body.getAttribute('data-g')];
+  if (!g) return;
+  var html = '';
+  for (var i = 0; i < g.items.length; i++) html += fsItemHtml(g.items[i], fsQuery);
+  body.innerHTML = html;
+  body.setAttribute('data-filled', '1');
+}
+function fsFillAll() { document.querySelectorAll('#fsFormulas .fs-section-body').forEach(fsFill); }
 function fsFilter() {
   var q = (document.getElementById('fsSearch').value || '').toLowerCase();
   var container = document.getElementById('fsFormulas');
-
-  // Group by topic
   var groups = {};
   DB.forEach(function(item) {
     if (currentSub === 'bookmarks') {
       if (!bookmarks.has(fKey(item))) return;
     } else if (currentSub !== 'all' && item.s !== currentSub) return;
-
     if (q) {
       var match = item.n.toLowerCase().indexOf(q) > -1 || item.f.toLowerCase().indexOf(q) > -1 || item.t.toLowerCase().indexOf(q) > -1 || (item.c && item.c.toLowerCase().indexOf(q) > -1);
       if (!match) return;
     }
-
     var gKey = item.s + '|' + item.t;
     if (!groups[gKey]) groups[gKey] = { s: item.s, t: item.t, items: [] };
     groups[gKey].items.push(item);
   });
-
+  fsGroups = groups; fsQuery = q;
+  if (fsObserver) { fsObserver.disconnect(); fsObserver = null; }
   var keys = Object.keys(groups);
-  if (!keys.length) {
-    container.innerHTML = '<p class="info">No formulas found. Try a different search.</p>';
-    return;
-  }
-
+  if (!keys.length) { container.innerHTML = '<p class="info">No formulas found. Try a different search.</p>'; return; }
   var html = '';
   var icons = { math: '\ud83d\udcd0', physics: '\u26a1', chemistry: '\ud83e\uddea', aptitude: '\ud83e\udde0' };
-
   keys.forEach(function(gKey) {
-    var g = groups[gKey];
-    var icon = icons[g.s] || '';
+    var g = groups[gKey], icon = icons[g.s] || '';
     var isCollapsed = collapsedSections[gKey] && !q; // don't collapse during search
+    var safe = gKey.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     html += '<div class="fs-section">';
-    html += '<div class="fs-section-header" onclick="toggleSection(\'' + gKey.replace(/'/g, "\\'") + '\')">';
+    html += '<div class="fs-section-header" role="button" tabindex="0" aria-expanded="' + (!isCollapsed) + '" onclick="toggleSection(\'' + gKey.replace(/\\/g,'\\\\').replace(/'/g, "\\'") + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}">';
     html += '<h3>' + icon + ' ' + esc(g.t) + ' <span style="font-size:.8rem;color:var(--text2);font-weight:400">(' + g.items.length + ')</span></h3>';
     html += '<span style="font-size:1.2rem">' + (isCollapsed ? '\u25b6' : '\u25bc') + '</span></div>';
-    html += '<div class="fs-section-body" style="' + (isCollapsed ? 'max-height:0;overflow:hidden' : '') + '">';
-
-    g.items.forEach(function(item) {
-      var k = fKey(item);
-      var isBookmarked = bookmarks.has(k);
-      var nameHtml = q ? highlight(item.n, q) : esc(item.n);
-      var exprHtml = q ? highlight(item.f, q) : esc(item.f);
-
-      html += '<div class="fs-formula">';
-      html += '<div style="flex:1;min-width:0">';
-      html += '<span class="fs-formula-name">' + nameHtml + '</span>';
-      if (item.c) {
-        var conceptHtml = q ? highlight(item.c, q) : esc(item.c);
-        html += '<div class="fs-concept">' + conceptHtml + '</div>';
-      }
-      html += '</div>';
-      html += '<span class="fs-formula-expr">' + exprHtml + '</span>';
-      html += '<span class="fs-actions">';
-      html += '<button onclick="toggleBookmark(\'' + k.replace(/'/g, "\\'") + '\')" title="Bookmark">' + (isBookmarked ? '\u2b50' : '\u2606') + '</button>';
-      html += '<button onclick="copyFormula(\'' + esc(item.n).replace(/'/g, "\\'") + ': ' + esc(item.f).replace(/'/g, "\\'") + '\')" title="Copy">\ud83d\udccb</button>';
-      html += '</span></div>';
-    });
-
-    html += '</div></div>';
+    html += '<div class="fs-section-body" data-g="' + safe + '" style="' + (isCollapsed ? 'max-height:0;overflow:hidden' : 'min-height:' + Math.min(g.items.length, 40) * 3 + 'rem') + '"></div>';
+    html += '</div>';
   });
-
   container.innerHTML = html;
+  var bodies = container.querySelectorAll('.fs-section-body');
+  if ('IntersectionObserver' in window) {
+    fsObserver = new IntersectionObserver(function(en) {
+      en.forEach(function(x) { if (x.isIntersecting) { fsFill(x.target); x.target.style.minHeight = ''; fsObserver.unobserve(x.target); } });
+    }, { rootMargin: '800px 0px' });
+    bodies.forEach(function(b) { fsObserver.observe(b); });
+  } else fsFillAll();
 }
+// Printing must include every formula, not only the ones already drawn.
+window.addEventListener('beforeprint', fsFillAll);
 
 function toggleSection(gKey) {
   collapsedSections[gKey] = !collapsedSections[gKey];
-  fsFilter();
+  var body = null;
+  document.querySelectorAll('#fsFormulas .fs-section-body').forEach(function(b) { if (b.getAttribute('data-g') === gKey) body = b; });
+  if (!body || fsQuery) { fsFilter(); return; }
+  var closed = collapsedSections[gKey], head = body.previousElementSibling;
+  if (closed) { body.style.maxHeight = '0'; body.style.overflow = 'hidden'; }
+  else { body.style.maxHeight = ''; body.style.overflow = ''; fsFill(body); }
+  if (head) { head.setAttribute('aria-expanded', String(!closed)); head.lastElementChild.textContent = closed ? '\u25b6' : '\u25bc'; }
 }
 
 function toggleBookmark(k) {
   if (bookmarks.has(k)) bookmarks.delete(k); else bookmarks.add(k);
   saveBookmarks();
+  // In the bookmarks view the list itself changes; elsewhere just flip the star.
+  var ev = window.event, btn = ev && ev.target && ev.target.closest ? ev.target.closest('button') : null;
+  if (currentSub !== 'bookmarks' && btn) {
+    var on = bookmarks.has(k);
+    btn.textContent = on ? '\u2b50' : '\u2606';
+    btn.setAttribute('aria-label', on ? 'Remove bookmark' : 'Bookmark');
+    return;
+  }
   fsFilter();
 }
 
