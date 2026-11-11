@@ -44,7 +44,7 @@
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><circle cx="100" cy="60" r="40" fill="none" stroke="#6366f1" stroke-width="3"/><polygon points="88,40 88,80 125,60" fill="#8b5cf6" opacity=".6"/></svg></div>
       <p class="info">Record your screen, tab, or window directly from the browser. No software needed.</p>
       <div class="row">
-        <label>Quality preset:</label>
+        <label for="srPreset">Quality preset:</label>
         <select id="srPreset" onchange="applySrPreset()">
           <option value="youtube" selected>YouTube / tutorial (1080p 30fps)</option>
           <option value="smooth">Smooth motion (1080p 60fps)</option>
@@ -56,7 +56,7 @@
       </div>
 
       <div class="row">
-        <label>Resolution:</label>
+        <label for="srRes">Resolution:</label>
         <select id="srRes" onchange="onSrCustom()">
           <option value="0">Native (as captured)</option>
           <option value="2160">2160p (4K)</option>
@@ -65,7 +65,7 @@
           <option value="720">720p</option>
           <option value="480">480p</option>
         </select>
-        <label>Frame rate:</label>
+        <label for="srFps">Frame rate:</label>
         <select id="srFps" onchange="onSrCustom()">
           <option value="60">60 fps</option>
           <option value="30" selected>30 fps</option>
@@ -75,10 +75,10 @@
       </div>
 
       <div class="row">
-        <label>Bitrate: <strong id="srBrVal">6 Mbps</strong></label>
+        <label for="srBitrate">Bitrate: <strong id="srBrVal">6 Mbps</strong></label>
         <input type="range" id="srBitrate" min="1" max="20" step="1" value="6" style="flex:2"
                oninput="document.getElementById('srBrVal').textContent=this.value+' Mbps';onSrCustom();updateSrEstimate()">
-        <select id="srFormat" onchange="onSrCustom()">
+        <select id="srFormat" onchange="onSrCustom()" aria-label="Recording format">
           <option value="auto" selected>Best format available</option>
           <option value="video/webm;codecs=vp9">WebM VP9</option>
           <option value="video/webm;codecs=vp8">WebM VP8</option>
@@ -96,21 +96,21 @@
 
       <div id="camSelect" style="display:none;margin:.5rem 0">
         <div class="row">
-          <label>Camera position:</label>
+          <label for="camPos">Camera position:</label>
           <select id="camPos"><option value="br" selected>Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option></select>
           <select id="camSize"><option value="150">Small</option><option value="200" selected>Medium</option><option value="280">Large</option><option value="360">Extra large</option></select>
           <select id="camShape"><option value="rounded" selected>Rounded box</option><option value="circle">Circle</option><option value="square">Square</option></select>
         </div>
         <div class="row">
-          <label>Mirror camera:</label>
+          <label for="camMirror">Mirror camera:</label>
           <select id="camMirror"><option value="1" selected>Yes (natural)</option><option value="0">No</option></select>
         </div>
       </div>
 
       <div class="row">
-        <label>Countdown:</label>
+        <label for="countdown">Countdown:</label>
         <select id="countdown"><option value="0">None</option><option value="3" selected>3 sec</option><option value="5">5 sec</option><option value="10">10 sec</option></select>
-        <label>Auto-stop after:</label>
+        <label for="srLimit">Auto-stop after:</label>
         <select id="srLimit">
           <option value="0" selected>No limit</option>
           <option value="60">1 minute</option><option value="300">5 minutes</option>

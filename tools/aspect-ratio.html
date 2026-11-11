@@ -54,15 +54,15 @@
       <!-- CALCULATOR PANEL -->
       <div id="panelCalc" class="ar-panel active">
         <div class="row">
-          <label style="flex:0">Ratio:</label>
+          <label style="flex:0" for="rw">Ratio:</label>
           <input type="number" id="rw" value="16" style="width:70px;flex:0" oninput="onRatio()">
           <span style="font-size:1.3rem;padding:0 .3rem">:</span>
-          <input type="number" id="rh" value="9" style="width:70px;flex:0" oninput="onRatio()">
+          <input type="number" id="rh" value="9" style="width:70px;flex:0" oninput="onRatio()" aria-label="Ratio height">
           <label style="flex:0;white-space:nowrap;margin-left:.6rem"><input type="checkbox" id="lockRatio" checked style="width:auto"> 🔒 Lock ratio</label>
         </div>
         <div class="row">
-          <label style="flex:0">Width (px):</label><input type="number" id="w" value="1920" oninput="calcFromW()">
-          <label style="flex:0">Height (px):</label><input type="number" id="h" value="1080" oninput="calcFromH()">
+          <label style="flex:0" for="w">Width (px):</label><input type="number" id="w" value="1920" oninput="calcFromW()">
+          <label style="flex:0" for="h">Height (px):</label><input type="number" id="h" value="1080" oninput="calcFromH()">
         </div>
         <div id="result" class="ar-result"></div>
       <h2 style="font-size:1rem;margin-top:1.2rem">Recent sizes</h2>
@@ -70,7 +70,7 @@
 
         <div class="ar-preview-wrap" id="previewWrap"></div>
         <div class="row"><label style="flex:0;white-space:nowrap"><input type="checkbox" id="cmpToggle" style="width:auto" onchange="toggleCompare()"> Compare with</label>
-          <input type="number" id="cw" value="4" style="width:70px;flex:0" oninput="calc()"><span style="padding:0 .3rem">:</span><input type="number" id="ch" value="3" style="width:70px;flex:0" oninput="calc()">
+          <input type="number" id="cw" value="4" style="width:70px;flex:0" oninput="calc()" aria-label="Compare width"><span style="padding:0 .3rem">:</span><input type="number" id="ch" value="3" style="width:70px;flex:0" oninput="calc()" aria-label="Compare height">
         </div>
 
         <div class="ar-sub">Common Ratio Presets</div>
@@ -90,11 +90,11 @@
       <div id="panelScale" class="ar-panel">
         <p class="info">Enter original dimensions, then scale by target width, target height, or a percentage — the ratio is preserved.</p>
         <div class="row">
-          <label style="flex:0">Original W:</label><input type="number" id="sOrigW" value="1920" oninput="doScale()">
-          <label style="flex:0">Original H:</label><input type="number" id="sOrigH" value="1080" oninput="doScale()">
+          <label style="flex:0" for="sOrigW">Original W:</label><input type="number" id="sOrigW" value="1920" oninput="doScale()">
+          <label style="flex:0" for="sOrigH">Original H:</label><input type="number" id="sOrigH" value="1080" oninput="doScale()">
         </div>
         <div class="row">
-          <label style="flex:0;white-space:nowrap">Scale by:</label>
+          <label style="flex:0;white-space:nowrap" for="scaleMode">Scale by:</label>
           <select id="scaleMode" style="flex:0;min-width:150px" onchange="doScale()"><option value="pct">Percentage</option><option value="w">Target Width</option><option value="h">Target Height</option></select>
           <input type="number" id="scaleVal" value="50" oninput="doScale()">
         </div>
@@ -106,11 +106,11 @@
       <div id="panelCrop" class="ar-panel">
         <p class="info">Given a source image and a target ratio, see whether you'll letterbox (fit) or crop (fill), and exactly how many pixels get added or cut.</p>
         <div class="row">
-          <label style="flex:0">Source W:</label><input type="number" id="cropW" value="1920" oninput="doCrop()">
-          <label style="flex:0">Source H:</label><input type="number" id="cropH" value="1080" oninput="doCrop()">
+          <label style="flex:0" for="cropW">Source W:</label><input type="number" id="cropW" value="1920" oninput="doCrop()">
+          <label style="flex:0" for="cropH">Source H:</label><input type="number" id="cropH" value="1080" oninput="doCrop()">
         </div>
         <div class="row">
-          <label style="flex:0">Target ratio:</label><input type="number" id="cropRW" value="1" style="width:70px;flex:0" oninput="doCrop()"><span style="padding:0 .3rem">:</span><input type="number" id="cropRH" value="1" style="width:70px;flex:0" oninput="doCrop()">
+          <label style="flex:0" for="cropRW">Target ratio:</label><input type="number" id="cropRW" value="1" style="width:70px;flex:0" oninput="doCrop()"><span style="padding:0 .3rem">:</span><input type="number" id="cropRH" value="1" style="width:70px;flex:0" oninput="doCrop()">
         </div>
         <div class="chip-wrap" id="cropRatioChips"></div>
         <div id="cropResult" class="ar-result"></div>

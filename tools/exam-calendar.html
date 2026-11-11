@@ -73,7 +73,7 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 
       <!-- Filters -->
       <div class="ec-filters" id="filterBar">
-        <select id="filterCat" onchange="renderView()">
+        <select id="filterCat" onchange="renderView()" aria-label="Filter by exam category">
           <option value="all">All Categories</option>
           <option value="ssc">SSC</option>
           <option value="banking">Banking</option>
@@ -84,7 +84,7 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
           <option value="state">State PSC</option>
           <option value="campus">Campus/Academic</option>
         </select>
-        <select id="filterMonth" onchange="renderView()">
+        <select id="filterMonth" onchange="renderView()" aria-label="Filter by month">
           <option value="all">All Months</option>
           <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option>
           <option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option>
@@ -461,7 +461,7 @@ function renderList() {
     html += '</div>';
     html += '<div style="text-align:right;min-width:110px"><span class="ec-days ' + dc + '">' + daysText + '</span>';
     if (e.notifyMonth && e.notifyMonth !== '-') html += '<br><span class="info" style="font-size:.75rem">Notification: ~' + escHtml(e.notifyMonth) + '</span>';
-    if (e.website) html += '<br><a href="' + e.website + '" target="_blank" rel="noopener" style="font-size:.75rem">Official Site ↗</a>';
+    if (e.website) html += '<br><a href="' + e.website + '" target="_blank" rel="noopener" class="exam-link" style="font-size:.8rem">Official Site ↗</a>';
     if (e.isCustom) html += '<br><button onclick="removeCustom(\'' + e.id.replace('custom-','') + '\')" style="font-size:.75rem;color:var(--danger);background:none;border:none;cursor:pointer">Delete</button>';
     html += '</div></div>';
   });

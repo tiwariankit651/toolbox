@@ -29,7 +29,7 @@
         <div id="batchNav" style="display:none;margin:.5rem 0" class="row"><button class="btn btn-outline" onclick="navImg(-1)">← Prev</button><span id="batchInfo" style="text-align:center"></span><button class="btn btn-outline" onclick="navImg(1)">Next →</button></div>
 
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Preset:</label>
+          <div><label for="preset">Preset:</label>
             <select id="preset" onchange="applyPreset()">
               <option value="">— Custom —</option>
               <option value="portrait">Portrait Sketch</option>
@@ -38,7 +38,7 @@
               <option value="comic">Comic Pop</option>
             </select>
           </div>
-          <div><label>Effect:</label>
+          <div><label for="style">Effect:</label>
             <select id="style" onchange="scheduleRender()">
               <option value="pencil">Pencil Sketch</option>
               <option value="colored">Coloured Pencil</option>
@@ -55,25 +55,25 @@
         </div>
 
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Line strength / edge threshold: <span id="lineVal">30</span></label><input type="range" id="line" min="1" max="100" value="30" oninput="scheduleRender()"></div>
-          <div><label>Blur radius: <span id="blurVal">3</span></label><input type="range" id="blur" min="0" max="12" value="3" oninput="scheduleRender()"></div>
-          <div><label>Detail level: <span id="detailVal">5</span></label><input type="range" id="detail" min="1" max="10" value="5" oninput="scheduleRender()"></div>
+          <div><label for="line">Line strength / edge threshold: <span id="lineVal">30</span></label><input type="range" id="line" min="1" max="100" value="30" oninput="scheduleRender()"></div>
+          <div><label for="blur">Blur radius: <span id="blurVal">3</span></label><input type="range" id="blur" min="0" max="12" value="3" oninput="scheduleRender()"></div>
+          <div><label for="detail">Detail level: <span id="detailVal">5</span></label><input type="range" id="detail" min="1" max="10" value="5" oninput="scheduleRender()"></div>
         </div>
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
-          <div><label>Brightness: <span id="briVal">0</span></label><input type="range" id="brightness" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
+          <div><label for="contrast">Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
+          <div><label for="brightness">Brightness: <span id="briVal">0</span></label><input type="range" id="brightness" min="-50" max="50" value="0" oninput="scheduleRender()"></div>
           <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="invert" style="width:auto" onchange="scheduleRender()"><label for="invert" style="margin:0">Invert</label></div>
         </div>
 
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Background:</label>
+          <div><label for="bg">Background:</label>
             <select id="bg" onchange="scheduleRender()">
               <option value="white">White</option>
               <option value="cream">Cream / Paper texture</option>
               <option value="transparent">Transparent (PNG)</option>
             </select>
           </div>
-          <div><label>Paper grain: <span id="grainVal">0</span></label><input type="range" id="grain" min="0" max="100" value="0" oninput="scheduleRender()"></div>
+          <div><label for="grain">Paper grain: <span id="grainVal">0</span></label><input type="range" id="grain" min="0" max="100" value="0" oninput="scheduleRender()"></div>
         </div>
 
         <div style="position:relative;max-width:100%;margin:.5rem auto" id="cmpWrap">
@@ -84,8 +84,8 @@
         <p class="info" style="text-align:center">Left = original · Right = effect. Drag the divider.</p>
 
         <div class="row" style="flex-wrap:wrap;margin:.5rem 0">
-          <div><label>Output format:</label><select id="fmt" onchange="toggleQuality();updateSize()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
-          <div id="qualityWrap" style="display:none"><label>Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92" oninput="updateSize()"></div>
+          <div><label for="fmt">Output format:</label><select id="fmt" onchange="toggleQuality();updateSize()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
+          <div id="qualityWrap" style="display:none"><label for="quality">Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92" oninput="updateSize()"></div>
         </div>
         <div style="display:flex;align-items:center;gap:.4rem;margin:.3rem 0"><input type="checkbox" id="hires" checked style="width:auto"><label for="hires" style="margin:0">High-resolution export (process at full image size)</label></div>
         <p class="info" id="sizeInfo"></p>

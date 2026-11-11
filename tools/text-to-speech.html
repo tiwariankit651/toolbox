@@ -64,14 +64,14 @@
 
       <div class="row" style="flex-wrap:wrap;margin-top:.8rem">
         <div style="flex:2;min-width:220px">
-          <label>Voice:</label>
+          <label for="voiceSearch">Voice:</label>
           <input type="text" id="voiceSearch" placeholder="Search voices by name or language..." oninput="renderVoiceOptions()" style="width:100%;margin-bottom:.3rem">
-          <select id="voice" style="width:100%" onchange="onVoiceChange()"></select>
+          <select id="voice" style="width:100%" onchange="onVoiceChange()" aria-label="Voice"></select>
         </div>
       </div>
 
       <div class="row">
-          <label>Reading preset:</label>
+          <label for="ttsPreset">Reading preset:</label>
           <select id="ttsPreset" onchange="ttsApplyPreset()" style="flex:2">
             <option value="custom">Custom</option>
             <option value="natural" selected>Natural (normal speed)</option>
@@ -82,9 +82,9 @@
           </select>
         </div>
         <div class="row" style="flex-wrap:wrap;margin-top:.5rem">
-        <div style="flex:1;min-width:110px"><label>Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=(+this.value).toFixed(1);updateEstimate()"></div>
-        <div style="flex:1;min-width:110px"><label>Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=(+this.value).toFixed(1)"></div>
-        <div style="flex:1;min-width:110px"><label>Volume: <span id="volVal">1.0</span></label><input type="range" id="volume" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('volVal').textContent=(+this.value).toFixed(2)"></div>
+        <div style="flex:1;min-width:110px"><label for="speed">Speed: <span id="speedVal">1.0</span>x</label><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('speedVal').textContent=(+this.value).toFixed(1);updateEstimate()"></div>
+        <div style="flex:1;min-width:110px"><label for="pitch">Pitch: <span id="pitchVal">1.0</span></label><input type="range" id="pitch" min="0" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=(+this.value).toFixed(1)"></div>
+        <div style="flex:1;min-width:110px"><label for="volume">Volume: <span id="volVal">1.0</span></label><input type="range" id="volume" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('volVal').textContent=(+this.value).toFixed(2)"></div>
         <div style="display:flex;align-items:flex-end"><button class="btn btn-outline" onclick="resetControls()" style="font-size:.8rem">↺ Reset</button></div>
       </div>
 
@@ -112,8 +112,8 @@
         <p class="info" style="font-size:.83rem;margin:0 0 .5rem">Reads each sentence twice with a pause in between, so you can write along.</p>
         <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
           <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem"><input type="checkbox" id="dictationMode"> Enable dictation mode</label>
-          <div style="flex:1;min-width:140px"><label style="font-size:.82rem">Repeats: <span id="repeatVal">2</span></label><input type="range" id="repeatCount" min="1" max="3" step="1" value="2" oninput="document.getElementById('repeatVal').textContent=this.value"></div>
-          <div style="flex:1;min-width:140px"><label style="font-size:.82rem">Pause: <span id="pauseVal">4</span>s</label><input type="range" id="dictPause" min="1" max="15" step="1" value="4" oninput="document.getElementById('pauseVal').textContent=this.value"></div>
+          <div style="flex:1;min-width:140px"><label style="font-size:.82rem" for="repeatCount">Repeats: <span id="repeatVal">2</span></label><input type="range" id="repeatCount" min="1" max="3" step="1" value="2" oninput="document.getElementById('repeatVal').textContent=this.value"></div>
+          <div style="flex:1;min-width:140px"><label style="font-size:.82rem" for="dictPause">Pause: <span id="pauseVal">4</span>s</label><input type="range" id="dictPause" min="1" max="15" step="1" value="4" oninput="document.getElementById('pauseVal').textContent=this.value"></div>
         </div>
       </div>
 

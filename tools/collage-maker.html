@@ -51,7 +51,7 @@
       </div>
 
       <div style="margin:.8rem 0"><label><strong>Output Size:</strong></label>
-        <div class="row" style="margin-top:.4rem"><select id="sizePreset" style="flex:1">
+        <div class="row" style="margin-top:.4rem"><select id="sizePreset" style="flex:1" aria-label="Collage size">
           <option value="1080,1080">Instagram Square (1080×1080)</option>
           <option value="1080,1350">Instagram Portrait (1080×1350)</option>
           <option value="1080,1920">Instagram Story (1080×1920)</option>
@@ -62,18 +62,18 @@
         <div id="customSizeRow" class="row" style="display:none;margin-top:.4rem"><input type="number" id="customW" placeholder="Width" style="width:100px" value="1080"><span>×</span><input type="number" id="customH" placeholder="Height" style="width:100px" value="1080"><span>px</span></div>
       </div>
 
-      <div class="row"><label>Gap: <strong id="gv">8</strong>px</label><input type="range" id="gap" min="0" max="60" value="8" oninput="document.getElementById('gv').textContent=this.value" style="flex:3"></div>
-      <div class="row"><label>Border/Padding: <strong id="pv">10</strong>px</label><input type="range" id="padding" min="0" max="60" value="10" oninput="document.getElementById('pv').textContent=this.value" style="flex:3"></div>
-      <div class="row"><label>Corner Radius: <strong id="rv">0</strong>px</label><input type="range" id="radius" min="0" max="50" value="0" oninput="document.getElementById('rv').textContent=this.value" style="flex:3"></div>
-      <div class="row"><label>Background:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"><label style="margin-left:1rem"><input type="checkbox" id="bgGradient"> Gradient</label><input type="color" id="bgColor2" value="#8b5cf6" style="width:50px;height:34px;border:none;cursor:pointer;margin-left:.3rem"></div>
+      <div class="row"><label for="gap">Gap: <strong id="gv">8</strong>px</label><input type="range" id="gap" min="0" max="60" value="8" oninput="document.getElementById('gv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label for="padding">Border/Padding: <strong id="pv">10</strong>px</label><input type="range" id="padding" min="0" max="60" value="10" oninput="document.getElementById('pv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label for="radius">Corner Radius: <strong id="rv">0</strong>px</label><input type="range" id="radius" min="0" max="50" value="0" oninput="document.getElementById('rv').textContent=this.value" style="flex:3"></div>
+      <div class="row"><label for="bgColor">Background:</label><input type="color" id="bgColor" value="#ffffff" style="width:50px;height:34px;border:none;cursor:pointer"><label style="margin-left:1rem"><input type="checkbox" id="bgGradient"> Gradient</label><input type="color" id="bgColor2" value="#8b5cf6" style="width:50px;height:34px;border:none;cursor:pointer;margin-left:.3rem" aria-label="Gradient second colour"></div>
 
       <div style="margin:.8rem 0;padding:.8rem;background:var(--card);border-radius:var(--radius)">
-        <label><strong>Caption (optional):</strong></label>
+        <label for="captionText"><strong>Caption (optional):</strong></label>
         <input type="text" id="captionText" placeholder="Enter caption text..." style="width:100%;margin-top:.4rem;padding:.4rem .6rem;border-radius:6px;border:1px solid rgba(99,102,241,.3);background:var(--card);color:var(--text)">
         <div class="row" style="margin-top:.4rem;flex-wrap:wrap;gap:.4rem">
-          <label>Size:</label><input type="number" id="captionSize" value="36" style="width:60px" min="10" max="200">
-          <label>Color:</label><input type="color" id="captionColor" value="#ffffff" style="width:40px;height:30px;border:none;cursor:pointer">
-          <label>Position:</label><select id="captionPos"><option value="bottom">Bottom</option><option value="top">Top</option><option value="center">Center</option></select>
+          <label for="captionSize">Size:</label><input type="number" id="captionSize" value="36" style="width:60px" min="10" max="200">
+          <label for="captionColor">Color:</label><input type="color" id="captionColor" value="#ffffff" style="width:40px;height:30px;border:none;cursor:pointer">
+          <label for="captionPos">Position:</label><select id="captionPos"><option value="bottom">Bottom</option><option value="top">Top</option><option value="center">Center</option></select>
         </div>
       </div>
 
@@ -88,8 +88,8 @@
       <div id="result" class="preview-area"></div>
 
       <div id="downloadSection" style="display:none;margin:.8rem 0">
-        <div class="row"><label>Format:</label><select id="dlFmt"><option value="png">PNG</option><option value="jpeg">JPG</option></select></div>
-        <div class="row" id="jpgQRow" style="display:none"><label>Quality: <strong id="jqv">92</strong>%</label><input type="range" id="jpgQuality" min="10" max="100" value="92" style="flex:3" oninput="document.getElementById('jqv').textContent=this.value"></div>
+        <div class="row"><label for="dlFmt">Format:</label><select id="dlFmt"><option value="png">PNG</option><option value="jpeg">JPG</option></select></div>
+        <div class="row" id="jpgQRow" style="display:none"><label for="jpgQuality">Quality: <strong id="jqv">92</strong>%</label><input type="range" id="jpgQuality" min="10" max="100" value="92" style="flex:3" oninput="document.getElementById('jqv').textContent=this.value"></div>
         <p id="fileSizeInfo" class="info" style="font-size:.8rem"></p>
         <button class="btn" onclick="downloadCollage()" style="width:100%">💾 Download Collage</button>
         <button class="btn btn-outline" onclick="copyCollage()">📋 Copy collage</button>

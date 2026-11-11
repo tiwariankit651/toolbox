@@ -35,7 +35,7 @@
 
         <h2 style="font-size:1rem;margin-top:1rem">1. Algorithm & Scale</h2>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Algorithm:</label>
+          <div><label for="algo">Algorithm:</label>
             <select id="algo" onchange="updateAlgoNote()">
               <option value="bicubic" selected>Browser Bicubic (high-quality smoothing)</option>
               <option value="stepwise">Stepwise (repeated 1.5–2x, keeps detail)</option>
@@ -43,7 +43,7 @@
               <option value="nearest">Nearest-Neighbour (pixel art)</option>
             </select>
           </div>
-          <div><label>Scale:</label>
+          <div><label for="scale">Scale:</label>
             <select id="scale" onchange="onScaleChange()">
               <option value="2">2x</option>
               <option value="3" selected>3x</option>
@@ -54,27 +54,27 @@
           </div>
         </div>
         <div id="customRow" class="row" style="flex-wrap:wrap;display:none">
-          <div><label>Target width (px):</label><input type="number" id="customW" min="1" oninput="syncCustom('w')"></div>
-          <div><label>Target height (px):</label><input type="number" id="customH" min="1" oninput="syncCustom('h')"></div>
+          <div><label for="customW">Target width (px):</label><input type="number" id="customW" min="1" oninput="syncCustom('w')"></div>
+          <div><label for="customH">Target height (px):</label><input type="number" id="customH" min="1" oninput="syncCustom('h')"></div>
           <div style="display:flex;align-items:center;gap:.4rem;flex:0 0 auto"><input type="checkbox" id="lockAspect" checked style="width:auto"><label for="lockAspect" style="margin:0">Lock aspect ratio</label></div>
         </div>
         <p id="algoNote" class="info"></p>
 
         <h2 style="font-size:1rem;margin-top:1rem">2. Post-Processing</h2>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Unsharp amount: <span id="uaVal">40</span>%</label><input type="range" id="usAmount" min="0" max="200" value="40"></div>
-          <div><label>Unsharp radius: <span id="urVal">1</span>px</label><input type="range" id="usRadius" min="0" max="5" value="1"></div>
-          <div><label>Noise reduction: <span id="nrVal">0</span></label><input type="range" id="noise" min="0" max="3" value="0"></div>
+          <div><label for="usAmount">Unsharp amount: <span id="uaVal">40</span>%</label><input type="range" id="usAmount" min="0" max="200" value="40"></div>
+          <div><label for="usRadius">Unsharp radius: <span id="urVal">1</span>px</label><input type="range" id="usRadius" min="0" max="5" value="1"></div>
+          <div><label for="noise">Noise reduction: <span id="nrVal">0</span></label><input type="range" id="noise" min="0" max="3" value="0"></div>
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0"></div>
-          <div><label>Saturation: <span id="satVal">100</span>%</label><input type="range" id="saturation" min="0" max="200" value="100"></div>
+          <div><label for="contrast">Contrast: <span id="conVal">0</span></label><input type="range" id="contrast" min="-50" max="50" value="0"></div>
+          <div><label for="saturation">Saturation: <span id="satVal">100</span>%</label><input type="range" id="saturation" min="0" max="200" value="100"></div>
         </div>
 
         <h2 style="font-size:1rem;margin-top:1rem">3. Output</h2>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Format:</label><select id="fmt" onchange="toggleQuality()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
-          <div id="qualityWrap" style="display:none"><label>Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92"></div>
+          <div><label for="fmt">Format:</label><select id="fmt" onchange="toggleQuality()"><option value="image/png" selected>PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></div>
+          <div id="qualityWrap" style="display:none"><label for="quality">Quality: <span id="qVal">92</span>%</label><input type="range" id="quality" min="10" max="100" value="92"></div>
         </div>
 
         <button class="btn" onclick="upscale()" style="width:100%;margin-top:.8rem" id="upBtn">🔍 Upscale Image</button>

@@ -46,20 +46,20 @@
       <h1>📄 Resume Builder</h1>
       <div style="text-align:center;margin:1rem 0;opacity:.7"><svg id="tool-illustration" xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="70" rx="8" fill="none" stroke="#6366f1" stroke-width="3"/><path d="M80,40 V25 H120 V40" fill="none" stroke="#8b5cf6" stroke-width="3"/><line x1="40" y1="70" x2="160" y2="70" stroke="#6366f1" stroke-width="2"/><circle cx="100" cy="70" r="6" fill="#8b5cf6"/></svg></div>
       <p class="info">Fill the form, choose a template, preview live, check ATS score, and download a professional PDF resume.</p>
-      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap"><label>Template:</label>
+      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap"><label for="template">Template:</label>
         <select id="template" onchange="updatePreview()"><option value="classic">📋 Classic (Single Column)</option><option value="modern">🎨 Modern (Two-Column Sidebar)</option><option value="minimal">✨ Minimal (Clean)</option><option value="ats">🤖 ATS-Safe (Plain)</option></select>
-        <label>Accent Color:</label><input type="color" id="accentColor" value="#4338ca" style="width:40px;height:35px;border:none" onchange="updatePreview();checkAccent()" oninput="checkAccent()"><span id="accentWarn" class="info" style="font-size:.78rem"></span>
+        <label for="accentColor">Accent Color:</label><input type="color" id="accentColor" value="#4338ca" style="width:40px;height:35px;border:none" onchange="updatePreview();checkAccent()" oninput="checkAccent()"><span id="accentWarn" class="info" style="font-size:.78rem"></span>
       </div>
       <h2>Personal Info</h2>
       <div class="row"><input type="text" id="name" placeholder="Full Name" oninput="autoSave();updatePreview()"><input type="text" id="title" placeholder="Job Title (e.g. Software Developer)" oninput="autoSave();updatePreview()"></div>
       <div class="row"><input type="email" id="email" placeholder="Email" oninput="autoSave();updatePreview()"><input type="text" id="phone" placeholder="Phone" oninput="autoSave();updatePreview()"></div>
       <div class="row"><input type="text" id="location" placeholder="City, Country" oninput="autoSave();updatePreview()"><input type="text" id="linkedin" placeholder="LinkedIn URL (optional)" oninput="autoSave();updatePreview()"></div>
       <div class="row"><input type="text" id="portfolio" placeholder="Portfolio/Website URL (optional)" oninput="autoSave();updatePreview()">
-        <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1 1 auto;min-width:0;max-width:100%"><img id="photoPreview" alt="Preview of the photo you added to your resume" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
+        <div style="display:flex;align-items:center;gap:.5rem;flex:1"><label style="white-space:nowrap" for="photo">📷 Photo:</label><input type="file" id="photo" accept="image/*" style="flex:1 1 auto;min-width:0;max-width:100%"><img id="photoPreview" alt="Preview of the photo you added to your resume" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none"></div>
       </div>
       <div class="drop-zone" id="photoDrop" onclick="document.getElementById('photo').click()" style="margin:.3rem 0;padding:.8rem;font-size:.85rem">📷 Drop a profile photo here, or click to choose</div>
       <div class="row" style="margin:.3rem 0;align-items:center;flex-wrap:wrap">
-        <label style="white-space:nowrap">Photo quality / size:</label>
+        <label style="white-space:nowrap" for="photoQuality">Photo quality / size:</label>
         <select id="photoQuality" onchange="updatePhotoQualityNote()">
           <option value="small">Compact (max 240px, lower quality — smallest PDF)</option>
           <option value="medium" selected>Balanced (max 400px, good quality)</option>
@@ -71,7 +71,7 @@
       <textarea id="summary" placeholder="Brief professional summary (2-3 lines)..." style="min-height:80px" oninput="autoSave();updatePreview()"></textarea>
       <h2 style="margin-top:1rem">Skills</h2>
       <div id="skillsList"></div>
-      <div class="row"><input type="text" id="newSkill" placeholder="Skill name"><select id="newSkillRating"><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3" selected>★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select><button class="btn btn-outline" onclick="addSkill()">+ Add Skill</button></div>
+      <div class="row"><input type="text" id="newSkill" placeholder="Skill name"><select id="newSkillRating" aria-label="Skill rating"><option value="1">★ 1</option><option value="2">★★ 2</option><option value="3" selected>★★★ 3</option><option value="4">★★★★ 4</option><option value="5">★★★★★ 5</option></select><button class="btn btn-outline" onclick="addSkill()">+ Add Skill</button></div>
       <input type="text" id="skills" placeholder="Or paste comma-separated: JavaScript, Python, React" style="margin-top:.3rem" oninput="autoSave();updatePreview()">
       <h2 style="margin-top:1rem">Experience</h2>
       <div id="exp"></div>

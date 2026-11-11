@@ -46,7 +46,7 @@
 
       <!-- QR Type Selector -->
       <div class="row" style="margin-bottom:.8rem;flex-wrap:wrap">
-        <select id="qrType" onchange="showTypeForm()" style="flex:1">
+        <select id="qrType" onchange="showTypeForm()" style="flex:1" aria-label="QR code type">
           <option value="text">📝 Plain Text / URL</option>
           <option value="wifi">📶 WiFi</option>
           <option value="vcard">👤 vCard Contact</option>
@@ -91,19 +91,19 @@
       <!-- Style Options -->
       <h3 style="margin-top:1rem" role="heading" aria-level="2">Style Options</h3>
       <div class="row" style="flex-wrap:wrap">
-        <div><label>Foreground</label><input type="color" id="qrColor" value="#000000" style="height:42px" onchange="gen()"></div>
-        <div><label>Background</label><input type="color" id="qrBg" value="#ffffff" style="height:42px" onchange="gen()"></div>
-        <div><label>Dot Shape</label><select id="dotShape" onchange="gen()"><option value="square">■ Square</option><option value="rounded">▢ Rounded</option><option value="circle">● Circle</option></select></div>
-        <div><label>Size (px)</label><input type="number" id="qrSize" value="400" min="128" max="1200" style="width:80px" onchange="gen()"></div>
+        <div><label for="qrColor">Foreground</label><input type="color" id="qrColor" value="#000000" style="height:42px" onchange="gen()"></div>
+        <div><label for="qrBg">Background</label><input type="color" id="qrBg" value="#ffffff" style="height:42px" onchange="gen()"></div>
+        <div><label for="dotShape">Dot Shape</label><select id="dotShape" onchange="gen()"><option value="square">■ Square</option><option value="rounded">▢ Rounded</option><option value="circle">● Circle</option></select></div>
+        <div><label for="qrSize">Size (px)</label><input type="number" id="qrSize" value="400" min="128" max="1200" style="width:80px" onchange="gen()"></div>
       </div>
       <div class="row" style="margin-top:.5rem;flex-wrap:wrap;align-items:center">
         <label><input type="checkbox" id="useGradient" onchange="gen()"> Use gradient foreground</label>
-        <div id="gradientOpts" style="display:none"><label>Color 2:</label><input type="color" id="qrColor2" value="#8b5cf6" style="height:36px" onchange="gen()"></div>
+        <div id="gradientOpts" style="display:none"><label for="qrColor2">Color 2:</label><input type="color" id="qrColor2" value="#8b5cf6" style="height:36px" onchange="gen()"></div>
       </div>
 
       <!-- Center Logo -->
       <div class="row" style="margin-top:.8rem;align-items:center">
-        <label style="white-space:nowrap">Center Logo:</label>
+        <label style="white-space:nowrap" for="qrLogo">Center Logo:</label>
         <input type="file" id="qrLogo" accept="image/*" onchange="qrLogoPreview();gen()" style="flex:1">
         <img id="qrLogoThumb" alt="Selected logo" style="display:none;flex:0 0 40px;width:40px;min-width:40px;max-width:40px;height:40px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:#fff">
         <button class="btn btn-outline" onclick="document.getElementById('qrLogo').value='';qrLogoPreview();gen()" style="font-size:.8rem;padding:.3rem .6rem">✕ Remove</button>

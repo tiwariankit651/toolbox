@@ -89,7 +89,7 @@
       <p class="info">A focused, list-based task manager with projects, priorities, due dates, subtasks, recurring tasks, smart views and stats. Auto-saves to your browser.</p>
 
       <div class="td-bar">
-        <select id="listSelect" onchange="switchList()"></select>
+        <select id="listSelect" onchange="switchList()" aria-label="Task list"></select>
         <button onclick="newList()">+ List</button>
         <button onclick="renameList()">✏️ Rename</button>
         <button onclick="deleteList()">🗑️ Delete</button>
@@ -119,9 +119,9 @@
 
       <div class="td-bar">
         <input type="text" id="search" placeholder="🔍 Search text..." oninput="render()">
-        <select id="filterTag" onchange="render()"><option value="">All Tags</option></select>
-        <select id="filterPriority" onchange="render()"><option value="">All Priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
-        <select id="sortBy" onchange="render()"><option value="manual">Sort: Manual</option><option value="due">Due date</option><option value="priority">Priority</option><option value="created">Created</option><option value="alpha">A–Z</option></select>
+        <select id="filterTag" onchange="render()" aria-label="Filter by tag"><option value="">All Tags</option></select>
+        <select id="filterPriority" onchange="render()" aria-label="Filter by priority"><option value="">All Priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+        <select id="sortBy" onchange="render()" aria-label="Sort tasks"><option value="manual">Sort: Manual</option><option value="due">Due date</option><option value="priority">Priority</option><option value="created">Created</option><option value="alpha">A–Z</option></select>
       </div>
 
       <ul class="td-list" id="taskList"></ul>
@@ -179,13 +179,13 @@
   <div class="td-modal" id="taskModal">
     <div class="td-modal-box">
       <h3 id="tmTitle">Edit Task</h3>
-      <label>Title *</label><input type="text" id="tmName">
-      <label>Notes</label><textarea id="tmNotes"></textarea>
-      <label>Due date</label><input type="date" id="tmDue">
-      <label>Priority</label>
+      <label for="tmName">Title *</label><input type="text" id="tmName">
+      <label for="tmNotes">Notes</label><textarea id="tmNotes"></textarea>
+      <label for="tmDue">Due date</label><input type="date" id="tmDue">
+      <label for="tmPriority">Priority</label>
       <select id="tmPriority"><option value="low">🟢 Low</option><option value="medium">🟡 Medium</option><option value="high">🟠 High</option><option value="urgent">🔴 Urgent</option></select>
-      <label>Tags (comma separated)</label><input type="text" id="tmTags">
-      <label>Recurring</label>
+      <label for="tmTags">Tags (comma separated)</label><input type="text" id="tmTags">
+      <label for="tmRecur">Recurring</label>
       <select id="tmRecur" onchange="tmRecurChange()"><option value="none">None</option><option value="daily">Daily</option><option value="weekly">Weekly (chosen days)</option><option value="monthly">Monthly</option></select>
       <div id="tmRecurDaysWrap" style="display:none">
         <label>Repeat on</label>

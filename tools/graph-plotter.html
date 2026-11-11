@@ -37,19 +37,19 @@
       </div>
       <!-- Polar input -->
       <div id="polarInputs" style="display:none">
-        <div class="row"><label style="flex:0;min-width:50px">r(θ) =</label><input type="text" id="polarEq" value="sin(3*t)" placeholder="r = f(t) where t=θ" oninput="plot()" style="flex:2"><input type="color" id="colPolar" value="#6366f1" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
-        <div class="row"><label style="flex:0;min-width:50px">θ range:</label><input type="number" id="thetaTurns" value="4" step="1" min="1" max="20" style="width:70px;flex:0" oninput="plot()"> full turns (× 2π)</div>
+        <div class="row"><label style="flex:0;min-width:50px" for="polarEq">r(θ) =</label><input type="text" id="polarEq" value="sin(3*t)" placeholder="r = f(t) where t=θ" oninput="plot()" style="flex:2"><input type="color" id="colPolar" aria-label="Polar curve colour" value="#6366f1" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
+        <div class="row"><label style="flex:0;min-width:50px" for="thetaTurns">θ range:</label><input type="number" id="thetaTurns" value="4" step="1" min="1" max="20" style="width:70px;flex:0" oninput="plot()"> full turns (× 2π)</div>
       </div>
       <!-- Parametric inputs -->
       <div id="parametricInputs" style="display:none">
-        <div class="row"><label style="flex:0;min-width:50px">x(t) =</label><input type="text" id="paramX" value="cos(t)*t" placeholder="x(t)" oninput="plot()" style="flex:2"></div>
-        <div class="row"><label style="flex:0;min-width:50px">y(t) =</label><input type="text" id="paramY" value="sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" value="#8b5cf6" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
-        <div class="row"><label style="flex:0;min-width:50px">t range:</label><input type="number" id="tmin" value="0" style="width:70px;flex:0" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:70px;flex:0" oninput="plot()"></div>
+        <div class="row"><label style="flex:0;min-width:50px" for="paramX">x(t) =</label><input type="text" id="paramX" value="cos(t)*t" placeholder="x(t)" oninput="plot()" style="flex:2"></div>
+        <div class="row"><label style="flex:0;min-width:50px" for="paramY">y(t) =</label><input type="text" id="paramY" value="sin(t)*t" placeholder="y(t)" oninput="plot()" style="flex:2"><input type="color" id="colParam" aria-label="Parametric curve colour" value="#8b5cf6" oninput="plot()" style="width:40px;height:35px;border:none;flex:0;min-width:40px"></div>
+        <div class="row"><label style="flex:0;min-width:50px" for="tmin">t range:</label><input type="number" id="tmin" value="0" style="width:70px;flex:0" oninput="plot()"> to <input type="number" id="tmax" value="20" style="width:70px;flex:0" oninput="plot()"></div>
       </div>
       <div id="parseError" class="info" style="color:var(--accent3-text);min-height:1.1em"></div>
       <!-- Range and view controls -->
-      <div class="row"><label style="flex:0;min-width:70px">X range:</label><input type="number" id="xmin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="xmax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
-      <div class="row"><label style="flex:0;min-width:70px">Y range:</label><input type="number" id="ymin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="ymax" value="10" style="width:70px;flex:0" oninput="syncRange()"></div>
+      <div class="row"><label style="flex:0;min-width:70px" for="xmin">X range:</label><input type="number" id="xmin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="xmax" value="10" style="width:70px;flex:0" oninput="syncRange()" aria-label="X axis maximum"></div>
+      <div class="row"><label style="flex:0;min-width:70px" for="ymin">Y range:</label><input type="number" id="ymin" value="-10" style="width:70px;flex:0" oninput="syncRange()"> to <input type="number" id="ymax" value="10" style="width:70px;flex:0" oninput="syncRange()" aria-label="Y axis maximum"></div>
       <div class="row" style="gap:6px">
         <button class="btn btn-outline" onclick="zoom(0.5)">🔍+ Zoom In</button>
         <button class="btn btn-outline" onclick="zoom(2)">🔍− Zoom Out</button>
@@ -77,16 +77,16 @@
       <!-- Calculus / analysis extras -->
       <div style="background:var(--card);padding:1rem;border-radius:12px;margin-top:1rem">
         <h3 style="margin:0 0 .5rem" role="heading" aria-level="2">🧮 Analysis Tools (Cartesian)</h3>
-        <div class="row"><label style="flex:0;min-width:110px">Function #:</label><input type="number" id="analysisIdx" value="1" min="1" step="1" style="width:70px;flex:0"> <span class="info" style="margin:0">(which function to analyse)</span></div>
+        <div class="row"><label style="flex:0;min-width:110px" for="analysisIdx">Function #:</label><input type="number" id="analysisIdx" value="1" min="1" step="1" style="width:70px;flex:0"> <span class="info" style="margin:0">(which function to analyse)</span></div>
         <div class="row" style="gap:6px">
           <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="derivToggle" onchange="plot()"> Plot derivative</label>
           <label style="display:flex;align-items:center;gap:4px;flex:0"><input type="checkbox" id="integToggle" onchange="plot()"> Shade integral</label>
-          <label style="flex:0;min-width:40px">from</label><input type="number" id="intA" value="-2" style="width:70px;flex:0" oninput="plot()">
-          <label style="flex:0;min-width:20px">to</label><input type="number" id="intB" value="2" style="width:70px;flex:0" oninput="plot()">
+          <label style="flex:0;min-width:40px" for="intA">from</label><input type="number" id="intA" value="-2" style="width:70px;flex:0" oninput="plot()">
+          <label style="flex:0;min-width:20px" for="intB">to</label><input type="number" id="intB" value="2" style="width:70px;flex:0" oninput="plot()">
         </div>
         <div id="integResult" class="info"></div>
         <div class="row" style="gap:6px;margin-top:.5rem">
-          <label style="flex:0;min-width:110px">Table x-range:</label><input type="number" id="tblMin" value="-5" style="width:70px;flex:0"> to <input type="number" id="tblMax" value="5" style="width:70px;flex:0"> step <input type="number" id="tblStep" value="1" step="0.1" style="width:70px;flex:0"><button class="btn btn-outline" onclick="buildTable()" style="font-size:.85rem">Table of Values</button>
+          <label style="flex:0;min-width:110px" for="tblMin">Table x-range:</label><input type="number" id="tblMin" value="-5" style="width:70px;flex:0"> to <input type="number" id="tblMax" value="5" style="width:70px;flex:0" aria-label="Table end value"> step <input type="number" id="tblStep" value="1" step="0.1" style="width:70px;flex:0" aria-label="Table step"><button class="btn btn-outline" onclick="buildTable()" style="font-size:.85rem">Table of Values</button>
         </div>
         <div id="valueTable" style="overflow-x:auto;margin-top:.5rem"></div>
         <div class="row" style="gap:6px;margin-top:.6rem">
@@ -316,7 +316,7 @@ function renderFuncList(){
     row.innerHTML=
       '<span class="info" style="flex:0;min-width:34px;margin:0">f'+(idx+1)+'</span>'+
       '<input type="text" value="'+f.expr.replace(/"/g,'&quot;')+'" placeholder="y = f(x)" oninput="updateFunc('+f.id+',this.value)" style="flex:2">'+
-      '<input type="color" value="'+f.color+'" oninput="updateFuncColor('+f.id+',this.value)" style="width:40px;height:35px;border:none;flex:0;min-width:40px">'+
+      '<input type="color" aria-label="Colour of function '+(idx+1)+'" value="'+f.color+'" oninput="updateFuncColor('+f.id+',this.value)" style="width:40px;height:35px;border:none;flex:0;min-width:40px">'+
       '<button class="btn btn-outline" onclick="toggleFunc('+f.id+')" style="flex:0;padding:.4rem .6rem" title="show/hide">'+(f.visible?'👁':'🚫')+'</button>'+
       '<button class="btn btn-outline" onclick="removeFunc('+f.id+')" style="flex:0;padding:.4rem .6rem" title="delete">✕</button>';
     host.appendChild(row);

@@ -18,7 +18,7 @@
 .kanban-wrap{display:flex;gap:1rem;overflow-x:auto;padding:1rem 0;min-height:400px}
 .kanban-col{min-width:260px;max-width:300px;flex:1;background:var(--card);border-radius:12px;padding:.8rem;display:flex;flex-direction:column}
 .kanban-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;font-weight:700;font-size:.95rem}
-.kanban-col-header input{font-size:.95rem;font-weight:700;background:none;border:none;color:var(--text);width:100%;outline:none}
+.kanban-col-header input{font-size:.95rem;font-weight:700;background:none;border:none;color:var(--text);width:100%;min-width:0;min-height:28px;outline:none;flex:1}
 .kanban-cards{flex:1;min-height:60px;display:flex;flex-direction:column;gap:.4rem}
 .kanban-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem;cursor:grab;position:relative;font-size:.85rem;border-left:4px solid var(--border)}
 .kanban-card.dragging{opacity:.4}
@@ -108,11 +108,11 @@
       <p class="info">Organize tasks with drag & drop. Multiple boards, priorities, due dates, color labels, search & filter. Everything saves to your browser.</p>
 
       <div class="board-bar">
-        <select id="boardSelect" onchange="switchBoard()"></select>
+        <select id="boardSelect" onchange="switchBoard()" aria-label="Board"></select>
         <button onclick="newBoard()">+ Board</button>
         <button onclick="renameBoard()">✏️ Rename</button>
         <button onclick="deleteBoard()">🗑️ Delete</button>
-        <select id="templateSelect" onchange="applyTemplate()">
+        <select id="templateSelect" onchange="applyTemplate()" aria-label="New board from template">
           <option value="">＋ New from template…</option>
           <option value="simple">Simple (To Do/Doing/Done)</option>
           <option value="sprint">Software Sprint</option>
@@ -124,9 +124,9 @@
       </div>
       <div class="board-bar">
         <input type="text" id="searchInput" placeholder="🔍 Search cards..." oninput="renderBoard()">
-        <select id="filterPriority" onchange="renderBoard()"><option value="">All Priorities</option><option value="High">High</option><option value="Med">Med</option><option value="Low">Low</option></select>
-        <select id="filterTag" onchange="renderBoard()"><option value="">All Tags</option></select>
-        <select id="filterDue" onchange="renderBoard()"><option value="">Any Due</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="week">Due This Week</option></select>
+        <select id="filterPriority" onchange="renderBoard()" aria-label="Filter by priority"><option value="">All Priorities</option><option value="High">High</option><option value="Med">Med</option><option value="Low">Low</option></select>
+        <select id="filterTag" onchange="renderBoard()" aria-label="Filter by tag"><option value="">All Tags</option></select>
+        <select id="filterDue" onchange="renderBoard()" aria-label="Filter by due date"><option value="">Any Due</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="week">Due This Week</option></select>
         <button onclick="exportBoard()">📤 JSON</button>
         <button class="btn btn-outline" onclick="copyBoard()">📋 Copy board</button>
         <button class="btn btn-outline" onclick="copyBoardMarkdown()">📝 Copy as Markdown</button>
@@ -195,13 +195,13 @@
   <div class="modal-overlay" id="cardModal">
     <div class="modal">
       <h3 id="modalTitle">Add Card</h3>
-      <label>Title *</label><input type="text" id="cardTitleInput">
-      <label>Description</label><textarea id="cardDescInput"></textarea>
-      <label>Priority</label>
+      <label for="cardTitleInput">Title *</label><input type="text" id="cardTitleInput">
+      <label for="cardDescInput">Description</label><textarea id="cardDescInput"></textarea>
+      <label for="cardPriorityInput">Priority</label>
       <select id="cardPriorityInput"><option value="Med">Medium</option><option value="High">High</option><option value="Low">Low</option></select>
-      <label>Due Date</label><input type="date" id="cardDueInput">
-      <label>Assignee</label><input type="text" id="cardAssigneeInput" placeholder="Name (optional)">
-      <label>Tags (comma separated)</label><input type="text" id="cardTagsInput" placeholder="frontend, urgent">
+      <label for="cardDueInput">Due Date</label><input type="date" id="cardDueInput">
+      <label for="cardAssigneeInput">Assignee</label><input type="text" id="cardAssigneeInput" placeholder="Name (optional)">
+      <label for="cardTagsInput">Tags (comma separated)</label><input type="text" id="cardTagsInput" placeholder="frontend, urgent">
       <label>Color Label</label>
       <div class="color-opts" id="colorOpts">
         <span style="background:#f44336" onclick="pickColor(this)" data-c="#f44336"></span>
@@ -228,8 +228,8 @@
   <div class="modal-overlay" id="colModal">
     <div class="modal">
       <h3>Column Settings</h3>
-      <label>Name</label><input type="text" id="colNameInput">
-      <label>WIP Limit (0 = none)</label><input type="number" id="colWipInput" min="0" value="0">
+      <label for="colNameInput">Name</label><input type="text" id="colNameInput">
+      <label for="colWipInput">WIP Limit (0 = none)</label><input type="number" id="colWipInput" min="0" value="0">
       <label>Color</label>
       <div class="col-color-opts" id="colColorOpts">
         <span style="background:#6366f1" onclick="pickColColor(this)" data-c="#6366f1"></span>
@@ -554,7 +554,7 @@ function renderBoard(){
     var over=col.wip>0&&col.cards.length>col.wip;
     var wipBadge=col.wip>0?'<span class="wip-badge'+(over?' over':'')+'">'+col.cards.length+'/'+col.wip+'</span>':'<span class="wip-badge">'+col.cards.length+'</span>';
     return '<div class="kanban-col'+(over?' wip-exceeded':'')+'" data-col="'+ci+'" style="border-top-color:'+col.color+'" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="drop(event,'+ci+')">'+
-      '<div class="kanban-col-header"><input value="'+esc(col.name)+'" onchange="renameColumn('+ci+',this)">'+
+      '<div class="kanban-col-header"><input value="'+esc(col.name)+'" aria-label="Column name: '+esc(col.name)+'" onchange="renameColumn('+ci+',this)">'+
       '<span class="col-tools">'+wipBadge+
       '<button onclick="moveColumn('+ci+',-1)" title="Move left">◀</button>'+
       '<button onclick="moveColumn('+ci+',1)" title="Move right">▶</button>'+

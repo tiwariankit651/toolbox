@@ -29,8 +29,8 @@
         <div id="fileInfo" class="info" style="margin-bottom:.5rem"></div>
         <canvas id="waveform" height="140" style="width:100%;background:var(--card);border-radius:8px;margin-bottom:.5rem;cursor:pointer"></canvas>
         <div class="row">
-          <div><label>Start (s)</label><input type="number" id="startT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
-          <div><label>End (s)</label><input type="number" id="endT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
+          <div><label for="startT">Start (s)</label><input type="number" id="startT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
+          <div><label for="endT">End (s)</label><input type="number" id="endT" value="0" min="0" step="0.001" style="width:110px" oninput="onNumInput()"></div>
           <div><label>Selection Duration</label><div id="selDur" style="padding:.55rem 0;font-weight:600">0.000 s</div></div>
         </div>
 
@@ -43,15 +43,15 @@
 
         <h3 style="margin-top:1rem" role="heading" aria-level="2">Fades &amp; Volume</h3>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Fade In (s)</label><input type="number" id="fadeIn" value="0" min="0" step="0.1" style="width:100px"></div>
-          <div><label>Fade Out (s)</label><input type="number" id="fadeOut" value="0" min="0" step="0.1" style="width:100px"></div>
-          <div><label>Volume/Gain (×): <span id="gainVal">1.0</span></label><input type="range" id="gain" min="0" max="3" step="0.05" value="1" oninput="document.getElementById('gainVal').textContent=(+this.value).toFixed(2)"></div>
+          <div><label for="fadeIn">Fade In (s)</label><input type="number" id="fadeIn" value="0" min="0" step="0.1" style="width:100px"></div>
+          <div><label for="fadeOut">Fade Out (s)</label><input type="number" id="fadeOut" value="0" min="0" step="0.1" style="width:100px"></div>
+          <div><label for="gain">Volume/Gain (×): <span id="gainVal">1.0</span></label><input type="range" id="gain" min="0" max="3" step="0.05" value="1" oninput="document.getElementById('gainVal').textContent=(+this.value).toFixed(2)"></div>
           <div><label><input type="checkbox" id="normalize"> Normalise peak to −0.1 dBFS</label></div>
         </div>
 
         <h3 style="margin-top:1rem" role="heading" aria-level="2">Export Options</h3>
         <div class="row">
-          <label>Export preset:</label>
+          <label for="atPreset">Export preset:</label>
           <select id="atPreset" onchange="atApplyPreset()" style="flex:2">
             <option value="custom">Custom</option>
             <option value="voice">Voice note (mono, normalised)</option>
@@ -62,9 +62,9 @@
           </select>
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Sample Rate</label><select id="sr"><option value="0">Keep original</option><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
-          <div><label>Bit Depth</label><select id="bits"><option value="16">16-bit PCM</option><option value="32">32-bit float</option></select></div>
-          <div><label>Channels</label><select id="chOut"><option value="0">Keep original</option><option value="1">Mono</option><option value="2">Stereo</option></select></div>
+          <div><label for="sr">Sample Rate</label><select id="sr"><option value="0">Keep original</option><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
+          <div><label for="bits">Bit Depth</label><select id="bits"><option value="16">16-bit PCM</option><option value="32">32-bit float</option></select></div>
+          <div><label for="chOut">Channels</label><select id="chOut"><option value="0">Keep original</option><option value="1">Mono</option><option value="2">Stereo</option></select></div>
           <div><label>Est. output</label><div id="outSize" style="padding:.55rem 0;font-weight:600">—</div></div>
         </div>
         <p class="info">Export format is <strong>WAV</strong> (written manually in-browser). MP3 encoding is not available here because it requires an external encoder library — WAV is lossless and universally supported.</p>
@@ -82,7 +82,7 @@
 
         <h3 style="margin-top:1rem" role="heading" aria-level="2">Auto Silence Trim</h3>
         <div class="row" style="flex-wrap:wrap">
-          <div><label>Threshold: <span id="silVal">2</span>% of peak</label><input type="range" id="silence" min="0.5" max="20" step="0.5" value="2" oninput="document.getElementById('silVal').textContent=this.value"></div>
+          <div><label for="silence">Threshold: <span id="silVal">2</span>% of peak</label><input type="range" id="silence" min="0.5" max="20" step="0.5" value="2" oninput="document.getElementById('silVal').textContent=this.value"></div>
           <button class="btn btn-outline" onclick="autoTrimSilence()">🤫 Detect &amp; Trim Silence</button>
         </div>
 

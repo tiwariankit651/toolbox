@@ -95,20 +95,20 @@
       <!-- BASE CONVERTER -->
       <div class="nc-panel active" id="panel-base">
         <p class="info">Type a number in any field — every base updates live. Uses BigInt so huge numbers stay exact. Negative numbers supported.</p>
-        <div class="nc-live-row"><label>Binary (2)</label><input id="fBin" oninput="baseFrom(2)" autocomplete="off" placeholder="1010"></div>
-        <div class="nc-live-row"><label>Octal (8)</label><input id="fOct" oninput="baseFrom(8)" autocomplete="off" placeholder="12"></div>
-        <div class="nc-live-row"><label>Decimal (10)</label><input id="fDec" oninput="baseFrom(10)" autocomplete="off" placeholder="10"></div>
-        <div class="nc-live-row"><label>Hex (16)</label><input id="fHex" oninput="baseFrom(16)" autocomplete="off" placeholder="A"></div>
-        <div class="nc-live-row"><label>Custom base</label>
+        <div class="nc-live-row"><label for="fBin">Binary (2)</label><input id="fBin" oninput="baseFrom(2)" autocomplete="off" placeholder="1010"></div>
+        <div class="nc-live-row"><label for="fOct">Octal (8)</label><input id="fOct" oninput="baseFrom(8)" autocomplete="off" placeholder="12"></div>
+        <div class="nc-live-row"><label for="fDec">Decimal (10)</label><input id="fDec" oninput="baseFrom(10)" autocomplete="off" placeholder="10"></div>
+        <div class="nc-live-row"><label for="fHex">Hex (16)</label><input id="fHex" oninput="baseFrom(16)" autocomplete="off" placeholder="A"></div>
+        <div class="nc-live-row"><label for="fCustomVal">Custom base</label>
           <input id="fCustomVal" oninput="baseFromCustom()" autocomplete="off" placeholder="value" style="flex:2">
-          <select id="fCustomBase" class="nc-select" onchange="renderBaseCustom()" style="flex:0 0 90px"></select>
+          <select id="fCustomBase" class="nc-select" onchange="renderBaseCustom()" style="flex:0 0 90px" aria-label="Custom base"></select>
         </div>
-        <div class="nc-live-row"><label>Custom result</label><input id="fCustomOut" readonly style="opacity:.85"></div>
+        <div class="nc-live-row"><label for="fCustomOut">Custom result</label><input id="fCustomOut" readonly style="opacity:.85"></div>
         <div class="row" style="gap:.5rem;margin:.5rem 0"><button class="btn" onclick="copyField('fDec')">Copy Decimal</button><button class="btn btn-outline" onclick="clearBase()">Clear</button></div>
         <label class="nc-lbl">Step-by-step working (decimal → chosen base by repeated division)</label>
         <div class="row" style="gap:.5rem;align-items:center;margin-bottom:.4rem">
           <span style="font-size:.8rem;color:var(--text2)">Target base</span>
-          <select id="stepBase" class="nc-select" onchange="renderSteps()"></select>
+          <select id="stepBase" class="nc-select" onchange="renderSteps()" aria-label="Target base"></select>
         </div>
         <div class="nc-steps" id="stepOut">Enter a whole number above to see the working.</div>
       </div>
@@ -180,13 +180,13 @@
       <!-- TEXT / ASCII / UNICODE -->
       <div class="nc-panel" id="panel-text">
         <p class="info">Convert text to binary/hex and back, and between characters and Unicode code points.</p>
-        <label class="nc-lbl">Text</label>
+        <label class="nc-lbl" for="txtInput">Text</label>
         <textarea id="txtInput" class="nc-input" rows="2" oninput="txtFrom('text')" placeholder="Hello"></textarea>
-        <label class="nc-lbl">Binary (space-separated bytes / code units)</label>
+        <label class="nc-lbl" for="txtBin">Binary (space-separated bytes / code units)</label>
         <textarea id="txtBin" class="nc-input" rows="2" oninput="txtFrom('bin')" placeholder="01001000 01101001"></textarea>
-        <label class="nc-lbl">Hex (space-separated)</label>
+        <label class="nc-lbl" for="txtHex">Hex (space-separated)</label>
         <textarea id="txtHex" class="nc-input" rows="2" oninput="txtFrom('hex')" placeholder="48 69"></textarea>
-        <label class="nc-lbl">Unicode code points (decimal, space-separated)</label>
+        <label class="nc-lbl" for="txtCp">Unicode code points (decimal, space-separated)</label>
         <textarea id="txtCp" class="nc-input" rows="2" oninput="txtFrom('cp')" placeholder="72 105"></textarea>
         <div class="row" style="gap:.5rem;margin-top:.5rem"><button class="btn" onclick="copyField('txtHex')">Copy Hex</button><button class="btn btn-outline" onclick="copyField('txtBin')">Copy Binary</button></div>
       </div>
@@ -207,8 +207,8 @@
       <!-- ROMAN -->
       <div class="nc-panel" id="panel-roman">
         <p class="info">Convert between Roman numerals and decimal (1–3999).</p>
-        <div class="nc-live-row"><label>Decimal</label><input id="romDec" oninput="romanFrom('dec')" placeholder="2024" autocomplete="off"></div>
-        <div class="nc-live-row"><label>Roman</label><input id="romRom" oninput="romanFrom('rom')" placeholder="MMXXIV" autocomplete="off" style="text-transform:uppercase"></div>
+        <div class="nc-live-row"><label for="romDec">Decimal</label><input id="romDec" oninput="romanFrom('dec')" placeholder="2024" autocomplete="off"></div>
+        <div class="nc-live-row"><label for="romRom">Roman</label><input id="romRom" oninput="romanFrom('rom')" placeholder="MMXXIV" autocomplete="off" style="text-transform:uppercase"></div>
         <div id="romMsg" style="font-size:.85rem;color:var(--text2);margin-top:.5rem"></div>
       </div>
 

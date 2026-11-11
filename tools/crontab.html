@@ -156,7 +156,7 @@ function buildBuilder(){
     var st=state[f.id];
     html+="<div style='background:var(--card);padding:.7rem;border-radius:10px;min-width:150px;flex:1'>";
     html+="<label style='font-weight:600'>"+f.label+" ("+f.lo+"-"+f.hi+")</label>";
-    html+="<select onchange=\"setMode('"+f.id+"',this.value)\" style='margin:.3rem 0'>";
+    html+="<select aria-label='"+f.label+" mode' onchange=\"setMode('"+f.id+"',this.value)\" style='margin:.3rem 0'>";
     ["every","specific","range","step"].forEach(function(m){var lbl={every:"Every",specific:"Specific",range:"Range",step:"Every N (step)"}[m];html+="<option value='"+m+"'"+(st.mode===m?" selected":"")+">"+lbl+"</option>"});
     html+="</select>";
     html+="<div id='ctl_"+f.id+"'>"+ctlHtml(f,st)+"</div>";
@@ -167,9 +167,9 @@ function buildBuilder(){
 }
 function ctlHtml(f,st){
   if(st.mode==="every")return "<span class='info'>* (every)</span>";
-  if(st.mode==="specific")return "<select onchange=\"setVal('"+f.id+"','val',this.value)\">"+optRange(f.id,f.lo,f.hi,st.val)+"</select>";
-  if(st.mode==="range")return "from <select onchange=\"setVal('"+f.id+"','r1',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r1)+"</select> to <select onchange=\"setVal('"+f.id+"','r2',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r2)+"</select>";
-  if(st.mode==="step")return "every <input type='number' min='1' max='"+f.hi+"' value='"+(st.step||"1")+"' oninput=\"setVal('"+f.id+"','step',this.value)\" style='width:70px'> "+(f.id==="min"?"minutes":f.id==="hr"?"hours":"units");
+  if(st.mode==="specific")return "<select aria-label='"+f.label+" value' onchange=\"setVal('"+f.id+"','val',this.value)\">"+optRange(f.id,f.lo,f.hi,st.val)+"</select>";
+  if(st.mode==="range")return "from <select aria-label='"+f.label+" from' onchange=\"setVal('"+f.id+"','r1',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r1)+"</select> to <select aria-label='"+f.label+" to' onchange=\"setVal('"+f.id+"','r2',this.value)\">"+optRange(f.id,f.lo,f.hi,st.r2)+"</select>";
+  if(st.mode==="step")return "every <input type='number' aria-label='"+f.label+" step' min='1' max='"+f.hi+"' value='"+(st.step||"1")+"' oninput=\"setVal('"+f.id+"','step',this.value)\" style='width:70px'> "+(f.id==="min"?"minutes":f.id==="hr"?"hours":"units");
   return "";
 }
 function setMode(id,mode){state[id].mode=mode;document.getElementById("ctl_"+id).innerHTML=ctlHtml(FIELDS.filter(function(f){return f.id===id})[0],state[id]);gen()}

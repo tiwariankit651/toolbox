@@ -75,8 +75,8 @@
 
       <div id="panelSim">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div><label><strong>Text A</strong></label><textarea id="t1" placeholder="Paste first text..." style="min-height:200px"></textarea></div>
-          <div><label><strong>Text B</strong></label><textarea id="t2" placeholder="Paste second text..." style="min-height:200px"></textarea></div>
+          <div><label for="t1"><strong>Text A</strong></label><textarea id="t1" placeholder="Paste first text..." style="min-height:200px"></textarea></div>
+          <div><label for="t2"><strong>Text B</strong></label><textarea id="t2" placeholder="Paste second text..." style="min-height:200px"></textarea></div>
         </div>
         <div class="row" style="margin-top:.5rem"><button class="btn" onclick="analyze()">📊 Analyze Similarity</button><button class="btn btn-outline" onclick="clearSim()">🗑️ Clear</button></div>
         <div id="result" style="margin:1rem 0"></div>
@@ -87,16 +87,16 @@
       <div id="panelFuzzy" style="display:none">
         <p class="info">Compare two short strings (names, addresses, product codes) and get a clear match / no-match answer. Great for de-duplicating and cleaning data.</p>
         <div class="row"><input type="text" id="fzA" placeholder="e.g. Jonathan Smith"><input type="text" id="fzB" placeholder="e.g. Jon Smith"></div>
-        <div class="row"><label style="flex:0;white-space:nowrap">Match threshold: <span id="fzThVal">80</span>%</label><input type="range" id="fzTh" min="0" max="100" value="80" oninput="document.getElementById('fzThVal').textContent=this.value" style="flex:2"></div>
+        <div class="row"><label style="flex:0;white-space:nowrap" for="fzTh">Match threshold: <span id="fzThVal">80</span>%</label><input type="range" id="fzTh" min="0" max="100" value="80" oninput="document.getElementById('fzThVal').textContent=this.value" style="flex:2"></div>
         <div class="row"><button class="btn" onclick="fuzzyMatch()">🔤 Check Match</button></div>
         <div id="fuzzyOut" style="margin:1rem 0"></div>
       </div>
 
       <div id="panelBatch" style="display:none">
         <p class="info">Paste one string pair per line, separated by a delimiter. Get a similarity table for the whole list and download it as CSV. Perfect for bulk de-duplication.</p>
-        <div class="row"><label style="flex:0;white-space:nowrap">Delimiter:</label>
+        <div class="row"><label style="flex:0;white-space:nowrap" for="batchDelim">Delimiter:</label>
           <select id="batchDelim" style="flex:0;min-width:140px"><option value="|">Pipe |</option><option value=",">Comma ,</option><option value="\t">Tab</option><option value=";">Semicolon ;</option></select>
-          <label style="flex:0;white-space:nowrap">Threshold: <span id="batchThVal">80</span>%</label><input type="range" id="batchTh" min="0" max="100" value="80" oninput="document.getElementById('batchThVal').textContent=this.value" style="flex:2">
+          <label style="flex:0;white-space:nowrap" for="batchTh">Threshold: <span id="batchThVal">80</span>%</label><input type="range" id="batchTh" min="0" max="100" value="80" oninput="document.getElementById('batchThVal').textContent=this.value" style="flex:2">
         </div>
         <textarea id="batchIn" placeholder="Jonathan Smith|Jon Smith&#10;123 Main Street|123 Main St&#10;Acme Corp|ACME Corporation" style="min-height:160px"></textarea>
         <div class="row"><button class="btn" onclick="runBatch()">📋 Compare List</button><button class="btn btn-outline" onclick="downloadBatchCsv()">⬇️ Download CSV</button></div>

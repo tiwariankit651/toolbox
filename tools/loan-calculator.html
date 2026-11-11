@@ -28,11 +28,11 @@
       <!-- Primary loan -->
       <div style="background:var(--card);padding:1rem;border-radius:12px;margin-top:.5rem">
         <h2 style="margin-top:0">Loan Details</h2>
-        <div class="row"><label>Loan Amount (₹):</label><input type="number" id="pAmt" value="2000000" oninput="autosave()" style="flex:2"></div>
-        <div class="row"><label>Annual Interest Rate (%):</label><input type="number" id="pRate" value="8.5" step="0.01" oninput="autosave()" style="flex:2"></div>
-        <div class="row"><label>Tenure:</label><input type="number" id="pTenure" value="20" oninput="autosave()" style="flex:1"><select id="pUnit" onchange="autosave()" style="flex:1"><option value="years">Years</option><option value="months">Months</option></select></div>
-        <div class="row"><label>Processing Fee (₹):</label><input type="number" id="pFee" value="10000" oninput="autosave()" style="flex:2"></div>
-        <div class="row"><label>Amortisation view:</label><select id="amortView" onchange="renderPrimary()" style="flex:2"><option value="year">Yearly</option><option value="month">Monthly</option></select></div>
+        <div class="row"><label for="pAmt">Loan Amount (₹):</label><input type="number" id="pAmt" value="2000000" oninput="autosave()" style="flex:2"></div>
+        <div class="row"><label for="pRate">Annual Interest Rate (%):</label><input type="number" id="pRate" value="8.5" step="0.01" oninput="autosave()" style="flex:2"></div>
+        <div class="row"><label for="pTenure">Tenure:</label><input type="number" id="pTenure" value="20" oninput="autosave()" style="flex:1"><select id="pUnit" onchange="autosave()" style="flex:1" aria-label="Tenure unit"><option value="years">Years</option><option value="months">Months</option></select></div>
+        <div class="row"><label for="pFee">Processing Fee (₹):</label><input type="number" id="pFee" value="10000" oninput="autosave()" style="flex:2"></div>
+        <div class="row"><label for="amortView">Amortisation view:</label><select id="amortView" onchange="renderPrimary()" style="flex:2"><option value="year">Yearly</option><option value="month">Monthly</option></select></div>
         <button class="btn" onclick="analyze()" style="width:100%;margin-top:.5rem">📊 Analyse Loan</button>
       </div>
 
@@ -53,10 +53,10 @@
       <div class="tool-section" style="margin-top:1.5rem">
         <h2>Prepayment Analysis</h2>
         <p class="info">Model extra payments and see interest saved and tenure reduced. Choose whether extra payments reduce your tenure or your EMI.</p>
-        <div class="row"><label>Prepayment type:</label><select id="prepType" style="flex:2"><option value="onetime">One-time lump sum</option><option value="monthly">Recurring monthly</option><option value="annual">Recurring annual</option></select></div>
-        <div class="row"><label>Amount (₹):</label><input type="number" id="prepAmt" value="200000" style="flex:2"></div>
-        <div class="row"><label>Starting at month:</label><input type="number" id="prepMonth" value="12" min="1" style="flex:2"></div>
-        <div class="row"><label>Strategy:</label><select id="prepStrategy" style="flex:2"><option value="tenure">Reduce Tenure (keep EMI)</option><option value="emi">Reduce EMI (keep tenure)</option></select></div>
+        <div class="row"><label for="prepType">Prepayment type:</label><select id="prepType" style="flex:2"><option value="onetime">One-time lump sum</option><option value="monthly">Recurring monthly</option><option value="annual">Recurring annual</option></select></div>
+        <div class="row"><label for="prepAmt">Amount (₹):</label><input type="number" id="prepAmt" value="200000" style="flex:2"></div>
+        <div class="row"><label for="prepMonth">Starting at month:</label><input type="number" id="prepMonth" value="12" min="1" style="flex:2"></div>
+        <div class="row"><label for="prepStrategy">Strategy:</label><select id="prepStrategy" style="flex:2"><option value="tenure">Reduce Tenure (keep EMI)</option><option value="emi">Reduce EMI (keep tenure)</option></select></div>
         <button class="btn" onclick="calcPrepay()" style="width:100%;margin-top:.5rem">Calculate Savings</button>
         <div id="prepResult" style="display:none;margin-top:1rem"></div>
       </div>
@@ -65,7 +65,7 @@
       <div class="tool-section" style="margin-top:1.5rem">
         <h2>Moratorium / EMI Holiday</h2>
         <p class="info">See how interest accrues (and is added to principal) during an EMI holiday at the start of the loan.</p>
-        <div class="row"><label>Moratorium (months):</label><input type="number" id="moraMonths" value="6" min="0" style="flex:2"></div>
+        <div class="row"><label for="moraMonths">Moratorium (months):</label><input type="number" id="moraMonths" value="6" min="0" style="flex:2"></div>
         <button class="btn" onclick="calcMoratorium()" style="width:100%;margin-top:.5rem">Calculate Impact</button>
         <div id="moraResult" style="display:none;margin-top:1rem"></div>
       </div>
@@ -74,8 +74,8 @@
       <div class="tool-section" style="margin-top:1.5rem">
         <h2>Floating-Rate What-If</h2>
         <p class="info">Change the interest rate from a chosen month and see the impact on interest and tenure (keeping EMI fixed).</p>
-        <div class="row"><label>New rate from month:</label><input type="number" id="floatMonth" value="24" min="1" style="flex:2"></div>
-        <div class="row"><label>New annual rate (%):</label><input type="number" id="floatRate" value="9.5" step="0.01" style="flex:2"></div>
+        <div class="row"><label for="floatMonth">New rate from month:</label><input type="number" id="floatMonth" value="24" min="1" style="flex:2"></div>
+        <div class="row"><label for="floatRate">New annual rate (%):</label><input type="number" id="floatRate" value="9.5" step="0.01" style="flex:2"></div>
         <button class="btn" onclick="calcFloating()" style="width:100%;margin-top:.5rem">Calculate What-If</button>
         <div id="floatResult" style="display:none;margin-top:1rem"></div>
       </div>
@@ -99,11 +99,11 @@
       <div class="tool-section" style="margin-top:1.5rem">
         <h2>Eligibility Estimator</h2>
         <p class="info">Approximate maximum loan based on income, existing EMIs and a FOIR assumption. Banks use their own criteria — treat this as an estimate only.</p>
-        <div class="row"><label>Monthly Income (₹):</label><input type="number" id="income" value="80000" style="flex:2"></div>
-        <div class="row"><label>Existing EMIs (₹):</label><input type="number" id="existEmi" value="0" style="flex:2"></div>
-        <div class="row"><label>FOIR (%):</label><input type="number" id="foir" value="50" min="10" max="80" style="flex:2"></div>
-        <div class="row"><label>Interest Rate (%):</label><input type="number" id="eligRate" value="8.5" step="0.01" style="flex:2"></div>
-        <div class="row"><label>Tenure (years):</label><input type="number" id="eligYears" value="20" style="flex:2"></div>
+        <div class="row"><label for="income">Monthly Income (₹):</label><input type="number" id="income" value="80000" style="flex:2"></div>
+        <div class="row"><label for="existEmi">Existing EMIs (₹):</label><input type="number" id="existEmi" value="0" style="flex:2"></div>
+        <div class="row"><label for="foir">FOIR (%):</label><input type="number" id="foir" value="50" min="10" max="80" style="flex:2"></div>
+        <div class="row"><label for="eligRate">Interest Rate (%):</label><input type="number" id="eligRate" value="8.5" step="0.01" style="flex:2"></div>
+        <div class="row"><label for="eligYears">Tenure (years):</label><input type="number" id="eligYears" value="20" style="flex:2"></div>
         <button class="btn" onclick="calcEligibility()" style="width:100%;margin-top:.5rem">Check Eligibility</button>
         <div id="eligResult" style="display:none;margin-top:1rem"></div>
       </div>
@@ -391,10 +391,10 @@ function calcFloating(){
 var loans=[];var loanCount=0;
 function addLoan(){if(loanCount>=3)return;loanCount++;var id=loanCount;
 var html='<div class="tool-section" style="margin-top:.8rem;padding:.8rem;border:1px solid rgba(255,255,255,.08);border-radius:12px" id="loan'+id+'"><h3 style="margin:0 0 .5rem">Offer '+id+'</h3>';
-html+='<div class="row"><label>Amount:</label><input type="number" id="amt'+id+'" value="'+(id===1?'2000000':id===2?'2000000':'2000000')+'" style="flex:2"></div>';
-html+='<div class="row"><label>Interest Rate (%):</label><input type="number" id="rate'+id+'" value="'+(id===1?'8.5':id===2?'9':'8.75')+'" step="0.01" style="flex:2"></div>';
-html+='<div class="row"><label>Tenure:</label><input type="number" id="tenure'+id+'" value="'+(id===1?'20':id===2?'18':'20')+'" style="flex:1"><select id="unit'+id+'" style="flex:1"><option value="years">Years</option><option value="months">Months</option></select></div>';
-html+='<div class="row"><label>Processing Fee (₹):</label><input type="number" id="fee'+id+'" value="'+(id===1?'10000':id===2?'5000':'15000')+'" style="flex:2"></div>';
+html+='<div class="row"><label for="amt'+id+'">Amount:</label><input type="number" id="amt'+id+'" value="'+(id===1?'2000000':id===2?'2000000':'2000000')+'" style="flex:2"></div>';
+html+='<div class="row"><label for="rate'+id+'">Interest Rate (%):</label><input type="number" id="rate'+id+'" value="'+(id===1?'8.5':id===2?'9':'8.75')+'" step="0.01" style="flex:2"></div>';
+html+='<div class="row"><label for="tenure'+id+'">Tenure:</label><input type="number" id="tenure'+id+'" value="'+(id===1?'20':id===2?'18':'20')+'" style="flex:1"><select id="unit'+id+'" aria-label="Loan '+id+' tenure unit" style="flex:1"><option value="years">Years</option><option value="months">Months</option></select></div>';
+html+='<div class="row"><label for="fee'+id+'">Processing Fee (₹):</label><input type="number" id="fee'+id+'" value="'+(id===1?'10000':id===2?'5000':'15000')+'" style="flex:2"></div>';
 html+='</div>';
 document.getElementById('loansContainer').insertAdjacentHTML('beforeend',html);
 if(loanCount>=3)document.getElementById('addBtn').style.display='none';

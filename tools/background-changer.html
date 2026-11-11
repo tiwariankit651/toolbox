@@ -55,14 +55,14 @@
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) here — supports multiple files<input type="file" id="inp" accept="image/*" multiple></div>
       <div id="preview" style="margin:.8rem 0;text-align:center;display:none"><img id="previewImg" alt="Preview of your uploaded image with the new background" style="max-width:100%;max-height:300px;border-radius:10px;border:1px solid var(--border)"></div>
       <div class="row">
-        <label>Cutout Mode:</label>
+        <label for="mode">Cutout Mode:</label>
         <select id="mode">
           <option value="ai" selected>🤖 AI Precise (best — any background)</option>
           <option value="fast">⚡ Fast (solid backgrounds only)</option>
         </select>
       </div>
       <div class="row" id="threshRow" style="display:none">
-        <label>Detection Threshold: <strong id="tv">30</strong></label>
+        <label for="thresh">Detection Threshold: <strong id="tv">30</strong></label>
         <input type="range" id="thresh" min="5" max="120" value="30" oninput="document.getElementById('tv').textContent=this.value" style="flex:3">
       </div>
       <label><strong>Choose Background Color:</strong></label>
@@ -78,11 +78,11 @@
         <input type="color" id="customColor" value="#ffffff" onchange="pickColor(this.value,null)" title="Custom color" style="width:40px;height:40px;border-radius:50%;padding:0;border:3px solid var(--text2);cursor:pointer">
       </div>
       <div class="row" style="margin:.5rem 0"><label><input type="checkbox" id="useGradient"> Gradient Background</label>
-        <input type="color" id="gradColor1" value="#6366f1" style="width:30px;height:30px;border:none">
-        <input type="color" id="gradColor2" value="#8b5cf6" style="width:30px;height:30px;border:none">
+        <input type="color" id="gradColor1" value="#6366f1" style="width:30px;height:30px;border:none" aria-label="Gradient start colour">
+        <input type="color" id="gradColor2" value="#8b5cf6" style="width:30px;height:30px;border:none" aria-label="Gradient end colour">
       </div>
       <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
-        <label><strong>Output Size:</strong></label>
+        <label for="outputSize"><strong>Output Size:</strong></label>
         <select id="outputSize">
           <option value="0x0">Keep original size</option>
           <option value="200x230">200×230 px (SSC/UPSC Photo)</option>
@@ -93,7 +93,7 @@
         </select>
       </div>
       <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
-        <label><strong>Output Format:</strong></label>
+        <label for="outFormat"><strong>Output Format:</strong></label>
         <select id="outFormat" onchange="onFormatChange()">
           <option value="image/png">PNG (lossless, keeps transparency)</option>
           <option value="image/jpeg">JPEG (smaller, no transparency)</option>
@@ -101,11 +101,11 @@
         </select>
       </div>
       <div class="row" id="qualityRow" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem;display:none">
-        <label>Quality: <strong id="qVal">0.85</strong></label>
+        <label for="quality">Quality: <strong id="qVal">0.85</strong></label>
         <input type="range" id="quality" min="30" max="100" value="85" oninput="document.getElementById('qVal').textContent=(this.value/100).toFixed(2)" style="flex:3">
       </div>
       <div class="row" style="margin:.5rem 0;flex-wrap:wrap;gap:.4rem">
-        <label><strong>Max Width:</strong></label>
+        <label for="maxWidth"><strong>Max Width:</strong></label>
         <select id="maxWidth">
           <option value="0">No limit (full resolution)</option>
           <option value="2000">2000 px</option>

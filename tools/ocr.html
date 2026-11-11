@@ -45,7 +45,7 @@
       <p class="info">Upload one or more images or a PDF with text — handwritten notes, screenshots, documents — and extract editable text. Language data downloads on first use for each language.</p>
       <div class="drop-zone" id="drop" onclick="document.getElementById('inp').click()">Drop image(s) or PDF here or click to browse<input type="file" id="inp" accept="image/*,.pdf" multiple></div>
       <div class="row">
-        <label>Language:</label>
+        <label for="lang">Language:</label>
         <select id="lang">
           <option value="eng">English</option>
           <option value="hin">Hindi</option>
@@ -66,7 +66,7 @@
           <option value="eng+mar">English + Marathi</option>
           <option value="eng+tam">English + Tamil</option>
         </select>
-        <label>Page type:</label>
+        <label for="psm">Page type:</label>
         <select id="psm">
           <option value="3">Auto (mixed page)</option>
           <option value="6">Uniform block of text</option>
@@ -78,7 +78,7 @@
       </div>
 
       <div class="row">
-        <label>Quick preset:</label>
+        <label for="ocrPreset">Quick preset:</label>
         <select id="ocrPreset" onchange="applyOcrPreset()">
           <option value="custom">Custom</option>
           <option value="scan" selected>Scanned document</option>
@@ -87,7 +87,7 @@
           <option value="screenshot">Screenshot</option>
           <option value="lowlight">Faded / low contrast</option>
         </select>
-        <label>Output:</label>
+        <label for="outMode">Output:</label>
         <select id="outMode">
           <option value="plain">Plain text</option>
           <option value="layout">Keep line breaks</option>
@@ -98,27 +98,27 @@
       <details style="margin:.6rem 0;background:var(--card);border-radius:12px;padding:.7rem 1rem">
         <summary style="cursor:pointer;font-weight:600">Image pre-processing (improves accuracy)</summary>
         <div class="row" style="margin-top:.6rem">
-          <label>Rotate:</label>
+          <label for="rotate">Rotate:</label>
           <select id="rotate" onchange="redrawPrep()">
             <option value="0">None</option><option value="90">90° right</option>
             <option value="180">180°</option><option value="270">90° left</option>
           </select>
-          <label>Scale up:</label>
+          <label for="upscale">Scale up:</label>
           <select id="upscale" onchange="redrawPrep()">
             <option value="1">1x</option><option value="1.5">1.5x</option>
             <option value="2" selected>2x (better for small text)</option><option value="3">3x</option>
           </select>
         </div>
         <div class="row">
-          <label>Contrast: <strong id="conVal">1.0</strong></label>
+          <label for="contrast">Contrast: <strong id="conVal">1.0</strong></label>
           <input type="range" id="contrast" min="0.5" max="3" step="0.1" value="1" oninput="document.getElementById('conVal').textContent=parseFloat(this.value).toFixed(1);redrawPrep()" style="flex:2">
         </div>
         <div class="row">
-          <label>Brightness: <strong id="brVal">0</strong></label>
+          <label for="brightness">Brightness: <strong id="brVal">0</strong></label>
           <input type="range" id="brightness" min="-100" max="100" step="5" value="0" oninput="document.getElementById('brVal').textContent=this.value;redrawPrep()" style="flex:2">
         </div>
         <div class="row">
-          <label>Threshold: <strong id="thVal">off</strong></label>
+          <label for="threshold">Threshold: <strong id="thVal">off</strong></label>
           <input type="range" id="threshold" min="0" max="255" step="5" value="0" oninput="document.getElementById('thVal').textContent=this.value==='0'?'off':this.value;redrawPrep()" style="flex:2">
         </div>
         <div class="row" style="gap:1.2rem;flex-wrap:wrap">

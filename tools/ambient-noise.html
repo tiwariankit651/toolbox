@@ -39,7 +39,7 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
       </div>
 
       <div style="margin:.8rem 0">
-        <label>Master Volume: <span id="masterVal">70</span>%</label>
+        <label for="master">Master Volume: <span id="masterVal">70</span>%</label>
         <input type="range" id="master" min="0" max="100" value="70" oninput="updateMaster()" style="width:100%">
       </div>
 
@@ -72,7 +72,7 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
       <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;text-align:left">
         <h3 style="margin:0 0 .5rem" role="heading" aria-level="2">⏰ Sleep Timer</h3>
         <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
-          <select id="sleepTimer" onchange="setSleepTimer()">
+          <select id="sleepTimer" onchange="setSleepTimer()" aria-label="Sleep timer">
             <option value="0">Off</option>
             <option value="15">15 min</option>
             <option value="30">30 min</option>
@@ -91,8 +91,8 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
         <h3 style="margin:0 0 .5rem" role="heading" aria-level="2">🍅 Pomodoro (optional)</h3>
         <p class="info" style="font-size:.83rem;margin:0 0 .5rem">Plays your mix during focus, pauses during breaks, with a gentle chime at each transition.</p>
         <div class="row" style="flex-wrap:wrap;gap:.5rem;align-items:center">
-          <div style="flex:1;min-width:110px"><label style="font-size:.82rem">Focus (min)</label><input type="number" id="pomoFocus" min="1" max="120" value="25" style="width:100%"></div>
-          <div style="flex:1;min-width:110px"><label style="font-size:.82rem">Break (min)</label><input type="number" id="pomoBreak" min="1" max="60" value="5" style="width:100%"></div>
+          <div style="flex:1;min-width:110px"><label style="font-size:.82rem" for="pomoFocus">Focus (min)</label><input type="number" id="pomoFocus" min="1" max="120" value="25" style="width:100%"></div>
+          <div style="flex:1;min-width:110px"><label style="font-size:.82rem" for="pomoBreak">Break (min)</label><input type="number" id="pomoBreak" min="1" max="60" value="5" style="width:100%"></div>
         </div>
         <div class="row" style="gap:.5rem;margin-top:.6rem">
           <button class="btn" onclick="togglePomodoro()" id="pomoBtn" style="flex:1">▶ Start Pomodoro</button>
@@ -279,7 +279,7 @@ soundDefs.forEach(function(s){
   div.innerHTML=
     '<div style="font-size:2.2rem">'+s.emoji+'</div>'+
     '<div style="font-weight:600;margin:.3rem 0;font-size:.9rem">'+s.name+'</div>'+
-    '<input type="range" id="vol_'+s.id+'" min="0" max="100" value="50" style="width:100%" oninput="setVol(\''+s.id+'\',this.value)">'+
+    '<input type="range" id="vol_'+s.id+'" aria-label="'+s.name+' volume" min="0" max="100" value="50" style="width:100%" oninput="setVol(\''+s.id+'\',this.value)">'+
     '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem">'+
       '<button class="btn btn-outline" style="flex:1 1 76px;min-width:76px;min-height:38px;font-size:.78rem;padding:.35rem" onclick="toggleSound(\''+s.id+'\')" id="btn_'+s.id+'">Play</button>'+
       '<button class="btn btn-outline" style="font-size:.78rem;padding:.35rem" onclick="muteSound(\''+s.id+'\')" id="mute_'+s.id+'" title="Mute">🔇</button>'+

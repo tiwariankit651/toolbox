@@ -71,7 +71,7 @@
       <div id="srInputArea">
         <textarea id="srText" rows="4" placeholder="Paste your text here... (article, notes, current affairs)" oninput="srUpdateStats()"></textarea>
         <div class="row">
-          <label>Reading preset:</label>
+          <label for="srPreset">Reading preset:</label>
           <select id="srPreset" onchange="srApplyPreset()" style="flex:2">
             <option value="custom">Custom</option>
             <option value="beginner">Beginner (180 wpm, large text)</option>
@@ -87,7 +87,7 @@
         <div class="row" style="margin:.4rem 0;gap:.4rem">
           <button class="btn btn-outline" onclick="document.getElementById('srFileInput').click()" style="font-size:.85rem">📁 Upload .txt</button>
           <input type="file" id="srFileInput" accept=".txt,.md,text/plain,text/markdown" style="display:none">
-          <select id="srPassageSelect" onchange="srLoadPassage(this.value)" style="flex:2;font-size:.85rem">
+          <select id="srPassageSelect" onchange="srLoadPassage(this.value)" style="flex:2;font-size:.85rem" aria-label="Practice passage">
             <option value="">— Practice Passages —</option>
             <option value="0">Easy: The Importance of Reading</option>
             <option value="1">Medium: Climate Change Impact</option>
@@ -106,15 +106,15 @@
       <!-- Settings -->
       <div class="sr-settings">
         <div class="sr-setting">
-          <label>Speed: <strong id="srWpmLabel">250</strong> WPM</label>
+          <label for="srWpm">Speed: <strong id="srWpmLabel">250</strong> WPM</label>
           <input type="range" id="srWpm" min="100" max="1000" value="250" step="10" oninput="document.getElementById('srWpmLabel').textContent=this.value;srUpdateStats()" style="width:100%">
         </div>
         <div class="sr-setting">
-          <label>Words per chunk</label>
+          <label for="srChunk">Words per chunk</label>
           <select id="srChunk" style="width:100%"><option value="1">1 word</option><option value="2">2 words</option><option value="3">3 words</option><option value="5">5 words</option></select>
         </div>
         <div class="sr-setting">
-          <label>Font size: <span id="srFsizeLabel">42</span>px</label>
+          <label for="srFsize">Font size: <span id="srFsizeLabel">42</span>px</label>
           <input type="range" id="srFsize" min="20" max="80" value="42" oninput="document.getElementById('srFsizeLabel').textContent=this.value" style="width:100%">
         </div>
         <div class="sr-setting">

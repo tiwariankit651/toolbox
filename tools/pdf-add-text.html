@@ -52,7 +52,7 @@
         <div class="info" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:.7rem 1rem;margin:.6rem 0">⚠️ Added text is a <strong>new layer</strong> on top of the PDF. The original text underneath still exists in the file. To truly hide something, cover it with the <strong>Whiteout / Redact</strong> tool before writing over it.</div>
         <div class="row" style="flex-wrap:wrap;margin:.8rem 0;align-items:flex-start;gap:.6rem">
           <div style="flex:1;min-width:150px">
-            <label>Tool</label>
+            <label for="toolMode">Tool</label>
             <select id="toolMode" onchange="onToolChange()">
               <option value="text">✏️ Add Text</option>
               <option value="image">🖼️ Stamp Image / Signature</option>
@@ -73,7 +73,7 @@
 
         <!-- TEXT controls -->
         <div class="row" id="textCtrls" style="flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
-          <div style="flex:1;min-width:150px"><label>Font</label>
+          <div style="flex:1;min-width:150px"><label for="fontFamily">Font</label>
             <select id="fontFamily">
               <option value="Helvetica">Helvetica</option>
               <option value="Helvetica-Bold">Helvetica Bold</option>
@@ -89,17 +89,17 @@
               <option value="Courier-BoldOblique">Courier Bold Italic</option>
             </select>
           </div>
-          <div style="flex:0 0 auto"><label>Size</label><input type="number" id="fontSize" value="16" min="6" max="120" style="width:70px"></div>
-          <div style="flex:0 0 auto"><label>Colour</label><input type="color" id="fontColor" value="#000000" style="width:44px;height:38px;padding:2px"></div>
-          <div style="flex:0 0 auto"><label>Opacity</label><input type="range" id="textOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
-          <div style="flex:0 0 auto"><label>Rotation</label><input type="number" id="textRotation" value="0" min="-180" max="180" style="width:70px"></div>
+          <div style="flex:0 0 auto"><label for="fontSize">Size</label><input type="number" id="fontSize" value="16" min="6" max="120" style="width:70px"></div>
+          <div style="flex:0 0 auto"><label for="fontColor">Colour</label><input type="color" id="fontColor" value="#000000" style="width:44px;height:38px;padding:2px"></div>
+          <div style="flex:0 0 auto"><label for="textOpacity">Opacity</label><input type="range" id="textOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
+          <div style="flex:0 0 auto"><label for="textRotation">Rotation</label><input type="number" id="textRotation" value="0" min="-180" max="180" style="width:70px"></div>
         </div>
 
         <!-- IMAGE controls -->
         <div class="row" id="imageCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem;align-items:center">
           <button class="btn btn-outline" onclick="document.getElementById('stampImg').click()">📤 Choose PNG / JPEG</button>
           <input type="file" id="stampImg" accept="image/png,image/jpeg" style="display:none">
-          <div style="flex:0 0 auto"><label>Stamp quality / size cap</label>
+          <div style="flex:0 0 auto"><label for="stampQuality">Stamp quality / size cap</label>
             <select id="stampQuality">
               <option value="small">Compact (max 400px, smaller file)</option>
               <option value="medium" selected>Balanced (max 800px)</option>
@@ -111,15 +111,15 @@
 
         <!-- SHAPE controls -->
         <div class="row" id="shapeCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
-          <div style="flex:0 0 auto"><label>Colour</label><input type="color" id="shapeColor" value="#e11d48" style="width:44px;height:38px;padding:2px"></div>
-          <div style="flex:0 0 auto"><label>Thickness</label><input type="number" id="shapeThickness" value="2" min="1" max="30" style="width:70px"></div>
+          <div style="flex:0 0 auto"><label for="shapeColor">Colour</label><input type="color" id="shapeColor" value="#e11d48" style="width:44px;height:38px;padding:2px"></div>
+          <div style="flex:0 0 auto"><label for="shapeThickness">Thickness</label><input type="number" id="shapeThickness" value="2" min="1" max="30" style="width:70px"></div>
           <div style="flex:0 0 auto" id="rectFillWrap"><label><input type="checkbox" id="rectFill"> Filled</label></div>
-          <div style="flex:0 0 auto"><label>Opacity</label><input type="range" id="shapeOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
+          <div style="flex:0 0 auto"><label for="shapeOpacity">Opacity</label><input type="range" id="shapeOpacity" min="0.1" max="1" step="0.05" value="1" style="width:90px"></div>
         </div>
 
         <!-- HIGHLIGHT controls -->
         <div class="row" id="hlCtrls" style="display:none;flex-wrap:wrap;margin:.6rem 0;gap:.5rem">
-          <div style="flex:0 0 auto"><label>Highlight colour</label>
+          <div style="flex:0 0 auto"><label for="hlColor">Highlight colour</label>
             <select id="hlColor">
               <option value="rgba(255,235,59,0.4)">🟡 Yellow</option>
               <option value="rgba(76,175,80,0.35)">🟢 Green</option>
@@ -149,7 +149,7 @@
 
         <div class="row" style="margin-top:1rem;flex-wrap:wrap;align-items:center;gap:.6rem">
           <button class="btn" onclick="savePdf()">💾 Download Edited PDF</button>
-          <div style="flex:0 0 auto"><label>PNG export resolution</label>
+          <div style="flex:0 0 auto"><label for="pngScale">PNG export resolution</label>
             <select id="pngScale">
               <option value="1">72 DPI (screen, smallest)</option>
               <option value="2" selected>144 DPI (recommended)</option>

@@ -183,7 +183,7 @@ footer{background:linear-gradient(180deg,var(--surface),var(--bg))}
 
 /* Badge/tag styles */
 .badge{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;padding:.28rem .65rem;border-radius:6px;font-weight:600;letter-spacing:.3px}  /* .7rem rendered at 11px, under the 12px readability floor */
-.badge-green{background:rgba(76,175,80,.15);color:#4caf50}
+.badge-green{background:rgba(76,175,80,.15);color:var(--ok)}
 .badge-blue{background:rgba(99,102,241,.15);color:var(--accent-text)}
 .badge-purple{background:rgba(168,85,247,.15);color:#c084fc}  /* #a855f7 was 3.83:1 on the tinted dark surface */
 
@@ -404,3 +404,25 @@ button:not([class]):not([style]):not(#themeToggle):active{transform:translateY(0
    homepage has 145 tool cards and long pages have big FAQ/guide sections. */
 .tools-grid,.tool-section#deep-notes,.faq,footer{content-visibility:auto;contain-intrinsic-size:auto 600px}
 @media (prefers-reduced-motion:reduce){.hero-gradient::before{animation:none}.tools-grid .tool-card{animation:none}}
+
+/* Hero badges sit on the animated gradient; in the light theme their 15%
+   tint left the text at ~3:1. A near-opaque surface keeps the tint as a
+   border and lifts the text above 4.5:1. */
+.light .hero-badge{background:rgba(255,255,255,.88)!important;box-shadow:inset 0 0 0 1px rgba(99,102,241,.25)}
+.light .hero-badge:first-child{color:#166534!important}
+
+/* Touch targets: WCAG 2.5.8 asks for at least 24x24 CSS px. These were the
+   site-wide offenders on a 360px phone: 20px checkboxes, 19px FAQ summary
+   rows, 16px range sliders. Visual size of the checkbox is unchanged on
+   desktop; the hit area grows on touch screens only. */
+details>summary{min-height:24px;padding:.25rem 0;display:list-item}
+input[type=range]{min-height:24px}
+@media (pointer:coarse){
+  input[type=checkbox],input[type=radio]{width:24px;height:24px;min-width:24px;min-height:24px}
+  input[type=checkbox]:checked::after{left:7px;top:3px}
+  input[type=color]{min-width:32px;min-height:32px}
+}
+.exam-link{display:inline-flex;align-items:center;min-height:24px;padding:.15rem 0}
+/* Native date/month and file pickers rendered at ~21px tall on phones. */
+input[type=date],input[type=month],input[type=time],input[type=datetime-local],input[type=week]{min-height:40px}
+input[type=file]{min-height:32px}

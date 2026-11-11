@@ -28,9 +28,9 @@
       <div id="qod" style="background:var(--card);border-radius:12px;padding:1rem;margin:1rem 0;text-align:left"></div>
 
       <div class="row" style="justify-content:center;flex-wrap:wrap">
-        <select id="category" onchange="applyFilters()"><option value="all">All categories</option></select>
+        <select id="category" onchange="applyFilters()" aria-label="Quote category"><option value="all">All categories</option></select>
         <input type="text" id="search" placeholder="🔍 Search text or author" oninput="applyFilters()">
-        <select id="authorFilter" onchange="applyFilters()"><option value="all">All authors</option></select>
+        <select id="authorFilter" onchange="applyFilters()" aria-label="Filter by author"><option value="all">All authors</option></select>
       </div>
 
       <div id="quoteBox" style="background:var(--card);border-radius:12px;padding:1.5rem;margin:1rem 0;min-height:100px;text-align:center"></div>
@@ -47,7 +47,7 @@
         <h3 role="heading" aria-level="2">🖼️ Quote Image Maker</h3>
         <canvas id="canvas" width="1080" height="1080" style="width:100%;max-width:420px;border-radius:12px;margin:1rem auto;display:block"></canvas>
         <div class="row" style="flex-wrap:wrap">
-          <label>Size:</label>
+          <label for="imgSize">Size:</label>
           <select id="imgSize" onchange="renderImage()">
             <option value="1080x1080">Instagram Square 1080×1080</option>
             <option value="1080x1920">Story 1080×1920</option>
@@ -55,7 +55,7 @@
             <option value="1080x1920s">WhatsApp Status 1080×1920</option>
             <option value="2480x3508">A4 Poster 2480×3508</option>
           </select>
-          <label>Background:</label>
+          <label for="bgType">Background:</label>
           <select id="bgType" onchange="onBgTypeChange()">
             <option value="gradient">Palette gradient</option>
             <option value="solid">Solid colour</option>
@@ -63,33 +63,33 @@
           </select>
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <label>Solid/overlay:</label><input type="color" id="solidColor" value="#6366f1" onchange="renderImage()" style="width:60px;padding:.2rem">
-          <label>Text colour:</label><input type="color" id="textColor" value="#ffffff" onchange="renderImage()" style="width:60px;padding:.2rem">
-          <label>Align:</label>
+          <label for="solidColor">Solid/overlay:</label><input type="color" id="solidColor" value="#6366f1" onchange="renderImage()" style="width:60px;padding:.2rem">
+          <label for="textColor">Text colour:</label><input type="color" id="textColor" value="#ffffff" onchange="renderImage()" style="width:60px;padding:.2rem">
+          <label for="align">Align:</label>
           <select id="align" onchange="renderImage()"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select>
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <label>Font:</label>
+          <label for="font">Font:</label>
           <select id="font" onchange="renderImage()"><option value="Georgia,serif">Georgia (serif)</option><option value="Arial,sans-serif">Arial (sans)</option><option value="'Courier New',monospace">Courier (mono)</option><option value="'Trebuchet MS',sans-serif">Trebuchet</option></select>
-          <label>Font size:</label><input type="range" id="fontSize" min="30" max="120" value="60" oninput="renderImage()">
+          <label for="fontSize">Font size:</label><input type="range" id="fontSize" min="30" max="120" value="60" oninput="renderImage()">
           <label style="flex:0 0 auto;display:flex;align-items:center;gap:.4rem;min-width:0"><input type="checkbox" id="watermark" checked onchange="renderImage()" style="width:auto;margin:0"> Watermark</label>
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <label>Overlay darkness:</label><input type="range" id="overlay" min="0" max="90" value="45" oninput="renderImage()">
+          <label for="overlay">Overlay darkness:</label><input type="range" id="overlay" min="0" max="90" value="45" oninput="renderImage()">
         </div>
         <div class="drop-zone" id="bgDrop" onclick="document.getElementById('bgUpload').click()" style="margin:.5rem 0">
           🖼️ Drop a background image here, or click to choose
           <input type="file" id="bgUpload" accept="image/*">
         </div>
         <div class="row" style="flex-wrap:wrap">
-          <label>Output format:</label>
+          <label for="outFormat">Output format:</label>
           <select id="outFormat" onchange="onQgFormatChange()">
             <option value="image/png">PNG (lossless)</option>
             <option value="image/jpeg">JPEG (smaller)</option>
             <option value="image/webp">WEBP (smallest)</option>
           </select>
           <span id="qgQualityWrap" style="display:none;align-items:center;gap:.4rem">
-            <label>Quality: <strong id="qgQVal">0.90</strong></label>
+            <label for="qgQuality">Quality: <strong id="qgQVal">0.90</strong></label>
             <input type="range" id="qgQuality" min="30" max="100" value="90" oninput="document.getElementById('qgQVal').textContent=(this.value/100).toFixed(2)">
           </span>
         </div>

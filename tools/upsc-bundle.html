@@ -28,7 +28,7 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
   .ub-tree summary{cursor:pointer;padding:.4rem .6rem;border-radius:8px;font-weight:600;margin:.2rem 0}
   .ub-tree summary:hover{background:rgba(99,102,241,.1)}
   .ub-tree details{margin-left:.8rem}
-  .ub-check{display:flex;align-items:center;gap:.5rem;padding:.3rem .6rem;border-radius:6px;font-size:.88rem}
+  .ub-check{display:flex;align-items:center;gap:.5rem;padding:.3rem .6rem;min-height:32px;cursor:pointer;border-radius:6px;font-size:.88rem}
   .ub-check:hover{background:rgba(99,102,241,.06)}
   .ub-check input{accent-color:var(--accent);width:16px;height:16px}
   .ub-pbar{height:6px;background:var(--card);border-radius:4px;overflow:hidden;margin:.3rem 0}
@@ -235,7 +235,7 @@ function renderSyllabus(){
       html+='<details class="ub-tree"><summary>'+escH(sec)+' ('+secChecked+'/'+SYLLABUS[paper][sec].length+')</summary>';
       SYLLABUS[paper][sec].forEach(function(t){
         var k=paper+'|'+sec+'|'+t;
-        html+='<div class="ub-check"><input type="checkbox" '+(D.syllabus[k]?'checked':'')+' onchange="toggleSyl(\''+k.replace(/'/g,"\\'")+'\')""><span>'+escH(t)+'</span></div>';
+        html+='<label class="ub-check"><input type="checkbox" '+(D.syllabus[k]?'checked':'')+' onchange="toggleSyl(\''+k.replace(/'/g,"\\'")+'\')"><span>'+escH(t)+'</span></label>';
       });
       html+='</details>';
     });
@@ -323,7 +323,7 @@ function renderRevision(){
     html+='<div class="ub-pbar"><div style="width:'+pct+'%"></div></div>';
     REVISION_LIST[sub].forEach(function(item){
       var k=sub+'|'+item;
-      html+='<div class="ub-check"><input type="checkbox" '+(D.revision[k]?'checked':'')+' onchange="toggleRev(\''+k.replace(/'/g,"\\'")+'\')""><span>'+escH(item)+'</span></div>';
+      html+='<label class="ub-check"><input type="checkbox" '+(D.revision[k]?'checked':'')+' onchange="toggleRev(\''+k.replace(/'/g,"\\'")+'\')"><span>'+escH(item)+'</span></label>';
     });
     html+='</details>';
   });

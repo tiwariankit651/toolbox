@@ -104,7 +104,7 @@
       </div>
       <div class="editor-wrap mode-split" id="editorWrap">
         <div class="editor-pane">
-          <textarea id="md" oninput="render()" onscroll="syncScroll(this)" style="min-height:500px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.9rem;line-height:1.6;resize:vertical"># Hello World
+          <textarea id="md" oninput="render()" onscroll="syncScroll(this)" style="min-height:500px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.9rem;line-height:1.6;resize:vertical" aria-label="Markdown text"># Hello World
 
 This is **bold** and *italic* text. Also ~~strikethrough~~.
 
@@ -422,7 +422,7 @@ function parseList(lines,start,type){
       if(/^\[[ xX]\] /.test(content)){
         var checked=content[1]!=='  '[0];
         content=content.substring(4);
-        items.push('<li class="task-item"><input type="checkbox" disabled'+(checked?' checked':'')+'>'+inlineFormat(content)+'</li>');
+        items.push('<li class="task-item"><input type="checkbox" aria-label="Task item" disabled'+(checked?' checked':'')+'>'+inlineFormat(content)+'</li>');
       }else{
         items.push('<li>'+inlineFormat(content)+'</li>');
       }

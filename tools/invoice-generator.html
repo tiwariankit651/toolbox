@@ -55,9 +55,9 @@ function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMont
 
       <!-- Template & Theme -->
       <div class="row" style="margin-bottom:1rem;flex-wrap:wrap">
-        <label>Template:</label>
+        <label for="invTemplate">Template:</label>
         <select id="invTemplate"><option value="classic">📋 Classic</option><option value="modern">🎨 Modern Blue</option><option value="minimal">✨ Minimal</option></select>
-        <label>Accent:</label><input type="color" id="invAccent" value="#4338ca" style="width:40px;height:35px;border:none">
+        <label for="invAccent">Accent:</label><input type="color" id="invAccent" value="#4338ca" style="width:40px;height:35px;border:none">
       </div>
 
       <!-- Supplier Details -->
@@ -65,7 +65,7 @@ function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMont
       <div class="row"><input type="text" id="bName" placeholder="Business Name" oninput="autoSaveInv()"><input type="text" id="bAddress" placeholder="Business Address" oninput="autoSaveInv()"></div>
       <div class="row"><input type="text" id="bGstin" placeholder="Supplier GSTIN (15 chars)" maxlength="15" oninput="validateGSTIN(this,'bGstWarn');autoSaveInv()"><span id="bGstWarn" style="font-size:.75rem;color:var(--warn);min-width:120px"></span></div>
       <div class="row">
-        <select id="bState" onchange="calcTotals();autoSaveInv()"><option value="">-- Supplier State --</option></select>
+        <select id="bState" onchange="calcTotals();autoSaveInv()" aria-label="Supplier state"><option value="">-- Supplier State --</option></select>
         <input type="text" id="bPhone" placeholder="Phone (optional)" oninput="autoSaveInv()">
       </div>
       <div class="row" style="margin-top:.5rem"><label>Company Logo:</label><div class="drop-zone" id="invDrop" style="margin:.4rem 0;padding:.8rem;font-size:.85rem">Drop your logo here or click to browse<input type="file" id="logoFile" accept="image/png,image/jpeg" onchange="previewLogo(this)" style="display:none"></div></div>
@@ -74,8 +74,8 @@ function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMont
       <!-- Invoice Meta -->
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
       <h2>Invoice Details</h2>
-      <div class="row"><input type="text" id="invNo" placeholder="Invoice #"><input type="date" id="invDate"><input type="date" id="dueDate"></div>
-      <div class="row"><select id="placeOfSupply"><option value="">-- Place of Supply --</option></select></div>
+      <div class="row"><input type="text" id="invNo" placeholder="Invoice #"><input type="date" id="invDate" aria-label="Invoice date"><input type="date" id="dueDate" aria-label="Due date"></div>
+      <div class="row"><select id="placeOfSupply" aria-label="Place of supply"><option value="">-- Place of Supply --</option></select></div>
 
       <!-- Customer -->
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
@@ -83,13 +83,13 @@ function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMont
       <div class="row"><input type="text" id="cName" placeholder="Customer Name"><input type="text" id="cEmail" placeholder="Customer Email"></div>
       <div class="row"><input type="text" id="cAddress" placeholder="Customer Address" style="flex:1"></div>
       <div class="row"><input type="text" id="cGstin" placeholder="Customer GSTIN (optional)" maxlength="15" oninput="validateGSTIN(this,'cGstWarn')"><span id="cGstWarn" style="font-size:.75rem;color:var(--warn);min-width:120px"></span></div>
-      <div class="row"><select id="cState" onchange="calcTotals()"><option value="">-- Customer State --</option></select></div>
+      <div class="row"><select id="cState" onchange="calcTotals()" aria-label="Customer state"><option value="">-- Customer State --</option></select></div>
 
       <!-- Items -->
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0">
       <h2>Items</h2>
       <div class="row">
-        <label>GST preset:</label>
+        <label for="invPreset">GST preset:</label>
         <select id="invPreset" onchange="invApplyPreset()" style="flex:2">
           <option value="">Choose a GST case...</option>
           <option value="intra">Intra-state (CGST + SGST, 18%)</option>
@@ -106,7 +106,7 @@ function _localYMD(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMont
       <button class="btn btn-outline" onclick="addItem()">+ Add Item</button>
 
       <!-- Overall Discount -->
-      <div class="row" style="margin-top:.8rem;align-items:center"><label>Overall Discount:</label><input type="number" id="overallDiscount" value="0" min="0" style="max-width:80px" oninput="calcTotals()"><select id="discountType" onchange="calcTotals()" style="max-width:80px"><option value="percent">%</option><option value="flat">₹ Flat</option></select></div>
+      <div class="row" style="margin-top:.8rem;align-items:center"><label for="overallDiscount">Overall Discount:</label><input type="number" id="overallDiscount" value="0" min="0" style="max-width:80px" oninput="calcTotals()"><select id="discountType" onchange="calcTotals()" style="max-width:80px" aria-label="Discount type"><option value="percent">%</option><option value="flat">₹ Flat</option></select></div>
 
       <!-- Tax Summary -->
       <div id="taxSummary" style="margin-top:1rem;background:var(--card);padding:1rem;border-radius:var(--radius)"></div>
@@ -249,7 +249,7 @@ function previewLogoRead(file){var reader=new FileReader();reader.onload=functio
 
 // --- Items with per-item GST, HSN, discount ---
 function addItem(){itemCount++;var d=document.createElement('div');d.className='row';d.id='item'+itemCount;d.style.cssText='flex-wrap:wrap;gap:.3rem;background:var(--card);padding:.8rem;border-radius:8px;margin:.4rem 0';
-  d.innerHTML='<input type="text" placeholder="Description" style="flex:3;min-width:150px" oninput="calcTotals()"><input type="text" placeholder="HSN/SAC" style="max-width:80px"><input type="number" placeholder="Qty" value="1" min="1" style="max-width:60px" oninput="calcTotals()"><input type="number" placeholder="Rate" min="0" style="max-width:90px" oninput="calcTotals()"><input type="number" placeholder="Disc%" value="0" min="0" max="100" style="max-width:60px" oninput="calcTotals()"><select style="max-width:80px" onchange="calcTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18" selected>18%</option><option value="28">28%</option></select><button class="btn btn-outline" onclick="this.parentElement.remove();calcTotals()" style="flex:0;padding:.3rem .6rem">✕</button>';
+  d.innerHTML='<input type="text" placeholder="Description" style="flex:3;min-width:150px" oninput="calcTotals()"><input type="text" placeholder="HSN/SAC" style="max-width:80px"><input type="number" placeholder="Qty" value="1" min="1" style="max-width:60px" oninput="calcTotals()"><input type="number" placeholder="Rate" min="0" style="max-width:90px" oninput="calcTotals()"><input type="number" placeholder="Disc%" value="0" min="0" max="100" style="max-width:60px" oninput="calcTotals()"><select aria-label="GST rate" style="max-width:80px" onchange="calcTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18" selected>18%</option><option value="28">28%</option></select><button class="btn btn-outline" onclick="this.parentElement.remove();calcTotals()" style="flex:0;padding:.3rem .6rem">✕</button>';
   document.getElementById('items').appendChild(d);calcTotals();}
 addItem();addItem();
 
