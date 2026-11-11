@@ -31,7 +31,7 @@
   <meta name="robots" content="index, follow">
   <meta name="author" content="Ankit Tiwari">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"FreeToolHubs","url":"https://freetoolhubs.com/","description":"Free online tools for students and professionals. PDF editor, typing test, flashcards, quiz maker & more.","author":{"@type":"Person","name":"Ankit Tiwari"},"potentialAction":{"@type":"SearchAction","target":"https://freetoolhubs.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
+  {"@context":"https://schema.org","@type":"WebSite","name":"FreeToolHubs","url":"https://freetoolhubs.com/","description":"Free online tools for students and professionals. PDF editor, typing test, flashcards, quiz maker & more.","author":{"@type":"Person","name":"Ankit Tiwari"}}
   </script>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is FreeToolHubs really free?","acceptedAnswer":{"@type":"Answer","text":"Yes, 100% free. No hidden charges, no signup required. All 139 tools are free to use without any limits."}},{"@type":"Question","name":"Are my files safe and private?","acceptedAnswer":{"@type":"Answer","text":"All processing happens in your browser using JavaScript. Your files are never uploaded to any server."}},{"@type":"Question","name":"How many tools does FreeToolHubs have?","acceptedAnswer":{"@type":"Answer","text":"We offer 139 free online tools across categories: Document Tools, Image Tools, Developer Tools, Student Tools, Professional Tools, and Utility Tools."}},{"@type":"Question","name":"What tools are available for students?","acceptedAnswer":{"@type":"Answer","text":"30+ student tools including Flashcards with spaced repetition, Quiz Maker, Typing Test (Hindi+English), CGPA Calculator, Handwriting Assignment Maker, Syllabus Tracker, and Pomodoro Timer."}},{"@type":"Question","name":"Can I use FreeToolHubs offline?","acceptedAnswer":{"@type":"Answer","text":"Yes! Most tools work offline after the first visit. FreeToolHubs is a Progressive Web App (PWA)."}}]}
@@ -141,10 +141,10 @@ function filterCat(cat,btn){
 
 // Spotlight search
 var searchAliases={"loan":"emi","photo":"image resizer background","resume":"cover letter","scan":"ocr","convert":"converter","download":"video gif","edit":"editor","write":"handwriting notes","study":"flashcards pomodoro syllabus","exam":"quiz flashcards syllabus calendar","money":"budget emi sip tax","code":"json html regex sql","draw":"whiteboard signature","music":"audio","record":"screen recorder","font":"fancy fonts","private":"exif remover","ai":"humanizer","grammar":"checker","word":"word-to-pdf word counter","docx":"word-to-pdf","page":"page-numbers organize","number":"page-numbers","reorder":"organize","rotate":"rotate organize","crop":"crop-image resizer","blur":"blur-face","hide":"blur-face","face":"blur-face","svg":"svg-to-png","excel":"excel-to-pdf excel csv","xlsx":"excel-to-pdf","grayscale":"pdf-grayscale","black":"pdf-grayscale","print":"pdf-grayscale","text":"pdf-to-text text-tools","extract":"pdf-to-text ocr","hash":"hash-generator","md5":"hash-generator","sha":"hash-generator","checksum":"hash-generator","uuid":"uuid-generator","guid":"uuid-generator","epoch":"unix-timestamp","timestamp":"unix-timestamp","unix":"unix-timestamp","jwt":"jwt-decoder","token":"jwt-decoder","xml":"xml-yaml-formatter","yaml":"xml-yaml-formatter","minify":"css-js-minifier","css":"css-js-minifier","barcode":"barcode-generator","ean":"barcode-generator","merge":"merger image-to-pdf","combine":"merger","join":"merger","compress":"compressor pdf-compressor","reduce":"compressor","size":"resizer compressor","passport":"resizer date-on-photo","form":"resizer date-on-photo handwriting"};
-/* The WebSite schema declares a SearchAction at /?q={search_term_string},
-   which tells Google /?q=pdf shows results for "pdf". The page ignored the
-   parameter, so Google's check of that action failed in Search Console.
-   Honour it: fill the box from ?q and run the existing search. */
+/* /?q=pdf opens the page with "pdf" already searched (handy for shared links).
+   The SearchAction schema was removed: Google retired the sitelinks search
+   box, and it only made Search Console crawl the literal
+   /?q={search_term_string} template and report it as failed. */
 window.addEventListener("DOMContentLoaded",function(){
   try{
     var q=new URLSearchParams(location.search).get("q");
