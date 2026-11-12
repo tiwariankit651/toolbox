@@ -320,7 +320,7 @@ function srUpdateStats() {
 
 function srHandleFile(file){
   if(!file)return;
-  if(file.size>5*1024*1024){notify('That file is '+(file.size/1048576).toFixed(1)+'MB. Please use a file under 5MB.','error');return;}
+  if(file.size>5*1024*1024){notify('That file is '+formatSize(file.size)+'. The limit is 5 MB, which is already about 58 hours of reading at 250 WPM. Load one chapter at a time.','error');return;}
   if(!/\.(txt|md)$/i.test(file.name)&&!/^text\//.test(file.type||'')){
     notify('Only .txt and .md text files are supported.','error');return;
   }

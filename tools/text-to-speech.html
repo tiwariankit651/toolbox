@@ -297,12 +297,12 @@ function clearText(){
   document.getElementById('text').value='';
   updateEstimate();updateCharCount();
 }
+/* The Upload button used to skip every check: a 37 MB file went straight
+   into the textarea and froze the page for over a minute. Both the button
+   and drag-and-drop now go through the same checks. */
 function loadTxtFile(ev){
-  const f=ev.target.files[0];if(!f)return;
-  const reader=new FileReader();
-  reader.onload=e=>{document.getElementById('text').value=e.target.result;updateEstimate();updateCharCount()};
-  reader.readAsText(f);
-  ev.target.value='';
+  const f=ev.target.files[0];ev.target.value='';if(!f)return;
+  ttsHandleDroppedFiles([f]);
 }
 function updateEstimate(){
   const text=document.getElementById('text').value.trim();
@@ -543,8 +543,10 @@ function ttsHandleDroppedFiles(files){
     notify('Only .txt or .md text files can be loaded here.','error');
     return;
   }
+  /* 5 MB of English text is roughly 870,000 words - over 90 hours of speech at 150 words a minute, far
+     more than anyone listens to in one go - so the limit stays. Say why. */
   if(f.size>5*1024*1024){
-    notify('That file is '+formatSize(f.size)+' — the limit is 5 MB.','error');
+    notify('That file is '+formatSize(f.size)+'. The limit is 5 MB (over 90 hours of speech). Split it into chapters and load one at a time.','error');
     return;
   }
   var reader=new FileReader();

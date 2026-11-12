@@ -194,6 +194,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
+  <script src="../js/bigtext.js"></script>
   <script>
 /* Excel <-> CSV. Both directions run entirely in the page: SheetJS parses the
    workbook and also writes the .xlsx, so nothing is uploaded. */
@@ -245,9 +246,7 @@ function restorePrefs() {
 /* ---------- Excel -> CSV ---------- */
 function handleExcelFile(file) {
   if (!file) return;
-  if (file.size > 30 * 1024 * 1024) {
-    notify('That file is ' + formatSize(file.size) + '. Files above 30 MB may not fit in memory on a phone.', 'warn');
-  }
+  if (!BigText.checkSize(file, 100)) return;
   var r = new FileReader();
   /* A read can fail before the parser is ever reached, so guard both. */
   r.onerror = function () {
@@ -465,8 +464,10 @@ function csvLive() {
   csvTimer = setTimeout(buildCsvPreview, 250);
 }
 
+var CBOX = null;
+function cBox() { if (!CBOX) CBOX = BigText.attach(document.getElementById('cText'), { hint: 'The full file is converted.' }); return CBOX; }
 function buildCsvPreview() {
-  var text = document.getElementById('cText').value;
+  var text = cBox().get();
   var info = document.getElementById('cInfo');
   var wrap = document.getElementById('cPreviewWrap');
   if (!text.trim()) {
@@ -516,15 +517,13 @@ function handleCsvFile(file) {
     notify('"' + file.name + '" is not a text file. Use a .csv, .tsv or .txt file.', 'error');
     return;
   }
-  if (file.size > 20 * 1024 * 1024) {
-    notify('That file is ' + formatSize(file.size) + '. Very large CSVs may be slow in a browser tab.', 'warn');
-  }
+  if (!BigText.checkSize(file, 100)) return;
   var r = new FileReader();
   r.onerror = function () {
     notify('"' + file.name + '" could not be read. It may be corrupt.', 'error');
   };
   r.onload = function (e) {
-    document.getElementById('cText').value = e.target.result;
+    cBox().set(String(e.target.result || ''), 'Loaded. Showing');
     /* name the sheet after the file, which is what someone expects to see */
     var base = file.name.replace(/\.[^.]+$/, '').replace(/[\\\/\?\*\[\]:]/g, '_').slice(0, 31);
     if (base) document.getElementById('cSheetName').value = base;
@@ -539,6 +538,18 @@ function downloadXlsx() {
   if (typeof XLSX === 'undefined') { notify('The spreadsheet library did not load. Check your connection.', 'error'); return }
 
   var width = csvRows.reduce(function (m, r) { return Math.max(m, r.length) }, 0);
+  /* SheetJS builds the whole workbook in memory. In testing, 1.8 million cells
+     (300,000 rows x 6) took about 25 s and 3 million crashed the tab, so stop
+     before that and say how to split, instead of letting the page die. */
+  var cells = csvRows.length * width, MAX_CELLS = 2000000;
+  if (cells > MAX_CELLS) {
+    var perFile = Math.floor(MAX_CELLS * 0.75 / Math.max(1, width) / 1000) * 1000;
+    notify('This CSV has ' + csvRows.length.toLocaleString() + ' rows × ' + width + ' columns (' + (cells / 1e6).toFixed(1) +
+      ' million cells). A browser can build an Excel file of up to about 2 million cells; split it into files of about ' +
+      perFile.toLocaleString() + ' rows each. (Excel itself stops at 1,048,576 rows per sheet.)', 'error');
+    return;
+  }
+  if (cells > 500000) notify('Building a large Excel file (' + (cells / 1e6).toFixed(1) + ' million cells) - this can take up to half a minute.', 'info');
   /* pad short rows so Excel does not shift cells left */
   var rows = csvRows.map(function (r) {
     var out = r.slice();
@@ -577,7 +588,7 @@ function downloadXlsx() {
 }
 
 function clearCsv() {
-  document.getElementById('cText').value = '';
+  cBox().clear();
   csvRows = null;
   document.getElementById('cInfo').style.display = 'none';
   document.getElementById('cPreviewWrap').style.display = 'none';

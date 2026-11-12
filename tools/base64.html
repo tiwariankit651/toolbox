@@ -80,6 +80,7 @@
         <h3 style="margin:1.2rem 0 .5rem" role="heading" aria-level="2">Base64 → File</h3>
         <p class="info">Paste raw Base64 or a full data URI. The MIME type & extension are auto-detected.</p>
         <textarea id="b64Input" placeholder="Paste Base64 data URI or raw Base64 string..." rows="4"></textarea>
+        <div class="row" style="align-items:center"><label for="b64TextFile" style="flex:0 0 auto;min-width:0">…or open a .txt file of Base64:</label><input type="file" id="b64TextFile" accept=".txt,.b64,text/plain" style="flex:1"></div>
         <div class="row"><input type="text" id="fileName" placeholder="Optional filename (e.g. image.png)" style="flex:1"><button class="btn" onclick="b64ToFile()">Download as File</button></div>
         <div id="preview" class="preview-area"></div>
       </div>
@@ -173,6 +174,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
+  <script src="../js/bigtext.js"></script>
   <script>
 function switchTab(name){document.querySelectorAll('.tabpane').forEach(function(p){p.style.display='none'});document.getElementById('tab-'+name).style.display='';document.querySelectorAll('#tabBar .cat-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===name)});try{storeSetRaw('base64-active-tab-v1',name,true)}catch(e){}}
 const urlSafe=()=>document.getElementById('urlSafe').checked;
@@ -225,8 +227,65 @@ document.getElementById('inp').addEventListener('input',function(){
   el.textContent='⚡ Detected: plain text';
 });
 
+// ---- chunked Base64 (large files) ----
+/* readAsDataURL builds the whole Base64 string in one go and atob() needs the
+   whole string as one; both are slow and memory-hungry for tens of MB. These
+   work in 3 MB / 4 MB slices (multiples of 3 and 4, so the pieces join into
+   exactly the same Base64) and keep the result as a Blob. */
+var B64_CHUNK=3*1024*1024;
+function bytesToB64(u8){var s="",STEP=0x8000;for(var i=0;i<u8.length;i+=STEP)s+=String.fromCharCode.apply(null,u8.subarray(i,i+STEP));return btoa(s)}
+async function encodeFileB64(file,opts,onProg,isCancelled){
+  var parts=[],len=0;
+  if(opts.dataUri)parts.push("data:"+(file.type||"application/octet-stream")+";base64,");
+  for(var off=0;off<file.size;off+=B64_CHUNK){
+    if(isCancelled&&isCancelled())throw new Error("cancelled");
+    var u8=new Uint8Array(await file.slice(off,Math.min(file.size,off+B64_CHUNK)).arrayBuffer());
+    var s=bytesToB64(u8);
+    if(opts.urlSafe)s=s.replace(/\+/g,"-").replace(/\//g,"_");
+    if(opts.urlSafe&&off+B64_CHUNK>=file.size&&!opts.keepPad)s=s.replace(/=+$/,"");
+    parts.push(s);len+=s.length;
+    if(onProg)onProg(Math.min(1,(off+B64_CHUNK)/file.size));
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  return {blob:new Blob(parts,{type:"text/plain"}),length:len,head:(parts.join("").slice(0,600))};
+}
+function b64CharsToBytes(s){var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+async function decodeB64Text(text,onProg,isCancelled){
+  var mime="",data=text,m=/^\s*data:([^;,]+)(;base64)?,/.exec(text.slice(0,300));
+  if(m){mime=m[1];data=text.slice(m[0].length)}
+  data=data.replace(/\s+/g,"");
+  if(/[-_]/.test(data))data=data.replace(/-/g,"+").replace(/_/g,"/");
+  if(data.length%4!==0)data=data+"=".repeat((4-data.length%4)%4);
+  var STEP=4*1024*1024,parts=[];
+  for(var i=0;i<data.length;i+=STEP){
+    if(isCancelled&&isCancelled())throw new Error("cancelled");
+    parts.push(b64CharsToBytes(data.slice(i,i+STEP)));
+    if(onProg)onProg(Math.min(1,(i+STEP)/data.length));
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  var first=parts[0]||new Uint8Array(0);
+  return {mime:mime,parts:parts,first:first,size:parts.reduce(function(a,p){return a+p.length},0)};
+}
+
 // ---- FILE → Base64 ----
-var _b64full='';
+var _b64full='',_b64blob=null,_b64name='base64.txt',B64PROG=null,B64TASK=null;
+function escHtml(s){return String(s).replace(/[&<>"']/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function b64Prog(){if(!B64PROG)B64PROG=BigText.progressUI(document.getElementById('fileSizes'));return B64PROG}
+async function encodeBig(f){
+  var cancelled=false,P=b64Prog();P.start('Encoding '+f.name+'…',function(){cancelled=true});
+  var t0=performance.now();
+  try{
+    var res=await encodeFileB64(f,{dataUri:document.getElementById('asDataUri').checked,urlSafe:urlSafe(),keepPad:true},function(p){P.set(p,'Encoding '+f.name+'… '+Math.round(p*100)+'%')},function(){return cancelled});
+    _b64blob=res.blob;_b64full='';_b64name=f.name.replace(/[\\/:*?"<>|]+/g,'_')+'.b64.txt';
+    var overhead=f.size?Math.round((res.length-f.size)/f.size*100):0;
+    document.getElementById('fileSizes').innerHTML=escHtml(f.name)+' — Original: '+formatSize(f.size)+' → Base64: '+formatSize(res.length)+' <span class="badge badge-blue">+'+overhead+'% overhead</span> · '+((performance.now()-t0)/1000).toFixed(1)+' s';
+    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+escHtml(res.head)+'…</span><p class="info" style="margin:.4rem 0">Showing the start of '+formatSize(res.length)+' of Base64. Use Download for the full text; Copy may be refused by the browser for text this large.</p><button class="copy-btn" onclick="copyBig(this)">Copy</button><button class="copy-btn" onclick="downloadB64()" style="margin-left:.3rem">Download .txt</button>';
+    document.getElementById('cssSnippet').innerHTML='';document.getElementById('filePreview').innerHTML='';
+  }catch(e){if(e.message==='cancelled')notify('Cancelled.','warn');else notify('Could not encode: '+(e.message||e),'error')}
+  finally{P.end()}
+}
+function downloadB64(){if(_b64blob)download(_b64blob,_b64name);else if(_b64full)download(new Blob([_b64full],{type:'text/plain'}),'base64.txt')}
+async function copyBig(btn){try{copyText(await _b64blob.text(),btn)}catch(e){notify('That is too large to copy. Use Download instead.','warn')}}
 var _batchFiles=[];
 var LARGE_FILE=8*1024*1024; // warn beyond ~8MB per file
 
@@ -242,12 +301,16 @@ function readAsDataURL(file){
 setupDrop('dropZone','fi',function(files){
   if(!files||!files.length)return;
   _batchFiles=Array.prototype.slice.call(files);
+  document.getElementById('fi').value=''; // picking the same file again must run again
   var tooBig=_batchFiles.filter(function(f){return f.size>LARGE_FILE});
   if(tooBig.length){
     notify(tooBig.length+' file(s) are over '+formatSize(LARGE_FILE)+' — encoding may be slow in the browser.','warn');
   }
-  // Single-file: keep the live preview + size readout + CSS snippet as before.
+  // Single-file: live preview, size readout and CSS snippet. Large files are
+  // encoded in slices; Copy/Download use the full result.
   var f=_batchFiles[0];
+  if(!BigText.checkSize(f,100))return;
+  if(f.size>LARGE_FILE){encodeBig(f);}else{
   var r=new FileReader();
   r.onload=()=>{
     let dataUri=r.result;              // data:<mime>;base64,<data>
@@ -255,22 +318,23 @@ setupDrop('dropZone','fi',function(files){
     let raw=parts[1]||'';
     if(urlSafe())raw=toUrlSafe(raw);
     let out=document.getElementById('asDataUri').checked?(parts[0]+','+raw):raw;
-    _b64full=out;
+    _b64full=out;_b64blob=null;
     var inB=f.size,outB=raw.length;
     var overhead=inB?Math.round((outB-inB)/inB*100):0;
-    document.getElementById('fileSizes').innerHTML=f.name+' — Original: '+formatSize(inB)+' → Base64: '+formatSize(outB)+' <span class="badge badge-blue">+'+overhead+'% overhead</span>';
-    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+out.slice(0,600)+(out.length>600?'…':'')+'</span><button class="copy-btn" onclick="copyText(_b64full,this)">Copy</button>';
+    document.getElementById('fileSizes').innerHTML=escHtml(f.name)+' — Original: '+formatSize(inB)+' → Base64: '+formatSize(outB)+' <span class="badge badge-blue">+'+overhead+'% overhead</span>';
+    document.getElementById('fileResult').innerHTML='<span style="word-break:break-all">'+escHtml(out.slice(0,600))+(out.length>600?'…':'')+'</span><button class="copy-btn" onclick="copyText(_b64full,this)">Copy</button>';
     // CSS data-URI snippet
     var css=document.getElementById('cssSnippet');
     if(f.type.startsWith('image/')){
       var uri=parts[0]+','+ (urlSafe()?fromUrlSafe(raw):raw);
       var snippet="background-image: url(\""+uri+"\");";
-      css.innerHTML='<p class="info" style="margin-top:.5rem">CSS snippet (ready to copy):</p><div class="result-box" style="max-height:120px;overflow:auto"><span style="word-break:break-all">'+snippet.slice(0,300)+(snippet.length>300?'…':'')+'</span><button class="copy-btn" onclick="copyText(window._cssSnippet,this)">Copy</button></div>';
+      css.innerHTML='<p class="info" style="margin-top:.5rem">CSS snippet (ready to copy):</p><div class="result-box" style="max-height:120px;overflow:auto"><span style="word-break:break-all">'+escHtml(snippet.slice(0,300))+(snippet.length>300?'…':'')+'</span><button class="copy-btn" onclick="copyText(window._cssSnippet,this)">Copy</button></div>';
       window._cssSnippet=snippet;
       document.getElementById('filePreview').innerHTML='<img src="'+uri+'" alt="preview">';
     }else{css.innerHTML='';document.getElementById('filePreview').innerHTML=''}
   };
   r.readAsDataURL(f);
+  }
   // Batch panel: show whenever at least one file is selected.
   var box=document.getElementById('batchBox'),list=document.getElementById('batchList');
   box.style.display='block';
@@ -283,7 +347,8 @@ async function exportZip(){
   if(!_batchFiles.length){notify('Choose one or more files first.','warn');return}
   if(typeof JSZip==='undefined'){notify('ZIP library is still loading — try again in a moment.','error');return}
   var total=_batchFiles.reduce(function(a,x){return a+x.size},0);
-  if(total>20*1024*1024&&!confirm('About '+formatSize(total)+' of files will be encoded. This may be slow. Continue?'))return;
+  if(total>100*1024*1024){notify('Those files add up to '+formatSize(total)+'. Up to 100 MB can be encoded in one ZIP.','error');return}
+  if(BigText.isPhone()&&total>25*1024*1024&&!confirm('About '+formatSize(total)+' of files will be encoded. Phones have limited memory; this may be slow. Continue?'))return;
   var btn=document.getElementById('zipBtn');var orig=btn.textContent;btn.disabled=true;btn.textContent='Encoding…';
   try{
     var zip=new JSZip();
@@ -294,14 +359,10 @@ async function exportZip(){
       'Each .txt holds the Base64 of the matching input file.'];
     for(var i=0;i<_batchFiles.length;i++){
       var f=_batchFiles[i];
-      var dataUri=await readAsDataURL(f);
-      var parts=String(dataUri).split(',');
-      var raw=parts[1]||'';
-      if(urlSafe())raw=toUrlSafe(raw);
-      var out=asUri?(parts[0]+','+raw):raw;
+      var enc=await encodeFileB64(f,{dataUri:asUri,urlSafe:urlSafe(),keepPad:true});
       var base=f.name.replace(/[\\/:*?"<>|]+/g,'_');
-      zip.file(base+'.txt',out);
-      readme.push('- '+base+'.txt  ('+formatSize(f.size)+' → '+formatSize(raw.length)+')');
+      zip.file(base+'.txt',enc.blob);
+      readme.push('- '+base+'.txt  ('+formatSize(f.size)+' → '+formatSize(enc.length-(asUri?('data:'+(f.type||'application/octet-stream')+';base64,').length:0))+')');
     }
     zip.file('README.txt',readme.join('\n'));
     var blob=await zip.generateAsync({type:'blob'});
@@ -329,7 +390,29 @@ function detectMime(arr){
   return 'application/octet-stream';
 }
 function extFor(mime){var map={'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/bmp':'bmp','application/pdf':'pdf','application/zip':'zip','audio/wav':'wav','audio/mpeg':'mp3','text/xml':'xml','application/octet-stream':'bin','text/plain':'txt'};return map[mime]||(mime.split('/')[1]||'bin')}
+var B64IN=null;
+function b64In(){if(!B64IN)B64IN=BigText.attach(document.getElementById('b64Input'),{hint:'Download as File decodes the full text.'});return B64IN}
+document.getElementById('b64TextFile').addEventListener('change',async function(){
+  var f=this.files[0];this.value='';if(!f)return;if(!BigText.checkSize(f,150))return;
+  var P=b64Prog();P.start('Reading '+f.name+'…',null);
+  try{var t=await BigText.readText(f,function(p){P.set(p,'Reading '+f.name+'… '+Math.round(p*100)+'%')});b64In().set(t,'Loaded. Showing');
+    if(!document.getElementById('fileName').value)document.getElementById('fileName').value=f.name.replace(/\.(b64\.)?txt$|\.b64$/i,'');
+    notify('Loaded '+f.name+' ('+formatSize(f.size)+'). Press Download as File.','ok')}
+  catch(e){notify(e.message||'Could not read that file.','error')}finally{P.end()}
+});
+async function b64ToFileBig(text){
+  var prev=document.getElementById('preview'),cancelled=false,P=b64Prog();P.start('Decoding…',function(){cancelled=true});
+  try{
+    var r=await decodeB64Text(text,function(p){P.set(p,'Decoding… '+Math.round(p*100)+'%')},function(){return cancelled});
+    var mime=r.mime||detectMime(r.first);
+    var custom=document.getElementById('fileName').value.trim();var name=custom||('decoded.'+extFor(mime));
+    download(new Blob(r.parts,{type:mime}),name);
+    prev.innerHTML='<p class="info">Detected type: <b>'+escHtml(mime)+'</b> — downloaded as '+escHtml(name)+' ('+formatSize(r.size)+')</p>';
+  }catch(e){if(e.message==='cancelled')prev.innerHTML='<p class="info">Cancelled.</p>';else prev.innerHTML='<p style="color:var(--danger)">❌ Invalid Base64: '+escHtml(e.message)+'</p>'}
+  finally{P.end()}
+}
 function b64ToFile(){
+  if(B64IN&&B64IN.isBig())return b64ToFileBig(B64IN.get());
   const raw=document.getElementById('b64Input').value.trim();
   const prev=document.getElementById('preview');
   if(!raw){prev.innerHTML='<p class="info">Paste some Base64 first.</p>';return}
@@ -347,8 +430,8 @@ function b64ToFile(){
     var name=custom||('decoded.'+extFor(mime));
     download(new Blob([arr],{type:mime}),name);
     if(mime.startsWith('image/')){prev.innerHTML='<img src="data:'+mime+';base64,'+data+'" alt="decoded image">';}
-    else{prev.innerHTML='<p class="info">Detected type: <b>'+mime+'</b> — downloaded as '+name+'</p>'}
-  }catch(e){prev.innerHTML='<p style="color:var(--danger)">❌ Invalid Base64: '+e.message+'</p>'}
+    else{prev.innerHTML='<p class="info">Detected type: <b>'+escHtml(mime)+'</b> — downloaded as '+escHtml(name)+'</p>'}
+  }catch(e){prev.innerHTML='<p style="color:var(--danger)">❌ Invalid Base64: '+escHtml(e.message)+'</p>'}
 }
 document.getElementById('b64Input').addEventListener('input',function(){
   const raw=this.value.trim(),prev=document.getElementById('preview');

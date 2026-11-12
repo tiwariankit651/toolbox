@@ -205,6 +205,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
+  <script src="../js/bigtext.js"></script>
   <script>
 var MAX_LINES=6000;
 var lastDiff=null, viewMode='sbs', changeGroups=[], curChange=-1;
@@ -230,7 +231,65 @@ function normLine(s,o){
 }
 
 // LCS over arrays of (already-normalised) keys -> returns diff ops on original arrays
+/* The backtrack below starts at the end and takes a match whenever the last
+   lines are equal, so identical trailing lines always come out as "eq".
+   They are cut off before the O(m*n) table is built - the output is exactly
+   the same. (Leading lines can't be trimmed the same way without changing
+   which equal line a lone line is matched to.) For big files the shared
+   prefix is handled separately below, only when the inputs are too large
+   for the table anyway. */
 function lcsDiff(aKeys,bKeys){
+  var M=aKeys.length,N=bKeys.length,suf=0;
+  while(suf<M&&suf<N&&aKeys[M-1-suf]===bKeys[N-1-suf])suf++;
+  var pre=0;
+  if((M-suf)*(N-suf)>LCS_CELLS){ // only then: also take off the shared start
+    while(pre<M-suf&&pre<N-suf&&aKeys[pre]===bKeys[pre])pre++;
+  }
+  if(!suf&&!pre)return lcsCore(aKeys,bKeys);
+  var mid=lcsCore(aKeys.slice(pre,M-suf),bKeys.slice(pre,N-suf));
+  var ops=[];
+  for(var i=0;i<pre;i++)ops.push({t:'eq',a:i,b:i});
+  for(var k=0;k<mid.length;k++){var o=mid[k];
+    if(o.t==='eq')ops.push({t:'eq',a:o.a+pre,b:o.b+pre});else if(o.t==='del')ops.push({t:'del',a:o.a+pre});else ops.push({t:'add',b:o.b+pre})}
+  for(var s=0;s<suf;s++)ops.push({t:'eq',a:M-suf+s,b:N-suf+s});
+  return ops;
+}
+var LCS_CELLS=36e6; // 6000 x 6000, the size the tool always allowed
+
+/* Large files: lines that occur exactly once in each file are matched first
+   (in order, using the longest increasing run - the "patience diff" idea),
+   which splits the files into small gaps; each gap is then diffed with the
+   normal LCS. Unchanged lines are found exactly; inside a gap the result is
+   the same as before. Returns null if one gap is still too big. */
+function bigDiff(A,B){
+  var cA=new Map(),cB=new Map(),i;
+  for(i=0;i<A.length;i++)cA.set(A[i],(cA.get(A[i])||0)+1);
+  for(i=0;i<B.length;i++)cB.set(B[i],(cB.get(B[i])||0)+1);
+  var posB=new Map();for(i=0;i<B.length;i++)if(cB.get(B[i])===1&&cA.get(B[i])===1)posB.set(B[i],i);
+  var pairs=[];for(i=0;i<A.length;i++){var j=posB.get(A[i]);if(j!==undefined&&cA.get(A[i])===1)pairs.push([i,j])}
+  // longest increasing subsequence on j (patience sorting), O(k log k)
+  var tails=[],tailIdx=[],prev=new Int32Array(pairs.length).fill(-1);
+  for(var p=0;p<pairs.length;p++){var v=pairs[p][1],lo=0,hi=tails.length;
+    while(lo<hi){var m=(lo+hi)>>1;if(tails[m]<v)lo=m+1;else hi=m}
+    tails[lo]=v;tailIdx[lo]=p;prev[p]=lo>0?tailIdx[lo-1]:-1}
+  var anchors=[];for(var q=tailIdx[tails.length-1];q!=null&&q>=0;q=prev[q])anchors.push(pairs[q]);anchors.reverse();
+  anchors.push([A.length,B.length]);
+  var ops=[],a0=0,b0=0;
+  for(var k=0;k<anchors.length;k++){
+    var a1=anchors[k][0],b1=anchors[k][1];
+    var ga=A.slice(a0,a1),gb=B.slice(b0,b1);
+    if(ga.length||gb.length){
+      if(ga.length*gb.length>LCS_CELLS)return null;
+      var sub=lcsDiff(ga,gb);
+      for(var s=0;s<sub.length;s++){var o=sub[s];
+        if(o.t==='eq')ops.push({t:'eq',a:o.a+a0,b:o.b+b0});else if(o.t==='del')ops.push({t:'del',a:o.a+a0});else ops.push({t:'add',b:o.b+b0})}
+    }
+    if(a1<A.length)ops.push({t:'eq',a:a1,b:b1});
+    a0=a1+1;b0=b1+1;
+  }
+  return ops;
+}
+function lcsCore(aKeys,bKeys){
   var m=aKeys.length,n=bKeys.length;
   // rolling DP for length; then backtrack with full matrix (bounded by MAX_LINES)
   var dp=Array.from({length:m+1},function(){return new Int32Array(n+1);});
@@ -241,11 +300,11 @@ function lcsDiff(aKeys,bKeys){
   }
   var ops=[],ii=m,jj=n;
   while(ii>0||jj>0){
-    if(ii>0&&jj>0&&aKeys[ii-1]===bKeys[jj-1]){ops.unshift({t:'eq',a:ii-1,b:jj-1});ii--;jj--;}
-    else if(jj>0&&(ii===0||dp[ii][jj-1]>=dp[ii-1][jj])){ops.unshift({t:'add',b:jj-1});jj--;}
-    else{ops.unshift({t:'del',a:ii-1});ii--;}
+    if(ii>0&&jj>0&&aKeys[ii-1]===bKeys[jj-1]){ops.push({t:'eq',a:ii-1,b:jj-1});ii--;jj--;}
+    else if(jj>0&&(ii===0||dp[ii][jj-1]>=dp[ii-1][jj])){ops.push({t:'add',b:jj-1});jj--;}
+    else{ops.push({t:'del',a:ii-1});ii--;}
   }
-  return ops;
+  return ops.reverse();
 }
 
 // word/char level highlight between two original strings
@@ -291,16 +350,26 @@ async function compare(){
 
 function compareNow(rawA,rawB,o){
   var linesA=rawA.split('\n'), linesB=rawB.split('\n');
-  if(linesA.length>MAX_LINES||linesB.length>MAX_LINES){
-    if(!confirm('Large input ('+Math.max(linesA.length,linesB.length)+' lines). Comparison may be slow and will be capped at '+MAX_LINES+' lines. Continue?')){return;}
-    linesA=linesA.slice(0,MAX_LINES);
-    linesB=linesB.slice(0,MAX_LINES);
+  /* Big inputs used to be cut at 6000 lines, so a change on line 6001 of a
+     long file was never shown. Now the whole file is compared: shared lines
+     at the start and end are matched directly and the table is built only
+     for the part in between. If even that part is too big, say so. */
+  var big=linesA.length>MAX_LINES||linesB.length>MAX_LINES;
+  if(big){
+    var M=linesA.length,N=linesB.length,suf=0,pre=0;
+    var kA=function(i){return normLine(linesA[i],o)},kB=function(j){return normLine(linesB[j],o)};
+    while(suf<M&&suf<N&&kA(M-1-suf)===kB(N-1-suf))suf++;
+    while(pre<M-suf&&pre<N-suf&&kA(pre)===kB(pre))pre++;
+    var midA=M-suf-pre,midB=N-suf-pre;
+    if(midA===0&&midB===0){lastDiff={rows:[],o:o,identical:{lines:M}};render();return}
   }
   // build compare keys, optionally dropping blank lines (but keep originals & real numbers)
   var recA=[],recB=[];
   linesA.forEach(function(l,i){var k=normLine(l,o);if(o.ib&&k.trim()==='')return;recA.push({text:l,ln:i+1,key:k});});
   linesB.forEach(function(l,i){var k=normLine(l,o);if(o.ib&&k.trim()==='')return;recB.push({text:l,ln:i+1,key:k});});
-  var ops=lcsDiff(recA.map(function(r){return r.key;}),recB.map(function(r){return r.key;}));
+  var keysA=recA.map(function(r){return r.key;}),keysB=recB.map(function(r){return r.key;});
+  var ops=big?bigDiff(keysA,keysB):lcsDiff(keysA,keysB);
+  if(!ops){dcToast('These files differ in one stretch of more than 6,000 lines that has no line in common - too much to compare line by line in a browser. Compare smaller sections.',true);return}
   // collapse into aligned rows; detect "changed" = del immediately followed by add cluster
   var rows=[];
   for(var p=0;p<ops.length;p++){
@@ -326,6 +395,18 @@ function compareNow(rawA,rawB,o){
       adds2.forEach(function(x){rows.push({type:'add',b:x});});
     }
   }
+  /* For long files show the changes with 3 lines of context, not every
+     unchanged line (drawing hundreds of thousands of rows froze the page). */
+  if(big){
+    var keep=new Uint8Array(rows.length),CTX=3;
+    for(var r=0;r<rows.length;r++)if(rows[r].type!=='eq')for(var q=Math.max(0,r-CTX);q<=Math.min(rows.length-1,r+CTX);q++)keep[q]=1;
+    var shown=[],gap=0;
+    for(var r2=0;r2<rows.length;r2++){
+      if(keep[r2]){if(gap){shown.push({type:'gap',n:gap});gap=0}shown.push(rows[r2])}else gap++}
+    if(gap)shown.push({type:'gap',n:gap});
+    lastDiff={rows:shown,o:o,big:{lines:Math.max(linesA.length,linesB.length),stats:computeStats(rows)}};
+    render();return;
+  }
   lastDiff={rows:rows,o:o};
   render();
 }
@@ -347,6 +428,8 @@ function render(){
   if(!lastDiff)return;
   var rows=lastDiff.rows, o=lastDiff.o;
   var st=computeStats(rows);
+  if(lastDiff.identical){st={added:0,removed:0,changed:0,unchanged:lastDiff.identical.lines,sim:100}}
+  else if(lastDiff.big){st=lastDiff.big.stats}
   document.getElementById('stats').innerHTML=
     '<div class="stat stat-added">+ '+st.added+' added</div>'+
     '<div class="stat stat-removed">- '+st.removed+' removed</div>'+
@@ -358,6 +441,7 @@ function render(){
   out.style.display='block';
   changeGroups=[]; curChange=-1;
   var html=(viewMode==='sbs')?renderSbs(rows,o):renderUni(rows,o);
+  if(lastDiff.big)html='<p class="info" style="padding:.5rem 1rem;margin:0">Large files ('+lastDiff.big.lines.toLocaleString()+' lines): showing each change with 3 lines around it. Unchanged stretches are collapsed.</p>'+html;
   out.innerHTML=html||'<p style="padding:1rem;text-align:center">No differences found — texts are identical.</p>';
   // collect change anchors
   changeGroups=Array.prototype.slice.call(out.querySelectorAll('[data-chg]'));
@@ -377,6 +461,7 @@ function cellHtml(oldR,newR,o){
 function renderSbs(rows,o){
   var h='';
   rows.forEach(function(r,idx){
+    if(r.type==='gap'){h+='<div class="sbs-row dc-gap"><span class="cell" style="grid-column:1/-1;text-align:center;color:var(--text2);font-style:italic">… '+r.n.toLocaleString()+' unchanged line'+(r.n===1?'':'s')+' …</span></div>';return}
     var chg=r.type!=='eq'?' data-chg="1"':'';
     if(r.type==='eq'){
       h+='<div class="sbs-row"><span class="ln">'+r.a.ln+'</span><span class="cell">'+esc(r.a.text)+'</span><span class="ln">'+r.b.ln+'</span><span class="cell">'+esc(r.b.text)+'</span></div>';
@@ -395,6 +480,7 @@ function renderSbs(rows,o){
 function renderUni(rows,o){
   var h='';
   rows.forEach(function(r){
+    if(r.type==='gap'){h+='<div class="uni-row dc-gap"><span class="cell" style="grid-column:1/-1;text-align:center;color:var(--text2);font-style:italic">… '+r.n.toLocaleString()+' unchanged line'+(r.n===1?'':'s')+' …</span></div>';return}
     var chg=r.type!=='eq'?' data-chg="1"':'';
     if(r.type==='eq'){
       h+='<div class="uni-row"><span class="ln">'+r.a.ln+'</span><span class="ln">'+r.b.ln+'</span><span class="cell">  '+esc(r.a.text)+'</span></div>';
@@ -440,6 +526,7 @@ function buildPatch(){
   if(!lastDiff)return '';
   var lines=['--- Original','+++ Modified'];
   lastDiff.rows.forEach(function(r){
+    if(r.type==='gap'){lines.push('@@ '+r.n+' unchanged line'+(r.n===1?'':'s')+' @@');return}
     if(r.type==='eq')lines.push(' '+r.a.text);
     else if(r.type==='del')lines.push('-'+r.a.text);
     else if(r.type==='add')lines.push('+'+r.b.text);
@@ -498,6 +585,7 @@ function buildSideBySide(){
   var out=[pad('ORIGINAL')+' | '+'MODIFIED', pad('').replace(/ /g,'-')+'-+-'+''.padEnd(W,'-')];
   rows.forEach(function(r){
     var left='',right='',mark=' ';
+    if(r.type==='gap'){out.push(pad('… '+r.n+' unchanged …')+' | ');return}
     if(r.type==='eq'){left=r.a.text;right=r.b.text;}
     else if(r.type==='chg'){left=r.a.text;right=r.b.text;mark='~';}
     else if(r.type==='del'){left=r.a.text;right='';mark='-';}
@@ -512,7 +600,7 @@ async function exportDiffZip(){
   if(typeof JSZip==='undefined'){dcToast('ZIP library is still loading — try again in a moment.',true);return}
   var patch=buildPatch();
   if(!patch){dcToast('Nothing to export — the texts are identical or empty.',true);return}
-  var st=computeStats(lastDiff.rows);
+  var st=lastDiff.big?lastDiff.big.stats:computeStats(lastDiff.rows);
   var a=document.getElementById('textA').value, b=document.getElementById('textB').value;
   var fa=sideFacts(a), fb=sideFacts(b);
   try{
@@ -561,10 +649,11 @@ function handleDiffFile(f,areaId){
   /* A binary file read as text produces megabytes of replacement characters,
      and a very large file froze the tab with no explanation. (same checks as the
      earlier file-input round, reused here so drag & drop behaves identically) */
-  if(f.size>5*1024*1024){
-    dcToast('That file is '+(f.size/1048576).toFixed(1)+'MB. Files over 5MB are too slow to diff in a browser.',true);
+  if(f.size>100*1024*1024){
+    dcToast('That file is '+(f.size/1048576).toFixed(1)+'MB. The limit is 100 MB per side.',true);
     return;
   }
+  if(f.size>25*1024*1024&&typeof BigText!=='undefined'&&BigText.isPhone()&&!confirm('This file is '+(f.size/1048576).toFixed(1)+' MB. Phones have limited memory; comparing may be slow. Continue?'))return;
   if(/\.(pdf|docx?|xlsx?|zip|png|jpe?g|gif|mp[34]|exe)$/i.test(f.name)){
     dcToast('That looks like a binary file. Paste the text instead, or use a .txt / code file.',true);
     return;

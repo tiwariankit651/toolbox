@@ -635,7 +635,9 @@ function noteFromFile(file){
   var nm=(file.name||'').toLowerCase();
   var isText=/\.(txt|md|markdown)$/.test(nm)||file.type==='text/plain'||file.type==='text/markdown';
   if(!isText){notify('Only .txt or .md text files can be imported this way.', 'error');return;}
-  if(file.size>5*1024*1024){notify('That file is too large (max 5 MB).', 'error');return;}
+  /* Notes live in this browser's local storage, which most browsers cap at
+     about 5 MB for the whole site - a bigger note could not be saved, so the 5 MB limit stays. */
+  if(file.size>5*1024*1024){notify('That file is '+formatSize(file.size)+'. Notes are saved in your browser, which keeps about 5 MB for this site, so a note can be up to 5 MB.', 'error');return;}
   var reader=new FileReader();
   reader.onerror=function(){notify('Could not read that file.', 'error');};
   reader.onload=function(ev){

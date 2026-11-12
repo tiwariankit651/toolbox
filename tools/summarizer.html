@@ -164,7 +164,9 @@ function setPercent(v){document.getElementById("percentSlider").value=v;updateSl
 function copySummary(btn){copyNow(document.getElementById('summary').innerText);var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200);}
 function handleSumFile(f){
   if(!f)return;
-  if(f.size>5*1024*1024){notify('That file is '+(f.size/1048576).toFixed(1)+'MB. Please use a file under 5MB.','error');return;}
+  /* Ranking compares sentences with each other, so time grows faster than
+     the text: about 1.5 s for 10,000 sentences (~0.5 MB) on a laptop. */
+  if(f.size>5*1024*1024){notify('That file is '+formatSize(f.size)+'. The limit is 5 MB: sentences are ranked against each other, so very long texts take minutes. Summarise one chapter at a time.','error');return;}
   if(!/\.(txt|md)$/i.test(f.name)&&!/^text\//.test(f.type||'')){
     notify('Only .txt and .md text files are supported.','error');return;
   }
@@ -209,14 +211,21 @@ function summarize(){
   // Average length for normalization
   var avgLen=tokenLists.reduce(function(a,t){return a+t.length},0)/n||1;
   // TextRank-style similarity: overlap between sentences
-  var sim=[];
-  for(var i=0;i<n;i++){sim[i]=0;
-    var setI=new Set(tokenLists[i]);
-    for(var j=0;j<n;j++){if(i===j)continue;
-      var overlap=0;tokenLists[j].forEach(function(w){if(setI.has(w))overlap++;});
-      var denom=Math.log(tokenLists[i].length+1)+Math.log(tokenLists[j].length+1);
-      if(denom>0)sim[i]+=overlap/denom;
-    }
+  /* Same scores as comparing every sentence with every other one, computed
+     faster. For sentence i the old loop added, for every j != i,
+       overlap(i,j) / (log(len_i+1) + log(len_j+1))
+     where overlap counts the words of j (with repeats) that occur in i.
+     Below, each distinct word w lists the sentences j containing it and how
+     often, so only pairs that share a word are visited. */
+  var sim=new Array(n).fill(0),logLen=tokenLists.map(function(t){return Math.log(t.length+1)});
+  var post=new Map(); // word -> [[j, countInJ], ...]
+  tokenLists.forEach(function(t,j){var m=new Map();t.forEach(function(w){m.set(w,(m.get(w)||0)+1)});
+    m.forEach(function(cnt,w){var a=post.get(w);if(!a){a=[];post.set(w,a)}a.push(j,cnt)})});
+  var ov=new Float64Array(n),touched=[];
+  for(var i=0;i<n;i++){
+    new Set(tokenLists[i]).forEach(function(w){var a=post.get(w);for(var q=0;q<a.length;q+=2){var j=a[q];if(j===i)continue;if(ov[j]===0)touched.push(j);ov[j]+=a[q+1]}});
+    var s=0;for(var k=0;k<touched.length;k++){var j2=touched[k],denom=logLen[i]+logLen[j2];if(denom>0)s+=ov[j2]/denom;ov[j2]=0}
+    touched.length=0;sim[i]=s;
   }
   var maxSim=Math.max.apply(null,sim.concat([1]));
   var scored=sentences.map(function(s,i){

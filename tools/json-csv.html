@@ -186,6 +186,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../js/common.js"></script>
+  <script src="../js/bigtext.js"></script>
   <script>
 var $=function(id){return document.getElementById(id)};
 var STORE="jsonCsvV2";
@@ -364,8 +365,13 @@ function parseJsonInput(input){
   if(typeof data[0]!=="object"||data[0]===null)throw new Error("Array items must be objects.");
   return data;
 }
+/* Inputs and results over 2 MB are kept in memory: writing a 40 MB CSV into
+   the textarea closed the tab before any conversion started. */
+var JIN=null,JOUT=null;
+function jIn(){if(!JIN)JIN=BigText.attach($("input"),{hint:"Convert uses the full file."});return JIN}
+function jOut(){if(!JOUT)JOUT=BigText.attach($("output"),{hint:"Copy, Download and ZIP use the full result."});return JOUT}
 async function convert(){
-  var input=$("input").value.trim();
+  var input=jIn().get().trim();
   if(!input){err("Please paste some data to convert.");return}
   $("sizeBox").innerHTML="";
   try{
@@ -382,7 +388,7 @@ async function convert(){
       else out=json2sql(data);
     }
     hideProgress();
-    $("output").value=out;$("output").style.display="block";ok("Converted successfully!");
+    jOut().set(out,"Done. Showing");$("output").style.display="block";ok("Converted successfully!");
     showSizes(input,out);
     autosave();
   }catch(e){hideProgress();err(e.message)}
@@ -394,26 +400,26 @@ function showSizes(input,out){
   var sign=delta>=0?'+':'';
   $("sizeBox").innerHTML='Input: '+formatSize(inB)+' ('+inB.toLocaleString()+' B) → Output: '+formatSize(outB)+' ('+outB.toLocaleString()+' B) <span class="badge badge-blue">'+sign+delta+'%</span>';
 }
-function copyResult(){var o=$("output");if(!o.value){err("Nothing to copy. Convert first.");return}copyNow(o.value);ok("Copied to clipboard!")}
+function copyResult(){var v=jOut().get();if(!v){err("Nothing to copy. Convert first.");return}copyNow(v);ok("Copied to clipboard!")}
 function download(){
-  var o=$("output");if(!o.value){err("Nothing to download. Convert first.");return}
+  var ov=jOut().get();if(!ov){err("Nothing to download. Convert first.");return}
   var ext,mime;
   if(mode==="json2csv"){ext=".csv";mime="text/csv"}
   else if(mode==="csv2json"){ext=".json";mime="application/json"}
   else if(mode==="json2md"){ext=".md";mime="text/markdown"}
   else{ext=".sql";mime="text/plain"}
-  var blob=new Blob([o.value],{type:mime});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="converted"+ext;a.click();URL.revokeObjectURL(a.href);
+  var blob=new Blob([ov],{type:mime});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="converted"+ext;a.click();URL.revokeObjectURL(a.href);
 }
 
 async function exportZip(){
-  var input=$("input").value.trim();
+  var input=jIn().get().trim();
   if(!input){err("Please paste some data to convert.");return}
   if(typeof JSZip==="undefined"){err("ZIP library is still loading — try again in a moment.");return}
   try{
     // ensure we have fresh output for the current input/options
     await convert();
-    var o=$("output");
-    if(!o.value){return}
+    var ov=jOut().get();
+    if(!ov){return}
     var ext,mime,inExt;
     if(mode==="json2csv"){ext=".csv";mime="text/csv";inExt=".json"}
     else if(mode==="csv2json"){ext=".json";mime="application/json";inExt=".csv"}
@@ -422,7 +428,7 @@ async function exportZip(){
 
     var zip=new JSZip();
     zip.file("input"+inExt,input);
-    zip.file("converted"+ext,o.value);
+    zip.file("converted"+ext,ov);
 
     // Split large arrays into chunked files (1000 rows/file) for spreadsheet &
     // import limits. Only meaningful for the row-oriented outputs.
@@ -477,13 +483,13 @@ async function exportZip(){
   }catch(e){err(e.message)}
 }
 window.exportZip=exportZip;
-function readFile(f){var r=new FileReader();r.onload=function(){$("input").value=r.result;if(/\.csv$/i.test(f.name)&&mode!=="csv2json")switchTab("csv2json");else if(/\.json$/i.test(f.name)&&mode==="csv2json")switchTab("json2csv");convert()};r.readAsText(f)}
-function uploadFile(e){var f=e.target.files[0];if(f)readFile(f)}
+function readFile(f){if(!BigText.checkSize(f,100))return;var r=new FileReader();r.onload=function(){jIn().set(String(r.result||""),"Loaded. Showing");if(/\.csv$/i.test(f.name)&&mode!=="csv2json")switchTab("csv2json");else if(/\.json$/i.test(f.name)&&mode==="csv2json")switchTab("json2csv");convert()};r.readAsText(f)}
+function uploadFile(e){var f=e.target.files[0];e.target.value="";if(f)readFile(f)}
 var dz=$("dropZone");
 dz.addEventListener("dragover",function(e){e.preventDefault();dz.style.background="rgba(99,102,241,.12)"});
 dz.addEventListener("dragleave",function(){dz.style.background=""});
 dz.addEventListener("drop",function(e){e.preventDefault();dz.style.background="";if(e.dataTransfer.files.length)readFile(e.dataTransfer.files[0])});
-function autosave(){storeSet(STORE, {input:$("input").value,mode:mode})}
+function autosave(){if(JIN&&JIN.isBig())return;storeSet(STORE, {input:$("input").value,mode:mode})}
 function restore(){var d=storeGetRaw(STORE, null);if(d){try{var p=JSON.parse(d);if(p.input)$("input").value=p.input;if(p.mode)switchTab(p.mode)}catch(e){}}}
 restore();
 </script>
