@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6263422879828320" crossorigin="anonymous"></script>
+  <script src="../js/bigtext.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7T3GVY4V7J"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-7T3GVY4V7J');</script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/xml-yaml-formatter">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "When my XML is malformed, how do I find the error?", "acceptedAnswer": {"@type": "Answer", "text": "The tool parses XML with the browser's native DOMParser in application/xml mode. If the document is not well-formed, the status line shows the parser's message and, where the browser provides it, the line and column of the fault — so you can jump straight to the unclosed tag or stray character. Validate does this check without producing formatted output."}}, {"@type": "Question", "name": "What parts of an XML document are preserved when formatting?", "acceptedAnswer": {"@type": "Answer", "text": "The XML declaration (<?xml …?>), comments, CDATA sections, processing instructions, attributes and namespace prefixes are all kept. Text inside an element marked xml:space=\"preserve\" is left exactly as written, including its internal spaces, while only the whitespace-only gaps between other elements are collapsed and re-indented. Formatting only ever renders into a read-only text box, never into the page, so parsed markup cannot run."}}, {"@type": "Question", "name": "Does the YAML side keep my comments?", "acceptedAnswer": {"@type": "Answer", "text": "No. YAML is handled by js-yaml 4.1.0, which builds a data model from your document and then re-dumps it; comments are not part of that model, so they are dropped on output. The tool warns you in the status line when your input contained a # comment. Anchors and aliases are resolved, multi-document streams separated by --- are supported, and YAML errors are reported with a line and column."}}, {"@type": "Question", "name": "How do the XML↔JSON and YAML↔JSON conversions work?", "acceptedAnswer": {"@type": "Answer", "text": "For YAML, the tool uses js-yaml to load your document to a value and JSON.stringify it, and in reverse dumps parsed JSON back to YAML. For XML it maps elements to object keys, turns attributes into @-prefixed keys, collects repeated elements into arrays, and stores mixed text under #text; JSON → XML reverses that mapping and adds an XML declaration. Deeply mixed or order-sensitive XML may not round-trip byte-for-byte, but simple documents convert cleanly both ways."}}]}</script>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "When my XML is malformed, how do I find the error?", "acceptedAnswer": {"@type": "Answer", "text": "The tool parses XML with the browser's native DOMParser in application/xml mode. If the document is not well-formed, the status line shows the parser's message and, where the browser provides it, the line and column of the fault — so you can jump straight to the unclosed tag or stray character. Validate does this check without producing formatted output."}}, {"@type": "Question", "name": "Can it handle large files, and convert XML to YAML directly?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Files up to 100 MB are accepted (phones are asked to confirm above 25 MB). Large text is kept in memory and only the first 200 KB is shown in the box; Copy and Download give the full result. YAML work runs in a background worker, and large XML is formatted in slices with a progress bar and a Cancel button, so the page keeps responding. In testing on a desktop, a 41 MB XML file formatted in about 14 seconds and a 33 MB YAML file in about 40 seconds. XML → YAML and YAML → XML buttons convert directly, using the same element and attribute mapping as XML ↔ JSON."}}, {"@type": "Question", "name": "What parts of an XML document are preserved when formatting?", "acceptedAnswer": {"@type": "Answer", "text": "The XML declaration (<?xml …?>), comments, CDATA sections, processing instructions, attributes and namespace prefixes are all kept. Text inside an element marked xml:space=\"preserve\" is left exactly as written, including its internal spaces, while only the whitespace-only gaps between other elements are collapsed and re-indented. Formatting only ever renders into a read-only text box, never into the page, so parsed markup cannot run."}}, {"@type": "Question", "name": "Does the YAML side keep my comments?", "acceptedAnswer": {"@type": "Answer", "text": "No. YAML is handled by js-yaml 4.1.0, which builds a data model from your document and then re-dumps it; comments are not part of that model, so they are dropped on output. The tool warns you in the status line when your input contained a # comment. Anchors and aliases are resolved, multi-document streams separated by --- are supported, and YAML errors are reported with a line and column."}}]}</script>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -66,6 +67,7 @@
       <div class="row" style="flex-wrap:wrap">
         <button class="btn btn-outline" id="convA" onclick="convert('toJson')">→ JSON</button>
         <button class="btn btn-outline" id="convB" onclick="convert('fromJson')">JSON → current</button>
+        <button class="btn btn-outline" id="convC" onclick="convert(MODE==='xml'?'toYaml':'fromYaml')">XML → YAML</button>
       </div>
 
       <div id="status" class="info" role="status" aria-live="polite" style="margin:.6rem 0">Choose XML or YAML, paste some text, then Format.</div>
@@ -73,7 +75,7 @@
       <label for="out" style="font-size:.85rem;color:var(--text2)">Output</label>
       <textarea id="out" readonly placeholder="Formatted output appears here…" style="font-family:monospace;min-height:220px;word-break:break-all"></textarea>
       <div class="row" style="flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="copyNow(document.getElementById('out').value,'Output copied.')">📋 Copy</button>
+        <button class="btn btn-outline" onclick="copyNow(outText(),'Output copied.')">📋 Copy</button>
         <button class="btn btn-outline" onclick="dl()">⬇️ Download</button>
       </div>
     </div>
@@ -82,9 +84,9 @@
 <!-- tool-faq:start -->
 <h2>Frequently Asked Questions</h2>
 <details><summary>When my XML is malformed, how do I find the error?</summary><p>The tool parses XML with the browser&#x27;s native DOMParser in application/xml mode. If the document is not well-formed, the status line shows the parser&#x27;s message and, where the browser provides it, the line and column of the fault — so you can jump straight to the unclosed tag or stray character. Validate does this check without producing formatted output.</p></details>
+<details><summary>Can it handle large files, and convert XML to YAML directly?</summary><p>Yes. Files up to 100 MB are accepted (phones are asked to confirm above 25 MB). Large text is kept in memory and only the first 200 KB is shown in the box; Copy and Download give the full result. YAML work runs in a background worker, and large XML is formatted in slices with a progress bar and a Cancel button, so the page keeps responding. In testing on a desktop, a 41 MB XML file formatted in about 14 seconds and a 33 MB YAML file in about 40 seconds. XML → YAML and YAML → XML buttons convert directly, using the same element and attribute mapping as XML ↔ JSON.</p></details>
 <details><summary>What parts of an XML document are preserved when formatting?</summary><p>The XML declaration (&lt;?xml …?&gt;), comments, CDATA sections, processing instructions, attributes and namespace prefixes are all kept. Text inside an element marked xml:space=&quot;preserve&quot; is left exactly as written, including its internal spaces, while only the whitespace-only gaps between other elements are collapsed and re-indented. Formatting only ever renders into a read-only text box, never into the page, so parsed markup cannot run.</p></details>
 <details><summary>Does the YAML side keep my comments?</summary><p>No. YAML is handled by js-yaml 4.1.0, which builds a data model from your document and then re-dumps it; comments are not part of that model, so they are dropped on output. The tool warns you in the status line when your input contained a # comment. Anchors and aliases are resolved, multi-document streams separated by --- are supported, and YAML errors are reported with a line and column.</p></details>
-<details><summary>How do the XML↔JSON and YAML↔JSON conversions work?</summary><p>For YAML, the tool uses js-yaml to load your document to a value and JSON.stringify it, and in reverse dumps parsed JSON back to YAML. For XML it maps elements to object keys, turns attributes into @-prefixed keys, collects repeated elements into arrays, and stores mixed text under #text; JSON → XML reverses that mapping and adds an XML declaration. Deeply mixed or order-sensitive XML may not round-trip byte-for-byte, but simple documents convert cleanly both ways.</p></details>
 <!-- tool-faq:end -->
 </div>
   </div>
@@ -161,6 +163,7 @@ function setMode(m){
   $("in").placeholder=m==="xml"?"Paste XML here…":"Paste YAML here…";
   $("convA").textContent=m==="xml"?"XML → JSON":"YAML → JSON";
   $("convB").textContent=m==="xml"?"JSON → XML":"JSON → YAML";
+  $("convC").textContent=m==="xml"?"XML → YAML":"YAML → XML";
   setStatus("Mode: "+m.toUpperCase()+". Paste text and click Format.","info");
   autosave();
 }
@@ -168,7 +171,33 @@ function setStatus(msg,kind){
   var el=$("status");el.textContent=msg;
   el.style.color=kind==="error"?"var(--danger)":kind==="ok"?"var(--ok)":kind==="warn"?"var(--warn)":"var(--text2)";
 }
-function setOut(t){$("out").value=t}
+var INBOX=null,OUTBOX=null,PROG=null,TASK=null;
+function boxes(){if(!INBOX){INBOX=BigText.attach($("in"),{hint:"Format, Minify, Validate and Convert use the full file."});OUTBOX=BigText.attach($("out"),{hint:"Copy and Download give the full result."});PROG=BigText.progressUI($("status"))}}
+function inText(){boxes();return INBOX.get()}
+function setOut(t){boxes();OUTBOX.set(t,"Done. Showing")}
+function outText(){boxes();return OUTBOX.get()}
+var YAML_LIB={url:"https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js",sri:"sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du"};
+/* Large YAML (and YAML<->JSON) runs in a Web Worker so the page never freezes.
+   XML needs DOMParser, which workers do not have, so XML is parsed on the
+   page; its output still goes to memory rather than the textarea. */
+function yamlOpts(minify){var o={indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked,lineWidth:minify?-1:80,flowLevel:minify?0:-1,noRefs:false};if($("indent").value==="tab")o.indent=2;return o}
+var Y_WORKER='var t=data.text,o=data.opts;progress(.1,"Parsing YAML…");'+
+ 'if(data.op==="format"){var docs=jsyaml.loadAll(t);progress(.6,"Writing YAML…");done({out:docs.map(function(d){return jsyaml.dump(d,o)}).join("---\\n").replace(/\\n+$/,"")});return}'+
+ 'if(data.op==="validate"){var n=0;jsyaml.loadAll(t,function(){n++});done({n:n});return}'+
+ 'if(data.op==="toJson"){var ds=jsyaml.loadAll(t);progress(.6,"Writing JSON…");done({out:JSON.stringify(ds.length===1?ds[0]:ds,null,data.indent)});return}'+
+ 'if(data.op==="fromJson"){var j=JSON.parse(t);progress(.6,"Writing YAML…");done({out:jsyaml.dump(j,{indent:o.indent,sortKeys:o.sortKeys,noRefs:true}).replace(/\\n+$/,"")});return}'+
+ 'if(data.op==="toObj"){var d2=jsyaml.loadAll(t);done({obj:d2.length===1?d2[0]:d2});return}'+
+ 'if(data.op==="dumpObj"){done({out:jsyaml.dump(data.obj,{indent:o.indent,sortKeys:o.sortKeys,noRefs:true}).replace(/\\n+$/,"")});return}';
+function yamlWork(op,text,extra){
+  boxes();var data={op:op,text:text,opts:yamlOpts(false),indent:getIndent()};if(extra)for(var k in extra)data[k]=extra[k];
+  TASK=BigText.runWorker(Y_WORKER,data,[YAML_LIB],function(f,l){PROG.set(f,l)});
+  PROG.start("Working on "+formatSize(text.length)+"…",function(){TASK.cancel()});
+  return TASK.promise.finally(function(){PROG.end();TASK=null});
+}
+function isBigText(t){return t.length>BigText.BIG}
+function bigErr(e,kind){if(e.message==="cancelled"){setStatus("Cancelled.","warn");return}
+  if(kind==="yaml"){var y=yamlErr(e);setStatus("❌ Invalid YAML: "+y.msg+(y.line?(" (line "+y.line+(y.col?", column "+y.col:"")+")"):""),"error")}
+  else setStatus("❌ Conversion failed: "+(e.message||e),"error")}
 
 /* ---------------- XML ---------------- */
 function xmlParse(text){
@@ -283,6 +312,51 @@ function xmlFormat(text,minify){
   if(!minify)out=out.replace(/\n+$/,"")+"\n";
   return {ok:true,text:minify?out:out.replace(/\n$/,"")};
 }
+/* Large XML: same output as xmlFormat(), produced in slices. The document's
+   root children are serialised a batch at a time with a yield between
+   batches, so the page keeps responding and shows progress. DOMParser is
+   not available in workers, so this runs on the page. */
+async function xmlFormatAsync(text,minify,onProgress,isCancelled){
+  var yieldNow=function(){return new Promise(function(r){setTimeout(r,0)})};
+  onProgress(.02,"Parsing XML…");await yieldNow();
+  var decl=extractDecl(text);
+  var r=xmlParse(text);
+  if(!r.ok)return r;
+  var pad=minify?"":indentStr(),nl=minify?"":"\n";
+  var parts=[];if(decl)parts.push(decl+nl);
+  var top=topLevelNodes(r.doc);
+  for(var t=0;t<top.length;t++){
+    var node=top[t];
+    if(node.nodeType===3)continue;
+    if(node.nodeType===10){parts.push("<!DOCTYPE "+node.name+">"+nl);continue}
+    if(node.nodeType!==1){parts.push(minify?minifyNode(node):serializeNode(node,0,pad,false));continue}
+    // the root element: serialise its children in batches, exactly as serializeNode would
+    var kids=node.childNodes,n=kids.length;
+    var single=minify?minifyNode(node.cloneNode(false)):serializeNode(node.cloneNode(false),0,pad,false);
+    var preserve=inPreserve(node,false),onlyText=true;
+    for(var i=0;i<n;i++){var k=kids[i];if(k.nodeType!==3&&k.nodeType!==4){onlyText=false;break}}
+    if(!n||preserve||onlyText||n<2000){parts.push(minify?minifyNode(node):serializeNode(node,0,pad,false));continue}
+    var openTag=single.replace(/\/>\n?$/,">")+(minify?"":"\n");
+    parts.push(minify?openTag.replace(/\n$/,""):openTag);
+    var STEP=2000,t0=performance.now();
+    for(var s=0;s<n;s+=STEP){
+      if(isCancelled())return {ok:false,error:"cancelled"};
+      var chunk="";
+      for(var j=s;j<Math.min(n,s+STEP);j++){
+        var kid=kids[j];
+        if(minify){if(kid.nodeType===3&&kid.nodeValue.trim()===""){continue}chunk+=minifyNode(kid)}
+        else if(kid.nodeType===3){if(kid.nodeValue.trim()==="")continue;chunk+=pad+xmlEscText(kid.nodeValue.trim())+"\n"}
+        else chunk+=serializeNode(kid,1,pad,false);
+      }
+      parts.push(chunk);
+      if(performance.now()-t0>40){onProgress(.1+.85*s/n,(minify?"Minifying":"Formatting")+"… "+Math.round(100*s/n)+"%");await yieldNow();t0=performance.now()}
+    }
+    parts.push("</"+node.nodeName+">"+nl);
+  }
+  var out=parts.join("");
+  if(!minify)out=out.replace(/\n+$/,"")+"\n";
+  return {ok:true,text:minify?out:out.replace(/\n$/,"")};
+}
 function minifyNode(node){
   var NT=node.nodeType;
   if(NT===1){
@@ -367,15 +441,29 @@ function yamlFormat(text,minify){
 /* ---------------- actions ---------------- */
 function doFormat(){run(false)}
 function doMinify(){run(true)}
-function autoFmt(){if($("out").value&&$("in").value.trim())run($("out")._lastMin===true)}
+function autoFmt(){if(INBOX&&INBOX.isBig())return;if($("out").value&&$("in").value.trim())run($("out")._lastMin===true)}
 function run(minify){
-  var text=$("in").value;
+  var text=inText();
+  if(MODE==="yaml"&&isBigText(text)){
+    if(TASK)return;var t0=performance.now();
+    yamlWork("format",text,{opts:yamlOpts(minify)}).then(function(r){setOut(r.out);$("out")._lastMin=minify;
+      setStatus((minify?"✅ Compact":"✅ Formatted")+" YAML — "+formatSize(text.length)+" in "+((performance.now()-t0)/1000).toFixed(1)+" s."+(/#/.test(text.slice(0,200000))?" Note: js-yaml drops comments when re-dumping.":""),"ok")}).catch(function(e){bigErr(e,"yaml")});
+    return}
   if(!text.trim()){setStatus("Paste some "+MODE.toUpperCase()+" first.","warn");return}
+  if(MODE==="xml"&&isBigText(text)){
+    if(TASK)return;boxes();var cancelled=false,t1=performance.now();
+    TASK={cancel:function(){cancelled=true}};PROG.start("Working on "+formatSize(text.length)+"…",function(){TASK&&TASK.cancel()});
+    xmlFormatAsync(text,minify,function(f,l){PROG.set(f,l)},function(){return cancelled}).then(function(r){
+      if(!r.ok){if(r.error==="cancelled"){setStatus("Cancelled.","warn")}else setStatus("❌ Invalid XML: "+r.error+(r.line?(" (line "+r.line+(r.col?", column "+r.col:"")+")"):""),"error");return}
+      setOut(r.text);$("out")._lastMin=minify;
+      setStatus((minify?"✅ Minified":"✅ Formatted")+" XML — "+formatSize(new Blob([text]).size)+" → "+formatSize(new Blob([r.text]).size)+" in "+((performance.now()-t1)/1000).toFixed(1)+" s.","ok");
+    }).finally(function(){PROG.end();TASK=null});
+    return}
   if(MODE==="xml"){
     var r=xmlFormat(text,minify);
     if(!r.ok){setStatus("❌ Invalid XML: "+r.error+(r.line?(" (line "+r.line+(r.col?", column "+r.col:"")+")"):""),"error");return}
     setOut(r.text);$("out")._lastMin=minify;
-    setStatus((minify?"✅ Minified":"✅ Formatted")+" XML — "+formatSize(new Blob([text]).size)+" → "+formatSize(new Blob([r.text]).size)+".","ok");
+    setStatus((minify?"✅ Minified":"✅ Formatted")+" XML — "+formatSize(new Blob([text]).size)+" → "+formatSize(new Blob([outText()]).size)+".","ok");
   }else{
     var y=yamlFormat(text,minify);
     if(!y.ok){setStatus("❌ Invalid YAML: "+y.yaml.msg+(y.yaml.line?(" (line "+y.yaml.line+(y.yaml.col?", column "+y.yaml.col:"")+")"):""),"error");return}
@@ -386,7 +474,8 @@ function run(minify){
   autosave();
 }
 function doValidate(){
-  var text=$("in").value;
+  var text=inText();
+  if(MODE==="yaml"&&isBigText(text)){if(TASK)return;yamlWork("validate",text).then(function(r){setStatus("✅ Valid YAML — "+r.n+" document"+(r.n===1?"":"s")+".","ok")}).catch(function(e){bigErr(e,"yaml")});return}
   if(!text.trim()){setStatus("Paste some "+MODE.toUpperCase()+" first.","warn");return}
   if(MODE==="xml"){
     var r=xmlParse(text);
@@ -397,8 +486,27 @@ function doValidate(){
     catch(e){var y=yamlErr(e);setStatus("❌ Invalid YAML: "+y.msg+(y.line?(" (line "+y.line+(y.col?", column "+y.col:"")+")"):""),"error")}
   }
 }
+function xmlToJsObj(text){var r=xmlParse(text);if(!r.ok)return r;var root=r.doc.documentElement;var obj={};obj[root.nodeName]=xmlToObj(root);return {ok:true,obj:obj}}
+/* A single top-level key becomes the root element - but only if its value is an
+   object. A list there ({"items":[...]}) produced one <items> per entry and no
+   root, which is not well-formed XML; wrap it in <root> instead. */
+function objToXmlDoc(parsed){var keys=Object.keys(parsed);var pad=indentStr();var xml="";
+  if(!Array.isArray(parsed)&&keys.length===1&&parsed[keys[0]]&&typeof parsed[keys[0]]==="object"&&!Array.isArray(parsed[keys[0]])){xml=objToXml(parsed[keys[0]],keys[0],0,pad)}else if(Array.isArray(parsed)){xml=objToXml({item:parsed},"root",0,pad)}else{xml=objToXml(parsed,"root",0,pad)}
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+xml.replace(/\n$/,"")}
 function convert(dir){
-  var text=$("in").value;
+  var text=inText();
+  if(TASK)return;
+  if(text.trim()&&(dir==="toYaml"||dir==="fromYaml")){
+    if(dir==="toYaml"){ // XML -> YAML: same element/attribute mapping as XML -> JSON, then js-yaml
+      var x=xmlToJsObj(text);if(!x.ok){setStatus("❌ Invalid XML: "+x.error+(x.line?(" (line "+x.line+")"):""),"error");return}
+      if(isBigText(text)){yamlWork("dumpObj","",{obj:x.obj}).then(function(r){setOut(r.out);setStatus("✅ Converted XML → YAML.","ok")}).catch(function(e){bigErr(e)});return}
+      setOut(jsyaml.dump(x.obj,{indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked,noRefs:true}).replace(/\n+$/,""));setStatus("✅ Converted XML → YAML.","ok");return}
+    // YAML -> XML: js-yaml load, then the JSON -> XML mapping
+    var finish=function(obj){if(obj===null||typeof obj!=="object"){setStatus("❌ The YAML must be a mapping or list to become XML.","error");return}setOut(objToXmlDoc(obj));setStatus("✅ Converted YAML → XML.","ok")};
+    if(isBigText(text)){yamlWork("toObj",text).then(function(r){finish(r.obj)}).catch(function(e){bigErr(e,"yaml")});return}
+    try{var ds=jsyaml.loadAll(text);finish(ds.length===1?ds[0]:ds)}catch(e){bigErr(e,"yaml")}return}
+  if(MODE==="yaml"&&isBigText(text)&&(dir==="toJson"||dir==="fromJson")){
+    yamlWork(dir,text).then(function(r){setOut(r.out);setStatus(dir==="toJson"?"✅ Converted YAML → JSON.":"✅ Converted JSON → YAML.","ok")}).catch(function(e){bigErr(e,dir==="toJson"?"yaml":"")});return}
   if(!text.trim()){setStatus("Paste some text first.","warn");return}
   try{
     if(MODE==="xml"){
@@ -410,12 +518,7 @@ function convert(dir){
         setOut(JSON.stringify(obj,null,getIndent()));setStatus("✅ Converted XML → JSON.","ok");
       }else{
         var parsed=JSON.parse(text);
-        var keys=Object.keys(parsed);
-        var pad=indentStr();
-        var xml="";
-        if(keys.length===1&&parsed[keys[0]]&&typeof parsed[keys[0]]==="object"){xml=objToXml(parsed[keys[0]],keys[0],0,pad)}
-        else{xml=objToXml(parsed,"root",0,pad)}
-        setOut('<?xml version="1.0" encoding="UTF-8"?>\n'+xml.replace(/\n$/,""));setStatus("✅ Converted JSON → XML.","ok");
+        setOut(objToXmlDoc(parsed));setStatus("✅ Converted JSON → XML.","ok");
       }
     }else{
       if(dir==="toJson"){
@@ -424,7 +527,7 @@ function convert(dir){
         setOut(JSON.stringify(val,null,getIndent()));setStatus("✅ Converted YAML → JSON.","ok");
       }else{
         var j=JSON.parse(text);
-        setOut(jsyaml.dump(j,{indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked}).replace(/\n+$/,""));
+        setOut(jsyaml.dump(j,{indent:typeof getIndent()==="number"?getIndent():2,sortKeys:$("sortKeys").checked,noRefs:true}).replace(/\n+$/,""));
         setStatus("✅ Converted JSON → YAML.","ok");
       }
     }
@@ -434,11 +537,11 @@ function convert(dir){
 
 var EX_XML='<?xml version="1.0" encoding="UTF-8"?>\n<!-- sample catalog --><ns:catalog xmlns:ns="http://example.com/ns"><book id="b1" xml:space="preserve"> Keep   these    spaces </book><note>Fish &amp; chips</note><![CDATA[<b>raw markup</b>]]><?render mode="fast"?></ns:catalog>';
 var EX_YAML='# anchors + multi-doc demo\ndefaults: &d\n  retries: 3\n  region: in\nservice:\n  <<: *d\n  name: नमस्ते-सेवा\n---\n- one\n- two\n- three';
-function loadExample(){$("in").value=MODE==="xml"?EX_XML:EX_YAML;autosave();doFormat()}
+function loadExample(){boxes();INBOX.set(MODE==="xml"?EX_XML:EX_YAML);autosave();doFormat()}
 
 function dl(){
   var ext=MODE==="xml"?"xml":"yaml";var mime=MODE==="xml"?"application/xml":"text/yaml";
-  var data=$("out").value||$("in").value;
+  var data=outText()||inText();
   if(!data.trim()){setStatus("Nothing to download yet.","warn");return}
   download(new Blob([data],{type:mime+";charset=utf-8"}),"formatted."+ext);
 }
@@ -446,21 +549,20 @@ function dl(){
 /* file drop + pick via shared helper (single change listener) */
 setupDrop("drop","file",function(files){
   var f=files&&files[0];if(!f)return;
-  if(f.size>5*1024*1024){setStatus("That file is over 5 MB — too large for the browser to format quickly.","warn");return}
-  var r=new FileReader();
-  r.onerror=function(){setStatus("Could not read that file.","error")};
-  r.onload=function(){
-    $("in").value=String(r.result||"");
+  if(!BigText.checkSize(f,100))return;
+  boxes();PROG.start("Reading "+f.name+"…",null);
+  BigText.readText(f,function(p){PROG.set(p,"Reading "+f.name+"… "+Math.round(p*100)+"%")}).then(function(t){
+    PROG.end();INBOX.set(t,"Loaded. Showing");OUTBOX.clear();
     var n=f.name.toLowerCase();
     if(n.endsWith(".yaml")||n.endsWith(".yml"))setMode("yaml");
     else if(n.endsWith(".xml"))setMode("xml");
-    autosave();doValidate();
-  };
-  r.readAsText(f);
+    autosave();
+    if(isBigText(t))setStatus("📄 "+f.name+" loaded ("+formatSize(f.size)+"). Choose Format, Minify, Validate or Convert.","info");else doValidate();
+  }).catch(function(e){PROG.end();setStatus(e.message||"Could not read that file.","error")});
 });
 $("drop").addEventListener("click",function(){$("file").click()});
 
-function autosave(){storeSet(STORE,{mode:MODE,text:$("in").value,indent:$("indent").value,sortKeys:$("sortKeys").checked},true)}
+function autosave(){if(INBOX&&INBOX.isBig())return;storeSet(STORE,{mode:MODE,text:$("in").value,indent:$("indent").value,sortKeys:$("sortKeys").checked},true)}
 function restore(){
   var d=storeGet(STORE,null);
   if(d){

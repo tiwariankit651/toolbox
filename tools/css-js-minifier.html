@@ -24,7 +24,7 @@
   <link rel="canonical" href="https://freetoolhubs.com/tools/css-js-minifier">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
-<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why does JavaScript mode take a moment the first time?", "acceptedAnswer": {"@type": "Answer", "text": "The JavaScript side is powered by terser 5.31.6, whose bundle is around 1 MB. To keep the page fast, terser is not loaded with the page — it is fetched the first time you switch to the JavaScript tab (with Subresource Integrity and crossorigin set), and the browser caches it after that. CSS mode uses csso 5.0.5, which is small and loads with the page."}}, {"@type": "Question", "name": "What do the JavaScript options actually do?", "acceptedAnswer": {"@type": "Answer", "text": "Compress removes dead code and shortens expressions; Mangle renames local variables to single letters; Keep function names stops mangling from renaming functions (useful when code relies on fn.name); Drop console.* strips console calls during compression; and the ECMAScript target tells terser which syntax level it may emit. The combination you pick is remembered in your browser for next time."}}, {"@type": "Question", "name": "What is the gzip estimate and when does it appear?", "acceptedAnswer": {"@type": "Answer", "text": "Raw byte size is not what a server actually sends — assets are usually gzip-compressed in transit. When your browser supports the CompressionStream API, the tool gzips the output in memory and shows that size next to the raw output size, which is a far better guide to real transfer cost. On browsers without CompressionStream the gzip figure is simply omitted rather than guessed."}}, {"@type": "Question", "name": "Can it un-minify code, and what happens on a syntax error?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Beautify re-expands code: terser prints JavaScript with indentation and preserved comments, and a brace-and-semicolon-aware pretty-printer re-indents CSS while skipping over strings and comments. If your input has a syntax error, csso or terser reports it and the tool shows the message with the line and column so you can fix it. Nothing is uploaded — all processing happens in your browser."}}]}</script>
+<script type="application/ld+json" data-tool-faq>{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why does JavaScript mode take a moment the first time?", "acceptedAnswer": {"@type": "Answer", "text": "The JavaScript side is powered by terser 5.31.6, whose bundle is around 1 MB. To keep the page fast, terser is not loaded with the page — it is fetched the first time you switch to the JavaScript tab (with Subresource Integrity and crossorigin set), and the browser caches it after that. CSS mode uses csso 5.0.5, which is small and loads with the page."}}, {"@type": "Question", "name": "What do the JavaScript options actually do?", "acceptedAnswer": {"@type": "Answer", "text": "Compress removes dead code and shortens expressions; Mangle renames local variables to single letters; Keep function names stops mangling from renaming functions (useful when code relies on fn.name); Drop console.* strips console calls during compression; and the ECMAScript target tells terser which syntax level it may emit. The combination you pick is remembered in your browser for next time."}}, {"@type": "Question", "name": "What is the gzip estimate and when does it appear?", "acceptedAnswer": {"@type": "Answer", "text": "Raw byte size is not what a server actually sends — assets are usually gzip-compressed in transit. When your browser supports the CompressionStream API, the tool gzips the output in memory and shows that size next to the raw output size, which is a far better guide to real transfer cost. On browsers without CompressionStream the gzip figure is simply omitted rather than guessed."}}, {"@type": "Question", "name": "Can I minify a very large file?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, files up to 100 MB are accepted (phones are asked to confirm above 25 MB). Files over 2 MB are kept in memory and processed in a background worker, so the page stays usable, with progress and a Cancel button; the boxes show only the first 200 KB, and Copy and Download use the full result. Expect CSS to be quick and JavaScript to be slow: in testing on a desktop, 9.5 MB of CSS minified in about 7 seconds and beautified in about 1.4 seconds, while 9.5 MB of JavaScript took about 8 seconds to beautify but about 5 minutes to minify with compress and mangle on. Turning compress off is much faster."}}]}</script>
 </head>
 <body>
   <nav><a href="/" class="logo">🧰 FreeToolHubs</a><div style="display:flex;gap:1rem;align-items:center;font-size:.85rem"><a href="/" style="color:var(--text2);text-decoration:none">Home</a><a href="/student-toolkit" style="color:var(--text2);text-decoration:none">Student Tools</a><a href="/exam-hub" style="color:var(--text2);text-decoration:none">Exam Hub</a><a href="/blog/" style="color:var(--text2);text-decoration:none">Blog</a></div><button id="themeToggle" onclick="toggleTheme()">🌙</button></nav>
@@ -78,7 +78,7 @@
       <label for="out" style="font-size:.85rem;color:var(--text2)">Output</label>
       <textarea id="out" readonly placeholder="Result appears here…" style="font-family:monospace;min-height:200px;word-break:break-all"></textarea>
       <div class="row" style="flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="copyNow(document.getElementById('out').value,'Output copied.')">📋 Copy</button>
+        <button class="btn btn-outline" onclick="copyNow(outText(),'Output copied.')">📋 Copy</button>
         <button class="btn btn-outline" onclick="dl()">⬇️ Download</button>
       </div>
     </div>
@@ -89,7 +89,7 @@
 <details><summary>Why does JavaScript mode take a moment the first time?</summary><p>The JavaScript side is powered by terser 5.31.6, whose bundle is around 1 MB. To keep the page fast, terser is not loaded with the page — it is fetched the first time you switch to the JavaScript tab (with Subresource Integrity and crossorigin set), and the browser caches it after that. CSS mode uses csso 5.0.5, which is small and loads with the page.</p></details>
 <details><summary>What do the JavaScript options actually do?</summary><p>Compress removes dead code and shortens expressions; Mangle renames local variables to single letters; Keep function names stops mangling from renaming functions (useful when code relies on fn.name); Drop console.* strips console calls during compression; and the ECMAScript target tells terser which syntax level it may emit. The combination you pick is remembered in your browser for next time.</p></details>
 <details><summary>What is the gzip estimate and when does it appear?</summary><p>Raw byte size is not what a server actually sends — assets are usually gzip-compressed in transit. When your browser supports the CompressionStream API, the tool gzips the output in memory and shows that size next to the raw output size, which is a far better guide to real transfer cost. On browsers without CompressionStream the gzip figure is simply omitted rather than guessed.</p></details>
-<details><summary>Can it un-minify code, and what happens on a syntax error?</summary><p>Yes. Beautify re-expands code: terser prints JavaScript with indentation and preserved comments, and a brace-and-semicolon-aware pretty-printer re-indents CSS while skipping over strings and comments. If your input has a syntax error, csso or terser reports it and the tool shows the message with the line and column so you can fix it. Nothing is uploaded — all processing happens in your browser.</p></details>
+<details><summary>Can I minify a very large file?</summary><p>Yes, files up to 100 MB are accepted (phones are asked to confirm above 25 MB). Files over 2 MB are kept in memory and processed in a background worker, so the page stays usable, with progress and a Cancel button; the boxes show only the first 200 KB, and Copy and Download use the full result. Expect CSS to be quick and JavaScript to be slow: in testing on a desktop, 9.5 MB of CSS minified in about 7 seconds and beautified in about 1.4 seconds, while 9.5 MB of JavaScript took about 8 seconds to beautify but about 5 minutes to minify with compress and mangle on. Turning compress off is much faster.</p></details>
 <!-- tool-faq:end -->
 </div>
   </div>
@@ -149,6 +149,7 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/csso@5.0.5/dist/csso.js" integrity="sha384-I8H6npWFiHCaWhwPPaT8htMVc6XdgaZzGMVqyO2Mr5wycE57ObGiUgmInFH69AdU" crossorigin="anonymous"></script>
+  <script src="../js/bigtext.js"></script>
   <script src="../js/common.js"></script>
   <script>
 var $=function(id){return document.getElementById(id)};
@@ -216,29 +217,41 @@ function cssMinify(src){
   return result.css;
 }
 // Safe CSS pretty-printer: brace/semicolon aware, skips strings and comments.
+/* Same output as before, but built in an array of pieces. The old version ran
+   regexes over the whole output string for every character, which is fine for
+   a stylesheet and never finished for a 10 MB one. "tail" helpers look only at
+   the end of the buffer. */
 function cssBeautify(src){
-  var out="",i=0,n=src.length,indent=0,atBlockStack=[];
+  var buf=[],i=0,n=src.length,indent=0;
   var pad=function(){return "  ".repeat(indent)};
+  var put=function(s){if(s)buf.push(s)};
+  function lastPiece(){for(var k=buf.length-1;k>=0;k--){if(buf[k].length)return buf[k]}return ""}
+  function endsWith(re){var t=lastPiece();return re.test(t)}
+  function isEmpty(){for(var k=0;k<buf.length;k++)if(buf[k].length)return false;return true}
+  function trimEnd(re){ // remove trailing chars matching re (e.g. /\s/) across pieces
+    while(buf.length){var t=buf[buf.length-1];var j=t.length;while(j>0&&re.test(t[j-1]))j--;
+      if(j===t.length)return; if(j>0){buf[buf.length-1]=t.slice(0,j);return} buf.pop()}}
   while(i<n){
     var c=src[i];
     // comment
-    if(c==="/"&&src[i+1]==="*"){var j=src.indexOf("*/",i+2);if(j<0)j=n-2;var cm=src.slice(i,j+2);out=out.replace(/[ \t]+$/,"");if(out&&!/\n$/.test(out))out+="\n";out+=pad()+cm+"\n";i=j+2;continue}
+    if(c==="/"&&src[i+1]==="*"){var j=src.indexOf("*/",i+2);if(j<0)j=n-2;var cm=src.slice(i,j+2);trimEnd(/[ \t]/);if(!isEmpty()&&!endsWith(/\n$/))put("\n");put(pad()+cm+"\n");i=j+2;continue}
     // string
-    if(c==='"'||c==="'"){var q=c,j2=i+1;while(j2<n&&src[j2]!==q){if(src[j2]==="\\")j2++;j2++}out+=src.slice(i,j2+1);i=j2+1;continue}
-    if(c==="{"){out=out.replace(/\s+$/,"")+" {\n";indent++;i++;continue}
-    if(c==="}"){out=out.replace(/\s+$/,"");indent=Math.max(0,indent-1);out+="\n"+pad()+"}\n";i++;continue}
-    if(c===";"){out=out.replace(/\s+$/,"")+";\n";i++;
-      // skip following whitespace then pad next declaration
+    if(c==='"'||c==="'"){var q=c,j2=i+1;while(j2<n&&src[j2]!==q){if(src[j2]==="\\")j2++;j2++}put(src.slice(i,j2+1));i=j2+1;continue}
+    if(c==="{"){trimEnd(/\s/);put(" {\n");indent++;i++;continue}
+    if(c==="}"){trimEnd(/\s/);indent=Math.max(0,indent-1);put("\n"+pad()+"}\n");i++;continue}
+    if(c===";"){trimEnd(/\s/);put(";\n");i++;
       while(i<n&&/\s/.test(src[i]))i++;
-      if(i<n&&src[i]!=="}")out+=pad();
+      if(i<n&&src[i]!=="}")put(pad());
       continue}
     if(/\s/.test(c)){ // collapse whitespace
-      if(!/\s$|{\n$|\n$/.test(out)&&out&&!/[\s]$/.test(out))out+=" ";
+      if(!isEmpty()&&!endsWith(/\s$/))put(" ");
       i++;continue}
-    // start of a declaration/selector line: ensure indentation at line start
-    if(/\n$/.test(out)||out===""){out+=pad()}
-    out+=c;i++;
+    if(isEmpty()||endsWith(/\n$/)){put(pad())}
+    // copy a run of ordinary characters at once
+    var k2=i+1;while(k2<n){var d=src[k2];if(d==="{"||d==="}"||d===";"||d==='"'||d==="'"||/\s/.test(d)||(d==="/"&&src[k2+1]==="*"))break;k2++}
+    put(src.slice(i,k2));i=k2;
   }
+  var out=buf.join("");
   return out.replace(/\n{2,}/g,"\n").replace(/^\n+/,"").replace(/\s+$/,"")+"\n";
 }
 
@@ -270,15 +283,42 @@ function errLoc(e){
   return "";
 }
 
+/* ---------- large input (> 2 MB) ----------
+   Kept in memory (the boxes show a 200 KB preview) and minified in a Web
+   Worker, so a 10 MB bundle does not freeze the page. Same libraries and
+   options as the small path; beautify of big CSS uses the same printer. */
+var INBOX=null,OUTBOX=null,PROG=null,TASK=null;
+function boxes(){if(!INBOX){INBOX=BigText.attach($("in"),{hint:"Minify and Beautify use the full file."});OUTBOX=BigText.attach($("out"),{hint:"Copy and Download give the full result."});PROG=BigText.progressUI($("status"))}}
+function inText(){boxes();return INBOX.get()}
+function outText(){boxes();return OUTBOX.get()}
+function setOutText(t){boxes();OUTBOX.set(t,"Done. Showing")}
+var CSSO_LIB={url:"https://cdn.jsdelivr.net/npm/csso@5.0.5/dist/csso.js",sri:"sha384-I8H6npWFiHCaWhwPPaT8htMVc6XdgaZzGMVqyO2Mr5wycE57ObGiUgmInFH69AdU"};
+var TERSER_LIB={url:TERSER_URL,sri:TERSER_SRI};
+var M_WORKER='progress(.1,"Working…");var s=data.src;'+
+ 'if(data.lang==="css"){if(data.op==="min"){done({out:csso.minify(s,{restructure:data.restructure}).css});return}done({out:('+cssBeautify.toString()+')(s)});return}'+
+ 'Terser.minify(s,data.opts).then(function(r){if(r.error){fail(r.error);return}done({out:r.code})},function(e){fail({message:String(e.message||e),line:e.line,col:e.col})})';
+function jsOpts(beautify){return beautify?{compress:false,mangle:false,format:{beautify:true,indent_level:2,comments:true,ecma:parseInt($("jsEcma").value,10)}}:{compress:$("jsCompress").checked?{drop_console:$("jsDropConsole").checked}:false,mangle:$("jsMangle").checked?{keep_fnames:$("jsKeepFnames").checked}:false,keep_fnames:$("jsKeepFnames").checked,ecma:parseInt($("jsEcma").value,10),format:{comments:false}}}
+function bigRun(op){
+  var src=inText();if(TASK)return;var lang=MODE,t0=performance.now();
+  var data={lang:lang,op:op,src:src,restructure:$("cssStructure").checked,opts:jsOpts(op==="beautify")};
+  TASK=BigText.runWorker(M_WORKER,data,lang==="css"?[CSSO_LIB]:[TERSER_LIB],function(f,l){PROG.set(f,l)});
+  PROG.start("Working on "+formatSize(src.length)+"…",function(){TASK&&TASK.cancel()});
+  TASK.promise.then(async function(r){setOutText(r.out);await report(src,r.out);
+    setStatus("✅ "+(op==="min"?"Minified":"Beautified")+" "+(lang==="css"?"CSS":"JavaScript")+" in "+((performance.now()-t0)/1000).toFixed(1)+" s.","ok")})
+  .catch(function(e){if(e.message==="cancelled"){setStatus("Cancelled.","warn");return}$("sizes").style.display="none";setStatus("❌ "+(lang==="css"?"CSS":"JS")+" error: "+(e.message||e)+errLoc(e),"error")})
+  .finally(function(){PROG.end();TASK=null});
+}
+
 /* ---------- actions ---------- */
 async function doMinify(){
-  var src=$("in").value;
+  var src=inText();
+  if(src.length>BigText.BIG)return bigRun("min");
   if(!src.trim()){setStatus("Paste some "+(MODE==="css"?"CSS":"JavaScript")+" first.","warn");return}
   try{
     var out;
     if(MODE==="css"){out=cssMinify(src)}
     else{out=await jsMinify(src)}
-    $("out").value=out;
+    setOutText(out);
     await report(src,out);
     setStatus("✅ Minified "+(MODE==="css"?"CSS":"JavaScript")+".","ok");
   }catch(e){
@@ -288,13 +328,14 @@ async function doMinify(){
   autosave();
 }
 async function doBeautify(){
-  var src=$("in").value;
+  var src=inText();
+  if(src.length>BigText.BIG)return bigRun("beautify");
   if(!src.trim()){setStatus("Paste some "+(MODE==="css"?"CSS":"JavaScript")+" first.","warn");return}
   try{
     var out;
     if(MODE==="css"){out=cssBeautify(src)}
     else{out=await jsBeautify(src)}
-    $("out").value=out;
+    setOutText(out);
     await report(src,out);
     setStatus("✅ Beautified "+(MODE==="css"?"CSS":"JavaScript")+".","ok");
   }catch(e){
@@ -306,32 +347,30 @@ async function doBeautify(){
 
 var EX_CSS="/* demo */\n.card {\n  color: #ffffff;\n  margin: 0px 0px 0px 0px;\n  background: rgba(0, 0, 0, 0.5);\n}\n@media (max-width: 600px) {\n  .card { padding: 10px; }\n}\n.card { border: 1px solid #ffffff; }";
 var EX_JS="// demo\nfunction sortAndJoin(list) {\n  const copy = list.slice().sort((a, b) => a - b);\n  console.log('sorted', copy);\n  return copy.join('-');\n}\nconst unused = 42;\nwindow.__demo = sortAndJoin([3, 1, 2]);";
-function loadExample(){$("in").value=MODE==="css"?EX_CSS:EX_JS;autosave();doMinify()}
+function loadExample(){boxes();INBOX.set(MODE==="css"?EX_CSS:EX_JS);autosave();doMinify()}
 
 function dl(){
   var ext=MODE==="css"?"css":"js";var mime=MODE==="css"?"text/css":"text/javascript";
-  var data=$("out").value||$("in").value;
+  var data=outText()||inText();
   if(!data.trim()){setStatus("Nothing to download yet.","warn");return}
   download(new Blob([data],{type:mime+";charset=utf-8"}),(MODE==="css"?"styles.min.":"script.min.")+ext);
 }
 
 setupDrop("drop","file",function(files){
   var f=files&&files[0];if(!f)return;
-  if(f.size>5*1024*1024){setStatus("That file is over 5 MB — too large to process quickly in the browser.","warn");return}
-  var r=new FileReader();
-  r.onerror=function(){setStatus("Could not read that file.","error")};
-  r.onload=function(){
-    $("in").value=String(r.result||"");
+  if(!BigText.checkSize(f,100))return;
+  boxes();PROG.start("Reading "+f.name+"…",null);
+  BigText.readText(f,function(p){PROG.set(p,"Reading "+f.name+"… "+Math.round(p*100)+"%")}).then(function(t){
+    PROG.end();INBOX.set(t,"Loaded. Showing");OUTBOX.clear();
     var n=f.name.toLowerCase();
     if(n.endsWith(".js")||n.endsWith(".mjs"))setMode("js");
     else if(n.endsWith(".css"))setMode("css");
-    autosave();
-  };
-  r.readAsText(f);
+    autosave();setStatus("📄 "+f.name+" loaded ("+formatSize(f.size)+"). Choose Minify or Beautify.","info");
+  }).catch(function(e){PROG.end();setStatus(e.message||"Could not read that file.","error")});
 });
 $("drop").addEventListener("click",function(){$("file").click()});
 
-function autosave(){storeSet(STORE,{mode:MODE,text:$("in").value,cssStructure:$("cssStructure").checked,jsCompress:$("jsCompress").checked,jsMangle:$("jsMangle").checked,jsKeepFnames:$("jsKeepFnames").checked,jsDropConsole:$("jsDropConsole").checked,jsEcma:$("jsEcma").value},true)}
+function autosave(){if(INBOX&&INBOX.isBig())return;storeSet(STORE,{mode:MODE,text:$("in").value,cssStructure:$("cssStructure").checked,jsCompress:$("jsCompress").checked,jsMangle:$("jsMangle").checked,jsKeepFnames:$("jsKeepFnames").checked,jsDropConsole:$("jsDropConsole").checked,jsEcma:$("jsEcma").value},true)}
 function restore(){
   var d=storeGet(STORE,null);
   if(d){
