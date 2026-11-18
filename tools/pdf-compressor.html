@@ -409,9 +409,14 @@ async function compressPDF(){
         origThumb=tc.toDataURL('image/png');
       }catch(e){}
 
+      /* Rasterising a text-only PDF makes it bigger (a 3 KB file became 175 KB).
+         Never hand back a file larger than the one the user gave us: keep the
+         original and say so. */
+      var grew=built.blob.size>=file.size;
       pcResults.push({
-        name:file.name.replace(/\.pdf$/i,'')+'-compressed.pdf',
-        origSize:file.size, blob:built.blob, quality:usedQuality,
+        name:file.name.replace(/\.pdf$/i,'')+(grew?'.pdf':'-compressed.pdf'),
+        grew:grew, builtSize:built.blob.size,
+        origSize:file.size, blob:grew?file:built.blob, quality:usedQuality,
         pages:pages.length, totalPages:probe.numPages,
         origThumb:origThumb, newThumb:built.firstThumb, hitTarget:hitTarget
       });
@@ -433,6 +438,7 @@ async function compressPDF(){
   renderResults();
 }
 
+function pcEsc(s){return String(s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
 function renderResults(){
   var res=$id('result');
   var copyBtn=$id('copyReportBtn');
@@ -444,22 +450,23 @@ function renderResults(){
   pcResults.forEach(function(r,i){
     window['_pcBlob'+i]=r.blob;
     var saved=((1-r.blob.size/r.origSize)*100);
-    var bigger=r.blob.size>=r.origSize;
+    var bigger=!!r.grew;
     var col=bigger?'#f59e0b':'#22c55e';
     var targetNote='';
     if(r.hitTarget===true)targetNote="<div class='info' style='color:var(--ok)'>Target size reached</div>";
     else if(r.hitTarget===false)targetNote="<div class='info' style='color:var(--warn)'>Could not reach the target even at lowest quality — try a lower DPI or enable grayscale</div>";
 
     html+="<div style='background:var(--card);padding:1.2rem;border-radius:var(--radius);margin:.6rem 0;border:1px solid rgba(148,148,184,.22)'>"+
-      "<strong>"+r.name+"</strong>"+
+      "<strong>"+pcEsc(r.name)+"</strong>"+
       "<div style='font-size:1.4rem;font-weight:700;color:"+col+";margin:.3rem 0'>"+
         (bigger?'No reduction':saved.toFixed(1)+'% smaller')+"</div>"+
-      "<div class='info'>"+fsz(r.origSize)+" &rarr; "+fsz(r.blob.size)+
-        " &middot; "+r.pages+" of "+r.totalPages+" page(s)"+
-        " &middot; quality "+Math.round(r.quality*100)+"%</div>"+
-      targetNote;
+      (bigger
+        ? "<div class='info'>Compressing would make this file larger ("+fsz(r.origSize)+" &rarr; "+fsz(r.builtSize)+"), usually because it is mostly text. Your original is kept unchanged.</div>"
+        : "<div class='info'>"+fsz(r.origSize)+" &rarr; "+fsz(r.blob.size)+
+          " &middot; "+r.pages+" of "+r.totalPages+" page(s)"+
+          " &middot; quality "+Math.round(r.quality*100)+"%</div>"+targetNote);
 
-    if(r.origThumb&&r.newThumb){
+    if(r.origThumb&&r.newThumb&&!bigger){
       html+="<div style='display:flex;gap:1rem;flex-wrap:wrap;margin-top:.8rem'>"+
         "<div style='text-align:center'><div class='info' style='margin-bottom:.3rem'>Original</div>"+
         "<img src='"+r.origThumb+"' style='max-width:220px;border-radius:8px;border:1px solid rgba(148,148,184,.3)'></div>"+
@@ -467,14 +474,14 @@ function renderResults(){
         "<img src='"+r.newThumb+"' style='max-width:220px;border-radius:8px;border:1px solid rgba(148,148,184,.3)'></div>"+
         "</div><p class='info' style='font-size:.78rem;margin-top:.4rem'>Compare page 1 before downloading — if the text looks too soft, raise the DPI or quality.</p>";
     }
-    html+="<button class='btn' style='margin-top:.7rem' onclick=\"download(window._pcBlob"+i+",'"+r.name.replace(/'/g,"")+"')\">Download ("+fsz(r.blob.size)+")</button>"+
+    html+="<button class='btn' style='margin-top:.7rem' onclick=\"download(window._pcBlob"+i+",'"+r.name.replace(/'/g,"")+"')\">"+(bigger?'Download original (':'Download (')+fsz(r.blob.size)+")</button>"+
       "</div>";
   });
 
   if(pcResults.length>1){
     html="<button class='btn' onclick='downloadAllZip()' style='width:100%;margin-bottom:.6rem'>Download all "+pcResults.length+" as ZIP</button>"+html;
   }
-  html+="<p class='info' style='margin-top:.6rem'>Reminder: pages were rasterised to images, so text in the output is no longer selectable or searchable. Keep your original file.</p>";
+  if(pcResults.some(function(r){return !r.grew}))html+="<p class='info' style='margin-top:.6rem'>Reminder: pages were rasterised to images, so text in the output is no longer selectable or searchable. Keep your original file.</p>";
   res.innerHTML=html;
 }
 
@@ -577,10 +584,10 @@ function copyReport(){
   L.push('');
   pcResults.forEach(function(r,i){
     var saved=((1-r.blob.size/r.origSize)*100);
-    var bigger=r.blob.size>=r.origSize;
+    var bigger=!!r.grew;
     L.push((i+1)+'. '+r.name);
     L.push('   original:   '+fsz(r.origSize));
-    L.push('   compressed: '+fsz(r.blob.size));
+    L.push('   compressed: '+(bigger?fsz(r.builtSize)+' (larger, so the original was kept)':fsz(r.blob.size)));
     L.push('   saved:      '+(bigger?'no reduction':saved.toFixed(1)+'%'));
     L.push('   pages:      '+r.pages+' of '+r.totalPages+'  @ quality '+Math.round(r.quality*100)+'%');
     L.push('');

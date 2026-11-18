@@ -122,44 +122,48 @@
    Linear categories: value stored as factor to a base unit.
    temp handled separately (offsets). fuel handled separately (some inverse).
    Data category supports both decimal (KB) and binary (KiB) units with note. */
+/* Factors are the exact legal definitions where one exists (international
+   yard and pound 1959, US customary volumes, SI 2019). Rounded 6-digit
+   factors made e.g. 1000 lb show 453.592 kg instead of 453.59237 kg.
+   Regional land units (katha, bigha) are still approximate and say so. */
 const CATS={
   length:{label:'📏 Length',base:'meter',units:{
     'nanometer':1e-9,'micrometer':1e-6,'millimeter':0.001,'centimeter':0.01,'decimeter':0.1,'meter':1,'kilometer':1000,
     'inch':0.0254,'foot':0.3048,'yard':0.9144,'mile':1609.344,'nautical mile':1852,'furlong':201.168,'chain':20.1168,
-    'light year':9.4607e15,'astronomical unit':1.495978707e11,'angstrom':1e-10,'mil (thou)':2.54e-5}},
+    'light year':9.4607304725808e15,'astronomical unit':1.495978707e11,'angstrom':1e-10,'mil (thou)':2.54e-5}},
   mass:{label:'⚖️ Mass / Weight',base:'kilogram',units:{
     'microgram':1e-9,'milligram':1e-6,'gram':0.001,'kilogram':1,'tonne (metric ton)':1000,'quintal':100,
-    'ounce':0.0283495,'pound':0.453592,'stone':6.35029,'US ton (short)':907.185,'UK ton (long)':1016.05,
-    'carat':0.0002,'tola':0.01166,'grain':6.47989e-5}},
+    'ounce':0.028349523125,'pound':0.45359237,'stone':6.35029318,'US ton (short)':907.18474,'UK ton (long)':1016.0469088,
+    'carat':0.0002,'tola':0.0116638038,'grain':6.479891e-5}},
   area:{label:'📐 Area',base:'sq meter',units:{
     'sq millimeter':1e-6,'sq centimeter':1e-4,'sq meter':1,'sq kilometer':1e6,'hectare':1e4,
-    'sq inch':6.4516e-4,'sq foot':0.092903,'sq yard (gaj)':0.836127,'acre':4046.86,'sq mile':2.58999e6,
-    'cent':40.4686,'guntha':101.17,'katha (approx, regional)':126.44,'bigha (approx, regional)':2529,
-    'marla':25.2929,'kanal':505.857}},
+    'sq inch':6.4516e-4,'sq foot':0.09290304,'sq yard (gaj)':0.83612736,'acre':4046.8564224,'sq mile':2589988.110336,
+    'cent':40.468564224,'guntha':101.17141056,'katha (approx, regional)':126.44,'bigha (approx, regional)':2529,
+    'marla':25.29285264,'kanal':505.8570528}},
   volume:{label:'🧪 Volume',base:'liter',units:{
     'milliliter':0.001,'centiliter':0.01,'deciliter':0.1,'liter':1,'cubic centimeter':0.001,'cubic meter':1000,
-    'cubic inch':0.0163871,'cubic foot':28.3168,'US teaspoon':0.00492892,'US tablespoon':0.0147868,
-    'US fluid ounce':0.0295735,'US cup':0.236588,'US pint':0.473176,'US quart':0.946353,'US gallon':3.78541,
-    'imperial gallon':4.54609,'imperial pint':0.568261}},
+    'cubic inch':0.016387064,'cubic foot':28.316846592,'US teaspoon':0.00492892159375,'US tablespoon':0.01478676478125,
+    'US fluid ounce':0.0295735295625,'US cup':0.2365882365,'US pint':0.473176473,'US quart':0.946352946,'US gallon':3.785411784,
+    'imperial gallon':4.54609,'imperial pint':0.56826125}},
   temp:{label:'🌡️ Temperature',special:'temp',units:{'celsius':'C','fahrenheit':'F','kelvin':'K','rankine':'R'}},
   time:{label:'⏱️ Time',base:'second',units:{
     'nanosecond':1e-9,'microsecond':1e-6,'millisecond':0.001,'second':1,'minute':60,'hour':3600,
     'day':86400,'week':604800,'month (30d)':2592000,'year (365d)':31536000,'decade':315360000,'century':3153600000}},
   speed:{label:'🏎️ Speed',base:'m/s',units:{
-    'meter/second':1,'kilometer/hour':0.277778,'mile/hour':0.44704,'foot/second':0.3048,'knot':0.514444,'mach (sea level)':343}},
+    'meter/second':1,'kilometer/hour':1/3.6,'mile/hour':0.44704,'foot/second':0.3048,'knot':1852/3600,'mach (sea level)':343}},
   pressure:{label:'🎈 Pressure',base:'pascal',units:{
-    'pascal':1,'kilopascal':1000,'bar':1e5,'millibar':100,'atmosphere':101325,'torr (mmHg)':133.322,
-    'psi':6894.76,'inHg':3386.39}},
+    'pascal':1,'kilopascal':1000,'bar':1e5,'millibar':100,'atmosphere':101325,'torr (mmHg)':101325/760,
+    'psi':6894.757293168361,'inHg':3386.389}},
   energy:{label:'⚡ Energy',base:'joule',units:{
     'joule':1,'kilojoule':1000,'calorie':4.184,'kilocalorie':4184,'watt-hour':3600,'kilowatt-hour':3.6e6,
-    'electronvolt':1.60218e-19,'BTU':1055.06,'foot-pound':1.35582}},
+    'electronvolt':1.602176634e-19,'BTU':1055.05585262,'foot-pound':1.3558179483314004}},
   power:{label:'🔌 Power',base:'watt',units:{
-    'watt':1,'kilowatt':1000,'megawatt':1e6,'horsepower (mech)':745.7,'horsepower (metric)':735.499,
-    'BTU/hour':0.293071,'foot-pound/second':1.35582}},
+    'watt':1,'kilowatt':1000,'megawatt':1e6,'horsepower (mech)':745.6998715822702,'horsepower (metric)':735.49875,
+    'BTU/hour':0.2930710701722222,'foot-pound/second':1.3558179483314004}},
   force:{label:'🏋️ Force',base:'newton',units:{
-    'newton':1,'kilonewton':1000,'dyne':1e-5,'kilogram-force':9.80665,'pound-force':4.44822,'poundal':0.138255}},
+    'newton':1,'kilonewton':1000,'dyne':1e-5,'kilogram-force':9.80665,'pound-force':4.4482216152605,'poundal':0.138254954376}},
   angle:{label:'📐 Angle',base:'radian',units:{
-    'radian':1,'degree':0.0174533,'gradian':0.015708,'arcminute':0.000290888,'arcsecond':4.84814e-6,'revolution':6.28319}},
+    'radian':1,'degree':Math.PI/180,'gradian':Math.PI/200,'arcminute':Math.PI/10800,'arcsecond':Math.PI/648000,'revolution':2*Math.PI}},
   data:{label:'💾 Data Storage',base:'byte',units:{
     'bit':0.125,'byte':1,
     'kilobyte (KB, 1000)':1000,'megabyte (MB, 1000)':1e6,'gigabyte (GB, 1000)':1e9,'terabyte (TB, 1000)':1e12,'petabyte (PB, 1000)':1e15,
@@ -168,18 +172,18 @@ const CATS={
     'bit/s':1,'kilobit/s (kbps)':1000,'megabit/s (Mbps)':1e6,'gigabit/s (Gbps)':1e9,
     'byte/s':8,'kilobyte/s (KB/s)':8000,'megabyte/s (MB/s)':8e6,'gigabyte/s (GB/s)':8e9}},
   frequency:{label:'📻 Frequency',base:'hertz',units:{
-    'hertz':1,'kilohertz':1000,'megahertz':1e6,'gigahertz':1e9,'RPM (rev/min)':0.0166667}},
+    'hertz':1,'kilohertz':1000,'megahertz':1e6,'gigahertz':1e9,'RPM (rev/min)':1/60}},
   fuel:{label:'⛽ Fuel Economy',special:'fuel',base:'km/l',units:{
-    'km/l':1,'l/100km':'inv100','miles/gallon (US)':0.425144,'miles/gallon (UK)':0.354006}},
+    'km/l':1,'l/100km':'inv100','miles/gallon (US)':1.609344/3.785411784,'miles/gallon (UK)':1.609344/4.54609}},
   density:{label:'🧊 Density',base:'kg/m³',units:{
-    'kg/m³':1,'g/cm³':1000,'g/ml':1000,'kg/liter':1000,'pound/cubic foot':16.0185,'pound/gallon (US)':119.826}},
+    'kg/m³':1,'g/cm³':1000,'g/ml':1000,'kg/liter':1000,'pound/cubic foot':0.45359237/0.028316846592,'pound/gallon (US)':0.45359237/0.003785411784}},
   torque:{label:'🔧 Torque',base:'N·m',units:{
-    'N·m':1,'kN·m':1000,'kgf·m':9.80665,'pound-foot':1.35582,'pound-inch':0.112985}},
+    'N·m':1,'kN·m':1000,'kgf·m':9.80665,'pound-foot':1.3558179483314004,'pound-inch':0.1129848290276167}},
   illuminance:{label:'💡 Illuminance',base:'lux',units:{
-    'lux':1,'kilolux':1000,'foot-candle':10.7639,'phot':10000,'nox':0.001}},
+    'lux':1,'kilolux':1000,'foot-candle':1/0.09290304,'phot':10000,'nox':0.001}},
   cooking:{label:'🍳 Cooking',base:'milliliter',units:{
-    'milliliter':1,'liter':1000,'US teaspoon':4.92892,'US tablespoon':14.7868,'US cup':236.588,
-    'US fluid ounce':29.5735,'US pint':473.176,'US quart':946.353,'US gallon':3785.41,'drop':0.05,'pinch':0.30}}
+    'milliliter':1,'liter':1000,'US teaspoon':4.92892159375,'US tablespoon':14.78676478125,'US cup':236.5882365,
+    'US fluid ounce':29.5735295625,'US pint':473.176473,'US quart':946.352946,'US gallon':3785.411784,'drop':0.05,'pinch':0.30}}
 };
 
 /* Quick reference common equivalents per category */
