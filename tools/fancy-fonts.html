@@ -161,6 +161,13 @@ var mirrorMap={a:"ɒ",b:"d",c:"ɔ",d:"b",e:"ɘ",f:"ꟻ",g:"g",h:"ʜ",i:"i",j:"�
 function mirror(c){var o=c.charCodeAt(0);if(lowerOff(o))return mirrorMap[c]||c;if(upperOff(o))return mirrorMap[c.toLowerCase()]?mirrorMap[c.toLowerCase()].toUpperCase():c;return c;}
 
 // styles: object of name -> {fn, reverse:bool, wrap:fn}
+/* The Mathematical Alphanumeric block has reserved holes for letters that
+   already existed in Letterlike Symbols (e.g. double-struck H is U+210D, not
+   U+1D53F). Without these, those letters showed as empty boxes. */
+var MATH_HOLES={script:{B:0x212C,E:0x2130,F:0x2131,H:0x210B,I:0x2110,L:0x2112,M:0x2133,R:0x211B,e:0x212F,g:0x210A,o:0x2134},
+  fraktur:{C:0x212D,H:0x210C,I:0x2111,R:0x211C,Z:0x2128},
+  dstruck:{C:0x2102,H:0x210D,N:0x2115,P:0x2119,Q:0x211A,R:0x211D,Z:0x2124}};
+function holeFix(kind,c,cp){var h=MATH_HOLES[kind][c];return String.fromCodePoint(h||cp)}
 var styles={
 "Bold Serif":{fn:mkMath(0x1D400,0x1D41A,0x1D7CE)},
 "Italic Serif":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D434+o-65);if(lowerOff(o))return o===104?"ℎ":String.fromCodePoint(0x1D44E+o-97);return c;}},
@@ -168,11 +175,11 @@ var styles={
 "Bold Sans":{fn:mkMath(0x1D5D4,0x1D5EE,0x1D7EC)},
 "Italic Sans":{fn:mkMath(0x1D608,0x1D622)},
 "Bold Italic Sans":{fn:mkMath(0x1D63C,0x1D656)},
-"Script":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D49C+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D4B6+o-97);return c;}},
+"Script":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return holeFix("script",c,0x1D49C+o-65);if(lowerOff(o))return holeFix("script",c,0x1D4B6+o-97);return c;}},
 "Bold Script":{fn:mkMath(0x1D4D0,0x1D4EA)},
-"Fraktur":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D504+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D51E+o-97);return c;}},
+"Fraktur":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return holeFix("fraktur",c,0x1D504+o-65);if(lowerOff(o))return holeFix("fraktur",c,0x1D51E+o-97);return c;}},
 "Bold Fraktur":{fn:mkMath(0x1D56C,0x1D586)},
-"Double-Struck":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D538+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D552+o-97);if(digitOff(o))return String.fromCodePoint(0x1D7D8+o-48);return c;}},
+"Double-Struck":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return holeFix("dstruck",c,0x1D538+o-65);if(lowerOff(o))return holeFix("dstruck",c,0x1D552+o-97);if(digitOff(o))return String.fromCodePoint(0x1D7D8+o-48);return c;}},
 "Monospace":{fn:mkMath(0x1D670,0x1D68A,0x1D7F6)},
 "Circled":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x24B6+o-65);if(lowerOff(o))return String.fromCodePoint(0x24D0+o-97);if(digitOff(o))return o===48?"⓪":String.fromCodePoint(0x2460+o-49);return c;}},
 "Negative Circled":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1F150+o-65);if(lowerOff(o))return String.fromCodePoint(0x1F150+o-97);if(o===48)return"⓿";if(o>=49&&o<=57)return String.fromCodePoint(0x2776+o-49);return c;}},
@@ -193,7 +200,7 @@ var styles={
 "Bubble Text":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x24B6+o-65);if(lowerOff(o))return String.fromCodePoint(0x24D0+o-97);if(digitOff(o))return o===48?"⓪":String.fromCodePoint(0x2460+o-49);return c;}},
 "Stars ✦text✦":{fn:mkMath(0x1D5D4,0x1D5EE,0x1D7EC),wrap:function(s){return"✦ "+s+" ✦";}},
 "Hearts ♥text♥":{fn:mkMath(0x1D49C,0x1D4B6),wrap:function(s){return"♥ "+s+" ♥";}},
-"Sparkles ⋆text⋆":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return String.fromCodePoint(0x1D538+o-65);if(lowerOff(o))return String.fromCodePoint(0x1D552+o-97);return c;},wrap:function(s){return"⋆｡°✩ "+s+" ✩°｡⋆";}},
+"Sparkles ⋆text⋆":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return holeFix("dstruck",c,0x1D538+o-65);if(lowerOff(o))return holeFix("dstruck",c,0x1D552+o-97);return c;},wrap:function(s){return"⋆｡°✩ "+s+" ✩°｡⋆";}},
 "Arrows »text«":{fn:function(c){var o=c.charCodeAt(0);if(upperOff(o))return smallCaps[o-65];if(lowerOff(o))return smallCaps[o-97];return c;},wrap:function(s){return"»»————— "+s+" —————««";}}
 };
 

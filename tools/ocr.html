@@ -475,6 +475,7 @@ function shapeText(t){
 function cancelOCR(){ ocrCancel=true; $o('progText').textContent='Cancelling...' }
 
 /* ---------- main ---------- */
+function escOcr(s){return String(s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
 async function doOCR(){
   if(!ocrFiles.length&&!ocrPdf)return;
   ocrCancel=false;
@@ -508,7 +509,11 @@ async function doOCR(){
 
     var total=prepped.length, combined="", currentIdx=0;
     lastConf=[];
-    ocrWorker=await Tesseract.createWorker(lang,1,{logger:function(m){
+    /* If the OCR engine (downloaded from a CDN on first use) can't load, the
+       worker reports it through errorHandler; without one it surfaced as an
+       uncaught page error and the message said "unknown error". */
+    var engineErr=null;
+    ocrWorker=await Tesseract.createWorker(lang,1,{errorHandler:function(err){engineErr=err},logger:function(m){
       if(m.status==="recognizing text"){
         var overall=((currentIdx+m.progress)/total)*100;
         progBar.style.width=overall+"%"; progBar.textContent=Math.round(overall)+"%";
@@ -539,8 +544,10 @@ async function doOCR(){
     progDiv.style.display="none"; $o('cancelOcrBtn').style.display='none'; goBtn.disabled=false;
     resultDiv.innerHTML = (e&&e.message==='cancelled')
       ? "<p class='info'>Cancelled.</p>"
-      : "<p class='info' style='color:var(--accent3-text)'>OCR failed: "+((e&&e.message)||'unknown error')+
-        ". Try a different language, or reduce the upscale if the image is very large.</p>";
+      : /importScripts|NetworkError|Failed to fetch|load/i.test(String((e&&e.message)||e||''))||!(e&&e.message)
+        ? "<p class='info' style='color:var(--accent3-text)'>OCR could not start: the text-recognition engine (downloaded once, then cached) did not load. Check your internet connection and try again.</p>"
+        : "<p class='info' style='color:var(--accent3-text)'>OCR failed: "+escOcr(e.message)+
+          ". Try a different language, or reduce the upscale if the image is very large.</p>";
   }
 }
 

@@ -263,7 +263,10 @@ function authorsNumbered(raw){
 function firstSurname(raw){
   var a=splitAuthors(raw);
   if(!a.length)return '';
-  return a[0].split(',')[0].trim();
+  /* "Sharma, R. K." -> Sharma; "Ravi Sharma" -> Sharma (same rule the
+     reference list uses, so the in-text and the entry agree). */
+  var n=a[0].trim();if(n.indexOf(',')>-1)return n.slice(0,n.indexOf(',')).trim();
+  var p=n.split(/\s+/);return p.length>1?p[p.length-1]:n;
 }
 function I(txt){return '<em>'+esc(txt)+'</em>';} // italic marker for HTML
 // ---------- Citation builders ----------

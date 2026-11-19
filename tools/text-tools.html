@@ -422,7 +422,7 @@ function tx(m) {
     case "pascal": t = words.map(function(w) { w = w.toLowerCase(); return w[0].toUpperCase() + w.slice(1); }).join(""); break;
     case "snake": t = words.map(function(w) { return w.toLowerCase(); }).join("_"); break;
     case "constant": t = words.map(function(w) { return w.toUpperCase(); }).join("_"); break;
-    case "dedup": t = [].concat(new Set(t.split("\n"))).filter(function(v, i, a) { return a.indexOf(v) === i; }).join("\n"); break;
+    case "dedup": t = Array.from(new Set(t.split("\n"))).join("\n"); break;  // [].concat(Set) gave "[object Set]"
     case "sort": t = t.split("\n").sort().join("\n"); break;
     case "sortDesc": t = t.split("\n").sort().reverse().join("\n"); break;
     case "shuffle": var lines = t.split("\n"); for (var i = lines.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = lines[i]; lines[i] = lines[j]; lines[j] = tmp; } t = lines.join("\n"); break;

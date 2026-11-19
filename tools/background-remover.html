@@ -286,7 +286,7 @@ async function runAI(f,single){
         (err&&err.message?err.message:"unknown")+"). Falling back to Fast mode \u2014 this works well on "+
         "plain backgrounds but may leave edges on busy photos.</p>";
       await new Promise(function(r){setTimeout(r,1200)});
-      await runFastSingle(f);
+      await runFastSingle(f,"AI mode could not load, so this cutout was made with Fast mode (best on plain backgrounds). Check your connection and try AI mode again.");
     }
     return null;
   }
@@ -353,11 +353,15 @@ function runFastOnFile(f){
   });
 }
 
-async function runFastSingle(f){
+async function runFastSingle(f,note){
   showProcessing("result");
   var blob=await runFastOnFile(f);
   if(!blob)return;     /* the cutout step already reported why */
   showResult(blob);
+  /* After an AI failure the result used to replace the warning, so people never
+     learned the cutout came from Fast mode. Keep the note above the result. */
+  if(note){var n=document.createElement("p");n.className="info";n.style.color="var(--warn)";n.textContent="\u26a0\ufe0f "+note;
+    var r=document.getElementById("result");r.insertBefore(n,r.firstChild)}
 }
 
 // ---- Batch processing ----

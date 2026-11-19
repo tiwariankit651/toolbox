@@ -233,6 +233,7 @@ var syllabi={
 var currentExam="",structure=[],data={};
 // data shape: {checked:{key:timestamp},hours:{key:num},notes:{key:str},revision:{key:timestamp}}
 
+function syEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function getKey(sec,topic){return sec+"|"+topic}
 function allTopics(){var t=[];structure.forEach(function(s){s.sub.forEach(function(st){t.push(getKey(s.name,st))})});return t}
 function loadData(){
@@ -316,7 +317,7 @@ function render(){
     var total=sec.sub.length,sDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
     var sp=total?Math.round(sDone/total*100):0;
     var r=24,c=2*Math.PI*r,offset=c-(sp/100)*c;
-    circHtml+='<div class="st-circ-wrap"><div class="st-circ"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="5"/><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="#6366f1" stroke-width="5" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" stroke-linecap="round"/></svg><span>'+sp+'%</span></div><small title="'+sec.name+'">'+sec.name+'</small></div>';
+    circHtml+='<div class="st-circ-wrap"><div class="st-circ"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="5"/><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="#6366f1" stroke-width="5" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" stroke-linecap="round"/></svg><span>'+sp+'%</span></div><small title="'+syEsc(sec.name)+'">'+syEsc(sec.name)+'</small></div>';
   });
   document.getElementById("circProgress").innerHTML=circHtml;
 
@@ -324,15 +325,15 @@ function render(){
   var html="";
   structure.forEach(function(sec,si){
     var secDone=sec.sub.filter(function(t){return data.checked[getKey(sec.name,t)]}).length;
-    html+='<div class="st-section"><div class="st-section-head"><span>▶</span><span>'+sec.name+'</span><span style="margin-left:auto;font-size:.8rem;color:var(--text2)">'+secDone+'/'+sec.sub.length+'</span></div><div class="st-section-body" style="display:none">';
+    html+='<div class="st-section"><div class="st-section-head"><span>▶</span><span>'+syEsc(sec.name)+'</span><span style="margin-left:auto;font-size:.8rem;color:var(--text2)">'+secDone+'/'+sec.sub.length+'</span></div><div class="st-section-body" style="display:none">';
     sec.sub.forEach(function(t){
       var key=getKey(sec.name,t),isDone=data.checked[key],hrs=data.hours[key]||0,hasNote=data.notes[key],isRev=data.revision[key],revDue=isRevDue(key);
-      html+='<div class="st-topic'+(isDone?" done":"")+'" onclick="toggle(\''+key.replace(/'/g,"\\'")+'\')">';
-      html+='<span style="font-size:1.1rem">'+(isDone?"✅":"⬜")+'</span><span>'+t+'</span>';
+      html+='<div class="st-topic'+(isDone?" done":"")+'" data-key="'+syEsc(key)+'" onclick="toggle(this.dataset.key)">';
+      html+='<span style="font-size:1.1rem">'+(isDone?"✅":"⬜")+'</span><span>'+syEsc(t)+'</span>';
       if(revDue)html+='<span class="st-rev-badge">Revise!</span>';
       if(hasNote)html+='<span class="st-note-badge" title="Has notes">📝</span>';
       if(hrs)html+='<span class="st-hours">'+hrs+'h</span>';
-      html+='<span style="margin-left:auto;font-size:.9rem;cursor:pointer" onclick="event.stopPropagation();openModal(\''+key.replace(/'/g,"\\'")+'\')" title="Edit notes/hours">⚙️</span>';
+      html+='<span style="margin-left:auto;font-size:.9rem;cursor:pointer" data-key="'+syEsc(key)+'" onclick="event.stopPropagation();openModal(this.dataset.key)" title="Edit notes/hours">⚙️</span>';
       html+='</div>';
     });
     html+='</div></div>';
@@ -396,7 +397,7 @@ function showRevisionDue(){
   });
   if(!due.length){document.getElementById("revList").innerHTML="<p class='info'>No topics due for revision right now.</p>";return}
   document.getElementById("revList").innerHTML=due.map(function(d){
-    return '<div style="padding:.4rem .8rem;border-bottom:1px solid var(--border)"><strong>'+d.key.split("|")[1]+'</strong> <span class="info">('+d.key.split("|")[0]+') — completed '+d.days+' day(s) ago, next revision at day '+d.next+'</span></div>';
+    return '<div style="padding:.4rem .8rem;border-bottom:1px solid var(--border)"><strong>'+syEsc(d.key.split("|")[1])+'</strong> <span class="info">('+syEsc(d.key.split("|")[0])+') — completed '+d.days+' day(s) ago, next revision at day '+d.next+'</span></div>';
   }).join("");
 }
 
